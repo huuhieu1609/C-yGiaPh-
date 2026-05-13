@@ -60,6 +60,10 @@
                                 </span>
                             </div>
                             <div class="col-6 mb-2">
+                                <span class="text-muted small d-block">Ngày sinh:</span>
+                                <span class="fw-semibold">{{ currentMember.ngay_sinh || 'Không rõ' }}</span>
+                            </div>
+                            <div class="col-6 mb-2">
                                 <span class="text-muted small d-block">Vai trò trong họ:</span>
                                 <span class="fw-semibold">{{ currentMember.loai_quan_he === 'Chính' ? 'Con Cháu' : 'Người phối ngẫu' }}</span>
                             </div>
@@ -86,6 +90,12 @@
 import { defineComponent, h } from 'vue';
 import axios from 'axios';
 
+const formatDate = (date) => {
+    if (!date) return '';
+    const d = new Date(date);
+    return d.toLocaleDateString('vi-VN');
+};
+
 const TreeItem = defineComponent({
     name: 'TreeItem',
     props: ['member'],
@@ -105,6 +115,7 @@ const TreeItem = defineComponent({
                     })
                 ]),
                 h('div', { class: 'node-name' }, this.member.ho_ten),
+                this.member.ngay_sinh ? h('div', { class: 'node-birth small text-muted', style: 'font-size: 11px;' }, formatDate(this.member.ngay_sinh)) : null,
                 h('div', { class: 'node-meta' }, [
                     h('span', `Đời ${this.member.doi_thu}`),
                     this.member.trang_thai === 'Đã mất' ? h('span', { class: 'status-dead ms-1' }, ' (Đã mất)') : null
@@ -128,6 +139,7 @@ const TreeItem = defineComponent({
                         })
                     ]),
                     h('div', { class: 'node-name' }, spouse.ho_ten),
+                    spouse.ngay_sinh ? h('div', { class: 'node-birth small text-muted', style: 'font-size: 11px;' }, formatDate(spouse.ngay_sinh)) : null,
                     h('div', { class: 'node-meta' }, 'Vợ/Chồng'),
                     h('div', { class: 'node-view-overlay' }, [
                         h('i', { class: 'bx bx-info-circle' }),

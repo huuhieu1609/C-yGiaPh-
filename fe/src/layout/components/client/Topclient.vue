@@ -8,7 +8,7 @@
         <ul class="nav-links">
           <li><router-link to="/">Trang Chủ</router-link></li>
           <li><router-link to="/gia-pha">Gia Phả</router-link></li>
-          <li><router-link to="/dong-ho">Dòng Họ</router-link></li>
+          <li><router-link to="/tra-cuu">Tra Cứu</router-link></li>
           <li><router-link to="/lien-he">Liên Hệ</router-link></li>
         </ul>
         <div class="nav-actions">
@@ -30,8 +30,8 @@
                 <router-link to="/profile" @click="isDropdownOpen = false">
                   <i class="bx bx-user"></i> Hồ sơ cá nhân
                 </router-link>
-                <router-link to="/gia-pha" @click="isDropdownOpen = false">
-                  <i class="bx bx-git-branch"></i> Cây gia phả
+                <router-link to="/tra-cuu" @click="isDropdownOpen = false">
+                  <i class="bx bx-search-alt"></i> Tra cứu xưng hô
                 </router-link>
                 <hr>
                 <a href="javascript:;" @click="handleLogout">
@@ -58,6 +58,7 @@
         </template>
         <template v-else>
           <li><router-link to="/profile" @click="isMobileMenuOpen = false">Hồ sơ cá nhân</router-link></li>
+          <li><router-link to="/tra-cuu" @click="isMobileMenuOpen = false">Tra cứu xưng hô</router-link></li>
           <li><a href="javascript:;" @click="handleLogout">Đăng xuất</a></li>
         </template>
       </ul>
@@ -157,7 +158,7 @@ export default {
   padding: 12px 0;
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
-  box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
 }
 
 .navbar {
@@ -195,20 +196,23 @@ export default {
 
 .nav-links a {
   text-decoration: none;
-  color: rgba(255, 255, 255, 0.8);
+  color: #ffffff;
   font-size: 14px;
-  font-weight: 600;
-  letter-spacing: 1px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
   text-transform: uppercase;
-  transition: color 0.3s;
+  transition: all 0.3s ease;
+  opacity: 0.9;
 }
 
 .top-client.scrolled .nav-links a {
-  color: #555;
+  color: #1a1a1a;
 }
 
-.nav-links a:hover, .nav-links a.router-link-active {
-  color: #d4af37;
+.nav-links a:hover,
+.nav-links a.router-link-active {
+  color: #d4af37 !important;
+  opacity: 1;
 }
 
 .nav-actions {
@@ -283,7 +287,7 @@ export default {
   background: #fff;
   min-width: 200px;
   border-radius: 8px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
   padding: 10px 0;
   margin-top: 15px;
   display: none;
@@ -296,8 +300,15 @@ export default {
 }
 
 @keyframes fadeInDown {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .dropdown-menu a {
@@ -348,7 +359,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: -10px 0 30px rgba(0,0,0,0.1);
+  box-shadow: -10px 0 30px rgba(0, 0, 0, 0.1);
 }
 
 .mobile-menu.open {
@@ -383,7 +394,14 @@ export default {
 }
 
 @media (max-width: 991px) {
-  .nav-links, .nav-actions { display: none; }
-  .mobile-toggle { display: block; }
+
+  .nav-links,
+  .nav-actions {
+    display: none;
+  }
+
+  .mobile-toggle {
+    display: block;
+  }
 }
 </style>

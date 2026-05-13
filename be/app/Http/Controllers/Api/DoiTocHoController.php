@@ -12,7 +12,7 @@ class DoiTocHoController extends Controller
     public function getData()
     {
         try {
-            $data = DoiTocHo::all();
+            $data = DoiTocHo::with('chiNhanh')->get();
             return response()->json([
                 'status'  => true,
                 'message' => 'Lấy dữ liệu thành công!',

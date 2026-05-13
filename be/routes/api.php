@@ -20,6 +20,7 @@ use App\Http\Controllers\Api\SuKienController;
 use App\Http\Controllers\Api\TaiLieuController;
 use App\Http\Controllers\Api\ThamGiaSuKienController;
 use App\Http\Controllers\Api\ThongBaoController;
+use App\Http\Controllers\Api\PhanQuyenController;
 
 // Auth Routes
 Route::post('/register', [AuthController::class, 'register']);
@@ -68,4 +69,26 @@ Route::prefix('/nguoi-dung')->group(function () {
     Route::post('/delete', [NguoiDungController::class, 'delete']);
     Route::post('/status', [NguoiDungController::class, 'status']);
 });
+
+Route::prefix('/doi-toc-ho')->group(function () {
+    Route::get('/get-data', [DoiTocHoController::class, 'getData']);
+    Route::post('/create', [DoiTocHoController::class, 'create']);
+    Route::post('/update', [DoiTocHoController::class, 'update']);
+    Route::post('/delete', [DoiTocHoController::class, 'delete']);
+    Route::post('/status', [DoiTocHoController::class, 'status']);
+});
+
+Route::prefix('/chi-nhanh')->group(function () {
+    Route::get('/get-data', [ChiNhanhController::class, 'getData']);
+    Route::post('/create', [ChiNhanhController::class, 'create']);
+    Route::post('/update', [ChiNhanhController::class, 'update']);
+    Route::post('/delete', [ChiNhanhController::class, 'delete']);
+    Route::post('/status', [ChiNhanhController::class, 'status']);
+});
+
+Route::prefix('/phan-quyen')->group(function () {
+    Route::post('/get-chuc-nang', [PhanQuyenController::class, 'getChucNang']);
+    Route::post('/update', [PhanQuyenController::class, 'updatePhanQuyen']);
+});
+
 // (Các route khác tương tự cho các controller còn lại)

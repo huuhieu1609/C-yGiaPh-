@@ -48,12 +48,22 @@ class AuthController extends Controller
         }
 
         $token = $user->createToken('auth_token')->plainTextToken;
+        
+        $permissions = [];
+        if ($user->id_chuc_vu) {
+            $permissions = \App\Models\ChiTietPhanQuyen::join('chuc_nangs', 'chi_tiet_phan_quyens.chuc_nang_id', '=', 'chuc_nangs.id')
+                ->where('chi_tiet_phan_quyens.chuc_vu_id', $user->id_chuc_vu)
+                ->where('chuc_nangs.trang_thai', 'Hoạt động')
+                ->pluck('chuc_nangs.ten_chuc_nang')
+                ->toArray();
+        }
 
         return response()->json([
             'status'       => true,
             'message'      => 'Đăng nhập thành công!',
             'access_token' => $token,
-            'user'         => $user
+            'user'         => $user,
+            'permissions'  => $permissions
         ]);
     }
 
@@ -117,7 +127,20 @@ class AuthController extends Controller
 
     public function me(Request $request)
     {
-        return response()->json($request->user());
+        $user = $request->user();
+        $permissions = [];
+        if ($user->id_chuc_vu) {
+            $permissions = \App\Models\ChiTietPhanQuyen::join('chuc_nangs', 'chi_tiet_phan_quyens.chuc_nang_id', '=', 'chuc_nangs.id')
+                ->where('chi_tiet_phan_quyens.chuc_vu_id', $user->id_chuc_vu)
+                ->where('chuc_nangs.trang_thai', 'Hoạt động')
+                ->pluck('chuc_nangs.ten_chuc_nang')
+                ->toArray();
+        }
+        
+        return response()->json([
+            'user' => $user,
+            'permissions' => $permissions
+        ]);
     }
 
     public function updateProfile(Request $request)

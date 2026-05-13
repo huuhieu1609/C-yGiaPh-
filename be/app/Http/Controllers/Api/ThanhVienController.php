@@ -30,6 +30,12 @@ class ThanhVienController extends Controller
     {
         try {
             $data = $request->all();
+            if ($request->hasFile('avatar')) {
+                $image = $request->file('avatar');
+                $imageName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
+                $image->move(public_path('uploads/avatars'), $imageName);
+                $data['avatar'] = request()->getSchemeAndHttpHost() . '/uploads/avatars/' . $imageName;
+            }
             if ('ThanhVien' === 'NguoiDung' && isset($data['mat_khau'])) {
                 $data['mat_khau'] = bcrypt($data['mat_khau']);
             }
@@ -52,6 +58,14 @@ class ThanhVienController extends Controller
         try {
             $item = ThanhVien::findOrFail($request->id);
             $data = $request->all();
+            if ($request->hasFile('avatar')) {
+                $image = $request->file('avatar');
+                $imageName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
+                $image->move(public_path('uploads/avatars'), $imageName);
+                $data['avatar'] = request()->getSchemeAndHttpHost() . '/uploads/avatars/' . $imageName;
+            } elseif (isset($data['avatar']) && $data['avatar'] === 'null') {
+                $data['avatar'] = null; // Option to remove avatar if explicitly sent as string 'null'
+            }
             if ('ThanhVien' === 'NguoiDung' && isset($data['mat_khau'])) {
                 $data['mat_khau'] = bcrypt($data['mat_khau']);
             }
