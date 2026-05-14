@@ -87,6 +87,36 @@ const routes = [
         meta: { layout: 'default' }
     },
     {
+        path: '/admin/su-kien',
+        name: 'admin-su-kien',
+        component: () => import('../components/Admin/SuKien/index.vue'),
+        meta: { layout: 'default' }
+    },
+    {
+        path: '/admin/tham-gia-su-kien',
+        name: 'admin-tham-gia-su-kien',
+        component: () => import('../components/Admin/ThamGiaSuKien/index.vue'),
+        meta: { layout: 'default' }
+    },
+    {
+        path: '/admin/dong-gop',
+        name: 'admin-dong-gop',
+        component: () => import('../components/Admin/DongGop/index.vue'),
+        meta: { layout: 'default' }
+    },
+    {
+        path: '/admin/nha-tho-ho',
+        name: 'admin-nha-tho-ho',
+        component: () => import('../components/Admin/NhaThoHo/index.vue'),
+        meta: { layout: 'default' }
+    },
+    {
+        path: '/admin/mo-phan',
+        name: 'admin-mo-phan',
+        component: () => import('../components/Admin/MoPhan/index.vue'),
+        meta: { layout: 'default' }
+    },
+    {
         path: '/admin/chuc-vu',
         name: 'admin-chuc-vu',
         component: () => import('../components/Admin/ChucVu/index.vue'),
@@ -96,6 +126,12 @@ const routes = [
         path: '/admin/chuc-nang',
         name: 'admin-chuc-nang',
         component: () => import('../components/Admin/ChucNang/index.vue'),
+        meta: { layout: 'default' }
+    },
+    {
+        path: '/admin/nhat-ky-hoat-dong',
+        name: 'admin-nhat-ky-hoat-dong',
+        component: () => import('../components/Admin/NhatKyHoatDong/index.vue'),
         meta: { layout: 'default' }
     },
     {
