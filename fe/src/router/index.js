@@ -55,6 +55,7 @@ const routes = [
         component: () => import('../components/Admin/Auth/Login.vue'),
         meta: { layout: 'blank' }
     },
+    
     // Admin Routes
     {
         path: '/admin/dashboard',
@@ -140,6 +141,12 @@ const routes = [
         component: () => import('../components/Admin/TraCuu/index.vue'),
         meta: { layout: 'default' }
     },
+    {
+        path: '/admin/phan-quyen',
+        name: 'admin-phan-quyen',
+        component: () => import('../components/Admin/PhanQuyen/index.vue'),
+        meta: { layout: 'default' }
+    }
 ]
 
 const router = createRouter({
