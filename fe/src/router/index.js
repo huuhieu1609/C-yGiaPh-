@@ -104,6 +104,31 @@ const routes = [
         component: () => import('../components/Admin/TraCuu/index.vue'),
         meta: { layout: 'default' }
     },
+    // Partner Routes
+    {
+        path: '/doi-tac/dashboard',
+        name: 'partner-dashboard',
+        component: () => import('../components/DoiTac/TrangChu/index.vue'),
+        meta: { layout: 'partner' }
+    },
+    {
+        path: '/doi-tac/gia-pha',
+        name: 'partner-gia-pha',
+        component: () => import('../components/DoiTac/CayGiaPha/index.vue'),
+        meta: { layout: 'partner' }
+    },
+    {
+        path: '/doi-tac/thanh-vien',
+        name: 'partner-thanh-vien',
+        component: () => import('../components/DoiTac/QuanLyThanhVien/index.vue'),
+        meta: { layout: 'partner' }
+    },
+    {
+        path: '/doi-tac/tra-cuu',
+        name: 'partner-tra-cuu',
+        component: () => import('../components/DoiTac/TraCuu/index.vue'),
+        meta: { layout: 'partner' }
+    },
 ]
 
 const router = createRouter({

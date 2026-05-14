@@ -144,9 +144,10 @@ export default {
     loadUserProfile() {
       axios.get('http://127.0.0.1:8000/api/me', this.getHeaders())
         .then(res => {
-          this.profile = res.data;
+          this.profile = res.data.user;
           // Update local storage so that Topclient avatar also updates if refreshed
-          localStorage.setItem('user', JSON.stringify(res.data));
+          localStorage.setItem('user', JSON.stringify(res.data.user));
+          window.dispatchEvent(new Event('profile-updated'));
         })
         .catch(err => {
           if(err.response && err.response.status === 401) {
