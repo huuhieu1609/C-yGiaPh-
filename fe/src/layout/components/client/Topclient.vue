@@ -110,14 +110,14 @@ export default {
     },
     checkLogin() {
       const token = localStorage.getItem('access_token');
-      const user = JSON.parse(localStorage.getItem('user'));
-      if (token && user) {
+      const userData = JSON.parse(localStorage.getItem('user'));
+      if (token && userData) {
         this.isLoggedIn = true;
+        // Robustness: handle both {user, permissions} and direct user object
+        const user = userData.user || userData;
         this.userName = user.ho_ten;
         this.isAdmin = user.vai_tro === 'Admin';
-        if (user.avatar) {
-          this.userAvatar = user.avatar;
-        }
+        this.userAvatar = user.avatar || 'https://dzfullstack.com/assets/images/logo-1.png';
       } else {
         this.isLoggedIn = false;
         this.isAdmin = false;

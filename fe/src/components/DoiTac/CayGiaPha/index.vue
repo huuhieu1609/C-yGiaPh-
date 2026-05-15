@@ -2,23 +2,14 @@
     <div class="row">
         <div class="col-12">
             <div class="card shadow-sm border-0 radius-10 overflow-hidden">
-                <div class="card-header bg-white py-3 border-0 border-bottom">
+                <div class="card-header bg-white py-3 border-0">
                     <div class="row align-items-center">
-                        <div class="col-md-3">
-                            <h5 class="mb-0 fw-bold text-dark"><i class="bx bx-git-branch text-primary"></i> Quản Lý Cây Gia Phả</h5>
+                        <div class="col-md-4">
+                            <h5 class="mb-0 fw-bold text-dark"><i class="bx bx-git-branch text-primary"></i> Trực Quan Cây Gia Phả</h5>
                         </div>
-                        <div class="col-md-9 text-md-end d-flex align-items-center justify-content-end gap-3 flex-wrap">
-                            <!-- Branch Filter -->
-                            <div class="d-flex align-items-center gap-2">
-                                <label class="small fw-bold text-uppercase text-secondary text-nowrap mb-0">Dòng họ:</label>
-                                <select class="form-select radius-30 border-2 shadow-none" style="width: 200px;" v-model="selectedChiNhanh" @change="filterTree">
-                                    <option :value="null">-- Tất cả --</option>
-                                    <option v-for="cn in listChiNhanh" :key="cn.id" :value="cn.id">{{ cn.ten_chi }}</option>
-                                </select>
-                            </div>
-
+                        <div class="col-md-8 text-md-end d-flex align-items-center justify-content-end gap-3">
                             <!-- Search Bar -->
-                            <div class="position-relative" style="width: 220px;">
+                            <div class="position-relative d-none d-lg-block" style="width: 250px;">
                                 <input type="text" class="form-control ps-5 radius-30 border-2" v-model="searchQuery" placeholder="Tìm thành viên...">
                                 <span class="position-absolute top-50 translate-middle-y start-0 ms-3 text-secondary"><i class="bx bx-search"></i></span>
                             </div>
@@ -64,8 +55,8 @@
                                 <div class="empty-state-icon mb-3">
                                     <i class="bx bx-git-repo-forked fs-1 text-muted opacity-25"></i>
                                 </div>
-                                <h5 class="text-muted">Chưa có dữ liệu thành viên cho nhánh này</h5>
-                                <p class="text-muted small">Hãy kiểm tra bộ lọc hoặc bắt đầu thêm thành viên.</p>
+                                <h5 class="text-muted">Chưa có dữ liệu thành viên</h5>
+                                <p class="text-muted small">Hãy bắt đầu bằng cách thêm thành viên đầu tiên (Thủy Tổ).</p>
                                 <button class="btn btn-outline-primary btn-sm radius-30 px-4 mt-2" @click="openAddModal">Thêm ngay</button>
                             </div>
                         </div>
@@ -79,7 +70,7 @@
             </div>
         </div>
 
-        <!-- Modal Thêm/Sửa Thành Viên (Giữ logic cũ của Admin) -->
+        <!-- Modal Thêm/Sửa Thành Viên (Giữ nguyên logic cũ) -->
         <div class="modal fade" id="memberModal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-lg modal-dialog-centered">
                 <div class="modal-content radius-15 shadow-lg border-0">
@@ -100,16 +91,9 @@
                                     <input type="file" id="member-avatar-upload" @change="onAvatarChange" class="d-none" accept="image/*">
                                 </div>
                             </div>
-                            <div class="col-md-12">
-                                <label class="form-label fw-bold">Thuộc Dòng Họ</label>
-                                <select class="form-select radius-8 border-2 shadow-none" v-model="currentMember.chi_nhanh_id">
-                                    <option :value="null">-- Không xác định --</option>
-                                    <option v-for="cn in listChiNhanh" :key="cn.id" :value="cn.id">{{ cn.ten_chi }}</option>
-                                </select>
-                            </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-bold">Họ và Tên</label>
-                                <input type="text" class="form-control radius-8 border-2 shadow-none" v-model="currentMember.ho_ten">
+                                <input type="text" class="form-control radius-8 border-2 shadow-none" v-model="currentMember.ho_ten" placeholder="Nguyễn Văn A">
                             </div>
                             <div class="col-md-3">
                                 <label class="form-label fw-bold">Giới tính</label>
@@ -163,7 +147,7 @@
                                 <select class="form-select radius-8 border-2 shadow-none" v-model="currentMember.cha_id">
                                     <option :value="null">--- Thủy Tổ ---</option>
                                     <option v-for="m in allMembers" :key="m.id" :value="m.id" 
-                                        v-show="m.id !== currentMember.id && m.loai_quan_he === 'Chính' && m.chi_nhanh_id === currentMember.chi_nhanh_id">
+                                        v-show="m.id !== currentMember.id && m.loai_quan_he === 'Chính'">
                                         {{ m.ho_ten }} (Đời {{ m.doi_thu }})
                                     </option>
                                 </select>
@@ -173,7 +157,7 @@
                                 <label class="form-label fw-bold">Là Vợ/Chồng của ai?</label>
                                 <select class="form-select radius-8 border-2 shadow-none" v-model="currentMember.spouse_of_id">
                                     <option v-for="m in allMembers" :key="m.id" :value="m.id" 
-                                        v-show="m.loai_quan_he === 'Chính' && m.chi_nhanh_id === currentMember.chi_nhanh_id">
+                                        v-show="m.loai_quan_he === 'Chính'">
                                         {{ m.ho_ten }}
                                     </option>
                                 </select>
@@ -181,7 +165,7 @@
                             
                             <div class="col-md-12">
                                 <label class="form-label fw-bold">Ghi chú</label>
-                                <textarea class="form-control radius-8 border-2 shadow-none" rows="2" v-model="currentMember.ghi_chu"></textarea>
+                                <textarea class="form-control radius-8 border-2 shadow-none" rows="2" v-model="currentMember.ghi_chu" placeholder="Thông tin thêm..."></textarea>
                             </div>
                         </div>
                     </div>
@@ -218,7 +202,10 @@ const TreeItem = defineComponent({
             const date = new Date(dateString);
             return date.toLocaleDateString('vi-VN');
         };
-
+        
+        const generationClass = `gen-${(this.member.doi_thu % 5) + 1}`;
+        const isHighlighted = this.searchQuery && this.member.ho_ten.toLowerCase().includes(this.searchQuery.toLowerCase());
+        
         const hasChildren = this.member.children && this.member.children.length > 0;
 
         if (this.member.isDummy) {
@@ -238,9 +225,6 @@ const TreeItem = defineComponent({
             ) : null;
             return h('li', [nodeGroup, children]);
         }
-
-        const generationClass = `gen-${(this.member.doi_thu % 5) + 1}`;
-        const isHighlighted = this.searchQuery && this.member.ho_ten.toLowerCase().includes(this.searchQuery.toLowerCase());
         
         const nodeGroup = h('div', { class: 'tree-node-group' }, [
             h('div', { 
@@ -294,7 +278,6 @@ const TreeItem = defineComponent({
                 ];
             }) : null
         ]);
-        
         const children = hasChildren ? h('ul', 
             this.member.children.map(child => h(TreeItem, { 
                 member: child, 
@@ -309,16 +292,14 @@ const TreeItem = defineComponent({
 });
 
 export default {
-    name: 'AdminGenealogy',
+    name: 'PartnerGenealogy',
     components: { TreeItem },
     data() {
         return {
             allMembers: [],
-            listChiNhanh: [],
             listDoiTocHo: [],
-            selectedChiNhanh: null,
             currentMember: {
-                id: null, ho_ten: '', doi_thu: 1, cha_id: null, gioi_tinh: 'Nam', chi_nhanh_id: null,
+                id: null, ho_ten: '', doi_thu: 1, cha_id: null, gioi_tinh: 'Nam',
                 loai_quan_he: 'Chính', spouse_of_id: null, trang_thai: 'Còn sống', ngay_mat: null, ngay_sinh: null, ghi_chu: '', avatar: null
             },
             avatarPreview: null,
@@ -338,15 +319,6 @@ export default {
     computed: {
         treeData() {
             let list = JSON.parse(JSON.stringify(this.allMembers));
-            
-            // Branch filtering
-            if (this.selectedChiNhanh) {
-                list = list.filter(item => 
-                    item.chi_nhanh_id == this.selectedChiNhanh || 
-                    (item.loai_quan_he === 'Vợ/Chồng')
-                );
-            }
-            
             const map = {};
             const roots = [];
             list.forEach(item => { map[item.id] = item; item.children = []; item.spouses = []; });
@@ -399,10 +371,10 @@ export default {
         if (window.bootstrap) {
             this.modal = new window.bootstrap.Modal(document.getElementById('memberModal'));
         }
-        this.loadChiNhanh();
         this.loadDoiTocHo();
         this.loadData();
         
+        // Add wheel listener for zoom
         this.$refs.viewport.addEventListener('wheel', this.handleWheel, { passive: false });
     },
     methods: {
@@ -414,14 +386,6 @@ export default {
                     }
                 });
         },
-        loadChiNhanh() {
-            axios.get('http://127.0.0.1:8000/api/chi-nhanh/get-data')
-                .then(res => {
-                    if (res.data.status) {
-                        this.listChiNhanh = res.data.data;
-                    }
-                });
-        },
         loadData() {
             axios.get('http://127.0.0.1:8000/api/thanh-vien/get-data')
                 .then(res => {
@@ -430,23 +394,43 @@ export default {
                     }
                 });
         },
-        filterTree() {
-            // Reactively updates through treeData computed
-        },
-        // View Controls
+        // View Control Methods
         zoomIn() { if (this.zoom < 2) this.zoom += 0.1; },
         zoomOut() { if (this.zoom > 0.3) this.zoom -= 0.1; },
-        resetView() { this.zoom = 1; this.posX = 0; this.posY = 0; },
-        handleWheel(e) { e.preventDefault(); if (e.deltaY < 0) this.zoomIn(); else this.zoomOut(); },
-        startPan(e) { if (e.button !== 0) return; this.isPanning = true; this.lastMouseX = e.clientX; this.lastMouseY = e.clientY; },
-        doPan(e) { if (!this.isPanning) return; const dx = e.clientX - this.lastMouseX; const dy = e.clientY - this.lastMouseY; this.posX += dx; this.posY += dy; this.lastMouseX = e.clientX; this.lastMouseY = e.clientY; },
-        endPan() { this.isPanning = false; },
+        resetView() {
+            this.zoom = 1;
+            this.posX = 0;
+            this.posY = 0;
+        },
+        handleWheel(e) {
+            e.preventDefault();
+            if (e.deltaY < 0) this.zoomIn();
+            else this.zoomOut();
+        },
+        startPan(e) {
+            if (e.button !== 0) return; // Only left click
+            this.isPanning = true;
+            this.lastMouseX = e.clientX;
+            this.lastMouseY = e.clientY;
+        },
+        doPan(e) {
+            if (!this.isPanning) return;
+            const dx = e.clientX - this.lastMouseX;
+            const dy = e.clientY - this.lastMouseY;
+            this.posX += dx;
+            this.posY += dy;
+            this.lastMouseX = e.clientX;
+            this.lastMouseY = e.clientY;
+        },
+        endPan() {
+            this.isPanning = false;
+        },
 
-        // CRUD
+        // Modal Methods
         openAddModal() {
             this.isEditing = false;
             this.currentMember = {
-                id: null, ho_ten: '', doi_thu: 1, cha_id: null, gioi_tinh: 'Nam', chi_nhanh_id: this.selectedChiNhanh,
+                id: null, ho_ten: '', doi_thu: 1, cha_id: null, gioi_tinh: 'Nam',
                 loai_quan_he: 'Chính', spouse_of_id: null, trang_thai: 'Còn sống', ngay_mat: null, ngay_sinh: null, ghi_chu: '', avatar: null
             };
             this.avatarFile = null;
@@ -462,7 +446,10 @@ export default {
         },
         onAvatarChange(e) {
             const file = e.target.files[0];
-            if (file) { this.avatarFile = file; this.avatarPreview = URL.createObjectURL(file); }
+            if (file) {
+                this.avatarFile = file;
+                this.avatarPreview = URL.createObjectURL(file);
+            }
         },
         saveMember() {
             const url = this.isEditing 
@@ -475,22 +462,32 @@ export default {
                     formData.append(key, this.currentMember[key]);
                 }
             }
-            if (this.avatarFile) formData.set('avatar', this.avatarFile);
+            if (this.avatarFile) {
+                formData.set('avatar', this.avatarFile);
+            }
             
-            axios.post(url, formData, { headers: { 'Content-Type': 'multipart/form-data' } })
+            axios.post(url, formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            })
             .then(res => {
                 if (res.data.status) {
                     toastr.success(res.data.message);
                     this.loadData();
                     this.modal.hide();
-                } else { toastr.error(res.data.message); }
+                } else {
+                    toastr.error(res.data.message);
+                }
             });
         },
         handleDelete() {
             if (confirm('Xóa thành viên này?')) {
                 axios.post('http://127.0.0.1:8000/api/thanh-vien/delete', { id: this.currentMember.id })
                     .then(res => {
-                        if (res.data.status) { toastr.success(res.data.message); this.loadData(); this.modal.hide(); }
+                        if (res.data.status) {
+                            toastr.success(res.data.message);
+                            this.loadData();
+                            this.modal.hide();
+                        }
                     });
             }
         }
