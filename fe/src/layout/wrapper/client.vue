@@ -60,6 +60,9 @@ html, body {
     -ms-overflow-style: none !important;  /* IE and Edge */
     scrollbar-width: none !important;  /* Firefox */
     overflow-x: hidden;
+    overflow-y: auto !important;
+    height: auto !important;
+    min-height: 100%;
 }
 
 /* Fix lỗi padding và margin từ template Rocker */
@@ -70,11 +73,13 @@ body {
 .client-layout-wrapper {
     display: flex;
     flex-direction: column;
-    min-height: 100vh;
+    min-height: 100%;
+    height: auto;
 }
 
 .main-content {
     flex: 1;
+    overflow: visible;
 }
 
 /* Đảm bảo trang chủ không bị che khuất bởi Header trong suốt */

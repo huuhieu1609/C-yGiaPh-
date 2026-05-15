@@ -69,7 +69,8 @@ export default {
                         toastr.success(res.data.message);
                         localStorage.setItem('access_token', res.data.access_token);
                         localStorage.setItem('user', JSON.stringify(res.data.user));
-                        this.$router.push('/');
+                        const redirect = this.$route.query.redirect || '/';
+                        this.$router.push(redirect);
                     }
                 })
                 .catch(err => {
