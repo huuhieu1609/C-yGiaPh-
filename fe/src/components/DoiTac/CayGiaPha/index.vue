@@ -1,43 +1,76 @@
 <template>
     <div class="row">
         <div class="col-12">
-            <div class="card shadow-sm border-0 radius-10">
+            <div class="card shadow-sm border-0 radius-10 overflow-hidden">
                 <div class="card-header bg-white py-3 border-0">
                     <div class="row align-items-center">
-                        <div class="col-md-6">
-                            <h5 class="mb-0 fw-bold text-dark"><i class="bx bx-git-branch text-primary"></i> Trực Quan Cây Gia Phả Chi Nhánh</h5>
+                        <div class="col-md-4">
+                            <h5 class="mb-0 fw-bold text-dark"><i class="bx bx-git-branch text-primary"></i> Trực Quan Cây Gia Phả</h5>
                         </div>
-                        <div class="col-md-6 text-md-end">
+                        <div class="col-md-8 text-md-end d-flex align-items-center justify-content-end gap-3">
+                            <!-- Search Bar -->
+                            <div class="position-relative d-none d-lg-block" style="width: 250px;">
+                                <input type="text" class="form-control ps-5 radius-30 border-2" v-model="searchQuery" placeholder="Tìm thành viên...">
+                                <span class="position-absolute top-50 translate-middle-y start-0 ms-3 text-secondary"><i class="bx bx-search"></i></span>
+                            </div>
+                            
+                            <!-- Zoom Controls -->
+                            <div class="btn-group shadow-sm radius-30 overflow-hidden border">
+                                <button class="btn btn-white px-3" @click="zoomOut" title="Thu nhỏ"><i class="bx bx-minus"></i></button>
+                                <button class="btn btn-white px-2 fw-bold" style="min-width: 60px;">{{ Math.round(zoom * 100) }}%</button>
+                                <button class="btn btn-white px-3" @click="zoomIn" title="Phóng to"><i class="bx bx-plus"></i></button>
+                                <button class="btn btn-white px-3" @click="resetView" title="Đặt lại"><i class="bx bx-refresh"></i></button>
+                            </div>
+
                             <button class="btn btn-primary radius-30 px-4 shadow-sm" @click="openAddModal">
                                 <i class="bx bx-plus"></i> Thêm Thành Viên
                             </button>
                         </div>
                     </div>
                 </div>
-                <div class="card-body">
-                    <!-- Family Tree Container -->
-                    <div class="tree-container overflow-auto p-5 bg-white rounded-4 border" style="min-height: 600px;">
-                        <div class="tree" v-if="treeData.length">
-                            <ul>
-                                <TreeItem 
-                                    v-for="member in treeData" 
-                                    :key="member.id" 
-                                    :member="member" 
-                                    :listDoiTocHo="listDoiTocHo"
-                                    @edit="onEdit"
-                                />
-                            </ul>
+                <div class="card-body p-0 position-relative">
+                    <!-- Pan & Zoom Tree Container -->
+                    <div class="tree-viewport" 
+                         ref="viewport"
+                         @mousedown="startPan"
+                         @mousemove="doPan"
+                         @mouseup="endPan"
+                         @mouseleave="endPan"
+                         :style="{ cursor: isPanning ? 'grabbing' : 'grab' }">
+                        
+                        <div class="tree-canvas" :style="canvasStyle">
+                            <div class="tree" v-if="treeData.length">
+                                <ul>
+                                    <TreeItem 
+                                        v-for="member in treeData" 
+                                        :key="member.id" 
+                                        :member="member" 
+                                        :listDoiTocHo="listDoiTocHo"
+                                        :searchQuery="searchQuery"
+                                        @edit="onEdit"
+                                    />
+                                </ul>
+                            </div>
+                            <div v-else class="text-center py-5 mt-5">
+                                <div class="empty-state-icon mb-3">
+                                    <i class="bx bx-git-repo-forked fs-1 text-muted opacity-25"></i>
+                                </div>
+                                <h5 class="text-muted">Chưa có dữ liệu thành viên</h5>
+                                <p class="text-muted small">Hãy bắt đầu bằng cách thêm thành viên đầu tiên (Thủy Tổ).</p>
+                                <button class="btn btn-outline-primary btn-sm radius-30 px-4 mt-2" @click="openAddModal">Thêm ngay</button>
+                            </div>
                         </div>
-                        <div v-else class="text-center py-5">
-                            <i class="bx bx-info-circle fs-1 text-muted"></i>
-                            <p class="mt-3 text-muted">Chưa có dữ liệu thành viên để hiển thị cây.</p>
-                        </div>
+                    </div>
+
+                    <!-- Mini Map or Navigation Hint -->
+                    <div class="view-controls position-absolute bottom-0 end-0 m-3 p-2 bg-white bg-opacity-75 rounded-3 shadow-sm border small text-muted d-none d-md-block">
+                        <i class="bx bx-mouse ms-1"></i> Cuộn để thu phóng • <i class="bx bx-move ms-1"></i> Kéo để di chuyển
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Modal Thêm/Sửa Thành Viên -->
+        <!-- Modal Thêm/Sửa Thành Viên (Giữ nguyên logic cũ) -->
         <div class="modal fade" id="memberModal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-lg modal-dialog-centered">
                 <div class="modal-content radius-15 shadow-lg border-0">
@@ -156,7 +189,7 @@ import toastr from 'toastr';
 
 const TreeItem = defineComponent({
     name: 'TreeItem',
-    props: ['member', 'listDoiTocHo'],
+    props: ['member', 'listDoiTocHo', 'searchQuery'],
     emits: ['edit'],
     render() {
         const getTenDoi = (doi_thu) => {
@@ -169,57 +202,91 @@ const TreeItem = defineComponent({
             const date = new Date(dateString);
             return date.toLocaleDateString('vi-VN');
         };
+        
+        const generationClass = `gen-${(this.member.doi_thu % 5) + 1}`;
+        const isHighlighted = this.searchQuery && this.member.ho_ten.toLowerCase().includes(this.searchQuery.toLowerCase());
+        
         const hasChildren = this.member.children && this.member.children.length > 0;
+
+        if (this.member.isDummy) {
+            const nodeGroup = h('div', { class: 'tree-node-group' }, [
+                h('div', { 
+                    class: 'tree-dummy-node',
+                    style: 'width: 2px; height: 100px; background-color: #ddd; margin: 0 auto;'
+                })
+            ]);
+            const children = hasChildren ? h('ul', 
+                this.member.children.map(child => h(TreeItem, { 
+                    member: child, 
+                    listDoiTocHo: this.listDoiTocHo, 
+                    searchQuery: this.searchQuery,
+                    onEdit: (m) => this.$emit('edit', m) 
+                }))
+            ) : null;
+            return h('li', [nodeGroup, children]);
+        }
         
         const nodeGroup = h('div', { class: 'tree-node-group' }, [
             h('div', { 
-                class: ['tree-node-card', { 'principal': !this.member.cha_id, 'is-dead': this.member.trang_thai === 'Đã mất' }],
+                class: ['tree-node-card', generationClass, { 
+                    'principal': !this.member.cha_id, 
+                    'is-dead': this.member.trang_thai === 'Đã mất',
+                    'highlighted': isHighlighted
+                }],
                 onClick: (e) => { e.stopPropagation(); this.$emit('edit', this.member); }
             }, [
-                h('div', { class: 'node-avatar-container mb-2 text-center' }, [
+                h('div', { class: 'node-avatar-container' }, [
                     h('img', { 
                         src: this.member.avatar ? this.member.avatar : ('https://ui-avatars.com/api/?name=' + this.member.ho_ten + '&background=d4af37&color=fff'), 
-                        class: 'rounded-circle border border-2 border-warning', 
-                        style: 'width: 50px; height: 50px; object-fit: cover;' 
+                        class: 'node-avatar shadow-sm'
                     })
                 ]),
-                h('div', { class: 'node-name' }, this.member.ho_ten),
-                this.member.ngay_sinh ? h('div', { class: 'node-birth small text-muted' }, formatDate(this.member.ngay_sinh)) : null,
-                h('div', { class: 'node-meta text-primary fw-bold mt-1' }, [
-                    h('span', `Đời ${this.member.doi_thu}${getTenDoi(this.member.doi_thu)}`),
-                    this.member.trang_thai === 'Đã mất' ? h('span', { class: 'status-dead ms-1 text-danger' }, ' (Đã mất)') : null
+                h('div', { class: 'node-content' }, [
+                    h('div', { class: 'node-name' }, this.member.ho_ten),
+                    this.member.ngay_sinh ? h('div', { class: 'node-date' }, formatDate(this.member.ngay_sinh)) : null,
+                    h('div', { class: 'node-tag' }, `Đời ${this.member.doi_thu}${getTenDoi(this.member.doi_thu)}`)
                 ]),
-                h('div', { class: 'node-edit-overlay' }, [
-                    h('i', { class: 'bx bx-edit-alt' }),
-                    h('span', ' Sửa')
+                h('div', { class: 'node-edit-btn' }, [
+                    h('i', { class: 'bx bx-pencil' })
                 ])
             ]),
-            this.member.spouses && this.member.spouses.length ? this.member.spouses.map(spouse => [
-                h('div', { class: 'tree-connector-h' }),
-                h('div', { 
-                    class: ['tree-node-card spouse', { 'is-dead': spouse.trang_thai === 'Đã mất' }],
-                    onClick: (e) => { e.stopPropagation(); this.$emit('edit', spouse); }
-                }, [
-                    h('div', { class: 'node-avatar-container mb-2 text-center' }, [
-                        h('img', { 
-                            src: spouse.avatar ? spouse.avatar : ('https://ui-avatars.com/api/?name=' + spouse.ho_ten + '&background=d4af37&color=fff'), 
-                            class: 'rounded-circle border border-2 border-warning', 
-                            style: 'width: 50px; height: 50px; object-fit: cover;' 
-                        })
-                    ]),
-                    h('div', { class: 'node-name' }, spouse.ho_ten),
-                    spouse.ngay_sinh ? h('div', { class: 'node-birth small text-muted' }, formatDate(spouse.ngay_sinh)) : null,
-                    h('div', { class: 'node-meta fw-bold mt-1' }, 'Vợ/Chồng'),
-                    h('div', { class: 'node-edit-overlay' }, [
-                        h('i', { class: 'bx bx-edit-alt' }),
-                        h('span', ' Sửa')
+            this.member.spouses && this.member.spouses.length ? this.member.spouses.map(spouse => {
+                const isSpouseHighlighted = this.searchQuery && spouse.ho_ten.toLowerCase().includes(this.searchQuery.toLowerCase());
+                return [
+                    h('div', { class: 'tree-connector-h' }),
+                    h('div', { 
+                        class: ['tree-node-card spouse', { 
+                            'is-dead': spouse.trang_thai === 'Đã mất',
+                            'highlighted': isSpouseHighlighted
+                        }],
+                        onClick: (e) => { e.stopPropagation(); this.$emit('edit', spouse); }
+                    }, [
+                        h('div', { class: 'node-avatar-container' }, [
+                            h('img', { 
+                                src: spouse.avatar ? spouse.avatar : ('https://ui-avatars.com/api/?name=' + spouse.ho_ten + '&background=d4af37&color=fff'), 
+                                class: 'node-avatar shadow-sm'
+                            })
+                        ]),
+                        h('div', { class: 'node-content' }, [
+                            h('div', { class: 'node-name' }, spouse.ho_ten),
+                            h('div', { class: 'node-tag spouse-tag' }, 'Vợ/Chồng')
+                        ]),
+                        h('div', { class: 'node-edit-btn' }, [
+                            h('i', { class: 'bx bx-pencil' })
+                        ])
                     ])
-                ])
-            ]) : null
+                ];
+            }) : null
         ]);
         const children = hasChildren ? h('ul', 
-            this.member.children.map(child => h(TreeItem, { member: child, listDoiTocHo: this.listDoiTocHo, onEdit: (m) => this.$emit('edit', m) }))
+            this.member.children.map(child => h(TreeItem, { 
+                member: child, 
+                listDoiTocHo: this.listDoiTocHo, 
+                searchQuery: this.searchQuery,
+                onEdit: (m) => this.$emit('edit', m) 
+            }))
         ) : null;
+        
         return h('li', [nodeGroup, children]);
     }
 });
@@ -237,7 +304,16 @@ export default {
             },
             avatarPreview: null,
             isEditing: false,
-            modal: null
+            modal: null,
+            searchQuery: '',
+            
+            // Zoom & Pan state
+            zoom: 1,
+            posX: 0,
+            posY: 0,
+            isPanning: false,
+            lastMouseX: 0,
+            lastMouseY: 0
         }
     },
     computed: {
@@ -247,16 +323,48 @@ export default {
             const roots = [];
             list.forEach(item => { map[item.id] = item; item.children = []; item.spouses = []; });
             
+            // Helper for creating dummy nodes for skipped generations
+            const getDummyNode = (parentId, doi_thu) => {
+                let dummyId = 'dummy_' + parentId + '_' + doi_thu;
+                if (!map[dummyId]) {
+                    map[dummyId] = {
+                        id: dummyId,
+                        isDummy: true,
+                        doi_thu: doi_thu,
+                        children: [],
+                        spouses: []
+                    };
+                    map[parentId].children.push(map[dummyId]);
+                }
+                return map[dummyId];
+            };
+
             list.forEach(item => {
                 if (item.loai_quan_he === 'Vợ/Chồng' && item.spouse_of_id && map[item.spouse_of_id]) {
                     map[item.spouse_of_id].spouses.push(item);
                 } else if (item.cha_id && map[item.cha_id]) {
-                    map[item.cha_id].children.push(item);
+                    let parent = map[item.cha_id];
+                    // Handle generation jumps
+                    if (item.doi_thu > parent.doi_thu + 1) {
+                        let currentParent = parent;
+                        for (let d = parent.doi_thu + 1; d < item.doi_thu; d++) {
+                            currentParent = getDummyNode(currentParent.id, d);
+                        }
+                        currentParent.children.push(item);
+                    } else {
+                        parent.children.push(item);
+                    }
                 } else if (item.loai_quan_he === 'Chính') {
                     roots.push(item);
                 }
             });
             return roots;
+        },
+        canvasStyle() {
+            return {
+                transform: `translate(${this.posX}px, ${this.posY}px) scale(${this.zoom})`,
+                transformOrigin: 'top center'
+            };
         }
     },
     mounted() {
@@ -265,6 +373,9 @@ export default {
         }
         this.loadDoiTocHo();
         this.loadData();
+        
+        // Add wheel listener for zoom
+        this.$refs.viewport.addEventListener('wheel', this.handleWheel, { passive: false });
     },
     methods: {
         loadDoiTocHo() {
@@ -283,6 +394,39 @@ export default {
                     }
                 });
         },
+        // View Control Methods
+        zoomIn() { if (this.zoom < 2) this.zoom += 0.1; },
+        zoomOut() { if (this.zoom > 0.3) this.zoom -= 0.1; },
+        resetView() {
+            this.zoom = 1;
+            this.posX = 0;
+            this.posY = 0;
+        },
+        handleWheel(e) {
+            e.preventDefault();
+            if (e.deltaY < 0) this.zoomIn();
+            else this.zoomOut();
+        },
+        startPan(e) {
+            if (e.button !== 0) return; // Only left click
+            this.isPanning = true;
+            this.lastMouseX = e.clientX;
+            this.lastMouseY = e.clientY;
+        },
+        doPan(e) {
+            if (!this.isPanning) return;
+            const dx = e.clientX - this.lastMouseX;
+            const dy = e.clientY - this.lastMouseY;
+            this.posX += dx;
+            this.posY += dy;
+            this.lastMouseX = e.clientX;
+            this.lastMouseY = e.clientY;
+        },
+        endPan() {
+            this.isPanning = false;
+        },
+
+        // Modal Methods
         openAddModal() {
             this.isEditing = false;
             this.currentMember = {
@@ -351,33 +495,174 @@ export default {
 }
 </script>
 
-<style scoped>
-.tree-container {
-    background: #f8f9fa;
-    background-image: linear-gradient(rgba(0,0,0,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.03) 1px, transparent 1px);
-    background-size: 20px 20px;
+<style>
+.tree-viewport {
+    height: 700px;
+    background: #fdfdfd;
+    background-image: radial-gradient(#e0e0e0 1px, transparent 1px);
+    background-size: 30px 30px;
+    position: relative;
+    overflow: hidden;
+    user-select: none;
 }
-.tree { display: flex; justify-content: center; }
-.tree ul { padding-top: 40px; position: relative; display: flex !important; justify-content: center; padding-left: 0; margin-bottom: 0; }
-.tree li { text-align: center; list-style-type: none; position: relative; padding: 40px 10px 0 10px; transition: all 0.5s; flex: 0 1 auto; }
-.tree li::before, .tree li::after { content: ''; position: absolute; top: 0; right: 50%; border-top: 2px solid #ccc; width: 50%; height: 40px; }
-.tree li::after { right: auto; left: 50%; border-left: 2px solid #ccc; }
+
+.tree-canvas {
+    padding: 100px;
+    transition: transform 0.1s ease-out;
+    display: inline-block;
+    min-width: 100%;
+}
+
+.tree, .tree ul, .tree li {
+    position: relative;
+    transition: all 0.3s;
+}
+
+.tree ul { 
+    padding-top: 50px; 
+    display: flex !important; 
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    justify-content: center; 
+    padding-left: 0; 
+    margin-bottom: 0; 
+}
+
+.tree li { 
+    text-align: center; 
+    list-style-type: none; 
+    padding: 50px 10px 0 10px; 
+    flex: 0 0 auto !important;
+}
+
+/* Connecting Lines */
+.tree li::before, .tree li::after { content: ''; position: absolute; top: 0; right: 50%; border-top: 2px solid #ddd; width: 50%; height: 50px; }
+.tree li::after { right: auto; left: 50%; border-left: 2px solid #ddd; }
 .tree li:only-child::after, .tree li:only-child::before { display: none; }
 .tree li:only-child { padding-top: 0; }
 .tree li:first-child::before, .tree li:last-child::after { border: 0 none; }
-.tree li:last-child::before { border-right: 2px solid #ccc; border-radius: 0 5px 0 0; }
-.tree li:first-child::after { border-radius: 5px 0 0 0; }
-.tree ul ul::before { content: ''; position: absolute; top: 0; left: 50%; border-left: 2px solid #ccc; width: 0; height: 40px; }
+.tree li:last-child::before { border-right: 2px solid #ddd; border-radius: 0 10px 0 0; }
+.tree li:first-child::after { border-radius: 10px 0 0 0; }
+.tree ul ul::before { content: ''; position: absolute; top: 0; left: 50%; border-left: 2px solid #ddd; width: 0; height: 50px; }
+
+/* Node Styling */
 .tree-node-group { display: inline-flex; align-items: center; justify-content: center; position: relative; z-index: 10; }
-.tree-connector-h { width: 25px; height: 2px; background: #d4af37; }
-.tree-node-card { background: #fff; border: 1px solid #ddd; padding: 12px 15px; border-radius: 10px; min-width: 140px; box-shadow: 0 4px 8px rgba(0,0,0,0.05); cursor: pointer; position: relative; overflow: hidden; transition: 0.3s; }
-.tree-node-card.principal { border: 2px solid #d4af37; background: #fffdf5; }
-.tree-node-card.is-dead { border-color: #636e72; background-color: #f1f2f6; opacity: 0.85; }
-.status-dead { color: #d63031; font-weight: bold; }
-.tree-node-card.spouse { border-style: dashed; background: #fafafa; }
-.node-name { font-weight: 700; font-size: 14px; color: #333; }
-.node-meta { font-size: 11px; color: #888; text-transform: uppercase; }
-.node-edit-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(212, 175, 55, 0.9); color: #fff; display: flex; align-items: center; justify-content: center; opacity: 0; transition: 0.3s; font-weight: bold; }
-.tree-node-card:hover .node-edit-overlay { opacity: 1; }
-.tree-node-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+.tree-connector-h { width: 30px; height: 2px; background: #ddd; }
+
+.tree-node-card {
+    background: #fff;
+    border: 2px solid #ddd;
+    padding: 10px;
+    border-radius: 15px;
+    min-width: 200px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    cursor: pointer;
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(5px);
+}
+
+.tree-node-card:hover {
+    transform: translateY(-8px) scale(1.05);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+    z-index: 100;
+}
+
+.tree-node-card.highlighted {
+    border-color: #ffc107 !important;
+    background: #fffbeb !important;
+    animation: pulse-border 1.5s infinite;
+}
+
+@keyframes pulse-border {
+    0% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.4); }
+    70% { box-shadow: 0 0 0 15px rgba(255, 193, 7, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0); }
+}
+
+/* Generation Colors */
+.gen-1 { border-color: #4285f4; border-left-width: 6px; }
+.gen-2 { border-color: #34a853; border-left-width: 6px; }
+.gen-3 { border-color: #fbbc05; border-left-width: 6px; }
+.gen-4 { border-color: #ea4335; border-left-width: 6px; }
+.gen-5 { border-color: #a142f4; border-left-width: 6px; }
+
+.tree-node-card.is-dead {
+    filter: grayscale(0.8);
+    opacity: 0.8;
+    background: #f8f9fa;
+}
+
+.node-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #fff;
+}
+
+.node-content {
+    text-align: left;
+    flex-grow: 1;
+}
+
+.node-name {
+    font-weight: 700;
+    font-size: 14px;
+    color: #2c3e50;
+    margin-bottom: 2px;
+}
+
+.node-date {
+    font-size: 11px;
+    color: #7f8c8d;
+}
+
+.node-tag {
+    font-size: 10px;
+    font-weight: 600;
+    color: #2980b9;
+    text-transform: uppercase;
+    margin-top: 4px;
+}
+
+.spouse-tag {
+    color: #e67e22;
+}
+
+.tree-node-card.spouse {
+    border-style: dashed;
+    border-left-width: 2px;
+    min-width: 180px;
+}
+
+.node-edit-btn {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    width: 28px;
+    height: 28px;
+    background: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    opacity: 0;
+    transition: 0.2s;
+    color: #666;
+}
+
+.tree-node-card:hover .node-edit-btn {
+    opacity: 1;
+}
+
+.node-edit-btn:hover {
+    background: #4285f4;
+    color: #fff;
+}
 </style>
