@@ -116,7 +116,7 @@
 
     <!-- Footer Actions -->
     <div class="sidebar-footer p-3 border-top border-secondary border-opacity-25 mt-auto">
-      <button class="btn btn-danger w-100 d-flex align-items-center justify-content-center gap-2 py-2 rounded-3 shadow-sm" @click="logout" title="Đăng Xuất">
+      <button class="btn btn-logout w-100 d-flex align-items-center justify-content-center gap-2 py-2 rounded-3 shadow-sm" @click="logout" title="Đăng Xuất">
         <i class="bx bx-log-out-circle fs-5"></i> <span class="hide-on-collapse text-nowrap">Đăng Xuất</span>
       </button>
     </div>
@@ -191,7 +191,7 @@ export default {
   padding: 10px !important;
 }
 
-.admin-sidebar.collapsed .btn-danger {
+.admin-sidebar.collapsed .btn-logout {
   padding: 10px !important;
 }
 
@@ -291,5 +291,26 @@ export default {
 }
 .sidebar-body::-webkit-scrollbar-thumb:hover {
   background: rgba(255,255,255,0.25);
+}
+
+/* Logout Button - neutral by default, red on hover */
+.btn-logout {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.7);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-logout:hover {
+  background: linear-gradient(135deg, #e53935, #c62828);
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 4px 15px rgba(229, 57, 53, 0.35);
+  transform: translateY(-1px);
+}
+
+.btn-logout:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(229, 57, 53, 0.3);
 }
 </style>
