@@ -38,6 +38,9 @@
                   <li class="nav-item" role="presentation">
                     <button class="nav-link" id="password-tab" data-bs-toggle="tab" data-bs-target="#password" type="button" role="tab" style="color: #6c757d; font-weight: 600;">Đổi Mật Khẩu</button>
                   </li>
+                  <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="history-tab" data-bs-toggle="tab" data-bs-target="#history" type="button" role="tab" style="color: #6c757d; font-weight: 600;">Lịch Sử Giao Dịch</button>
+                  </li>
                 </ul>
 
                 <div class="tab-content" id="profileTabsContent">
@@ -93,6 +96,31 @@
                       </div>
                     </form>
                   </div>
+
+                  <!-- Tab Lịch sử giao dịch -->
+                  <div class="tab-pane fade" id="history" role="tabpanel">
+                    <div v-if="isLoadingHistory" class="text-center py-4">
+                      <i class="bx bx-loader-alt bx-spin fs-3 text-warning"></i>
+                      <p class="mt-2 text-muted small">Đang tải lịch sử...</p>
+                    </div>
+                    <div v-else-if="transactions.length === 0" class="text-center py-4">
+                      <i class="bx bx-receipt fs-1 text-muted"></i>
+                      <p class="mt-2 text-muted">Chưa có giao dịch nào.</p>
+                      <router-link to="/thanh-toan" class="btn btn-sm" style="background:#d4af37;color:#000;font-weight:600;">Đăng ký gói ngay</router-link>
+                    </div>
+                    <div v-else>
+                      <div class="transaction-item" v-for="(t, i) in transactions" :key="i">
+                        <div class="tx-icon" :class="t.trang_thai === 'Hoạt động' ? 'tx-success' : 'tx-pending'">
+                          <i class="bx" :class="t.trang_thai === 'Hoạt động' ? 'bx-check' : 'bx-time-five'"></i>
+                        </div>
+                        <div class="tx-info">
+                          <strong>{{ t.noi_dung || 'Đóng góp' }}</strong>
+                          <span class="small text-muted d-block">{{ formatTxDate(t.created_at) }}</span>
+                        </div>
+                        <span class="badge" :class="t.trang_thai === 'Hoạt động' ? 'bg-success' : 'bg-warning text-dark'">{{ t.trang_thai || 'Chờ duyệt' }}</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
               </div>
@@ -126,11 +154,14 @@ export default {
         new_password_confirmation: ''
       },
       isUpdatingProfile: false,
-      isChangingPassword: false
+      isChangingPassword: false,
+      transactions: [],
+      isLoadingHistory: false
     }
   },
   mounted() {
     this.loadUserProfile();
+    this.loadTransactions();
   },
   methods: {
     getHeaders() {
@@ -144,9 +175,10 @@ export default {
     loadUserProfile() {
       axios.get('http://127.0.0.1:8000/api/me', this.getHeaders())
         .then(res => {
-          this.profile = res.data;
+          this.profile = res.data.user;
           // Update local storage so that Topclient avatar also updates if refreshed
-          localStorage.setItem('user', JSON.stringify(res.data));
+          localStorage.setItem('user', JSON.stringify(res.data.user));
+          window.dispatchEvent(new Event('profile-updated'));
         })
         .catch(err => {
           if(err.response && err.response.status === 401) {
@@ -228,6 +260,17 @@ export default {
       localStorage.removeItem('access_token');
       localStorage.removeItem('user');
       this.$router.push('/login');
+    },
+    loadTransactions() {
+      this.isLoadingHistory = true;
+      axios.get('http://127.0.0.1:8000/api/admin/dong-gop/get-data', this.getHeaders())
+        .then(res => { if (res.data.status) this.transactions = res.data.data; })
+        .catch(() => {})
+        .finally(() => { this.isLoadingHistory = false; });
+    },
+    formatTxDate(d) {
+      if (!d) return '';
+      return new Date(d).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
     }
   }
 }
@@ -252,5 +295,34 @@ export default {
 }
 .nav-tabs .nav-link:hover {
   border-bottom: 2px solid #e5c45e;
+}
+
+/* Transaction History */
+.transaction-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+.transaction-item:last-child { border-bottom: none; }
+.tx-icon {
+  width: 38px; height: 38px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+.tx-success { background: #e8f5e9; color: #2e7d32; }
+.tx-pending { background: #fff8e1; color: #f9a825; }
+.tx-info { flex: 1; min-width: 0; }
+.tx-info strong {
+  display: block;
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 </style>

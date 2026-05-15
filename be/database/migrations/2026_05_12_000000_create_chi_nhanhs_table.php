@@ -10,8 +10,8 @@ return new class extends Migration
     {
         Schema::create('chi_nhanhs', function (Blueprint $table) {
             $table->id();
-            $table->string("ten_chi");
-            $table->text("mo_ta")->nullable();
+            $table->string('ten_chi');
+            $table->text('mo_ta')->nullable();
             $table->timestamps();
         });
     }

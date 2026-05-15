@@ -13,6 +13,8 @@ class ChucNang extends Model
 
     protected $fillable = [
         'ten_chuc_nang',
+        'ten_slug',
+        'url',
         'mo_ta',
         'trang_thai',
     ];
