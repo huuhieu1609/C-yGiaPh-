@@ -50,6 +50,12 @@ const routes = [
         meta: { layout: 'client' }
     },
     {
+        path: '/thanh-toan',
+        name: 'thanh-toan',
+        component: () => import('../components/ClientThanhToan/index.vue'),
+        meta: { layout: 'client' }
+    },
+    {
         path: '/admin/login',
         name: 'admin-login',
         component: () => import('../components/Admin/Auth/Login.vue'),
