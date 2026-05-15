@@ -14,6 +14,8 @@ return new class extends Migration
         Schema::create('chuc_nangs', function (Blueprint $table) {
             $table->id();
             $table->string('ten_chuc_nang');
+            $table->string('ten_slug')->unique();
+            $table->string('url')->nullable();
             $table->text('mo_ta')->nullable();
             $table->string('trang_thai')->default('Hoạt động');
             $table->timestamps();
