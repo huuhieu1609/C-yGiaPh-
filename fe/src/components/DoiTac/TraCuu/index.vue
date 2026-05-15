@@ -8,26 +8,43 @@
 
         <div class="container py-5 position-relative">
             <!-- Header: Heritage Style -->
-            <div class="text-center mb-5 animate__animated animate__fadeIn">
+            <div class="text-center mb-4 animate__animated animate__fadeIn">
                 <div class="heritage-badge mb-3">HỆ THỐNG GIA PHẢ ĐỐI TÁC</div>
                 <h1 class="heritage-title">Tra Cứu Bậc Vai Vế</h1>
-                <p class="heritage-subtitle">Khám phá mối liên hệ huyết thống giữa các thành viên</p>
+                <p class="heritage-subtitle">Khám phá mối liên hệ huyết thống trong gia tộc</p>
                 <div class="heritage-divider">
                     <span class="diamond"></span>
                 </div>
             </div>
 
-            <div class="row g-4 justify-content-center align-items-stretch">
+            <!-- Global Branch Selector -->
+            <div class="row mb-5 justify-content-center animate__animated animate__fadeInDown">
+                <div class="col-lg-6">
+                    <div class="heritage-card p-3 text-center border-2 border-warning">
+                        <label class="fw-bold text-dark mb-2 text-uppercase" style="letter-spacing: 1px;">Chọn Dòng Họ Để Tra Cứu:</label>
+                        <select class="form-select form-select-lg radius-15 border-2 shadow-none" v-model="selectedChiNhanhId" @change="resetSelection">
+                            <option :value="null">-- Vui lòng chọn dòng họ --</option>
+                            <option v-for="cn in listChiNhanh" :key="cn.id" :value="cn.id">{{ cn.ten_chi }}</option>
+                        </select>
+                        <div v-if="!selectedChiNhanhId" class="mt-2 text-danger small italic">
+                            * Bạn cần chọn dòng họ trước khi tra cứu thành viên
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-4 justify-content-center align-items-stretch" v-if="selectedChiNhanhId">
                 <!-- Person A: The Seeker -->
                 <div class="col-lg-5 animate__animated animate__fadeInLeft">
                     <div class="heritage-card h-100 p-4">
                         <div class="card-label">THÀNH VIÊN THỨ NHẤT</div>
+                        
                         <div class="selection-box mt-4">
                             <div class="custom-select-wrapper shadow-sm">
                                 <i class="bx bx-user-pin select-icon"></i>
                                 <select class="custom-select" v-model="idA">
-                                    <option :value="null">-- Chọn người thứ nhất --</option>
-                                    <option v-for="m in allMembers" :key="m.id" :value="m.id">
+                                    <option :value="null">-- Chọn thành viên --</option>
+                                    <option v-for="m in filteredMembers" :key="m.id" :value="m.id">
                                         {{ m.ho_ten }} (Đời {{ m.doi_thu }})
                                     </option>
                                 </select>
@@ -49,7 +66,7 @@
                         </div>
                         <div v-else class="empty-state text-center py-5 opacity-50">
                             <i class="bx bxs-user-circle display-1 mb-3"></i>
-                            <p>Chọn thành viên để bắt đầu</p>
+                            <p>Chọn thành viên đầu tiên</p>
                         </div>
                     </div>
                 </div>
@@ -70,12 +87,13 @@
                 <div class="col-lg-5 animate__animated animate__fadeInRight">
                     <div class="heritage-card h-100 p-4">
                         <div class="card-label">THÀNH VIÊN THỨ HAI</div>
+
                         <div class="selection-box mt-4">
                             <div class="custom-select-wrapper shadow-sm">
                                 <i class="bx bx-user-pin select-icon icon-secondary"></i>
                                 <select class="custom-select" v-model="idB">
-                                    <option :value="null">-- Chọn người thứ hai --</option>
-                                    <option v-for="m in allMembers" :key="m.id" :value="m.id">
+                                    <option :value="null">-- Chọn thành viên --</option>
+                                    <option v-for="m in filteredMembers" :key="m.id" :value="m.id">
                                         {{ m.ho_ten }} (Đời {{ m.doi_thu }})
                                     </option>
                                 </select>
@@ -97,7 +115,7 @@
                         </div>
                         <div v-else class="empty-state text-center py-5 opacity-50">
                             <i class="bx bxs-user-circle display-1 mb-3"></i>
-                            <p>Chọn thành viên để đối chiếu</p>
+                            <p>Chọn thành viên thứ hai</p>
                         </div>
                     </div>
                 </div>
@@ -121,7 +139,7 @@
                                     <div class="desc-content">
                                         <div class="quote-icon mb-3"><i class="bx bxs-quote-alt-left"></i></div>
                                         <p class="fs-4 text-dark mb-4 lh-base">
-                                            Theo tôn ti trật tự trong dòng tộc, <strong class="text-primary">{{ personA.ho_ten }}</strong> sẽ gọi <strong class="text-gold">{{ personB.ho_ten }}</strong> là:
+                                            Trong cùng gia tộc, <strong class="text-primary">{{ personA.ho_ten }}</strong> sẽ gọi <strong class="text-gold">{{ personB.ho_ten }}</strong> là:
                                         </p>
                                         <div class="relation-badge-large mb-4">
                                             {{ result.term }}
@@ -149,17 +167,24 @@ export default {
     data() {
         return {
             allMembers: [],
+            listChiNhanh: [],
+            selectedChiNhanhId: null,
             idA: null,
             idB: null,
             result: null
         }
     },
     computed: {
+        filteredMembers() {
+            if (!this.selectedChiNhanhId) return [];
+            return this.allMembers.filter(m => m.chi_nhanh_id === this.selectedChiNhanhId);
+        },
         personA() { return this.allMembers.find(m => m.id === this.idA); },
         personB() { return this.allMembers.find(m => m.id === this.idB); }
     },
     mounted() {
         this.loadData();
+        this.loadChiNhanh();
     },
     methods: {
         loadData() {
@@ -169,6 +194,19 @@ export default {
                         this.allMembers = res.data.data;
                     }
                 });
+        },
+        loadChiNhanh() {
+            axios.get('http://127.0.0.1:8000/api/chi-nhanh/get-data')
+                .then(res => {
+                    if (res.data.status) {
+                        this.listChiNhanh = res.data.data;
+                    }
+                });
+        },
+        resetSelection() {
+            this.idA = null;
+            this.idB = null;
+            this.result = null;
         },
         calculateRelationship() {
             if (this.idA === this.idB) {

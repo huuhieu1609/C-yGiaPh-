@@ -17,17 +17,34 @@
                 </div>
             </div>
 
-            <div class="row g-4 justify-content-center align-items-stretch">
+            <!-- Global Branch Selector -->
+            <div class="row mb-5 justify-content-center animate__animated animate__fadeInDown">
+                <div class="col-lg-6">
+                    <div class="heritage-card p-4 text-center border-2 border-warning shadow">
+                        <label class="fw-bold text-dark mb-2 text-uppercase" style="letter-spacing: 1.5px;">Chọn Dòng Họ Để Phân Tích:</label>
+                        <select class="form-select form-select-lg radius-15 border-2 shadow-none" v-model="selectedChiNhanhId" @change="resetSelection">
+                            <option :value="null">-- Vui lòng chọn dòng họ --</option>
+                            <option v-for="cn in listChiNhanh" :key="cn.id" :value="cn.id">{{ cn.ten_chi }}</option>
+                        </select>
+                        <div v-if="!selectedChiNhanhId" class="mt-2 text-danger small italic">
+                            * Vui lòng chọn dòng họ để giới hạn phạm vi tra cứu trong nội tộc
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-4 justify-content-center align-items-stretch" v-if="selectedChiNhanhId">
                 <!-- Person A: The Seeker -->
                 <div class="col-lg-5 animate__animated animate__fadeInLeft">
                     <div class="heritage-card h-100 p-4">
                         <div class="card-label">THÀNH VIÊN THỨ NHẤT</div>
+                        
                         <div class="selection-box mt-4">
                             <div class="custom-select-wrapper shadow-sm">
                                 <i class="bx bx-user-pin select-icon"></i>
                                 <select class="custom-select" v-model="idA">
-                                    <option :value="null">-- Chọn người thứ nhất --</option>
-                                    <option v-for="m in allMembers" :key="m.id" :value="m.id">
+                                    <option :value="null">-- Chọn thành viên --</option>
+                                    <option v-for="m in filteredMembers" :key="m.id" :value="m.id">
                                         {{ m.ho_ten }} (Đời {{ m.doi_thu }})
                                     </option>
                                 </select>
@@ -44,7 +61,7 @@
                             <h3 class="profile-name">{{ personA.ho_ten }}</h3>
                             <div class="profile-stats d-flex justify-content-center gap-2 mt-2">
                                 <span class="stat-tag">Đời {{ personA.doi_thu }}</span>
-                                <span class="stat-tag">{{ getChiNhanh(personA.chi_nhanh_id) }}</span>
+                                <span class="stat-tag" v-if="personA.trang_thai === 'Đã mất'">Đã mất</span>
                             </div>
                         </div>
                         <div v-else class="empty-state text-center py-5 opacity-50">
@@ -70,12 +87,13 @@
                 <div class="col-lg-5 animate__animated animate__fadeInRight">
                     <div class="heritage-card h-100 p-4">
                         <div class="card-label">THÀNH VIÊN THỨ HAI</div>
+
                         <div class="selection-box mt-4">
                             <div class="custom-select-wrapper shadow-sm">
                                 <i class="bx bx-user-pin select-icon icon-secondary"></i>
                                 <select class="custom-select" v-model="idB">
-                                    <option :value="null">-- Chọn người thứ hai --</option>
-                                    <option v-for="m in allMembers" :key="m.id" :value="m.id">
+                                    <option :value="null">-- Chọn thành viên --</option>
+                                    <option v-for="m in filteredMembers" :key="m.id" :value="m.id">
                                         {{ m.ho_ten }} (Đời {{ m.doi_thu }})
                                     </option>
                                 </select>
@@ -92,7 +110,7 @@
                             <h3 class="profile-name">{{ personB.ho_ten }}</h3>
                             <div class="profile-stats d-flex justify-content-center gap-2 mt-2">
                                 <span class="stat-tag">Đời {{ personB.doi_thu }}</span>
-                                <span class="stat-tag">{{ getChiNhanh(personB.chi_nhanh_id) }}</span>
+                                <span class="stat-tag" v-if="personB.trang_thai === 'Đã mất'">Đã mất</span>
                             </div>
                         </div>
                         <div v-else class="empty-state text-center py-5 opacity-50">
@@ -133,9 +151,6 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="result-footer p-3 text-center bg-light small text-muted text-uppercase tracking-widest">
-                            Dữ liệu được trích xuất từ hệ thống quản lý gia phả điện tử
-                        </div>
                     </div>
                 </div>
             </div>
@@ -148,17 +163,22 @@ import axios from 'axios';
 import toastr from 'toastr';
 
 export default {
-    name: 'RelationshipPro',
+    name: 'AdminTraCuu',
     data() {
         return {
             allMembers: [],
             listChiNhanh: [],
+            selectedChiNhanhId: null,
             idA: null,
             idB: null,
             result: null
         }
     },
     computed: {
+        filteredMembers() {
+            if (!this.selectedChiNhanhId) return [];
+            return this.allMembers.filter(m => m.chi_nhanh_id === this.selectedChiNhanhId);
+        },
         personA() { return this.allMembers.find(m => m.id === this.idA); },
         personB() { return this.allMembers.find(m => m.id === this.idB); }
     },
@@ -182,6 +202,11 @@ export default {
                         this.listChiNhanh = res.data.data;
                     }
                 });
+        },
+        resetSelection() {
+            this.idA = null;
+            this.idB = null;
+            this.result = null;
         },
         getChiNhanh(id) {
             const cn = this.listChiNhanh.find(c => c.id === id);
@@ -228,14 +253,14 @@ export default {
                 term = b.gioi_tinh === 'Nam' ? "Ông" : "Bà";
                 description = b.ho_ten + " là bậc tiền bối đời thứ hai (ông bà).";
             } else if (diff === -2) {
-                term = "Cháu Nội";
-                description = b.ho_ten + " là hậu duệ đời thứ hai (cháu nội).";
+                term = "Cháu Nội/Ngoại";
+                description = b.ho_ten + " là hậu duệ đời thứ hai (cháu).";
             } else if (diff >= 3) {
                 term = "Cụ / Cố";
                 description = b.ho_ten + " là bậc đại tiền bối khởi nguồn lâu đời.";
             } else if (diff <= -3) {
                 term = "Chắt / Chít";
-                description = b.ho_ten + " là hậu duệ đời thứ 3, 4 về sau.";
+                description = b.ho_ten + " là hậu duệ các đời tiếp theo.";
             }
 
             this.result = { term, description };
@@ -245,7 +270,7 @@ export default {
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Playfair+Display:wght@700;900&family=Quicksand:wght@400;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Quicksand:wght@400;600;700&display=swap');
 
 .relationship-discovery {
     font-family: 'Quicksand', sans-serif;
@@ -255,25 +280,15 @@ export default {
     position: relative;
 }
 
-/* Background Circles */
 .bg-circles .circle {
     position: absolute;
     border-radius: 50%;
     filter: blur(80px);
     z-index: 0;
 }
-.circle-1 {
-    width: 400px; height: 400px;
-    background: rgba(212, 175, 55, 0.1);
-    top: -100px; left: -100px;
-}
-.circle-2 {
-    width: 600px; height: 600px;
-    background: rgba(15, 23, 42, 0.05);
-    bottom: -200px; right: -200px;
-}
+.circle-1 { width: 400px; height: 400px; background: rgba(212, 175, 55, 0.1); top: -100px; left: -100px; }
+.circle-2 { width: 600px; height: 600px; background: rgba(15, 23, 42, 0.05); bottom: -200px; right: -200px; }
 
-/* Header Styles */
 .heritage-badge {
     display: inline-block;
     padding: 5px 20px;
@@ -291,42 +306,17 @@ export default {
     font-weight: 900;
     margin-top: 15px;
 }
-.heritage-subtitle {
-    font-size: 1.2rem;
-    color: #64748b;
-    font-style: italic;
-}
-.heritage-divider {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 20px 0;
-}
-.heritage-divider::before, .heritage-divider::after {
-    content: "";
-    height: 1px;
-    width: 100px;
-    background: #d4af37;
-}
-.diamond {
-    width: 10px; height: 10px;
-    background: #d4af37;
-    transform: rotate(45deg);
-    margin: 0 15px;
-}
+.heritage-subtitle { font-size: 1.2rem; color: #64748b; font-style: italic; }
+.heritage-divider { display: flex; align-items: center; justify-content: center; margin: 20px 0; }
+.heritage-divider::before, .heritage-divider::after { content: ""; height: 1px; width: 100px; background: #d4af37; }
+.diamond { width: 10px; height: 10px; background: #d4af37; transform: rotate(45deg); margin: 0 15px; }
 
-/* Card Styles */
 .heritage-card {
     background: white;
     border-radius: 30px;
     border: 1px solid #e2e8f0;
     box-shadow: 0 15px 35px rgba(0,0,0,0.05);
     position: relative;
-    transition: all 0.3s ease;
-}
-.heritage-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 20px 45px rgba(0,0,0,0.1);
 }
 .card-label {
     position: absolute;
@@ -338,174 +328,49 @@ export default {
     font-size: 11px;
     font-weight: 800;
     border-radius: 4px;
-    letter-spacing: 1px;
 }
 
-/* Custom Select */
-.custom-select-wrapper {
-    position: relative;
-    background: #f8fafc;
-    border-radius: 15px;
-    padding: 5px;
-}
-.select-icon {
-    position: absolute;
-    left: 15px;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 24px;
-    color: #0f172a;
-}
+.custom-select-wrapper { position: relative; background: #f8fafc; border-radius: 15px; }
+.select-icon { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); font-size: 24px; color: #0f172a; }
 .icon-secondary { color: #d4af37; }
-.custom-select {
-    width: 100%;
-    padding: 15px 15px 15px 50px;
-    border: none;
-    background: transparent;
-    font-weight: 700;
-    color: #0f172a;
-    outline: none;
-}
+.custom-select { width: 100%; padding: 15px 15px 15px 50px; border: none; background: transparent; font-weight: 700; color: #0f172a; outline: none; }
 
-/* Member Profile */
-.member-profile {
-    background: #fdfdfd;
-    border: 1px dashed #e2e8f0;
-}
-.profile-avatar-container {
-    position: relative;
-    display: inline-block;
-}
-.profile-avatar {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 5px solid white;
-    box-shadow: 0 8px 15px rgba(0,0,0,0.1);
-}
-.border-gold { border-color: #fdf6e3; }
+.profile-avatar { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 5px solid white; box-shadow: 0 8px 15px rgba(0,0,0,0.1); }
+.profile-avatar-container { position: relative; display: inline-block; }
 .profile-gender {
     position: absolute;
     bottom: 5px; right: 5px;
     width: 35px; height: 35px;
     border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 18px;
-    border: 3px solid white;
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-size: 18px; border: 3px solid white;
 }
 .male { background: #008bf8; }
 .female { background: #ff4d6d; }
-.profile-name {
-    font-family: 'Playfair Display', serif;
-    font-weight: 900;
-    color: #0f172a;
-    margin-top: 10px;
-}
-.stat-tag {
-    background: #f1f5f9;
-    color: #475569;
-    padding: 3px 12px;
-    border-radius: 50px;
-    font-size: 12px;
-    font-weight: 700;
-}
+.profile-name { font-family: 'Playfair Display', serif; font-weight: 900; color: #0f172a; }
+.stat-tag { background: #f1f5f9; color: #475569; padding: 3px 12px; border-radius: 50px; font-size: 12px; font-weight: 700; }
 
-/* Action Hub */
-.action-hub {
-    height: 100%;
-    display: flex;
-    flex-column: column;
-    align-items: center;
-    justify-content: center;
-}
-.hub-line {
-    width: 2px;
-    flex-grow: 1;
-    background: linear-gradient(to bottom, transparent, #d4af37, transparent);
-}
+.action-hub { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.hub-line { width: 2px; flex-grow: 1; background: linear-gradient(to bottom, transparent, #d4af37, transparent); }
 .hub-btn {
-    width: 100px;
-    height: 100px;
-    border-radius: 50%;
-    background: #0f172a;
-    color: white;
-    border: 5px solid #d4af37;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    font-weight: 900;
-    font-size: 11px;
-    transition: all 0.3s ease;
-    margin: 20px 0;
+    width: 100px; height: 100px; border-radius: 50%;
+    background: #0f172a; color: white; border: 4px solid #d4af37;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    font-weight: 900; font-size: 11px; transition: 0.3s; margin: 20px 0;
 }
-.hub-btn:hover:not(:disabled) {
-    transform: rotate(15deg) scale(1.1);
-    background: #1e293b;
-}
+.hub-btn:hover:not(:disabled) { transform: scale(1.1); background: #1e293b; }
 .hub-btn i { font-size: 30px; color: #d4af37; margin-bottom: 5px; }
-.hub-btn:disabled { opacity: 0.5; filter: grayscale(1); }
 
-/* Result Card - Masterpiece */
-.result-master-card {
-    background: white;
-    border-radius: 40px;
-    border: 1px solid #eee;
-}
-.result-header {
-    background: #0f172a;
-    color: #d4af37;
-}
-.result-badge {
-    font-weight: 800;
-    letter-spacing: 5px;
-    font-size: 13px;
-}
-.result-term-box {
-    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-    color: white;
-    position: relative;
-    min-height: 300px;
-}
-.term-label { font-weight: 700; opacity: 0.5; letter-spacing: 2px; font-size: 14px; }
-.term-value {
-    font-family: 'Playfair Display', serif;
-    font-size: 5rem;
-    font-weight: 900;
-    color: #d4af37;
-    text-align: center;
-    line-height: 1;
-    z-index: 1;
-}
-.term-glow {
-    position: absolute;
-    width: 150px; height: 150px;
-    background: #d4af37;
-    filter: blur(100px);
-    opacity: 0.2;
-}
+.result-master-card { background: white; border-radius: 40px; border: 1px solid #eee; }
+.result-header { background: #0f172a; color: #d4af37; }
+.result-badge { font-weight: 800; letter-spacing: 5px; font-size: 13px; }
+.result-term-box { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: white; position: relative; min-height: 300px; }
+.term-label { font-weight: 700; opacity: 0.5; font-size: 14px; }
+.term-value { font-family: 'Playfair Display', serif; font-size: 5rem; font-weight: 900; color: #d4af37; text-align: center; }
 .quote-icon { font-size: 40px; color: #d4af37; opacity: 0.3; }
 .relation-badge-large {
-    display: inline-block;
-    padding: 10px 40px;
-    background: rgba(212, 175, 55, 0.1);
-    color: #0f172a;
-    font-weight: 900;
-    font-size: 24px;
-    border-radius: 15px;
-    border: 2px solid #d4af37;
-}
-.text-gold { color: #d4af37; }
-
-.tracking-widest { letter-spacing: 4px; }
-
-@media (max-width: 991px) {
-    .hub-line { display: none; }
-    .hub-btn { width: 80px; height: 80px; margin: 0; }
-    .heritage-title { font-size: 2.5rem; }
+    display: inline-block; padding: 10px 40px;
+    background: rgba(212, 175, 55, 0.1); color: #0f172a;
+    font-weight: 900; font-size: 24px; border-radius: 15px; border: 2px solid #d4af37;
 }
 </style>
