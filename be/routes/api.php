@@ -1,13 +1,9 @@
 <?php
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\ChucVuController;
-use App\Http\Controllers\Api\ChucNangController;
 use App\Http\Controllers\Api\AuthController;
-use App\Http\Controllers\Api\ThanhVienController;
 use App\Http\Controllers\Api\ChiNhanhController;
-use App\Http\Controllers\Api\VoChongController;
+use App\Http\Controllers\Api\ChucNangController;
+use App\Http\Controllers\Api\ChucVuController;
 use App\Http\Controllers\Api\ConNuoiController;
 use App\Http\Controllers\Api\DoiTocHoController;
 use App\Http\Controllers\Api\DongGopController;
@@ -16,11 +12,15 @@ use App\Http\Controllers\Api\MoPhanController;
 use App\Http\Controllers\Api\NguoiDungController;
 use App\Http\Controllers\Api\NhaThoHoController;
 use App\Http\Controllers\Api\NhatKyHoatDongController;
+use App\Http\Controllers\Api\PhanQuyenController;
 use App\Http\Controllers\Api\SuKienController;
 use App\Http\Controllers\Api\TaiLieuController;
 use App\Http\Controllers\Api\ThamGiaSuKienController;
+use App\Http\Controllers\Api\ThanhVienController;
 use App\Http\Controllers\Api\ThongBaoController;
-use App\Http\Controllers\Api\PhanQuyenController;
+use App\Http\Controllers\Api\VoChongController;
+use App\Http\Controllers\ThanhToanControlles;
+use Illuminate\Support\Facades\Route;
 
 // Auth Routes
 Route::post('/register', [AuthController::class, 'register']);
@@ -172,6 +172,11 @@ Route::prefix('/thong-bao')->group(function () {
     Route::post('/update', [ThongBaoController::class, 'update']);
     Route::post('/delete', [ThongBaoController::class, 'delete']);
     Route::post('/status', [ThongBaoController::class, 'status']);
+});
+
+Route::prefix('/thanh-toan')->group(function () {
+    Route::get('/get-data', [ThanhToanControlles::class, 'index']);
+    Route::post('/xac-nhan-thanh-toan', [ThanhToanControlles::class, 'paymentVerify']);
 });
 
 Route::prefix('/phan-quyen')->group(function () {
