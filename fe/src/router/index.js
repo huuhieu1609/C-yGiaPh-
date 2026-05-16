@@ -35,25 +35,31 @@ const routes = [
         path: '/profile',
         name: 'profile',
         component: () => import('../components/ClientProfile/index.vue'),
-        meta: { layout: 'client' }
+        meta: { layout: 'client', requiresAuth: true }
     },
     {
         path: '/gia-pha',
         name: 'gia-pha',
         component: () => import('../components/ClientGiaPha/index.vue'),
-        meta: { layout: 'client' }
+        meta: { layout: 'client', requiresAuth: true }
     },
     {
         path: '/tra-cuu',
         name: 'client-tra-cuu',
         component: () => import('../components/ClientTraCuu/index.vue'),
+        meta: { layout: 'client', requiresAuth: true }
+    },
+    {
+        path: '/dich-vu-goi',
+        name: 'dich-vu-goi',
+        component: () => import('../components/DichVuGoi/index.vue'),
         meta: { layout: 'client' }
     },
     {
-        path: '/thanh-toan',
-        name: 'thanh-toan',
-        component: () => import('../components/ClientThanhToan/index.vue'),
-        meta: { layout: 'client' }
+        path: '/dich-vu-goi/chi-tiet',
+        name: 'dich-vu-goi-detail',
+        component: () => import('../components/DichVuGoi/Detail.vue'),
+        meta: { layout: 'client', requiresAuth: true }
     },
     {
         path: '/admin/login',
@@ -185,5 +191,17 @@ const router = createRouter({
     history: createWebHistory(),
     routes: routes
 })
+
+// Navigation Guard for Authentication
+router.beforeEach((to, from, next) => {
+    const isAuthenticated = localStorage.getItem('access_token');
+    const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
+
+    if (requiresAuth && !isAuthenticated) {
+        next({ path: '/login', query: { redirect: to.fullPath } });
+    } else {
+        next();
+    }
+});
 
 export default router
