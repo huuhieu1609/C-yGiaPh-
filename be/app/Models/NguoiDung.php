@@ -18,5 +18,6 @@ class NguoiDung extends Authenticatable
     
     public function nhatKyHoatDongs() { return $this->hasMany(NhatKyHoatDong::class); }
     public function dongGops() { return $this->hasMany(DongGop::class); }
+    public function doiTac() { return $this->hasOne(DoiTac::class, 'id_nguoi_dung'); }
 
 }

@@ -1,77 +1,102 @@
 <template>
     <div class="card shadow-sm border-0 radius-10">
         <div class="card-header bg-white py-3 border-0">
-            <div class="row align-items-center">
-                <div class="col-md-6">
-                    <h5 class="mb-0 fw-bold text-dark"><i class="bx bx-group text-primary"></i> Quản Lý Thành Viên Dòng Họ</h5>
-                </div>
-                <div class="col-md-6 text-md-end">
-                    <button class="btn btn-primary radius-30 px-4 shadow-sm" @click="openAddModal">
-                        <i class="bx bx-plus"></i> Thêm Thành Viên
-                    </button>
-                </div>
-            </div>
+            <h5 class="mb-0 fw-bold text-dark"><i class="bx bx-group text-primary"></i> Quản Lý Thành Viên Dòng Họ</h5>
         </div>
         <div class="card-body">
-            <div class="row mb-3 g-3">
-                <div class="col-md-4">
-                    <div class="position-relative">
-                        <input type="text" class="form-control ps-5 radius-10" v-model="searchQuery" placeholder="Tìm tên thành viên...">
-                        <span class="position-absolute top-50 translate-middle-y start-0 ms-3 text-secondary"><i class="bx bx-search"></i></span>
+            <div v-if="listChiNhanh.length === 0" class="text-center py-5">
+                <div class="mb-4 mt-5">
+                    <i class="bx bx-building-house fs-1 text-muted opacity-25" style="font-size: 100px !important;"></i>
+                </div>
+                <h4 class="fw-bold text-dark">Dòng Họ Chưa Được Khởi Tạo!</h4>
+                <p class="text-muted">Bạn cần khởi tạo Dòng Họ (Chi Nhánh) trước khi quản lý thành viên.</p>
+                <router-link to="/doi-tac/dong-ho" class="btn btn-primary radius-30 px-5 mt-3 shadow-sm mb-5">
+                    <i class="bx bx-plus-circle"></i> Khởi Tạo Ngay
+                </router-link>
+            </div>
+            <div v-else-if="allMembers.length === 0" class="text-center py-5">
+                <div class="mb-4 mt-5">
+                    <i class="bx bx-git-branch fs-1 text-muted opacity-25" style="font-size: 100px !important;"></i>
+                </div>
+                <h4 class="fw-bold text-dark">Cây Gia Phả Đang Trống!</h4>
+                <p class="text-muted">Vui lòng thêm thành viên đầu tiên (Thủy Tổ) tại trang <b>Cây Gia Phả</b>.</p>
+                <router-link to="/doi-tac/gia-pha" class="btn btn-primary radius-30 px-5 mt-3 shadow-sm mb-5">
+                    <i class="bx bx-plus"></i> Đi Đến Cây Gia Phả
+                </router-link>
+            </div>
+            <template v-else>
+                <div class="row mb-3 g-3">
+                    <div class="col-md-4">
+                        <div class="position-relative">
+                            <input type="text" class="form-control ps-5 radius-10" v-model="searchQuery" placeholder="Tìm tên thành viên...">
+                            <span class="position-absolute top-50 translate-middle-y start-0 ms-3 text-secondary"><i class="bx bx-search"></i></span>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-select radius-10" v-model="selectedChiNhanhId">
+                            <option v-for="cn in listChiNhanh" :key="cn.id" :value="cn.id">{{ cn.ten_chi }}</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-select radius-10" v-model="filterDoi">
+                            <option :value="null">-- Tất cả các đời --</option>
+                            <option v-for="doi in listDoiTocHo" :key="doi.id" :value="doi.so_doi">Đời {{ doi.so_doi }}</option>
+                        </select>
                     </div>
                 </div>
-                <div class="col-md-3">
-                    <select class="form-select radius-10" v-model="filterDoi">
-                        <option :value="null">-- Tất cả các đời --</option>
-                        <option v-for="doi in listDoiTocHo" :key="doi.id" :value="doi.so_doi">Đời {{ doi.so_doi }}</option>
-                    </select>
-                </div>
-            </div>
 
-            <div class="table-responsive">
-                <table class="table table-bordered table-hover align-middle">
-                    <thead class="table-light text-uppercase small fw-bold">
-                        <tr class="text-center">
-                            <th>Thành Viên</th>
-                            <th>Đời Thứ</th>
-                            <th>Mối Quan Hệ</th>
-                            <th>Ngày Sinh</th>
-                            <th>Trạng Thái</th>
-                            <th class="text-center">Hành Động</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="item in filteredMembers" :key="item.id">
-                            <td>
-                                <div class="d-flex align-items-center">
-                                    <img :src="item.avatar || ('https://ui-avatars.com/api/?name=' + item.ho_ten + '&background=d4af37&color=fff')"
-                                        class="rounded-circle border me-3" width="45" height="45"
-                                        style="object-fit: cover;">
-                                    <div>
-                                        <div class="fw-bold">{{ item.ho_ten }}</div>
-                                        <div class="small text-muted">{{ item.gioi_tinh }}</div>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover align-middle">
+                        <thead class="table-light text-uppercase small fw-bold">
+                            <tr class="text-center">
+                                <th>Thành Viên</th>
+                                <th>Đời Thứ</th>
+                                <th>Mối Quan Hệ</th>
+                                <th>Ngày Sinh</th>
+                                <th>Trạng Thái</th>
+                                <th class="text-center">Hành Động</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-if="filteredMembers.length === 0">
+                                <td colspan="6" class="text-center py-5 text-muted">
+                                    <i class="bx bx-git-branch fs-2 d-block mb-2"></i>
+                                    Chưa có thành viên nào trong dòng họ này.<br>
+                                    Vui lòng thêm thành viên (Thủy Tổ) tại trang <b>Cây Gia Phả</b> để bắt đầu.
+                                </td>
+                            </tr>
+                            <tr v-else v-for="item in filteredMembers" :key="item.id">
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <img :src="item.avatar || ('https://ui-avatars.com/api/?name=' + item.ho_ten + '&background=d4af37&color=fff')"
+                                            class="rounded-circle border me-3" width="45" height="45"
+                                            style="object-fit: cover;">
+                                        <div>
+                                            <div class="fw-bold">{{ item.ho_ten }}</div>
+                                            <div class="small text-muted">{{ item.gioi_tinh }}</div>
+                                        </div>
                                     </div>
-                                </div>
-                            </td>
-                            <td class="text-center">
-                                <span class="badge bg-light-primary text-primary px-3">Đời {{ item.doi_thu }}</span>
-                            </td>
-                            <td class="text-center">{{ item.loai_quan_he }}</td>
-                            <td class="text-center">{{ formatDate(item.ngay_sinh) }}</td>
-                            <td class="text-center">
-                                <span v-if="item.trang_thai === 'Còn sống'" class="badge bg-success">Còn sống</span>
-                                <span v-else class="badge bg-danger">Đã mất</span>
-                            </td>
-                            <td class="text-center">
-                                <div class="d-flex justify-content-center gap-2">
-                                    <button class="btn btn-sm btn-outline-warning" @click="onEdit(item)"><i class="bx bx-edit-alt"></i></button>
-                                    <button class="btn btn-sm btn-outline-danger" @click="handleDelete(item.id)"><i class="bx bx-trash"></i></button>
-                                </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-light-primary text-primary px-3">Đời {{ item.doi_thu }}</span>
+                                </td>
+                                <td class="text-center">{{ item.loai_quan_he }}</td>
+                                <td class="text-center">{{ formatDate(item.ngay_sinh) }}</td>
+                                <td class="text-center">
+                                    <span v-if="item.trang_thai === 'Còn sống'" class="badge bg-success">Còn sống</span>
+                                    <span v-else class="badge bg-danger">Đã mất</span>
+                                </td>
+                                <td class="text-center">
+                                    <div class="d-flex justify-content-center gap-2">
+                                        <button class="btn btn-sm btn-outline-warning" @click="onEdit(item)"><i class="bx bx-edit-alt"></i></button>
+                                        <button class="btn btn-sm btn-outline-danger" @click="handleDelete(item.id)"><i class="bx bx-trash"></i></button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </template>
         </div>
 
         <!-- Modal Thêm/Sửa Thành Viên -->
@@ -194,6 +219,8 @@ export default {
     data() {
         return {
             allMembers: [],
+            listChiNhanh: [],
+            selectedChiNhanhId: null,
             listDoiTocHo: [],
             searchQuery: '',
             filterDoi: null,
@@ -212,7 +239,8 @@ export default {
             return this.allMembers.filter(m => {
                 const matchSearch = m.ho_ten.toLowerCase().includes(this.searchQuery.toLowerCase());
                 const matchDoi = this.filterDoi === null || m.doi_thu == this.filterDoi;
-                return matchSearch && matchDoi;
+                const matchChiNhanh = this.selectedChiNhanhId === null || m.chi_nhanh_id == this.selectedChiNhanhId;
+                return matchSearch && matchDoi && matchChiNhanh;
             });
         }
     },
@@ -221,16 +249,31 @@ export default {
             this.modal = new window.bootstrap.Modal(document.getElementById('memberModal'));
         }
         this.loadDoiTocHo();
+        this.loadChiNhanh();
         this.loadData();
     },
     methods: {
+        getHeaders() {
+            return { headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` } };
+        },
         loadDoiTocHo() {
-            axios.get('http://127.0.0.1:8000/api/doi-toc-ho/get-data')
+            axios.get('http://127.0.0.1:8000/api/doi-toc-ho/get-data', this.getHeaders())
                 .then(res => { if (res.data.status) this.listDoiTocHo = res.data.data; });
         },
         loadData() {
-            axios.get('http://127.0.0.1:8000/api/thanh-vien/get-data')
+            axios.get('http://127.0.0.1:8000/api/thanh-vien/get-data', this.getHeaders())
                 .then(res => { if (res.data.status) this.allMembers = res.data.data; });
+        },
+        loadChiNhanh() {
+            axios.get('http://127.0.0.1:8000/api/chi-nhanh/get-data', this.getHeaders())
+                .then(res => {
+                    if (res.data.status) {
+                        this.listChiNhanh = res.data.data;
+                        if (this.listChiNhanh.length > 0 && !this.selectedChiNhanhId) {
+                            this.selectedChiNhanhId = this.listChiNhanh[0].id;
+                        }
+                    }
+                });
         },
         formatDate(date) {
             if (!date) return '---';

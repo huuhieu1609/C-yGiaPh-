@@ -204,6 +204,7 @@ export default {
 /* Navigation Links */
 .nav-item {
   position: relative;
+  width: 100%;
 }
 
 .nav-link {
@@ -211,6 +212,14 @@ export default {
   border-radius: 12px;
   font-weight: 500;
   font-size: 14.5px;
+  display: flex !important;
+  width: 100%;
+  cursor: pointer;
+  user-select: none;
+}
+
+.nav-link * {
+  pointer-events: none; /* Icon and text won't block the link's click event */
 }
 
 .nav-link:hover {

@@ -62,6 +62,12 @@ const routes = [
         meta: { layout: 'client', requiresAuth: true }
     },
     {
+        path: '/thanh-toan',
+        name: 'thanh-toan',
+        component: () => import('../components/ClientThanhToan/index.vue'),
+        meta: { layout: 'client', requiresAuth: true }
+    },
+    {
         path: '/admin/login',
         name: 'admin-login',
         component: () => import('../components/Admin/Auth/Login.vue'),
@@ -177,6 +183,12 @@ const routes = [
         path: '/doi-tac/tra-cuu',
         name: 'partner-tra-cuu',
         component: () => import('../components/DoiTac/TraCuu/index.vue'),
+        meta: { layout: 'partner' }
+    },
+    {
+        path: '/doi-tac/dong-ho',
+        name: 'partner-dong-ho',
+        component: () => import('../components/DoiTac/QuanLyDongHo/index.vue'),
         meta: { layout: 'partner' }
     },
     {

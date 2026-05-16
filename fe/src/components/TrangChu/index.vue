@@ -1,509 +1,440 @@
 <template>
-    <div class="landing-page">
-        <!-- Hero Section -->
-        <section class="hero" :style="{ backgroundImage: 'url(' + heroBg + ')' }">
-            <div class="hero-overlay">
-                <div class="container">
-                    <div class="hero-content">
-                        <span class="subtitle">HÀNH TRÌNH TÌM LẠI CỘI NGUỒN</span>
-                        <h1>Kết nối với Tổ tiên qua từng nén nhang</h1>
-                        <p>Dòng họ không chỉ là tên gọi, đó là quá khứ, là tâm hồn và là khởi nguồn của mỗi con người.
-                            Hãy cùng Heritage Archivist gìn giữ những giá trị thiêng liêng ngay hôm nay.</p>
-                        <div class="hero-btns">
-                            <button class="btn-primary">BẮT ĐẦU GIA PHẢ</button>
-                            <button class="btn-outline">TÌM HIỂU THÊM</button>
-                        </div>
-                    </div>
-                </div>
+  <div class="landing-page-wrapper">
+    <div class="hero-background"></div>
+    <div class="glow-blob blob-purple"></div>
+    <div class="glow-blob blob-blue"></div>
+
+    <div class="container-custom content-relative pt-5">
+      <!-- Hero Section -->
+      <section class="hero-section text-center">
+        <span class="subtitle-gradient mb-3 d-block text-uppercase tracking-widest">HÀNH TRÌNH TÌM LẠI CỘI NGUỒN</span>
+        <h1 class="hero-title">
+          Kết nối với <span class="text-gradient">Tổ tiên</span> qua từng nén nhang
+        </h1>
+        <p class="hero-subtitle mx-auto">
+          Dòng họ không chỉ là tên gọi, đó là quá khứ, là tâm hồn và là khởi nguồn của mỗi con người.
+          Hãy cùng Heritage Archivist gìn giữ những giá trị thiêng liêng ngay hôm nay.
+        </p>
+
+        <div class="hero-actions justify-content-center mt-5">
+          <button class="btn btn-gradient-home" @click="$router.push('/gia-pha')">KHỞI TẠO GIA PHẢ NGAY</button>
+          <button class="btn btn-outline-home" @click="$router.push('/dich-vu-goi')">KHÁM PHÁ DỊCH VỤ</button>
+        </div>
+
+        <!-- Quick Stats Glass Card -->
+        <div class="hero-stats-card mt-5 mx-auto">
+          <div class="stat-item">
+            <h3 class="text-gold">1,200+</h3>
+            <p>Dòng họ đã tham gia</p>
+          </div>
+          <div class="stat-item">
+            <h3 class="text-gold">50,000+</h3>
+            <p>Thành viên số hóa</p>
+          </div>
+          <div class="stat-item border-0">
+            <h3 class="text-gold">24/7</h3>
+            <p>Truy cập toàn cầu</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Features Section -->
+      <section class="features-section mt-5">
+        <div class="section-heading text-center mb-5">
+          <h2 class="text-white fw-bold">Tính năng nổi bật</h2>
+          <p class="text-white-50">Mang công nghệ hiện đại vào việc bảo tồn di sản gia đình</p>
+        </div>
+
+        <div class="grid-3-cols">
+          <div class="glass-feature-card">
+            <div class="feature-icon-wrapper">
+              <i class="bx bx-data text-gold"></i>
             </div>
-        </section>
+            <h3 class="text-white mt-4">Số hóa gia phả</h3>
+            <p class="text-white-50 mt-3">Chuyển đổi những cuốn sổ cũ kỹ thành cây gia phả số hóa sống động, dễ dàng truy cập và bảo mật vĩnh viễn.</p>
+          </div>
 
-        <!-- About Section -->
-        <section class="about-section">
-            <div class="container">
-                <div class="row align-items-center">
-                    <div class="col-lg-6">
-                        <div class="about-img-container">
-                            <img :src="aboutPhoto" alt="Tìm lại cội nguồn" class="img-fluid about-img">
-                            <div class="img-caption">"Gia phả là chìa khóa mở cánh cửa vào thế giới của tổ tiên."</div>
-                        </div>
-                    </div>
-                    <div class="col-lg-6">
-                        <div class="about-text">
-                            <div class="section-line"></div>
-                            <h2>Bạn có bao giờ đứng trước bàn thờ và tự hỏi: "Cụ là ai?"</h2>
-                            <p>Khoảnh khắc thắp nén nhang cho tổ tiên là lúc sợi dây truyền thống rạng lên mạnh mẽ nhất.
-                                Nhưng sẽ thật đáng tiếc khi chúng ta không biết rõ về cuộc đời, sự nghiệp hay ý chí của
-                                người đang ngự trên linh vị.</p>
-
-                            <ul class="feature-list">
-                                <li>
-                                    <i class="bx bx-history"></i>
-                                    <div>
-                                        <strong>Xác định niên trình lịch sử</strong>
-                                        <p>Tra cứu thông tin chính xác về niên bản gia phả dòng họ.</p>
-                                    </div>
-                                </li>
-                                <li>
-                                    <i class="bx bx-group"></i>
-                                    <div>
-                                        <strong>Kết nối mối quan hệ</strong>
-                                        <p>Hiểu rõ các tầng lớp, thứ bậc và vai trò của từng thành viên trong phả hệ.</p>
-                                    </div>
-                                </li>
-                                <li>
-                                    <i class="bx bx-book-content"></i>
-                                    <div>
-                                        <strong>Chuẩn mực xưng hô</strong>
-                                        <p>Hướng dẫn cách xưng hô, thờ tự đúng chuẩn sau theo truyền thống Việt Nam.</p>
-                                    </div>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
+          <div class="glass-feature-card">
+            <div class="feature-icon-wrapper">
+              <i class="bx bx-book text-gold"></i>
             </div>
-        </section>
+            <h3 class="text-white mt-4">Từ điển xưng hô</h3>
+            <p class="text-white-50 mt-3">Hướng dẫn chi tiết cách gọi tên, xưng danh vị trí chính xác của từng cá nhân trong dòng họ nội ngoại.</p>
+          </div>
 
-        <!-- Stream Section -->
-        <section class="stream-section">
-            <div class="container text-center">
-                <h2>Dòng Chảy Huyết Thống</h2>
-                <p class="section-desc">Trực quan hóa gia phả bằng công nghệ hiện đại, giữ trọn nét tinh hoa văn hóa lâu đời.</p>
-
-                <div class="tree-visual">
-                    <div class="node principal">
-                        <img :src="ancestorSample" alt="Ancestor" class="avatar">
-                        <div class="node-info">
-                            <strong>Nguyễn Văn Phong</strong>
-                            <span>Đời thứ 1 (Thủy tổ)</span>
-                        </div>
-                    </div>
-                    <div class="tree-lines"></div>
-                    <div class="children-nodes">
-                        <div class="node">
-                            <div class="node-info">
-                                <strong>Nguyễn Văn Minh</strong>
-                                <span>Chi trưởng - Đời 2</span>
-                            </div>
-                        </div>
-                        <div class="node active">
-                            <div class="node-info">
-                                <strong>Nguyễn Thị Mai</strong>
-                                <span>Chi thứ - Đời 2</span>
-                            </div>
-                            <span class="badge-status">HIỆN TẠI</span>
-                        </div>
-                        <div class="node">
-                            <div class="node-info">
-                                <strong>Nguyễn Văn An</strong>
-                                <span>Chi thứ - Đời 2</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+          <div class="glass-feature-card">
+            <div class="feature-icon-wrapper">
+              <i class="bx bx-archive text-gold"></i>
             </div>
-        </section>
+            <h3 class="text-white mt-4">Kho lưu trữ ký ức</h3>
+            <p class="text-white-50 mt-3">Nơi lưu giữ những câu chuyện, video và hình ảnh chưa từng kể về những người đã khuất.</p>
+          </div>
+        </div>
+      </section>
 
-        <!-- Features Grid -->
-        <section class="features-grid">
-            <div class="container">
-                <div class="row">
-                    <div class="col-md-4">
-                        <div class="feature-card">
-                            <div class="card-icon"><i class="bx bx-data"></i></div>
-                            <h3>Số hóa gia phả</h3>
-                            <p>Chuyển đổi những cuốn sổ cũ kỹ, mờ nhạt thành cây gia phả số hóa sống động, dễ dàng truy cập và bảo mật vĩnh viễn.</p>
-                            <a href="#" class="learn-more">Bắt đầu số hóa <i class="bx bx-right-arrow-alt"></i></a>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="feature-card">
-                            <div class="card-icon"><i class="bx bx-book"></i></div>
-                            <h3>Từ điển xưng hô</h3>
-                            <p>Hướng dẫn chi tiết cách gọi tên, xưng danh vị trí chính xác của từng cá nhân trong dòng họ nội ngoại.</p>
-                            <a href="#" class="learn-more">Tra cứu ngay <i class="bx bx-right-arrow-alt"></i></a>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="feature-card">
-                            <div class="card-icon"><i class="bx bx-archive"></i></div>
-                            <h3>Kho lưu trữ ký ức</h3>
-                            <p>Nơi lưu giữ những câu chuyện, video và hình ảnh chưa từng kể về những người đã khuất.</p>
-                            <a href="#" class="learn-more">Khám phá ký ức <i class="bx bx-right-arrow-alt"></i></a>
-                        </div>
-                    </div>
-                </div>
+      <!-- About Preview -->
+      <section class="about-preview mt-5 pb-5">
+        <div class="glass-card p-5 rounded-3xl border border-white/10 overflow-hidden">
+          <div class="row align-items-center">
+            <div class="col-lg-6">
+              <img :src="aboutPhoto" alt="Heritage" class="img-fluid rounded-2xl shadow-glow-light">
             </div>
-        </section>
+            <div class="col-lg-6">
+              <div class="ps-lg-5 mt-4 mt-lg-0">
+                <h2 class="text-white fw-bold mb-4">Gìn giữ giá trị thiêng liêng</h2>
+                <p class="text-white-50 mb-4 lh-lg">Khoảnh khắc thắp nén nhang cho tổ tiên là lúc sợi dây truyền thống rạng lên mạnh mẽ nhất. Heritage Archivist giúp bạn thấu hiểu hơn về cội nguồn, để mỗi nén nhang thắp lên là một sự kết nối tâm hồn trọn vẹn.</p>
+                <div class="d-flex align-items-center gap-3 mb-3">
+                  <i class="bx bx-check-double text-gold fs-4"></i>
+                  <span class="text-white">Xác định niên trình lịch sử</span>
+                </div>
+                <div class="d-flex align-items-center gap-3 mb-3">
+                  <i class="bx bx-check-double text-gold fs-4"></i>
+                  <span class="text-white">Kết nối mối quan hệ phả hệ</span>
+                </div>
+                <div class="d-flex align-items-center gap-3">
+                  <i class="bx bx-check-double text-gold fs-4"></i>
+                  <span class="text-white">Chuẩn mực xưng hô truyền thống</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
-        <!-- Testimonial Section -->
-        <section class="testimonial-section" :style="{ backgroundImage: 'url(' + testimonialBg + ')' }">
-            <div class="testimonial-overlay">
-                <div class="container">
-                    <div class="row">
-                        <div class="col-lg-7">
-                            <div class="quote-content">
-                                <i class="bx bxs-quote-left quote-icon"></i>
-                                <blockquote>
-                                    "Nhờ Heritage Archivist, lần đầu tiên tôi thắp nén nhang cho cụ cố với một cảm giác hoàn toàn khác. Tôi biết cụ đã từng là một nhà giáo tận tụy, biết cụ thích hoa mai, và biết chính xác mình phải gọi cụ là gì. Ứng dụng này đã mang lại linh hồn cho những cái tên trên tấm bia đá."
-                                </blockquote>
-                                <div class="quote-author">
-                                    <img :src="ancestorSample" alt="User" class="author-img">
-                                    <div>
-                                        <strong>Lê Minh Tuấn</strong>
-                                        <span>Kiến trúc sư - Hà Nội</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+      <!-- Process Section -->
+      <section class="process-section mt-5 pt-5 pb-5">
+        <div class="section-heading text-center mb-5">
+          <h2 class="text-white fw-bold">Hành trình số hóa di sản</h2>
+          <p class="text-white-50">Bắt đầu lưu giữ ký ức chỉ với 3 bước đơn giản</p>
+        </div>
+        
+        <div class="row g-4 justify-content-center">
+          <div class="col-md-4">
+            <div class="process-step-card text-center p-5">
+              <div class="step-number">01</div>
+              <div class="step-icon mt-4"><i class="bx bx-user-plus text-gold"></i></div>
+              <h4 class="text-white mt-4 fw-bold">Đăng ký tài khoản</h4>
+              <p class="text-white-50 mt-3">Tạo tài khoản cá nhân và thiết lập thông tin cơ bản về dòng họ của bạn.</p>
             </div>
-        </section>
+          </div>
+          <div class="col-md-4">
+            <div class="process-step-card text-center p-5">
+              <div class="step-number">02</div>
+              <div class="step-icon mt-4"><i class="bx bx-network-chart text-gold"></i></div>
+              <h4 class="text-white mt-4 fw-bold">Xây dựng phả hệ</h4>
+              <p class="text-white-50 mt-3">Thêm thông tin, hình ảnh và câu kể về các thành viên qua nhiều thế hệ.</p>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="process-step-card text-center p-5">
+              <div class="step-number">03</div>
+              <div class="step-icon mt-4"><i class="bx bx-share-alt text-gold"></i></div>
+              <h4 class="text-white mt-4 fw-bold">Chia sẻ kết nối</h4>
+              <p class="text-white-50 mt-3">Mời người thân cùng tham gia đóng góp và chiêm ngưỡng cây gia phả trực tuyến.</p>
+            </div>
+          </div>
+        </div>
+      </section>
 
-        <!-- CTA Section -->
-        <section class="cta-section">
-            <div class="container text-center">
-                <h2>Sẵn sàng viết tiếp câu chuyện của dòng họ?</h2>
-                <p>Bắt đầu miễn phí ngay hôm nay và bảo tồn di sản cho thế hệ mai sau.</p>
-                <div class="cta-btns">
-                    <button class="btn-dark">KHỞI TẠO GIA PHẢ NGAY</button>
-                    <button class="btn-white">GỬI LỜI MỜI GIA ĐÌNH</button>
-                </div>
+      <!-- Testimonials Section -->
+      <section class="testimonials-section mt-5 pt-5 pb-5">
+        <div class="section-heading text-center mb-5">
+          <h2 class="text-white fw-bold">Cảm nhận từ khách hàng</h2>
+          <p class="text-white-50">Hàng ngàn gia đình đã tin tưởng sử dụng Heritage Archivist</p>
+        </div>
+
+        <div class="grid-3-cols">
+          <div class="glass-testimonial-card p-4 border border-white/10 rounded-3xl">
+            <div class="quote-icon mb-3"><i class="bx bxs-quote-left text-gold fs-1 opacity-25"></i></div>
+            <p class="text-white-50 fst-italic mb-4">"Ứng dụng này đã giúp dòng họ chúng tôi kết nối lại với nhau sau nhiều năm thất lạc thông tin. Cảm ơn đội ngũ phát triển vì một sản phẩm quá ý nghĩa!"</p>
+            <div class="author-meta d-flex align-items-center">
+              <div class="author-avatar-small me-3">MT</div>
+              <div>
+                <h6 class="text-white mb-0 fw-bold">Lê Minh Tuấn</h6>
+                <small class="text-gold">Kiến trúc sư - Hà Nội</small>
+              </div>
             </div>
-        </section>
+          </div>
+
+          <div class="glass-testimonial-card p-4 border border-white/10 rounded-3xl">
+            <div class="quote-icon mb-3"><i class="bx bxs-quote-left text-gold fs-1 opacity-25"></i></div>
+            <p class="text-white-50 fst-italic mb-4">"Giao diện hiện đại nhưng vẫn giữ được nét truyền thống. Việc tra cứu và quản lý thành viên trở nên vô cùng đơn giản so với ghi chép sổ tay."</p>
+            <div class="author-meta d-flex align-items-center">
+              <div class="author-avatar-small me-3">PH</div>
+              <div>
+                <h6 class="text-white mb-0 fw-bold">Phạm Hoàng Nam</h6>
+                <small class="text-gold">Nhà báo - TP.HCM</small>
+              </div>
+            </div>
+          </div>
+
+          <div class="glass-testimonial-card p-4 border border-white/10 rounded-3xl">
+            <div class="quote-icon mb-3"><i class="bx bxs-quote-left text-gold fs-1 opacity-25"></i></div>
+            <p class="text-white-50 fst-italic mb-4">"Tính năng lưu trữ hình ảnh và video là thứ tôi thích nhất. Những thước phim về ông bà giờ đây được lưu giữ vĩnh viễn cho con cháu đời sau."</p>
+            <div class="author-meta d-flex align-items-center">
+              <div class="author-avatar-small me-3">TH</div>
+              <div>
+                <h6 class="text-white mb-0 fw-bold">Nguyễn Thu Hà</h6>
+                <small class="text-gold">Giáo viên - Đà Nẵng</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- CTA Footer Section -->
+      <section class="footer-cta text-center mt-5 pb-5">
+        <div class="glass-info p-5 rounded-3xl border border-white/10">
+          <h2 class="text-white fw-bold mb-3">Sẵn sàng viết tiếp câu chuyện của dòng họ?</h2>
+          <p class="text-white-50 mb-5">Bắt đầu miễn phí ngay hôm nay và bảo tồn di sản cho thế hệ mai sau.</p>
+          <button class="btn btn-gradient-home px-5 py-3" @click="$router.push('/register')">ĐĂNG KÝ TÀI KHOẢN MIỄN PHÍ</button>
+        </div>
+      </section>
     </div>
+  </div>
 </template>
 
 <script>
-import heroBg from '@/assets/images/hero_bg.png';
-import testimonialBg from '@/assets/images/testimonial_bg.png';
 import aboutPhoto from '@/assets/images/about_photo.png';
-import ancestorSample from '@/assets/images/ancestor_sample.png';
 
 export default {
     name: 'TrangChu',
     data() {
         return {
-            heroBg,
-            testimonialBg,
-            aboutPhoto,
-            ancestorSample
+            aboutPhoto
         }
     }
 }
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
-.landing-page {
+.landing-page-wrapper {
+    background-color: #0b1120;
+    color: #f8fafc;
+    min-height: 100vh;
     font-family: 'Inter', sans-serif;
-    color: #1a1a1a;
-    overflow-x: hidden;
-    background-color: #fff;
-    margin-top: -30px;
+    position: relative;
+    overflow: hidden;
 }
 
-h1, h2, h3, blockquote {
-    font-family: 'Playfair Display', serif;
-}
-
-section {
-    padding: 100px 0;
-}
-
-.container {
-    max-width: 1200px;
-}
-
-.hero {
-    height: 90vh;
+.hero-background {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background-image: linear-gradient(to bottom, rgba(11, 17, 32, 0.4) 0%, rgba(11, 17, 32, 0.9) 100%),
+        url('@/assets/images/hero_bg.png');
     background-size: cover;
     background-position: center;
+    z-index: 0;
+}
+
+.container-custom {
+    max-width: 1100px;
+    margin: 0 auto;
     position: relative;
-    display: flex;
-    align-items: center;
+    z-index: 2;
 }
 
-.hero-overlay {
+.glow-blob {
     position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: linear-gradient(to right, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.4) 60%, rgba(0, 0, 0, 0.2) 100%);
-    display: flex;
-    align-items: center;
+    width: 400px; height: 400px;
+    border-radius: 50%;
+    filter: blur(120px);
+    z-index: 1;
+    opacity: 0.4;
 }
 
-.hero-content {
-    max-width: 750px;
-    color: #fff;
-    text-align: left;
-}
+.blob-purple { background: #120a1f; top: 10%; left: -10%; }
+.blob-blue { background: #031948; top: 40%; right: -10%; }
 
-.subtitle {
-    display: block;
-    font-size: 14px;
-    letter-spacing: 4px;
-    margin-bottom: 25px;
-    color: #d4af37;
-    font-weight: 600;
-}
-
-.hero-content h1 {
-    font-size: 68px;
-    line-height: 1.1;
-    margin-bottom: 35px;
+.subtitle-gradient {
+    font-size: 0.85rem;
     font-weight: 700;
+    letter-spacing: 0.2em;
+    color: #d4af37;
 }
 
-.hero-content p {
-    font-size: 19px;
-    line-height: 1.7;
-    margin-bottom: 45px;
-    opacity: 0.9;
+.hero-title {
+    font-size: 3.5rem;
+    font-weight: 800;
+    line-height: 1.2;
+    margin-bottom: 1.5rem;
+    color: #ffffff;
 }
 
-.hero-btns {
+.text-gradient {
+    background: linear-gradient(90deg, #fbff00, #ff8c00);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.hero-subtitle {
+    font-size: 1.2rem;
+    color: #94a3b8;
+    max-width: 800px;
+    line-height: 1.8;
+}
+
+.hero-actions {
     display: flex;
     gap: 20px;
 }
 
-.btn-primary {
-    background-color: #1e3a1e;
-    color: #fff;
+.btn-gradient-home {
+    background: linear-gradient(135deg, #0a3c88, #6610f2);
+    color: white;
     border: none;
-    padding: 18px 40px;
-    font-size: 14px;
-    font-weight: 700;
-    letter-spacing: 1.5px;
-    cursor: pointer;
-    transition: all 0.4s;
-}
-
-.btn-primary:hover {
-    background-color: #2a522a;
-    transform: translateY(-3px);
-}
-
-.btn-outline {
-    background: transparent;
-    color: #fff;
-    border: 1px solid rgba(255, 255, 255, 0.4);
-    padding: 18px 40px;
-    font-size: 14px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.4s;
-}
-
-.btn-outline:hover {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: #fff;
-    transform: translateY(-3px);
-}
-
-.about-img-container {
-    position: relative;
-    padding-right: 30px;
-}
-
-.about-img {
-    border-radius: 4px;
-    box-shadow: 30px 30px 80px rgba(0, 0, 0, 0.08);
-    max-width: 85%;
-}
-
-.img-caption {
-    margin-top: 25px;
-    font-style: italic;
-    font-size: 16px;
-    color: #777;
-    border-left: 3px solid #d4af37;
-    padding-left: 20px;
-}
-
-.section-line {
-    width: 60px;
-    height: 3px;
-    background-color: #d4af37;
-    margin-bottom: 35px;
-}
-
-.about-text h2 {
-    font-size: 46px;
-    line-height: 1.25;
-    margin-bottom: 35px;
-}
-
-.feature-list {
-    list-style: none;
-    padding: 0;
-}
-
-.feature-list li {
-    display: flex;
-    gap: 25px;
-    margin-bottom: 35px;
-}
-
-.feature-list i {
-    font-size: 28px;
-    color: #d4af37;
-}
-
-.stream-section {
-    background: linear-gradient(135deg, #fdfcfb 0%, #e2d1c3 100%);
-}
-
-.tree-visual {
-    padding: 50px 0;
-}
-
-.node {
-    display: inline-flex;
-    background: #fff;
-    padding: 18px 28px;
+    padding: 15px 35px;
     border-radius: 12px;
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.06);
-    align-items: center;
-    gap: 18px;
+    font-weight: 700;
+    transition: all 0.3s;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
 }
 
-.node.principal {
-    border: 2px solid #d4af37;
+.btn-gradient-home:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 30px rgba(102, 16, 242, 0.4);
 }
 
-.avatar {
-    width: 55px;
-    height: 55px;
-    border-radius: 50%;
-    object-fit: cover;
+.btn-outline-home {
+    background: rgba(255, 255, 255, 0.05);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 15px 35px;
+    border-radius: 12px;
+    font-weight: 700;
+    transition: all 0.3s;
 }
 
-.tree-lines {
-    height: 70px;
-    width: 2px;
-    background: linear-gradient(to bottom, #d4af37, transparent);
-    margin: 0 auto;
+.btn-outline-home:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: white;
+    transform: translateY(-3px);
 }
 
-.children-nodes {
+/* Glass Cards */
+.hero-stats-card {
     display: flex;
     justify-content: center;
-    gap: 40px;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 30px;
+    max-width: 800px;
 }
 
-.node.active {
-    background-color: #1e3a1e;
-    color: #fff;
+.stat-item {
+    flex: 1;
+    padding: 0 30px;
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.badge-status {
-    position: absolute;
-    top: -12px; right: -12px;
-    background-color: #d4af37;
-    color: #000;
-    font-size: 11px;
-    padding: 5px 10px;
-    border-radius: 6px;
+.stat-item h3 { font-size: 2rem; font-weight: 800; margin-bottom: 5px; }
+.stat-item p { color: #94a3b8; font-size: 0.9rem; margin: 0; }
+
+.text-gold { color: #ffd700; }
+
+.grid-3-cols {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
 }
 
-.feature-card {
-    padding: 50px 40px;
-    background: #fff;
-    border: 1px solid #f0f0f0;
+.glass-feature-card {
+    background: rgba(15, 23, 42, 0.4);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 40px;
+    border-radius: 24px;
+    transition: all 0.3s;
+}
+
+.glass-feature-card:hover {
+    transform: translateY(-10px);
+    background: rgba(15, 23, 42, 0.6);
+    border-color: rgba(255, 215, 0, 0.3);
+}
+
+.feature-icon-wrapper {
+    width: 60px; height: 60px;
+    background: rgba(255, 215, 0, 0.1);
+    border-radius: 16px;
+    display: flex;
+    align-items: center; justify-content: center;
+    font-size: 2rem;
+}
+
+.glass-card {
+    background: rgba(15, 23, 42, 0.5);
+    backdrop-filter: blur(12px);
+}
+
+.shadow-glow-light {
+    box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+}
+
+.glass-info {
+    background: rgba(15, 23, 42, 0.8);
+    backdrop-filter: blur(12px);
+}
+
+/* Process Section */
+.process-step-card {
+    background: rgba(15, 23, 42, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 30px;
+    position: relative;
     transition: all 0.4s;
     height: 100%;
 }
 
-.feature-card:hover {
-    transform: translateY(-15px);
-    border-color: #d4af37;
+.process-step-card:hover {
+    background: rgba(15, 23, 42, 0.5);
+    border-color: #ffd700;
+    transform: translateY(-5px);
 }
 
-.card-icon {
-    width: 70px; height: 70px;
-    background: #fdf8ef;
-    color: #d4af37;
+.step-number {
+    position: absolute;
+    top: 20px; right: 30px;
+    font-size: 3rem;
+    font-weight: 900;
+    color: rgba(255, 215, 0, 0.1);
+}
+
+.step-icon {
+    font-size: 3.5rem;
+}
+
+/* Testimonials */
+.glass-testimonial-card {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(10px);
+    transition: all 0.3s;
+}
+
+.glass-testimonial-card:hover {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.author-avatar-small {
+    width: 45px; height: 45px;
+    background: linear-gradient(135deg, #ffd700, #ff8c00);
+    border-radius: 50%;
     display: flex;
     align-items: center; justify-content: center;
-    font-size: 34px;
-    border-radius: 16px;
-    margin-bottom: 30px;
-}
-
-.testimonial-section {
-    height: 700px;
-    background-size: cover;
-    background-position: center;
-    position: relative;
-}
-
-.testimonial-overlay {
-    position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.6);
-    display: flex;
-    align-items: center;
-}
-
-blockquote {
-    font-size: 36px;
-    color: #fff;
-    line-height: 1.5;
-    margin-bottom: 50px;
-}
-
-.quote-author {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-}
-
-.author-img {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 2px solid #d4af37;
-}
-
-.quote-author strong {
-    display: block;
-    color: #fff;
-    font-size: 18px;
-}
-
-.quote-author span {
-    color: #d4af37;
-    font-size: 14px;
-}
-
-.cta-section {
-    padding: 120px 0;
-}
-
-.btn-dark {
-    background-color: #1a1a1a;
-    color: #fff;
-    padding: 20px 45px;
-    border: none;
+    color: #000;
     font-weight: 700;
-    cursor: pointer;
+    font-size: 0.9rem;
 }
 
-.btn-white {
-    background-color: #fff;
-    color: #1a1a1a;
-    border: 1px solid #ccc;
-    padding: 20px 45px;
-    font-weight: 700;
-    cursor: pointer;
-}
-
-@media (max-width: 991px) {
-    .children-nodes { flex-direction: column; align-items: center; }
-    .tree-lines { display: none; }
+@media (max-width: 768px) {
+    .hero-title { font-size: 2.5rem; }
+    .hero-stats-card { flex-direction: column; gap: 20px; }
+    .stat-item { border-right: none; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 20px; }
+    .hero-actions { flex-direction: column; }
 }
 </style>

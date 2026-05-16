@@ -12,7 +12,13 @@ class ChiNhanhController extends Controller
     public function getData()
     {
         try {
-            $data = ChiNhanh::all();
+            $user = auth('sanctum')->user();
+            if ($user && $user->is_doi_tac == 1) {
+                $data = ChiNhanh::where('id_nguoi_dung', $user->id)->get();
+            } else {
+                $data = ChiNhanh::all();
+            }
+            
             return response()->json([
                 'status'  => true,
                 'message' => 'Lấy dữ liệu thành công!',
@@ -29,10 +35,25 @@ class ChiNhanhController extends Controller
     public function create(Request $request)
     {
         try {
-            $data = $request->all();
-            if ('ChiNhanh' === 'NguoiDung' && isset($data['mat_khau'])) {
-                $data['mat_khau'] = bcrypt($data['mat_khau']);
+            $user = auth('sanctum')->user();
+            if (!$user) {
+                return response()->json(['status' => false, 'message' => 'Bạn cần đăng nhập!'], 401);
             }
+
+            // Giới hạn đối tác chỉ được thêm 1 cây gia phả
+            if ($user->is_doi_tac == 1) {
+                $count = ChiNhanh::where('id_nguoi_dung', $user->id)->count();
+                if ($count >= 1) {
+                    return response()->json([
+                        'status' => false, 
+                        'message' => 'Tài khoản Đối Tác chỉ được phép tạo duy nhất 1 cây gia phả!'
+                    ]);
+                }
+            }
+
+            $data = $request->all();
+            $data['id_nguoi_dung'] = $user->id; // Gán chủ sở hữu
+
             $item = ChiNhanh::create($data);
             return response()->json([
                 'status'  => true,

@@ -12,7 +12,15 @@ class ThanhVienController extends Controller
     public function getData()
     {
         try {
-            $data = ThanhVien::all();
+            $user = auth('sanctum')->user();
+            if ($user && $user->is_doi_tac == 1) {
+                // Lấy ID các chi nhánh thuộc sở hữu của đối tác này
+                $chiNhanhIds = \App\Models\ChiNhanh::where('id_nguoi_dung', $user->id)->pluck('id');
+                $data = ThanhVien::whereIn('chi_nhanh_id', $chiNhanhIds)->get();
+            } else {
+                $data = ThanhVien::all();
+            }
+
             return response()->json([
                 'status'  => true,
                 'message' => 'Lấy dữ liệu thành công!',

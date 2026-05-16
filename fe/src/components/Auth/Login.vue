@@ -69,7 +69,10 @@ export default {
                         toastr.success(res.data.message);
                         localStorage.setItem('access_token', res.data.access_token);
                         localStorage.setItem('user', JSON.stringify(res.data.user));
-                        const redirect = this.$route.query.redirect || '/';
+                        let redirect = this.$route.query.redirect || '/';
+                        if (res.data.user.is_doi_tac == 1) {
+                            redirect = '/doi-tac/dashboard';
+                        }
                         this.$router.push(redirect);
                     }
                 })

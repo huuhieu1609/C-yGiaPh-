@@ -1,78 +1,108 @@
 <template>
-  <div class="checkout-page container-fluid pt-5 mt-5 mb-5">
-    <div class="container">
-      <div class="row justify-content-center">
-        <!-- Payment Form -->
-        <div class="col-lg-8">
-          <div class="card border-0 shadow-lg rounded-4 mb-4">
-            <div class="card-header checkout-header border-0 rounded-top-4 p-4 text-center">
-              <h4 class="mb-0 fw-bold text-white"><i class="bx bx-donate-heart me-2 text-gold"></i>Thanh Toán Mua Gói</h4>
-              <p class="mb-0 text-white-50 mt-2">Thanh toán gói để trải nghiệm các tính năng cao cấp của dòng họ</p>
-            </div>
-            <div class="card-body p-4 p-md-5">
-              <form @submit.prevent="submitPayment">
-                <div class="mb-4">
-                  <label class="form-label fw-semibold">Số tiền thanh toán (VNĐ) <span class="text-danger">*</span></label>
-                  <input type="number" class="form-control form-control-lg" v-model.number="form.so_tien" placeholder="Nhập số tiền..." required>
-                </div>
+  <div class="landing-page-wrapper">
+    <div class="hero-background"></div>
+    <div class="glow-blob blob-purple"></div>
+    <div class="glow-blob blob-blue"></div>
+
+    <div class="container-custom content-relative pt-5 pb-5">
+      <div class="glass-card shadow-2xl rounded-3xl overflow-hidden mt-5">
+        <div class="checkout-header p-5 text-center">
+          <h2 class="text-gradient fw-bold mb-2">Xác Nhận Thanh Toán</h2>
+          <p class="text-white-50">Hoàn tất thanh toán để nâng cấp tài khoản và trải nghiệm đầy đủ tính năng</p>
+        </div>
+        
+        <div class="card-body p-4 p-md-5 pt-0">
+          <div class="row g-5">
+            <!-- Left Column: Package Details -->
+            <div class="col-lg-6">
+              <div class="package-info-section h-100">
+                <h4 class="text-gold mb-4 fw-bold"><i class="bx bx-receipt me-2"></i>Thông tin đơn hàng</h4>
                 
-                <div class="mb-5">
-                  <label class="form-label fw-semibold">Phương thức thanh toán <span class="text-danger">*</span></label>
-                  <div class="payment-methods">
-                    <label class="method-option" v-for="(m, i) in methods" :key="i" :class="{ 'active': form.phuong_thuc === m.value }">
-                      <input type="radio" v-model="form.phuong_thuc" :value="m.value" class="d-none">
-                      <i :class="m.icon"></i>
-                      <span>{{ m.label }}</span>
-                    </label>
+                <div class="glass-info p-4 rounded-2xl border border-white/10 mb-4">
+                  <div class="info-row">
+                    <span>Gói dịch vụ:</span>
+                    <strong class="text-white">{{ ten_goi || 'Gia Phả Tộc' }}</strong>
+                  </div>
+                  <div class="info-row">
+                    <span>Thời hạn:</span>
+                    <strong class="text-white">Vĩnh viễn (Server)</strong>
+                  </div>
+                  <div class="info-row border-0">
+                    <span>Tổng tiền:</span>
+                    <strong class="text-gold fs-4">{{ form.so_tien ? form.so_tien.toLocaleString() : '20,000' }} VNĐ</strong>
                   </div>
                 </div>
 
-                <!-- QR Transfer -->
-                <div class="qr-payment-section text-center p-4 rounded-4 mb-5" v-if="form.phuong_thuc === 'bank'">
-                  <h5 class="fw-bold mb-4">Quét mã QR để chuyển khoản</h5>
-                  <div class="qr-image-wrapper mx-auto mb-3">
-                    <img :src="qrUrl" alt="QR Code Thanh Toán" class="img-fluid rounded-3 border p-2 bg-white" v-if="form.so_tien">
-                    <div v-else class="qr-placeholder rounded-3 border d-flex align-items-center justify-content-center bg-light">
-                      <span class="text-muted"><i class="bx bx-qr-scan fs-1 mb-2 d-block"></i>Nhập số tiền để tạo mã QR</span>
+                <div class="benefits-list mt-4">
+                  <h6 class="text-white-50 small fw-bold text-uppercase mb-3">Quyền lợi gói dịch vụ</h6>
+                  <div class="benefit-item mb-2">
+                    <i class="bx bx-check-circle text-success me-2"></i>
+                    <span>Tạo 01 cây gia phả dòng họ trực tuyến</span>
+                  </div>
+                  <div class="benefit-item mb-2">
+                    <i class="bx bx-check-circle text-success me-2"></i>
+                    <span>Không giới hạn số lượng thành viên</span>
+                  </div>
+                  <div class="benefit-item mb-2">
+                    <i class="bx bx-check-circle text-success me-2"></i>
+                    <span>Tra cứu và tìm kiếm thông tin nhanh chóng</span>
+                  </div>
+                  <div class="benefit-item mb-2">
+                    <i class="bx bx-check-circle text-success me-2"></i>
+                    <span>Bảo mật và lưu trữ an toàn trên đám mây</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Column: Payment Details & QR -->
+            <div class="col-lg-6">
+              <div class="payment-section">
+                <h4 class="text-gold mb-4 fw-bold"><i class="bx bx-qr-scan me-2"></i>Chuyển khoản qua mã QR</h4>
+                
+                <div class="qr-payment-section text-center p-4 rounded-3xl mb-4">
+                  <div class="qr-image-wrapper mx-auto mb-4">
+                    <img :src="qrUrl" alt="QR Code" class="img-fluid rounded-2xl border-2 border-white/10 p-2 bg-white shadow-glow" v-if="form.so_tien">
+                    <div v-else class="qr-placeholder rounded-2xl border-2 border-dashed border-white/20 d-flex align-items-center justify-content-center bg-white/5">
+                      <span class="text-white-50">Nhập số tiền để tạo mã QR</span>
                     </div>
                   </div>
                   
-                  <div class="bank-details text-start bg-white p-4 rounded-3 border mt-4">
-                    <div class="info-row"><span>Ngân hàng:</span><strong class="text-dark">MB Bank (Ngân hàng Quân Đội)</strong></div>
-                    <div class="info-row"><span>Số tài khoản:</span><strong class="text-dark fs-5">0342211914</strong></div>
-                    <div class="info-row"><span>Chủ tài khoản:</span><strong class="text-dark">TRAN HUU HIEU</strong></div>
-                    <div class="info-row">
-                      <span>Nội dung CK:</span>
-                      <strong class="text-danger">{{ transferContent }}</strong>
-                      <button type="button" class="btn btn-sm btn-light py-0 px-2 ms-2" @click="copyContent" title="Sao chép">
+                  <div class="bank-details text-start glass-info p-4 rounded-2xl border border-white/10">
+                    <div class="info-row"><span>Ngân hàng:</span><strong>MB Bank (Quân Đội)</strong></div>
+                    <div class="info-row"><span>Số tài khoản:</span><strong class="text-gold">0342211914</strong></div>
+                    <div class="info-row"><span>Chủ tài khoản:</span><strong>TRAN HUU HIEU</strong></div>
+                    <div class="info-row border-0">
+                      <span>Nội dung:</span>
+                      <strong class="text-warning">{{ transferContent }}</strong>
+                      <button type="button" class="btn-copy ms-2" @click="copyContent">
                         <i class="bx bx-copy"></i>
                       </button>
                     </div>
                   </div>
                 </div>
 
-                <!-- Other Methods Warning -->
-                <div class="alert alert-warning border-0 rounded-3 mb-4" v-if="form.phuong_thuc === 'momo' || form.phuong_thuc === 'zalopay'">
-                  <div class="d-flex align-items-center">
-                    <i class="bx bx-info-circle fs-3 me-3"></i>
-                    <div>Phương thức thanh toán qua ví điện tử đang được bảo trì. Vui lòng chọn <strong>Chuyển khoản ngân hàng</strong>.</div>
-                  </div>
-                </div>
-
-                <button type="submit" class="btn-submit w-100" :disabled="isSubmitting || (form.phuong_thuc !== 'bank')">
-                  <span v-if="!isSubmitting"><i class="bx bx-check-circle me-2"></i> Xác Nhận Đã Chuyển Khoản</span>
-                  <span v-else><i class="bx bx-loader-alt bx-spin me-2"></i> Đang xử lý...</span>
-                </button>
-              </form>
+                <form @submit.prevent="submitPayment">
+                  <button type="submit" class="btn-gradient-submit w-100" :disabled="isSubmitting">
+                    <span v-if="!isSubmitting"><i class="bx bx-check-circle me-2"></i> XÁC NHẬN ĐÃ CHUYỂN KHOẢN</span>
+                    <span v-else><i class="bx bx-loader-alt bx-spin me-2"></i> ĐANG XỬ LÝ...</span>
+                  </button>
+                </form>
+                
+                <p class="text-center text-white-50 small mt-3">
+                  <i class="bx bx-info-circle me-1"></i> Hệ thống sẽ tự động xác nhận sau 1-3 phút
+                </p>
+              </div>
             </div>
           </div>
+        </div>
+      </div>
 
-          <div class="security-note text-center">
-            <div class="d-inline-flex align-items-center gap-3">
-              <span class="note-item"><i class="bx bx-lock-alt"></i> An toàn & Bảo mật</span>
-              <span class="note-item"><i class="bx bx-support"></i> Hỗ trợ 24/7</span>
-            </div>
-          </div>
+      <div class="security-note text-center mt-5">
+        <div class="d-inline-flex align-items-center gap-5">
+          <span class="note-item"><i class="bx bx-lock-alt"></i> An toàn & Bảo mật</span>
+          <span class="note-item"><i class="bx bx-support"></i> Hỗ trợ 24/7</span>
+          <span class="note-item"><i class="bx bx-shield-quarter"></i> Chính sách hoàn tiền</span>
         </div>
       </div>
     </div>
@@ -92,30 +122,25 @@ export default {
   data() {
     return {
       userName: '',
-      methods: [
-        { value: 'bank', label: 'Chuyển khoản / QR', icon: 'bx bx-qr-scan' },
-        { value: 'momo', label: 'MoMo', icon: 'bx bx-wallet' },
-        { value: 'zalopay', label: 'ZaloPay', icon: 'bx bx-mobile' }
-      ],
       form: { 
         so_tien: null, 
         phuong_thuc: 'bank' 
       },
+      ten_goi: '',
       isSubmitting: false,
       checkInterval: null,
-      paymentCode: Math.floor(10000 + Math.random() * 90000)
+      paymentCode: null
     }
   },
   computed: {
     cleanAmount() {
-      // Return numeric value only
+      if (!this.form.so_tien) return '';
       return this.form.so_tien.toString().replace(/[^\d]/g, '');
     },
     transferContent() {
       let name = 'KH';
       if (this.userName) {
         name = this.userName.split(' ').pop().toUpperCase();
-        // Remove accents using standard JS normalize
         name = name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/Đ/g, 'D');
       }
       return `MUAGOI ${name}${this.paymentCode}`;
@@ -130,9 +155,27 @@ export default {
 
   mounted() {
     const user = JSON.parse(localStorage.getItem('user'));
-    if (user) {
-      this.userName = (user.user || user).ho_ten || '';
+    const userData = user ? (user.user || user) : null;
+    if (userData) {
+      this.userName = userData.ho_ten || '';
+      // Persistent payment code for this user
+      const storageKey = `payment_code_${userData.id}`;
+      let savedCode = localStorage.getItem(storageKey);
+      if (!savedCode) {
+        savedCode = Math.floor(10000 + Math.random() * 90000);
+        localStorage.setItem(storageKey, savedCode);
+      }
+      this.paymentCode = savedCode;
     }
+    
+    // Get amount from query if available
+    if (this.$route.query.so_tien) {
+      this.form.so_tien = Number(this.$route.query.so_tien);
+    }
+    if (this.$route.query.ten_goi) {
+      this.ten_goi = this.$route.query.ten_goi;
+    }
+
     this.startAutoCheck();
   },
   beforeUnmount() {
@@ -141,7 +184,7 @@ export default {
   methods: {
     startAutoCheck() {
       this.checkInterval = setInterval(() => {
-        if (this.cleanAmount > 0 && this.form.phuong_thuc === 'bank' && !this.isSubmitting) {
+        if (this.cleanAmount > 0 && !this.isSubmitting) {
           this.checkPaymentSilent();
         }
       }, 5000);
@@ -189,7 +232,7 @@ export default {
 
       const token = localStorage.getItem('access_token');
       if (!token) {
-        this.toast.warning('Vui lòng đăng nhập để lưu lại lịch sử đóng góp!');
+        this.toast.warning('Vui lòng đăng nhập!');
         this.$router.push('/login');
         return;
       }
@@ -209,11 +252,11 @@ export default {
           this.toast.success('Xác nhận thành công! Bạn đã được nâng cấp lên Đối Tác.');
           this.$router.push('/doi-tac/dashboard');
         } else {
-          this.toast.error(res.data.message || 'Chưa nhận được thanh toán. Vui lòng chờ thêm ít phút.');
+          this.toast.error(res.data.message || 'Chưa nhận được thanh toán.');
         }
       })
       .catch((err) => { 
-        this.toast.error('Có lỗi xảy ra, vui lòng thử lại!'); 
+        this.toast.error('Có lỗi xảy ra!'); 
         console.error(err);
       })
       .finally(() => { this.isSubmitting = false; });
@@ -223,153 +266,136 @@ export default {
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
-.checkout-page {
-  font-family: 'Inter', sans-serif;
-  min-height: calc(100vh - 200px);
-  background-color: #f8f9fa;
-}
-
-.text-gold { color: #d4af37 !important; }
-
-/* Header */
-.checkout-header {
-  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%) !important;
-  color: #fff;
-}
-.rounded-top-4 { border-radius: 16px 16px 0 0 !important; }
-.rounded-4 { border-radius: 16px !important; }
-
-/* Form Elements */
-.form-control {
-  border-radius: 12px;
-  padding: 14px 18px;
-  border: 1px solid #dee2e6;
-  background-color: #fcfcfc;
-  transition: all 0.3s ease;
-  font-size: 15px;
-}
-.form-control:focus {
-  border-color: #d4af37;
-  box-shadow: 0 0 0 4px rgba(212,175,55,0.1);
-  background-color: #fff;
-}
-.form-control-lg {
-  font-size: 18px;
-  font-weight: 600;
-  color: #d4af37;
+.landing-page-wrapper {
+    background-color: #0b1120;
+    color: #f8fafc;
+    min-height: 100vh;
+    font-family: 'Inter', sans-serif;
+    position: relative;
+    overflow: hidden;
 }
 
-/* Payment Methods */
-.payment-methods {
-  display: flex;
-  gap: 15px;
+.hero-background {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background-image: linear-gradient(to bottom, rgba(11, 17, 32, 0.4) 0%, rgba(11, 17, 32, 0.9) 100%),
+        url('@/assets/images/bg_product.webp');
+    background-size: cover;
+    background-position: center;
+    z-index: 0;
 }
-.method-option {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  padding: 20px 10px;
-  border: 2px solid #e9ecef;
-  background: #fff;
-  border-radius: 14px;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  font-size: 14px;
-  font-weight: 600;
-  color: #6c757d;
+
+.container-custom {
+    max-width: 1100px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 2;
 }
-.method-option i { 
-  font-size: 32px; 
-  color: #adb5bd;
-  transition: color 0.3s;
+
+.glow-blob {
+    position: absolute;
+    width: 400px; height: 400px;
+    border-radius: 50%;
+    filter: blur(120px);
+    z-index: 1;
+    opacity: 0.4;
 }
-.method-option:hover { 
-  border-color: #d4af37; 
-  color: #d4af37; 
-  transform: translateY(-2px);
+
+.blob-purple { background: #120a1f; top: 10%; left: -10%; }
+.blob-blue { background: #031948; top: 40%; right: -10%; }
+
+/* Glass Card */
+.glass-card {
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
-.method-option:hover i { color: #d4af37; }
-.method-option.active {
-  border-color: #d4af37;
-  background: #fffdf5;
-  color: #d4af37;
-  box-shadow: 0 8px 16px rgba(212,175,55,0.12);
+
+.text-gradient {
+    background: linear-gradient(90deg, #fbff00, #ff8c00);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
 }
-.method-option.active i { color: #d4af37; }
+
+.text-gold { color: #ffd700; }
 
 /* QR Section */
 .qr-payment-section {
-  background: linear-gradient(to bottom, #fdfdfd, #f8f9fa);
-  border: 1px solid #e9ecef;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
 }
-.qr-image-wrapper {
-  max-width: 250px;
-}
-.qr-placeholder {
-  height: 250px;
-  border: 2px dashed #dee2e6 !important;
-}
+
+.qr-image-wrapper { max-width: 240px; }
+.shadow-glow { box-shadow: 0 0 30px rgba(255, 255, 255, 0.1); }
+.qr-placeholder { height: 240px; }
 
 /* Bank Details */
-.bank-details {
-  box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+.glass-info {
+    background: rgba(0, 0, 0, 0.2);
 }
+
 .info-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 0;
-  font-size: 15px;
-  border-bottom: 1px dashed #e9ecef;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    font-size: 0.95rem;
 }
-.info-row:last-child { 
-  border-bottom: none; 
-  padding-bottom: 0;
+
+.info-row span { color: #94a3b8; }
+.info-row strong { color: #f1f5f9; }
+
+.btn-copy {
+    background: rgba(255, 255, 255, 0.1);
+    border: none; color: #ffd700;
+    padding: 4px 8px; border-radius: 6px;
+    cursor: pointer; transition: 0.2s;
 }
-.info-row span { color: #6c757d; font-weight: 500; }
+
+.btn-copy:hover { background: #ffd700; color: #000; }
+
+.benefit-item {
+    font-size: 0.9rem;
+    color: #cbd5e1;
+}
 
 /* Submit Button */
-.btn-submit {
-  padding: 16px;
-  background: linear-gradient(135deg, #d4af37, #c49b2a);
-  color: #000;
-  border: none;
-  border-radius: 12px;
-  font-weight: 700;
-  font-size: 16px;
-  letter-spacing: 0.5px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-.btn-submit:hover:not(:disabled) {
-  transform: translateY(-3px);
-  box-shadow: 0 12px 24px rgba(212,175,55,0.25);
-}
-.btn-submit:disabled { 
-  opacity: 0.6; 
-  cursor: not-allowed; 
-  background: #e9ecef;
-  color: #6c757d;
+.btn-gradient-submit {
+    padding: 16px;
+    background: linear-gradient(135deg, #0a3c88, #6610f2);
+    color: white;
+    border: none; border-radius: 14px;
+    font-weight: 700; font-size: 1rem;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
 }
 
-/* Security Note */
-.security-note .note-item {
-  color: #adb5bd;
-  font-size: 14px;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: 6px;
+.btn-gradient-submit:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 25px rgba(102, 16, 242, 0.4);
+    opacity: 0.9;
 }
-.security-note i { font-size: 18px; }
 
-@media (max-width: 768px) {
-  .payment-methods { flex-direction: column; }
-  .info-row { flex-direction: column; align-items: flex-start; gap: 4px; }
-  .info-row strong { font-size: 16px !important; }
+.btn-gradient-submit:disabled {
+    background: #1e293b;
+    color: #475569;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+.note-item {
+    color: #64748b;
+    font-size: 0.9rem;
+    display: flex; align-items: center; gap: 8px;
+}
+
+.note-item i { font-size: 1.2rem; color: #ffd700; }
+
+@media (max-width: 992px) {
+    .info-row { flex-direction: column; align-items: flex-start; gap: 5px; }
 }
 </style>

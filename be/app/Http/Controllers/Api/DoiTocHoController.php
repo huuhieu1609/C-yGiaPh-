@@ -12,7 +12,15 @@ class DoiTocHoController extends Controller
     public function getData()
     {
         try {
-            $data = DoiTocHo::with('chiNhanh')->get();
+            $user = auth('sanctum')->user();
+            if ($user && $user->is_doi_tac == 1) {
+                // Lấy ID các chi nhánh thuộc sở hữu của đối tác này
+                $chiNhanhIds = \App\Models\ChiNhanh::where('id_nguoi_dung', $user->id)->pluck('id');
+                $data = DoiTocHo::whereIn('chi_nhanh_id', $chiNhanhIds)->with('chiNhanh')->get();
+            } else {
+                $data = DoiTocHo::with('chiNhanh')->get();
+            }
+
             return response()->json([
                 'status'  => true,
                 'message' => 'Lấy dữ liệu thành công!',

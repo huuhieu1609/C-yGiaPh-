@@ -4,33 +4,51 @@
             <div class="card shadow-sm border-0 radius-10 overflow-hidden">
                 <div class="card-header bg-white py-3 border-0">
                     <div class="row align-items-center">
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <h5 class="mb-0 fw-bold text-dark"><i class="bx bx-git-branch text-primary"></i> Trực Quan Cây Gia Phả</h5>
                         </div>
-                        <div class="col-md-8 text-md-end d-flex align-items-center justify-content-end gap-3">
+                        <div class="col-md-9 text-md-end d-flex align-items-center justify-content-end gap-2 flex-wrap">
+                            
+                            <!-- Branch Selector (Global Filter) -->
+                            <div class="me-2" style="width: 220px;">
+                                <select class="form-select radius-30 border-2 shadow-none fw-bold" v-model="selectedChiNhanhId" @change="resetView">
+                                    <option v-for="cn in listChiNhanh" :key="cn.id" :value="cn.id">{{ cn.ten_chi }}</option>
+                                </select>
+                            </div>
+
                             <!-- Search Bar -->
-                            <div class="position-relative d-none d-lg-block" style="width: 250px;">
+                            <div class="position-relative d-none d-lg-block" style="width: 200px;">
                                 <input type="text" class="form-control ps-5 radius-30 border-2" v-model="searchQuery" placeholder="Tìm thành viên...">
                                 <span class="position-absolute top-50 translate-middle-y start-0 ms-3 text-secondary"><i class="bx bx-search"></i></span>
                             </div>
                             
                             <!-- Zoom Controls -->
                             <div class="btn-group shadow-sm radius-30 overflow-hidden border">
-                                <button class="btn btn-white px-3" @click="zoomOut" title="Thu nhỏ"><i class="bx bx-minus"></i></button>
-                                <button class="btn btn-white px-2 fw-bold" style="min-width: 60px;">{{ Math.round(zoom * 100) }}%</button>
-                                <button class="btn btn-white px-3" @click="zoomIn" title="Phóng to"><i class="bx bx-plus"></i></button>
-                                <button class="btn btn-white px-3" @click="resetView" title="Đặt lại"><i class="bx bx-refresh"></i></button>
+                                <button class="btn btn-white px-2" @click="zoomOut" title="Thu nhỏ"><i class="bx bx-minus"></i></button>
+                                <button class="btn btn-white px-1 fw-bold" style="min-width: 50px; font-size: 13px;">{{ Math.round(zoom * 100) }}%</button>
+                                <button class="btn btn-white px-2" @click="zoomIn" title="Phóng to"><i class="bx bx-plus"></i></button>
+                                <button class="btn btn-white px-2" @click="resetView" title="Đặt lại"><i class="bx bx-refresh"></i></button>
                             </div>
 
-                            <button class="btn btn-primary radius-30 px-4 shadow-sm" @click="openAddModal">
-                                <i class="bx bx-plus"></i> Thêm Thành Viên
+                            <button class="btn btn-primary radius-30 px-3 shadow-sm" @click="openAddModal">
+                                <i class="bx bx-plus"></i> Thêm
                             </button>
                         </div>
                     </div>
                 </div>
                 <div class="card-body p-0 position-relative">
+                    <div v-if="listChiNhanh.length === 0" class="text-center py-5">
+                        <div class="mb-4 mt-5">
+                            <i class="bx bx-building-house fs-1 text-muted opacity-25" style="font-size: 100px !important;"></i>
+                        </div>
+                        <h4 class="fw-bold text-dark">Chưa có thông tin Dòng Họ!</h4>
+                        <p class="text-muted">Bạn cần khởi tạo Dòng Họ (Chi Nhánh) để bắt đầu xây dựng cây gia phả.</p>
+                        <router-link to="/doi-tac/dong-ho" class="btn btn-primary radius-30 px-5 mt-3 shadow-sm mb-5">
+                            <i class="bx bx-plus-circle"></i> Khởi Tạo Ngay
+                        </router-link>
+                    </div>
                     <!-- Pan & Zoom Tree Container -->
-                    <div class="tree-viewport" 
+                    <div v-else class="tree-viewport" 
                          ref="viewport"
                          @mousedown="startPan"
                          @mousemove="doPan"
@@ -297,6 +315,8 @@ export default {
     data() {
         return {
             allMembers: [],
+            listChiNhanh: [],
+            selectedChiNhanhId: null,
             listDoiTocHo: [],
             currentMember: {
                 id: null, ho_ten: '', doi_thu: 1, cha_id: null, gioi_tinh: 'Nam',
@@ -319,6 +339,12 @@ export default {
     computed: {
         treeData() {
             let list = JSON.parse(JSON.stringify(this.allMembers));
+            
+            // Filter by branch if selected
+            if (this.selectedChiNhanhId) {
+                list = list.filter(m => m.chi_nhanh_id === this.selectedChiNhanhId);
+            }
+
             const map = {};
             const roots = [];
             list.forEach(item => { map[item.id] = item; item.children = []; item.spouses = []; });
@@ -372,14 +398,18 @@ export default {
             this.modal = new window.bootstrap.Modal(document.getElementById('memberModal'));
         }
         this.loadDoiTocHo();
+        this.loadChiNhanh();
         this.loadData();
         
         // Add wheel listener for zoom
         this.$refs.viewport.addEventListener('wheel', this.handleWheel, { passive: false });
     },
     methods: {
+        getHeaders() {
+            return { headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` } };
+        },
         loadDoiTocHo() {
-            axios.get('http://127.0.0.1:8000/api/doi-toc-ho/get-data')
+            axios.get('http://127.0.0.1:8000/api/doi-toc-ho/get-data', this.getHeaders())
                 .then(res => {
                     if (res.data.status) {
                         this.listDoiTocHo = res.data.data.sort((a, b) => a.so_doi - b.so_doi);
@@ -387,10 +417,21 @@ export default {
                 });
         },
         loadData() {
-            axios.get('http://127.0.0.1:8000/api/thanh-vien/get-data')
+            axios.get('http://127.0.0.1:8000/api/thanh-vien/get-data', this.getHeaders())
                 .then(res => {
                     if (res.data.status) {
                         this.allMembers = res.data.data;
+                    }
+                });
+        },
+        loadChiNhanh() {
+            axios.get('http://127.0.0.1:8000/api/chi-nhanh/get-data', this.getHeaders())
+                .then(res => {
+                    if (res.data.status) {
+                        this.listChiNhanh = res.data.data;
+                        if (this.listChiNhanh.length > 0 && !this.selectedChiNhanhId) {
+                            this.selectedChiNhanhId = this.listChiNhanh[0].id;
+                        }
                     }
                 });
         },

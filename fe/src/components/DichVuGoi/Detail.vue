@@ -25,7 +25,7 @@
                 </p>
 
                 <div class="hero-actions">
-                    <button class="btn btn-gradient">ĐĂNG KÝ GÓI 20.000Đ</button>
+                    <button class="btn btn-gradient" @click="dangKyGoi(20000, 'Gói Gia Phả Tộc')">ĐĂNG KÝ GÓI 20.000Đ</button>
                     <button class="btn btn-outline" @click="showSampleImage">
                         XEM CÂY GIA PHẢ MẪU
                     </button>
@@ -176,6 +176,15 @@ export default {
 
         closeModal() {
             this.showModal = false;
+        },
+        dangKyGoi(so_tien, ten_goi) {
+            this.$router.push({
+                path: '/thanh-toan',
+                query: { 
+                    so_tien: so_tien,
+                    ten_goi: ten_goi
+                }
+            });
         }
     }
 }

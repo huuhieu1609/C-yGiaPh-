@@ -20,6 +20,13 @@
 					</router-link>
 				</li>
 				<li class="nav-item">
+					<router-link to="/doi-tac/dong-ho" class="nav-link">
+						<div class="parent-icon"><i class='bx bx-building-house'></i>
+						</div>
+						<div class="menu-title">Quản Lý Dòng Họ</div>
+					</router-link>
+				</li>
+				<li class="nav-item">
 					<router-link to="/doi-tac/gia-pha" class="nav-link">
 						<div class="parent-icon"><i class='bx bx-git-branch'></i>
 						</div>

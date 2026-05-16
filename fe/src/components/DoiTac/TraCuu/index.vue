@@ -17,13 +17,42 @@
                 </div>
             </div>
 
+            <div v-if="listChiNhanh.length === 0" class="row justify-content-center animate__animated animate__fadeIn">
+                <div class="col-lg-8">
+                    <div class="heritage-card p-5 text-center shadow-lg border-warning">
+                        <div class="mb-4 mt-3">
+                            <i class="bx bx-building-house fs-1 text-muted opacity-25" style="font-size: 80px !important;"></i>
+                        </div>
+                        <h4 class="fw-bold text-dark">Dòng Họ Chưa Được Khởi Tạo!</h4>
+                        <p class="text-muted">Tính năng tra cứu chỉ khả dụng sau khi bạn đã thiết lập Dòng Họ (Chi Nhánh).</p>
+                        <router-link to="/doi-tac/dong-ho" class="btn btn-primary radius-30 px-5 mt-3 shadow-sm mb-3">
+                            <i class="bx bx-plus-circle"></i> Khởi Tạo Ngay
+                        </router-link>
+                    </div>
+                </div>
+            </div>
+
+            <div v-else-if="allMembers.length === 0" class="row justify-content-center animate__animated animate__fadeIn">
+                <div class="col-lg-8">
+                    <div class="heritage-card p-5 text-center shadow-lg">
+                        <div class="mb-4 mt-3">
+                            <i class="bx bx-git-branch fs-1 text-muted opacity-25" style="font-size: 80px !important;"></i>
+                        </div>
+                        <h4 class="fw-bold text-dark">Chưa Có Thành Viên Để Tra Cứu!</h4>
+                        <p class="text-muted">Bạn cần thêm thành viên vào Cây Gia Phả trước khi có thể tra cứu vai vế.</p>
+                        <router-link to="/doi-tac/gia-pha" class="btn btn-primary radius-30 px-5 mt-3 shadow-sm mb-3">
+                            <i class="bx bx-plus"></i> Bắt Đầu Xây Dựng Cây
+                        </router-link>
+                    </div>
+                </div>
+            </div>
+
             <!-- Global Branch Selector -->
-            <div class="row mb-5 justify-content-center animate__animated animate__fadeInDown">
+            <div v-else class="row mb-5 justify-content-center animate__animated animate__fadeInDown">
                 <div class="col-lg-6">
                     <div class="heritage-card p-3 text-center border-2 border-warning">
                         <label class="fw-bold text-dark mb-2 text-uppercase" style="letter-spacing: 1px;">Chọn Dòng Họ Để Tra Cứu:</label>
                         <select class="form-select form-select-lg radius-15 border-2 shadow-none" v-model="selectedChiNhanhId" @change="resetSelection">
-                            <option :value="null">-- Vui lòng chọn dòng họ --</option>
                             <option v-for="cn in listChiNhanh" :key="cn.id" :value="cn.id">{{ cn.ten_chi }}</option>
                         </select>
                         <div v-if="!selectedChiNhanhId" class="mt-2 text-danger small italic">
@@ -187,8 +216,11 @@ export default {
         this.loadChiNhanh();
     },
     methods: {
+        getHeaders() {
+            return { headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` } };
+        },
         loadData() {
-            axios.get('http://127.0.0.1:8000/api/thanh-vien/get-data')
+            axios.get('http://127.0.0.1:8000/api/thanh-vien/get-data', this.getHeaders())
                 .then(res => {
                     if (res.data.status) {
                         this.allMembers = res.data.data;
@@ -196,10 +228,13 @@ export default {
                 });
         },
         loadChiNhanh() {
-            axios.get('http://127.0.0.1:8000/api/chi-nhanh/get-data')
+            axios.get('http://127.0.0.1:8000/api/chi-nhanh/get-data', this.getHeaders())
                 .then(res => {
                     if (res.data.status) {
                         this.listChiNhanh = res.data.data;
+                        if (this.listChiNhanh.length > 0 && !this.selectedChiNhanhId) {
+                            this.selectedChiNhanhId = this.listChiNhanh[0].id;
+                        }
                     }
                 });
         },

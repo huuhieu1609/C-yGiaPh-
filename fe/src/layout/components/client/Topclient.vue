@@ -9,7 +9,7 @@
           <li><router-link to="/">Trang Chủ</router-link></li>
           <li><router-link to="/gia-pha">Gia Phả</router-link></li>
           <li><router-link to="/tra-cuu">Tra Cứu</router-link></li>
-          <li><router-link to="/dich-vu-goi">Dịch Vụ Gói</router-link></li>
+          <li><router-link to="/dich-vu-goi/chi-tiet">Dịch Vụ Gói</router-link></li>
         </ul>
         <div class="nav-actions">
           <template v-if="!isLoggedIn">

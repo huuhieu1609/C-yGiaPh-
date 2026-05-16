@@ -59,14 +59,30 @@ class ThanhToanControlles extends Controller
                 $matchedTx = null;
 
                 foreach ($transactions as $tx) {
+                    $amountIn = $tx['amount_in'] ?? $tx['amount'] ?? 0;
                     $isIn = (isset($tx['transaction_type']) && $tx['transaction_type'] === 'in') 
-                            || (isset($tx['amount_in']) && $tx['amount_in'] > 0);
+                            || ($amountIn > 0);
                     
                     if ($isIn) {
                         $bankContent = strtoupper($tx['transaction_content'] ?? '');
-                        // Kiểm tra nếu nội dung chuyển khoản có chứa mã của mình
+                        
+                        // 1. Kiểm tra khớp hoàn toàn (MUAGOI ADMIN12345)
                         if (stripos($bankContent, $expectedContent) !== false) {
                             $matchedTx = $tx;
+                            $matchedTx['amount_in'] = $amountIn; // Ensure amount is set
+                            break;
+                        }
+
+                        // 2. Kiểm tra khớp linh hoạt (MUAGOI + TÊN + ĐÚNG SỐ TIỀN)
+                        // Lấy phần tên từ expectedContent (bỏ "MUAGOI " ở đầu và bỏ số ở cuối)
+                        $namePart = preg_replace('/^MUAGOI\s+/', '', $expectedContent);
+                        $namePart = preg_replace('/\d+$/', '', $namePart);
+                        $namePart = trim($namePart);
+
+                        if (stripos($bankContent, 'MUAGOI') !== false && 
+                            stripos($bankContent, $namePart) !== false) {
+                            $matchedTx = $tx;
+                            $matchedTx['amount_in'] = $amountIn;
                             break;
                         }
                     }
@@ -82,6 +98,12 @@ class ThanhToanControlles extends Controller
                     $dongGop->update(['trang_thai' => 'Đã duyệt']);
 
                     // 2. Tự động kích hoạt/cộng dồn Gói Đối Tác
+                    $user = \App\Models\NguoiDung::find($nguoiDungId);
+                    if ($user) {
+                        $user->is_doi_tac = 1;
+                        $user->save();
+                    }
+
                     $doiTac = DoiTac::where('id_nguoi_dung', $nguoiDungId)
                         ->where('trang_thai', 1)
                         ->first();

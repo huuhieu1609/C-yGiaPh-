@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\ChiNhanhController;
 use App\Http\Controllers\Api\ChucNangController;
 use App\Http\Controllers\Api\ChucVuController;
 use App\Http\Controllers\Api\ConNuoiController;
+use App\Http\Controllers\Api\DoiTacController;
 use App\Http\Controllers\Api\DoiTocHoController;
 use App\Http\Controllers\Api\DongGopController;
 use App\Http\Controllers\Api\HinhAnhController;
@@ -22,6 +23,8 @@ use App\Http\Controllers\Api\VoChongController;
 use App\Http\Controllers\ThanhToanControlles;
 use Illuminate\Support\Facades\Route;
 
+// ... (vẫn giữ các use khác)
+
 // Auth Routes
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
@@ -33,6 +36,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', [AuthController::class, 'me']);
     Route::post('/update-profile', [AuthController::class, 'updateProfile']);
     Route::post('/change-password', [AuthController::class, 'changePassword']);
+    
+    Route::prefix('/doi-tac')->group(function () {
+        Route::get('/get-profile', [DoiTacController::class, 'getProfile']);
+        Route::post('/update-profile', [DoiTacController::class, 'updateProfile']);
+        Route::get('/statistics', [DoiTacController::class, 'getStatistics']);
+    });
 });
 
 // Resources Routes
