@@ -42,10 +42,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/update-profile', [DoiTacController::class, 'updateProfile']);
         Route::get('/statistics', [DoiTacController::class, 'getStatistics']);
     });
-});
 
-// Resources Routes
-Route::prefix('/chuc-vu')->group(function () {
+    // Resources Routes
+    Route::prefix('/chuc-vu')->group(function () {
     Route::get('/get-data', [ChucVuController::class, 'getData']);
     Route::post('/create', [ChucVuController::class, 'create']);
     Route::post('/update', [ChucVuController::class, 'update']);
@@ -69,6 +68,7 @@ Route::prefix('/thanh-vien')->group(function () {
     Route::post('/update', [ThanhVienController::class, 'update']);
     Route::post('/delete', [ThanhVienController::class, 'delete']);
     Route::post('/status', [ThanhVienController::class, 'status']);
+    Route::post('/search', [ThanhVienController::class, 'search']);
 });
 
 Route::prefix('/nguoi-dung')->group(function () {
@@ -77,6 +77,7 @@ Route::prefix('/nguoi-dung')->group(function () {
     Route::post('/update', [NguoiDungController::class, 'update']);
     Route::post('/delete', [NguoiDungController::class, 'delete']);
     Route::post('/status', [NguoiDungController::class, 'status']);
+    Route::post('/search', [NguoiDungController::class, 'search']);
 });
 
 Route::prefix('/doi-toc-ho')->group(function () {
@@ -85,6 +86,7 @@ Route::prefix('/doi-toc-ho')->group(function () {
     Route::post('/update', [DoiTocHoController::class, 'update']);
     Route::post('/delete', [DoiTocHoController::class, 'delete']);
     Route::post('/status', [DoiTocHoController::class, 'status']);
+    Route::post('/search', [DoiTocHoController::class, 'search']);
 });
 
 Route::prefix('/chi-nhanh')->group(function () {
@@ -93,6 +95,7 @@ Route::prefix('/chi-nhanh')->group(function () {
     Route::post('/update', [ChiNhanhController::class, 'update']);
     Route::post('/delete', [ChiNhanhController::class, 'delete']);
     Route::post('/status', [ChiNhanhController::class, 'status']);
+    Route::post('/search', [ChiNhanhController::class, 'search']);
 });
 
 Route::prefix('/vo-chong')->group(function () {
@@ -181,14 +184,15 @@ Route::prefix('/thong-bao')->group(function () {
     Route::post('/update', [ThongBaoController::class, 'update']);
     Route::post('/delete', [ThongBaoController::class, 'delete']);
     Route::post('/status', [ThongBaoController::class, 'status']);
+    });
+
+    Route::prefix('/phan-quyen')->group(function () {
+        Route::post('/get-chuc-nang', [PhanQuyenController::class, 'getChucNang']);
+        Route::post('/update', [PhanQuyenController::class, 'updatePhanQuyen']);
+    });
 });
 
 Route::prefix('/thanh-toan')->group(function () {
     Route::get('/get-data', [ThanhToanControlles::class, 'index']);
     Route::post('/xac-nhan-thanh-toan', [ThanhToanControlles::class, 'paymentVerify']);
-});
-
-Route::prefix('/phan-quyen')->group(function () {
-    Route::post('/get-chuc-nang', [PhanQuyenController::class, 'getChucNang']);
-    Route::post('/update', [PhanQuyenController::class, 'updatePhanQuyen']);
 });

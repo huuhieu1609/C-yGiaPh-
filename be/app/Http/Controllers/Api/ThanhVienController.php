@@ -142,7 +142,15 @@ class ThanhVienController extends Controller
     {
         try {
             $query = $request->value;
-            $data = ThanhVien::where('ho_ten', 'like', '%' . $query . '%')->get();
+            $user = auth('sanctum')->user();
+            $q = ThanhVien::where('ho_ten', 'like', '%' . $query . '%');
+            
+            if ($user && $user->is_doi_tac == 1) {
+                $chiNhanhIds = \App\Models\ChiNhanh::where('id_nguoi_dung', $user->id)->pluck('id');
+                $q->whereIn('chi_nhanh_id', $chiNhanhIds);
+            }
+            
+            $data = $q->get();
             return response()->json([
                 'status'  => true,
                 'message' => 'Tìm thấy ' . count($data) . ' kết quả',
