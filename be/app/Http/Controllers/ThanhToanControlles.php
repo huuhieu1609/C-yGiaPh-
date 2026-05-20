@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
-class ThanhToanControlles extends Controller
+class ThanhToanController extends Controller
 {
     public function index()
     {
@@ -122,7 +122,11 @@ class ThanhToanControlles extends Controller
                         ]);
                     }
 
-                    return response()->json(['success' => true, 'message' => 'Xác nhận thành công!']);
+                    return response()->json([
+                        'success' => true, 
+                        'message' => 'Xác nhận thành công!',
+                        'redirect_url' => '/doi-tac'
+                    ]);
                 }
             }
 

@@ -9,28 +9,64 @@ use Exception;
 
 class ThanhVienController extends Controller
 {
+    // API Thêm thành viên mới vào dòng họ
+    public function store(Request $request)
+    {
+        try {
+            $data = $request->validate([
+                'id_chi_nhanh'   => 'required|exists:chi_nhanhs,id',
+                'ho_ten'         => 'required|string|max:255',
+                'email'          => 'nullable|email',
+                'gioi_tinh'      => 'required|string',
+                'ngay_sinh'      => 'nullable|date',
+                'ngay_mat'       => 'nullable|date',
+                'id_cha'         => 'nullable|exists:thanh_viens,id',
+                'id_me'          => 'nullable|exists:thanh_viens,id',
+                'trang_thai'     => 'nullable|string',
+                'thong_tin_them' => 'nullable|string'
+            ]);
+
+            $thanhVien = ThanhVien::create($data);
+
+            return response()->json([
+                'status'  => true,
+                'message' => 'Thêm thành viên thành công!',
+                'data'    => $thanhVien
+            ], 201);
+        } catch (Exception $e) {
+            return response()->json([
+                'status'  => false,
+                'message' => 'Lỗi khi thêm thành viên: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    // API Lấy toàn bộ danh sách thành viên của 1 chi nhánh (để vẽ cây / hiển thị danh sách)
+    public function getByChiNhanh($chiNhanhId)
+    {
+        try {
+            $thanhViens = ThanhVien::where('id_chi_nhanh', $chiNhanhId)->get();
+            return response()->json(['status' => true, 'data' => $thanhViens]);
+        } catch (Exception $e) {
+            return response()->json([
+                'status'  => false,
+                'message' => 'Lỗi lấy dữ liệu: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    // Cung cấp thêm các hàm chuẩn theo API Resource nếu Frontend dùng
     public function getData()
     {
         try {
-            $user = auth('sanctum')->user();
-            if ($user && $user->is_doi_tac == 1) {
-                // Lấy ID các chi nhánh thuộc sở hữu của đối tác này
-                $chiNhanhIds = \App\Models\ChiNhanh::where('id_nguoi_dung', $user->id)->pluck('id');
-                $data = ThanhVien::whereIn('chi_nhanh_id', $chiNhanhIds)->get();
-            } else {
-                $data = ThanhVien::all();
-            }
-
+            $data = ThanhVien::all();
             return response()->json([
                 'status'  => true,
                 'message' => 'Lấy dữ liệu thành công!',
                 'data'    => $data,
             ]);
         } catch (Exception $e) {
-            return response()->json([
-                'status'  => false,
-                'message' => 'Có lỗi xảy ra: ' . $e->getMessage(),
-            ], 500);
+            return response()->json(['status' => false, 'message' => $e->getMessage()], 500);
         }
     }
 
@@ -40,12 +76,9 @@ class ThanhVienController extends Controller
             $data = $request->all();
             if ($request->hasFile('avatar')) {
                 $image = $request->file('avatar');
-                $imageName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
+                $imageName = time() . '.' . $image->getClientOriginalExtension();
                 $image->move(public_path('uploads/avatars'), $imageName);
-                $data['avatar'] = request()->getSchemeAndHttpHost() . '/uploads/avatars/' . $imageName;
-            }
-            if ('ThanhVien' === 'NguoiDung' && isset($data['mat_khau'])) {
-                $data['mat_khau'] = bcrypt($data['mat_khau']);
+                $data['avatar'] = asset('uploads/avatars/' . $imageName);
             }
             $item = ThanhVien::create($data);
             return response()->json([
@@ -54,10 +87,7 @@ class ThanhVienController extends Controller
                 'data'    => $item
             ]);
         } catch (Exception $e) {
-            return response()->json([
-                'status'  => false,
-                'message' => 'Lỗi khi tạo mới: ' . $e->getMessage(),
-            ], 500);
+            return response()->json(['status' => false, 'message' => $e->getMessage()], 500);
         }
     }
 
@@ -68,14 +98,9 @@ class ThanhVienController extends Controller
             $data = $request->all();
             if ($request->hasFile('avatar')) {
                 $image = $request->file('avatar');
-                $imageName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
+                $imageName = time() . '.' . $image->getClientOriginalExtension();
                 $image->move(public_path('uploads/avatars'), $imageName);
-                $data['avatar'] = request()->getSchemeAndHttpHost() . '/uploads/avatars/' . $imageName;
-            } elseif (isset($data['avatar']) && $data['avatar'] === 'null') {
-                $data['avatar'] = null; // Option to remove avatar if explicitly sent as string 'null'
-            }
-            if ('ThanhVien' === 'NguoiDung' && isset($data['mat_khau'])) {
-                $data['mat_khau'] = bcrypt($data['mat_khau']);
+                $data['avatar'] = asset('uploads/avatars/' . $imageName);
             }
             $item->update($data);
             return response()->json([
@@ -84,10 +109,7 @@ class ThanhVienController extends Controller
                 'data'    => $item
             ]);
         } catch (Exception $e) {
-            return response()->json([
-                'status'  => false,
-                'message' => 'Lỗi khi cập nhật: ' . $e->getMessage(),
-            ], 500);
+            return response()->json(['status' => false, 'message' => $e->getMessage()], 500);
         }
     }
 
@@ -101,10 +123,7 @@ class ThanhVienController extends Controller
                 'message' => 'Xóa thành công!',
             ]);
         } catch (Exception $e) {
-            return response()->json([
-                'status'  => false,
-                'message' => 'Lỗi khi xóa: ' . $e->getMessage(),
-            ], 500);
+            return response()->json(['status' => false, 'message' => $e->getMessage()], 500);
         }
     }
 
@@ -112,29 +131,17 @@ class ThanhVienController extends Controller
     {
         try {
             $item = ThanhVien::findOrFail($request->id);
-            
-            if ('ThanhVien' === 'ThanhVien') {
+            if (isset($item->trang_thai)) {
                 $item->trang_thai = $item->trang_thai == 'Còn sống' ? 'Đã mất' : 'Còn sống';
-            } elseif (isset($item->trang_thai)) {
-                $item->trang_thai = $item->trang_thai == 'Hoạt động' ? 'Khóa' : 'Hoạt động';
-            } else {
-                return response()->json([
-                    'status'  => false,
-                    'message' => 'Model này không hỗ trợ trạng thái!',
-                ]);
+                $item->save();
             }
-            
-            $item->save();
             return response()->json([
                 'status'  => true,
                 'message' => 'Cập nhật trạng thái thành công!',
                 'trang_thai' => $item->trang_thai
             ]);
         } catch (Exception $e) {
-            return response()->json([
-                'status'  => false,
-                'message' => 'Lỗi cập nhật trạng thái: ' . $e->getMessage(),
-            ], 500);
+            return response()->json(['status' => false, 'message' => $e->getMessage()], 500);
         }
     }
 
@@ -142,25 +149,16 @@ class ThanhVienController extends Controller
     {
         try {
             $query = $request->value;
-            $user = auth('sanctum')->user();
-            $q = ThanhVien::where('ho_ten', 'like', '%' . $query . '%');
-            
-            if ($user && $user->is_doi_tac == 1) {
-                $chiNhanhIds = \App\Models\ChiNhanh::where('id_nguoi_dung', $user->id)->pluck('id');
-                $q->whereIn('chi_nhanh_id', $chiNhanhIds);
-            }
-            
-            $data = $q->get();
+            $data = ThanhVien::where('ho_ten', 'like', '%' . $query . '%')
+                             ->orWhere('email', 'like', '%' . $query . '%')
+                             ->get();
             return response()->json([
                 'status'  => true,
                 'message' => 'Tìm thấy ' . count($data) . ' kết quả',
                 'data'    => $data,
             ]);
         } catch (Exception $e) {
-            return response()->json([
-                'status'  => false,
-                'message' => 'Lỗi khi tìm kiếm: ' . $e->getMessage(),
-            ], 500);
+            return response()->json(['status' => false, 'message' => $e->getMessage()], 500);
         }
     }
 }

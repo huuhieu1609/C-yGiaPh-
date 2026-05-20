@@ -13,10 +13,18 @@ class ChiNhanhController extends Controller
     {
         try {
             $user = auth('sanctum')->user();
-            if ($user && $user->is_doi_tac == 1) {
-                $data = ChiNhanh::where('id_nguoi_dung', $user->id)->get();
+            if ($user) {
+                if ($user->vai_tro === 'Admin') {
+                    $data = ChiNhanh::all();
+                } elseif ($user->is_doi_tac == 1) {
+                    $data = ChiNhanh::where('id_nguoi_dung', $user->id)->get();
+                } else {
+                    // Lấy ra các chi nhánh (cây gia phả) có thành viên mang email của user đang đăng nhập
+                    $chiNhanhIds = \App\Models\ThanhVien::where('email', $user->email)->whereNotNull('email')->pluck('id_chi_nhanh');
+                    $data = ChiNhanh::whereIn('id', $chiNhanhIds)->get();
+                }
             } else {
-                $data = ChiNhanh::all();
+                $data = [];
             }
             
             return response()->json([
@@ -73,9 +81,6 @@ class ChiNhanhController extends Controller
         try {
             $item = ChiNhanh::findOrFail($request->id);
             $data = $request->all();
-            if ('ChiNhanh' === 'NguoiDung' && isset($data['mat_khau'])) {
-                $data['mat_khau'] = bcrypt($data['mat_khau']);
-            }
             $item->update($data);
             return response()->json([
                 'status'  => true,
@@ -112,9 +117,7 @@ class ChiNhanhController extends Controller
         try {
             $item = ChiNhanh::findOrFail($request->id);
             
-            if ('ChiNhanh' === 'ThanhVien') {
-                $item->trang_thai = $item->trang_thai == 'Còn sống' ? 'Đã mất' : 'Còn sống';
-            } elseif (isset($item->trang_thai)) {
+            if (isset($item->trang_thai)) {
                 $item->trang_thai = $item->trang_thai == 'Hoạt động' ? 'Khóa' : 'Hoạt động';
             } else {
                 return response()->json([

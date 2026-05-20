@@ -12,25 +12,39 @@ class ThanhVien extends Model
     protected $table = 'thanh_viens';
 
     protected $fillable = [
-        'ho_ten', 'ten_goi', 'gioi_tinh', 'ngay_sinh', 'ngay_mat', 
-        'noi_sinh', 'nghe_nghiep', 'doi_thu', 'trang_thai', 'ghi_chu',
-        'chi_nhanh_id', 'cha_id', 'me_id'
+        'id_chi_nhanh',
+        'ho_ten',
+        'email',
+        'gioi_tinh',
+        'ngay_sinh',
+        'ngay_mat',
+        'id_cha',
+        'id_me',
+        'trang_thai', // Ví dụ: 'Còn sống', 'Đã mất'
+        'thong_tin_them',
+        'doi_thu',
+        'loai_quan_he',
+        'spouse_of_id',
+        'ghi_chu',
+        'avatar'
     ];
 
-    // Thuộc về 1 chi nhánh
+    // Quan hệ: Thành viên thuộc về 1 Chi nhánh
     public function chiNhanh()
     {
-        return $this->belongsTo(ChiNhanh::class, 'chi_nhanh_id', 'id');
+        return $this->belongsTo(ChiNhanh::class, 'id_chi_nhanh');
     }
 
-    // Tra cứu danh sách theo chi nhánh và từ khóa
-    public function scopeSearch($query, $chiNhanhId, $keyword = null)
+    // Scope tìm kiếm thành viên theo chi nhánh (để DoiTacController sử dụng)
+    public function scopeSearch($query, $chiNhanhId, $keyword)
     {
-        $query->where('chi_nhanh_id', $chiNhanhId);
-        if ($keyword) {
-            $query->where('ho_ten', 'like', '%' . $keyword . '%')
-                  ->orWhere('ten_goi', 'like', '%' . $keyword . '%');
-        }
-        return $query;
+        return $query->where('id_chi_nhanh', $chiNhanhId)
+                     ->when($keyword, function ($q) use ($keyword) {
+                         $q->where(function($subQuery) use ($keyword) {
+                             $subQuery->where('ho_ten', 'like', '%' . $keyword . '%')
+                                      ->orWhere('thong_tin_them', 'like', '%' . $keyword . '%')
+                                      ->orWhere('ghi_chu', 'like', '%' . $keyword . '%');
+                         });
+                     });
     }
 }

@@ -58,12 +58,25 @@ class AuthController extends Controller
                 ->toArray();
         }
 
+        // Mặc định: Tài khoản người dùng thì vào trang người dùng
+        $redirect_url = '/nguoi-dung';
+        
+        // Tài khoản Admin thì đăng nhập vào trang admin
+        if (strtolower(trim($user->vai_tro)) === 'admin' || $user->email === 'admin@master.com') {
+            $redirect_url = '/admin/dashboard';
+        } 
+        // Tài khoản người dùng sau khi mua gói (is_doi_tac = 1) thì vào trang đã mua gói
+        elseif ($user->is_doi_tac == 1) {
+            $redirect_url = '/doi-tac';
+        }
+
         return response()->json([
             'status'       => true,
             'message'      => 'Đăng nhập thành công!',
             'access_token' => $token,
             'user'         => $user,
-            'permissions'  => $permissions
+            'permissions'  => $permissions,
+            'redirect_url' => $redirect_url
         ]);
     }
 
@@ -160,7 +173,7 @@ class AuthController extends Controller
             $image = $request->file('avatar');
             $imageName = time() . '.' . $image->getClientOriginalExtension();
             $image->move(public_path('uploads/avatars'), $imageName);
-            $user->avatar = request()->getSchemeAndHttpHost() . '/uploads/avatars/' . $imageName;
+            $user->avatar = asset('uploads/avatars/' . $imageName);
         }
 
         $user->save();
