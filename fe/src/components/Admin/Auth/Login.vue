@@ -61,7 +61,7 @@ export default {
             axios.post('http://127.0.0.1:8000/api/login', this.loginData)
                 .then(res => {
                     if (res.data.status) {
-                        if (res.data.user.vai_tro !== 'Admin') {
+                        if (res.data.user.vai_tro !== 'Admin' && res.data.user.chuc_vu_id != 1) {
                             toastr.error('Tài khoản này không có quyền truy cập quản trị!');
                             return;
                         }
@@ -69,6 +69,8 @@ export default {
                         localStorage.setItem('access_token', res.data.access_token);
                         localStorage.setItem('user', JSON.stringify(res.data.user));
                         this.$router.push('/admin/dashboard');
+                    } else {
+                        toastr.error(res.data.message || 'Tài khoản hoặc mật khẩu không chính xác!');
                     }
                 })
                 .catch(err => {

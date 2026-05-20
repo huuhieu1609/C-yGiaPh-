@@ -13,35 +13,35 @@
 		<nav class="navbar navbar-expand-xl w-100">
 			<ul class="navbar-nav justify-content-start flex-grow-1 gap-1">
 				<li class="nav-item">
-					<router-link to="/doi-tac/dashboard" class="nav-link">
+					<router-link to="/doi-tac/dashboard" class="nav-link" active-class="active">
 						<div class="parent-icon"><i class='bx bx-home-circle'></i>
 						</div>
 						<div class="menu-title">Dashboard</div>
 					</router-link>
 				</li>
 				<li class="nav-item">
-					<router-link to="/doi-tac/dong-ho" class="nav-link">
+					<router-link to="/doi-tac/dong-ho" class="nav-link" active-class="active">
 						<div class="parent-icon"><i class='bx bx-building-house'></i>
 						</div>
 						<div class="menu-title">Quản Lý Dòng Họ</div>
 					</router-link>
 				</li>
 				<li class="nav-item">
-					<router-link to="/doi-tac/gia-pha" class="nav-link">
+					<router-link to="/doi-tac/gia-pha" class="nav-link" active-class="active">
 						<div class="parent-icon"><i class='bx bx-git-branch'></i>
 						</div>
 						<div class="menu-title">Cây Gia Phả</div>
 					</router-link>
 				</li>
 				<li class="nav-item">
-					<router-link to="/doi-tac/thanh-vien" class="nav-link">
+					<router-link to="/doi-tac/thanh-vien" class="nav-link" active-class="active">
 						<div class="parent-icon"><i class='bx bx-group'></i>
 						</div>
 						<div class="menu-title">Quản Lý Thành Viên</div>
 					</router-link>
 				</li>
 				<li class="nav-item">
-					<router-link to="/doi-tac/tra-cuu" class="nav-link">
+					<router-link to="/doi-tac/tra-cuu" class="nav-link" active-class="active">
 						<div class="parent-icon"><i class='bx bx-search-alt'></i>
 						</div>
 						<div class="menu-title">Tra Cứu</div>

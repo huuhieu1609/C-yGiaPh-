@@ -19,12 +19,12 @@
                     <i class="bx bx-git-branch fs-1 text-muted opacity-25" style="font-size: 100px !important;"></i>
                 </div>
                 <h4 class="fw-bold text-dark">Cây Gia Phả Đang Trống!</h4>
-                <p class="text-muted">Vui lòng thêm thành viên đầu tiên (Thủy Tổ) tại trang <b>Cây Gia Phả</b>.</p>
-                <router-link to="/doi-tac/gia-pha" class="btn btn-primary radius-30 px-5 mt-3 shadow-sm mb-5">
-                    <i class="bx bx-plus"></i> Đi Đến Cây Gia Phả
-                </router-link>
+                <p class="text-muted">Vui lòng thêm thành viên đầu tiên (Thủy Tổ) để bắt đầu xây dựng phả hệ.</p>
+                <button class="btn btn-primary radius-30 px-5 mt-3 shadow-sm mb-5" @click="openAddModal">
+                    <i class="bx bx-plus"></i> Thêm Thành Viên Ngay
+                </button>
             </div>
-            <template v-else>
+            <div v-else class="w-100">
                 <div class="row mb-3 g-3">
                     <div class="col-md-4">
                         <div class="position-relative">
@@ -42,6 +42,11 @@
                             <option :value="null">-- Tất cả các đời --</option>
                             <option v-for="doi in listDoiTocHo" :key="doi.id" :value="doi.so_doi">Đời {{ doi.so_doi }}</option>
                         </select>
+                    </div>
+                    <div class="col-md-2">
+                        <button class="btn btn-primary radius-10 w-100 fw-bold shadow-sm" @click="openAddModal">
+                            <i class="bx bx-plus-circle"></i> Thêm Mới
+                        </button>
                     </div>
                 </div>
 
@@ -96,7 +101,7 @@
                         </tbody>
                     </table>
                 </div>
-            </template>
+            </div>
         </div>
 
         <!-- Modal Thêm/Sửa Thành Viên -->
@@ -121,17 +126,21 @@
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label fw-bold">Họ và Tên</label>
+                                <label class="form-label fw-bold">Họ và Tên <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control radius-8 border-2 shadow-none" v-model="currentMember.ho_ten" placeholder="Nguyễn Văn A">
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Email (Cho phép user xem gia phả)</label>
+                                <input type="email" class="form-control radius-8 border-2 shadow-none" v-model="currentMember.email" placeholder="example@gmail.com">
+                            </div>
+                            <div class="col-md-6">
                                 <label class="form-label fw-bold">Giới tính</label>
                                 <select class="form-select radius-8 border-2 shadow-none" v-model="currentMember.gioi_tinh">
                                     <option value="Nam">Nam</option>
                                     <option value="Nữ">Nữ</option>
                                 </select>
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-md-6">
                                 <label class="form-label fw-bold">Đời thứ</label>
                                 <select class="form-select radius-8 border-2 shadow-none" v-model="currentMember.doi_thu">
                                     <option v-for="doi in listDoiTocHo" :key="doi.id" :value="doi.so_doi">
@@ -175,20 +184,22 @@
                                 <label class="form-label fw-bold">Con của ông (Cha)</label>
                                 <select class="form-select radius-8 border-2 shadow-none" v-model="currentMember.cha_id">
                                     <option :value="null">--- Thủy Tổ ---</option>
-                                    <option v-for="m in allMembers" :key="m.id" :value="m.id" 
-                                        v-show="m.id !== currentMember.id && m.loai_quan_he === 'Chính'">
-                                        {{ m.ho_ten }} (Đời {{ m.doi_thu }})
-                                    </option>
+                                    <template v-for="m in allMembers" :key="'cha_' + m.id">
+                                        <option :value="m.id" v-if="m.id !== currentMember.id && m.loai_quan_he === 'Chính'">
+                                            {{ m.ho_ten }} (Đời {{ m.doi_thu }})
+                                        </option>
+                                    </template>
                                 </select>
                             </div>
 
                             <div class="col-md-6" v-if="currentMember.loai_quan_he === 'Vợ/Chồng'">
                                 <label class="form-label fw-bold">Là Vợ/Chồng của ai?</label>
                                 <select class="form-select radius-8 border-2 shadow-none" v-model="currentMember.spouse_of_id">
-                                    <option v-for="m in allMembers" :key="m.id" :value="m.id" 
-                                        v-show="m.loai_quan_he === 'Chính'">
-                                        {{ m.ho_ten }}
-                                    </option>
+                                    <template v-for="m in allMembers" :key="'vochong_' + m.id">
+                                        <option :value="m.id" v-if="m.loai_quan_he === 'Chính'">
+                                            {{ m.ho_ten }}
+                                        </option>
+                                    </template>
                                 </select>
                             </div>
                             
@@ -227,7 +238,7 @@ export default {
             isEditing: false,
             modal: null,
             currentMember: {
-                id: null, ho_ten: '', doi_thu: 1, cha_id: null, gioi_tinh: 'Nam', chi_nhanh_id: null,
+                id: null, ho_ten: '', email: '', doi_thu: 1, cha_id: null, gioi_tinh: 'Nam', id_chi_nhanh: null,
                 loai_quan_he: 'Chính', spouse_of_id: null, trang_thai: 'Còn sống', ngay_mat: null, ngay_sinh: null, ghi_chu: '', avatar: null
             },
             avatarFile: null,
@@ -237,17 +248,22 @@ export default {
     computed: {
         filteredMembers() {
             return this.allMembers.filter(m => {
-                const matchSearch = m.ho_ten.toLowerCase().includes(this.searchQuery.toLowerCase());
+                const name = m.ho_ten || '';
+                const search = this.searchQuery || '';
+                const matchSearch = name.toLowerCase().includes(search.toLowerCase());
                 const matchDoi = this.filterDoi === null || m.doi_thu == this.filterDoi;
-                const matchChiNhanh = this.selectedChiNhanhId === null || m.chi_nhanh_id == this.selectedChiNhanhId;
+                const matchChiNhanh = this.selectedChiNhanhId === null || m.id_chi_nhanh == this.selectedChiNhanhId;
                 return matchSearch && matchDoi && matchChiNhanh;
             });
         }
     },
     mounted() {
-        if (window.bootstrap) {
-            this.modal = new window.bootstrap.Modal(document.getElementById('memberModal'));
-        }
+        this.$nextTick(() => {
+            const modalEl = document.getElementById('memberModal');
+            if (window.bootstrap && modalEl) {
+                this.modal = new window.bootstrap.Modal(modalEl);
+            }
+        });
         this.loadDoiTocHo();
         this.loadChiNhanh();
         this.loadData();
@@ -282,19 +298,27 @@ export default {
         openAddModal() {
             this.isEditing = false;
             this.currentMember = {
-                id: null, ho_ten: '', doi_thu: 1, cha_id: null, gioi_tinh: 'Nam', chi_nhanh_id: null,
+                id: null, ho_ten: '', email: '', doi_thu: 1, cha_id: null, gioi_tinh: 'Nam', id_chi_nhanh: this.selectedChiNhanhId,
                 loai_quan_he: 'Chính', spouse_of_id: null, trang_thai: 'Còn sống', ngay_mat: null, ngay_sinh: null, ghi_chu: '', avatar: null
             };
             this.avatarFile = null;
             this.avatarPreview = null;
-            this.modal.show();
+            if (this.modal) {
+                this.modal.show();
+            } else {
+                toastr.error('Lỗi tải giao diện Modal. Vui lòng thử lại!');
+            }
         },
         onEdit(member) {
             this.isEditing = true;
             this.currentMember = { ...member };
             this.avatarFile = null;
             this.avatarPreview = null;
-            this.modal.show();
+            if (this.modal) {
+                this.modal.show();
+            } else {
+                toastr.error('Lỗi tải giao diện Modal. Vui lòng thử lại!');
+            }
         },
         onAvatarChange(e) {
             const file = e.target.files[0];
