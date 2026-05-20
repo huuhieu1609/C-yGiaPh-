@@ -3,136 +3,94 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ChiNhanhCreateRequest;
+use App\Http\Requests\ChiNhanhUpdateRequest;
 use App\Models\ChiNhanh;
-use Illuminate\Http\Request;
 use Exception;
+use Illuminate\Http\Request;
 
 class ChiNhanhController extends Controller
 {
     public function getData()
     {
-        try {
-            $user = auth('sanctum')->user();
-            if ($user && $user->is_doi_tac == 1) {
-                $data = ChiNhanh::where('id_nguoi_dung', $user->id)->get();
-            } else {
-                $data = ChiNhanh::all();
-            }
-            
-            return response()->json([
-                'status'  => true,
-                'message' => 'Lấy dữ liệu thành công!',
-                'data'    => $data,
-            ]);
-        } catch (Exception $e) {
-            return response()->json([
-                'status'  => false,
-                'message' => 'Có lỗi xảy ra: ' . $e->getMessage(),
-            ], 500);
-        }
+        $data = ChiNhanh::all();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Lấy dữ liệu thành công!',
+            'data' => $data,
+        ]);
     }
 
-    public function create(Request $request)
+    public function create(ChiNhanhCreateRequest $request)
     {
-        try {
-            $user = auth('sanctum')->user();
-            if (!$user) {
-                return response()->json(['status' => false, 'message' => 'Bạn cần đăng nhập!'], 401);
-            }
+        $chiNhanh = ChiNhanh::create([
+            'ten_chi' => $request->ten_chi,
+            'mo_ta' => $request->mo_ta,
+        ]);
 
-            // Giới hạn đối tác chỉ được thêm 1 cây gia phả
-            if ($user->is_doi_tac == 1) {
-                $count = ChiNhanh::where('id_nguoi_dung', $user->id)->count();
-                if ($count >= 1) {
-                    return response()->json([
-                        'status' => false, 
-                        'message' => 'Tài khoản Đối Tác chỉ được phép tạo duy nhất 1 cây gia phả!'
-                    ]);
-                }
-            }
-
-            $data = $request->all();
-            $data['id_nguoi_dung'] = $user->id; // Gán chủ sở hữu
-
-            $item = ChiNhanh::create($data);
-            return response()->json([
-                'status'  => true,
-                'message' => 'Tạo mới thành công!',
-                'data'    => $item
-            ]);
-        } catch (Exception $e) {
-            return response()->json([
-                'status'  => false,
-                'message' => 'Lỗi khi tạo mới: ' . $e->getMessage(),
-            ], 500);
-        }
+        return response()->json([
+            'status' => true,
+            'message' => 'Thêm chi nhánh '.$request->ten_chi.' thành công!',
+            'data' => $chiNhanh,
+        ]);
     }
 
-    public function update(Request $request)
+    public function update(ChiNhanhUpdateRequest $request)
     {
-        try {
-            $item = ChiNhanh::findOrFail($request->id);
-            $data = $request->all();
-            if ('ChiNhanh' === 'NguoiDung' && isset($data['mat_khau'])) {
-                $data['mat_khau'] = bcrypt($data['mat_khau']);
-            }
-            $item->update($data);
-            return response()->json([
-                'status'  => true,
-                'message' => 'Cập nhật thành công!',
-                'data'    => $item
-            ]);
-        } catch (Exception $e) {
-            return response()->json([
-                'status'  => false,
-                'message' => 'Lỗi khi cập nhật: ' . $e->getMessage(),
-            ], 500);
-        }
+        $chiNhanh = ChiNhanh::findOrFail($request->id);
+
+        $chiNhanh->update([
+            'ten_chi' => $request->ten_chi,
+            'mo_ta' => $request->mo_ta,
+        ]);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Cập nhật chi nhánh '.$request->ten_chi.' thành công!',
+            'data' => $chiNhanh,
+        ]);
     }
 
     public function delete(Request $request)
     {
-        try {
-            $item = ChiNhanh::findOrFail($request->id);
-            $item->delete();
-            return response()->json([
-                'status'  => true,
-                'message' => 'Xóa thành công!',
-            ]);
-        } catch (Exception $e) {
-            return response()->json([
-                'status'  => false,
-                'message' => 'Lỗi khi xóa: ' . $e->getMessage(),
-            ], 500);
-        }
+        $chiNhanh = ChiNhanh::findOrFail($request->id);
+
+        $chiNhanh->delete();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Xóa chi nhánh '.$chiNhanh->ten_chi.' thành công!',
+        ]);
     }
 
     public function status(Request $request)
     {
         try {
             $item = ChiNhanh::findOrFail($request->id);
-            
+
             if ('ChiNhanh' === 'ThanhVien') {
                 $item->trang_thai = $item->trang_thai == 'Còn sống' ? 'Đã mất' : 'Còn sống';
             } elseif (isset($item->trang_thai)) {
                 $item->trang_thai = $item->trang_thai == 'Hoạt động' ? 'Khóa' : 'Hoạt động';
             } else {
                 return response()->json([
-                    'status'  => false,
+                    'status' => false,
                     'message' => 'Model này không hỗ trợ trạng thái!',
                 ]);
             }
-            
+
             $item->save();
+
             return response()->json([
-                'status'  => true,
+                'status' => true,
                 'message' => 'Cập nhật trạng thái thành công!',
-                'trang_thai' => $item->trang_thai
+                'trang_thai' => $item->trang_thai,
             ]);
         } catch (Exception $e) {
             return response()->json([
-                'status'  => false,
-                'message' => 'Lỗi cập nhật trạng thái: ' . $e->getMessage(),
+                'status' => false,
+                'message' => 'Lỗi cập nhật trạng thái: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -141,16 +99,17 @@ class ChiNhanhController extends Controller
     {
         try {
             $query = $request->value;
-            $data = ChiNhanh::where('ten_chi', 'like', '%' . $query . '%')->get();
+            $data = ChiNhanh::where('ten_chi', 'like', '%'.$query.'%')->get();
+
             return response()->json([
-                'status'  => true,
-                'message' => 'Tìm thấy ' . count($data) . ' kết quả',
-                'data'    => $data,
+                'status' => true,
+                'message' => 'Tìm thấy '.count($data).' kết quả',
+                'data' => $data,
             ]);
         } catch (Exception $e) {
             return response()->json([
-                'status'  => false,
-                'message' => 'Lỗi khi tìm kiếm: ' . $e->getMessage(),
+                'status' => false,
+                'message' => 'Lỗi khi tìm kiếm: '.$e->getMessage(),
             ], 500);
         }
     }

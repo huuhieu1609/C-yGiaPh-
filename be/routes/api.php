@@ -36,7 +36,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', [AuthController::class, 'me']);
     Route::post('/update-profile', [AuthController::class, 'updateProfile']);
     Route::post('/change-password', [AuthController::class, 'changePassword']);
-    
+
     Route::prefix('/doi-tac')->group(function () {
         Route::get('/get-profile', [DoiTacController::class, 'getProfile']);
         Route::post('/update-profile', [DoiTacController::class, 'updateProfile']);
@@ -83,7 +83,7 @@ Route::prefix('/doi-toc-ho')->group(function () {
     Route::get('/get-data', [DoiTocHoController::class, 'getData']);
     Route::post('/create', [DoiTocHoController::class, 'create']);
     Route::post('/update', [DoiTocHoController::class, 'update']);
-    Route::post('/delete', [DoiTocHoController::class, 'delete']);
+    Route::delete('/delete/{id}', [DoiTocHoController::class, 'delete']);
     Route::post('/status', [DoiTocHoController::class, 'status']);
 });
 
@@ -91,7 +91,7 @@ Route::prefix('/chi-nhanh')->group(function () {
     Route::get('/get-data', [ChiNhanhController::class, 'getData']);
     Route::post('/create', [ChiNhanhController::class, 'create']);
     Route::post('/update', [ChiNhanhController::class, 'update']);
-    Route::post('/delete', [ChiNhanhController::class, 'delete']);
+    Route::delete('/delete/{id}', [ChiNhanhController::class, 'delete']);
     Route::post('/status', [ChiNhanhController::class, 'status']);
 });
 
@@ -139,7 +139,7 @@ Route::prefix('/nha-tho-ho')->group(function () {
     Route::get('/get-data', [NhaThoHoController::class, 'getData']);
     Route::post('/create', [NhaThoHoController::class, 'create']);
     Route::post('/update', [NhaThoHoController::class, 'update']);
-    Route::post('/delete', [NhaThoHoController::class, 'delete']);
+    Route::delete('/delete/{id}', [NhaThoHoController::class, 'delete']);
     Route::post('/status', [NhaThoHoController::class, 'status']);
 });
 
