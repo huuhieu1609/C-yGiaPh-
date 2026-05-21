@@ -1,10 +1,10 @@
 import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
-import Default from './Layout/wrapper/index.vue'
-import Client from './Layout/wrapper/client.vue'
-import Blank from './Layout/wrapper/blank.vue'
-import Partner from './Layout/wrapper/partner.vue'
+import Default from './layout/wrapper/index.vue'
+import Client from './layout/wrapper/client.vue'
+import Blank from './layout/wrapper/blank.vue'
+import Partner from './layout/wrapper/partner.vue'
 import Toast, { POSITION } from 'vue-toastification';
 import 'vue-toastification/dist/index.css';
 const app = createApp(App)

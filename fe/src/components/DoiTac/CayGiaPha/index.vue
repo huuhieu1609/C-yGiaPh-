@@ -1,47 +1,50 @@
 <template>
     <div class="row">
         <div class="col-12">
-            <div class="card shadow-sm border-0 radius-10 overflow-hidden">
-                <div class="card-header bg-white py-3 border-0">
-                    <div class="row align-items-center">
-                        <div class="col-md-3">
-                            <h5 class="mb-0 fw-bold text-dark"><i class="bx bx-git-branch text-primary"></i> Trực Quan Cây Gia Phả</h5>
+            <div class="card luxury-panel overflow-hidden border-0">
+                <div class="card-header bg-transparent py-4 position-relative z-2">
+                    <div class="row align-items-center g-3">
+                        <div class="col-md-4">
+                            <h4 class="mb-0 fw-bold panel-title">
+                                <i class="bx bx-git-branch text-rose"></i> Trực Quan Cây Gia Phả
+                            </h4>
                         </div>
-                        <div class="col-md-9 text-md-end d-flex align-items-center justify-content-end gap-2 flex-wrap">
+                        <div class="col-md-8 text-md-end d-flex align-items-center justify-content-md-end gap-3 flex-wrap">
                             
-                            <div class="me-2" style="width: 220px;">
-                                <select class="form-select radius-30 border-2 shadow-none fw-bold" v-model="selectedChiNhanhId" @change="resetView">
+                            <div class="modern-select-box" style="width: 220px;">
+                                <select class="form-select modern-select fw-bold" v-model="selectedChiNhanhId" @change="resetView">
                                     <option v-for="cn in listChiNhanh" :key="cn.id" :value="cn.id">{{ cn.ten_chi }}</option>
                                 </select>
                             </div>
 
-                            <div class="position-relative d-none d-lg-block" style="width: 200px;">
-                                <input type="text" class="form-control ps-5 radius-30 border-2" v-model="searchQuery" placeholder="Tìm thành viên...">
-                                <span class="position-absolute top-50 translate-middle-y start-0 ms-3 text-secondary"><i class="bx bx-search"></i></span>
+                            <div class="position-relative d-none d-lg-block" style="width: 220px;">
+                                <input type="text" class="form-control modern-search ps-5" v-model="searchQuery" placeholder="Tìm thành viên...">
+                                <span class="position-absolute top-50 translate-middle-y start-0 ms-3 search-icon-btn"><i class="bx bx-search"></i></span>
                             </div>
                             
-                            <div class="btn-group shadow-sm radius-30 overflow-hidden border">
-                                <button class="btn btn-white px-2" @click="zoomOut" title="Thu nhỏ"><i class="bx bx-minus"></i></button>
-                                <button class="btn btn-white px-1 fw-bold" style="min-width: 50px; font-size: 13px;">{{ Math.round(zoom * 100) }}%</button>
-                                <button class="btn btn-white px-2" @click="zoomIn" title="Phóng to"><i class="bx bx-plus"></i></button>
-                                <button class="btn btn-white px-2" @click="resetView" title="Đặt lại"><i class="bx bx-refresh"></i></button>
+                            <div class="btn-group pill-control-group overflow-hidden">
+                                <button class="btn btn-pill-action px-2_5" @click="zoomOut" title="Thu nhỏ"><i class="bx bx-minus"></i></button>
+                                <button class="btn btn-pill-display px-2 fw-bold" style="min-width: 60px;">{{ Math.round(zoom * 100) }}%</button>
+                                <button class="btn btn-pill-action px-2_5" @click="zoomIn" title="Phóng to"><i class="bx bx-plus"></i></button>
+                                <button class="btn btn-pill-action px-2_5" @click="resetView" title="Đặt lại"><i class="bx bx-refresh"></i></button>
                             </div>
 
-                            <button class="btn btn-primary radius-30 px-3 shadow-sm" @click="openAddModal">
-                                <i class="bx bx-plus"></i> Thêm
+                            <button class="btn btn-luxury-primary px-4" @click="openAddModal">
+                                <i class="bx bx-plus-circle"></i> Thêm Thành Viên
                             </button>
                         </div>
                     </div>
                 </div>
+
                 <div class="card-body p-0 position-relative">
-                    <div v-if="listChiNhanh.length === 0" class="text-center py-5">
-                        <div class="mb-4 mt-5">
-                            <i class="bx bx-building-house fs-1 text-muted opacity-25" style="font-size: 100px !important;"></i>
+                    <div v-if="listChiNhanh.length === 0" class="text-center py-5 w-100 position-relative z-2">
+                        <div class="mb-4 mt-5 empty-glow-icon">
+                            <i class="bx bx-building-house text-muted opacity-20" style="font-size: 90px !important;"></i>
                         </div>
                         <h4 class="fw-bold text-dark">Chưa có thông tin Dòng Họ!</h4>
-                        <p class="text-muted">Bạn cần khởi tạo Dòng Họ (Chi Nhánh) để bắt đầu xây dựng cây gia phả.</p>
-                        <router-link to="/doi-tac/dong-ho" class="btn btn-primary radius-30 px-5 mt-3 shadow-sm mb-5">
-                            <i class="bx bx-plus-circle"></i> Khởi Tạo Ngay
+                        <p class="text-secondary small">Bạn cần khởi tạo Dòng Họ (Chi Nhánh) để bắt đầu xây dựng cây gia phả.</p>
+                        <router-link to="/doi-tac/dong-ho" class="btn btn-luxury-primary px-5 mt-3 shadow-sm mb-5">
+                            Khởi Tạo Ngay
                         </router-link>
                     </div>
                     <div v-else class="tree-viewport" 
@@ -66,18 +69,18 @@
                                 </ul>
                             </div>
                             <div v-else class="text-center py-5 mt-5">
-                                <div class="empty-state-icon mb-3">
-                                    <i class="bx bx-git-repo-forked fs-1 text-muted opacity-25"></i>
+                                <div class="empty-glow-icon mb-3">
+                                    <i class="bx bx-git-repo-forked text-muted opacity-20" style="font-size: 70px !important;"></i>
                                 </div>
-                                <h5 class="text-muted">Chưa có dữ liệu thành viên</h5>
+                                <h5 class="text-secondary">Chưa có dữ liệu thành viên</h5>
                                 <p class="text-muted small">Hãy bắt đầu bằng cách thêm thành viên đầu tiên (Thủy Tổ).</p>
-                                <button class="btn btn-outline-primary btn-sm radius-30 px-4 mt-2" @click="openAddModal">Thêm ngay</button>
+                                <button class="btn btn-luxury-secondary btn-sm px-4 mt-2" @click="openAddModal">Thêm ngay</button>
                             </div>
                         </div>
                     </div>
 
-                    <div class="view-controls position-absolute bottom-0 end-0 m-3 p-2 bg-white bg-opacity-75 rounded-3 shadow-sm border small text-muted d-none d-md-block">
-                        <i class="bx bx-mouse ms-1"></i> Cuộn để thu phóng • <i class="bx bx-move ms-1"></i> Kéo để di chuyển
+                    <div class="view-controls position-absolute bottom-0 end-0 m-4 p-2 bg-luxury-tips rounded-3 small text-muted d-none d-md-block z-2">
+                        <i class="bx bx-mouse ms-1 text-rose"></i> Cuộn để thu phóng • <i class="bx bx-move ms-1 text-teal"></i> Kéo để di chuyển tự do
                     </div>
                 </div>
             </div>
@@ -85,38 +88,38 @@
 
         <div class="modal fade" id="memberModal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-lg modal-dialog-centered">
-                <div class="modal-content radius-15 shadow-lg border-0">
-                    <div class="modal-header border-0 text-white radius-top-15" :class="isEditing ? 'bg-warning text-dark' : 'bg-primary'">
-                        <h5 class="modal-title fw-bold">
-                            {{ isEditing ? 'Chỉnh Sửa Thông Tin' : 'Thêm Thành Viên Mới' }}
+                <div class="modal-content luxury-modal border-0 shadow-lg">
+                    <div class="modal-header border-bottom p-4" :class="isEditing ? 'header-edit' : 'header-create'">
+                        <h5 class="modal-title fw-bold text-dark">
+                            {{ isEditing ? 'Chỉnh Sửa Thông Tin' : 'Khởi Tạo Thành Viên Mới' }}
                         </h5>
-                        <button type="button" class="btn-close" :class="!isEditing ? 'btn-close-white' : ''" data-bs-dismiss="modal"></button>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body p-4">
                         <div class="row g-4">
-                            <div class="col-md-12 text-center mb-1">
+                            <div class="col-md-12 text-center mb-2">
                                 <div class="position-relative d-inline-block">
-                                    <img :src="avatarPreview || currentMember.avatar || ('https://ui-avatars.com/api/?name=' + (currentMember.ho_ten || 'A') + '&background=d4af37&color=fff')" class="rounded-circle border border-3 border-warning" alt="Avatar" width="100" height="100" style="object-fit: cover;">
-                                    <label for="member-avatar-upload" class="btn btn-sm btn-warning rounded-circle position-absolute bottom-0 end-0 shadow-sm" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer;" title="Chọn ảnh">
-                                        <i class="bx bx-camera text-dark"></i>
+                                    <img :src="avatarPreview || currentMember.avatar || ('https://ui-avatars.com/api/?name=' + (currentMember.ho_ten || 'A') + '&background=f3f4f6&color=111827')" class="rounded-circle profile-upload-preview" alt="Avatar" width="100" height="100">
+                                    <label for="member-avatar-upload" class="avatar-upload-trigger position-absolute bottom-0 end-0" title="Chọn ảnh">
+                                        <i class="bx bx-camera text-secondary"></i>
                                     </label>
                                     <input type="file" id="member-avatar-upload" @change="onAvatarChange" class="d-none" accept="image/*">
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label fw-bold">Họ và Tên</label>
-                                <input type="text" class="form-control radius-8 border-2 shadow-none" v-model="currentMember.ho_ten" placeholder="Nguyễn Văn A">
+                                <label class="modern-field-label">Họ và Tên</label>
+                                <input type="text" class="form-control modern-input" v-model="currentMember.ho_ten" placeholder="Nguyễn Văn A">
                             </div>
                             <div class="col-md-3">
-                                <label class="form-label fw-bold">Giới tính</label>
-                                <select class="form-select radius-8 border-2 shadow-none" v-model="currentMember.gioi_tinh">
+                                <label class="modern-field-label">Giới tính</label>
+                                <select class="form-select modern-input" v-model="currentMember.gioi_tinh">
                                     <option value="Nam">Nam</option>
                                     <option value="Nữ">Nữ</option>
                                 </select>
                             </div>
                             <div class="col-md-3">
-                                <label class="form-label fw-bold">Đời thứ</label>
-                                <select class="form-select radius-8 border-2 shadow-none" v-model="currentMember.doi_thu">
+                                <label class="modern-field-label">Đời thứ</label>
+                                <select class="form-select modern-input" v-model="currentMember.doi_thu">
                                     <option v-for="doi in listDoiTocHo" :key="doi.id" :value="doi.so_doi">
                                         Đời {{ doi.so_doi }} - {{ doi.ten_doi }}
                                     </option>
@@ -124,40 +127,40 @@
                             </div>
 
                             <div class="col-md-6">
-                                <label class="form-label fw-bold">Ngày sinh</label>
-                                <input type="date" class="form-control radius-8 border-2 shadow-none" v-model="currentMember.ngay_sinh">
+                                <label class="modern-field-label">Ngày sinh</label>
+                                <input type="date" class="form-control modern-input" v-model="currentMember.ngay_sinh">
                             </div>
 
                             <div class="col-md-6">
-                                <label class="form-label fw-bold">Trạng thái</label>
-                                <div class="d-flex gap-3 pt-1">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" value="Còn sống" v-model="currentMember.trang_thai" id="status1">
-                                        <label class="form-check-label" for="status1">Còn sống</label>
+                                <label class="modern-field-label">Trạng thái hiện tại</label>
+                                <div class="d-flex gap-4 pt-2">
+                                    <div class="form-check modern-radio">
+                                        <input class="form-check-input shadow-none" type="radio" value="Còn sống" v-model="currentMember.trang_thai" id="status1">
+                                        <label class="form-check-label text-dark" for="status1">Còn sống</label>
                                     </div>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" value="Đã mất" v-model="currentMember.trang_thai" id="status2">
-                                        <label class="form-check-label" for="status2">Đã mất</label>
+                                    <div class="form-check modern-radio">
+                                        <input class="form-check-input shadow-none" type="radio" value="Đã mất" v-model="currentMember.trang_thai" id="status2">
+                                        <label class="form-check-label text-dark" for="status2">Đã mất</label>
                                     </div>
                                 </div>
                             </div>
                             <div class="col-md-6" v-if="currentMember.trang_thai === 'Đã mất'">
-                                <label class="form-label fw-bold">Ngày mất</label>
-                                <input type="date" class="form-control radius-8 border-2 shadow-none" v-model="currentMember.ngay_mat">
+                                <label class="modern-field-label">Ngày tạ thế</label>
+                                <input type="date" class="form-control modern-input" v-model="currentMember.ngay_mat">
                             </div>
 
                             <div class="col-md-6">
-                                <label class="form-label fw-bold">Quan hệ với dòng họ</label>
-                                <select class="form-select radius-8 border-2 shadow-none" v-model="currentMember.loai_quan_he">
+                                <label class="modern-field-label">Quan hệ với dòng họ</label>
+                                <select class="form-select modern-input" v-model="currentMember.loai_quan_he">
                                     <option value="Chính">Thành viên chính (Con cháu)</option>
                                     <option value="Vợ/Chồng">Người phối ngẫu (Vợ/Chồng)</option>
                                 </select>
                             </div>
 
                             <div class="col-md-6" v-if="currentMember.loai_quan_he === 'Chính'">
-                                <label class="form-label fw-bold">Con của ông (Cha)</label>
-                                <select class="form-select radius-8 border-2 shadow-none" v-model="currentMember.cha_id">
-                                    <option :value="null">--- Thủy Tổ ---</option>
+                                <label class="modern-field-label">Con của ai? (Cha)</label>
+                                <select class="form-select modern-input" v-model="currentMember.cha_id">
+                                    <option :value="null">--- Thủy Tổ (Đời 1) ---</option>
                                     <option v-for="m in allMembers" :key="m.id" :value="m.id" 
                                         v-show="m.id !== currentMember.id && m.loai_quan_he === 'Chính'">
                                         {{ m.ho_ten }} (Đời {{ m.doi_thu }})
@@ -166,8 +169,8 @@
                             </div>
 
                             <div class="col-md-6" v-if="currentMember.loai_quan_he === 'Vợ/Chồng'">
-                                <label class="form-label fw-bold">Là Vợ/Chồng của ai?</label>
-                                <select class="form-select radius-8 border-2 shadow-none" v-model="currentMember.spouse_of_id">
+                                <label class="modern-field-label">Là Vợ/Chồng của ai?</label>
+                                <select class="form-select modern-input" v-model="currentMember.spouse_of_id">
                                     <option v-for="m in allMembers" :key="m.id" :value="m.id" 
                                         v-show="m.loai_quan_he === 'Chính'">
                                         {{ m.ho_ten }}
@@ -176,16 +179,16 @@
                             </div>
                             
                             <div class="col-md-12">
-                                <label class="form-label fw-bold">Ghi chú</label>
-                                <textarea class="form-control radius-8 border-2 shadow-none" rows="2" v-model="currentMember.ghi_chu" placeholder="Thông tin thêm..."></textarea>
+                                <label class="modern-field-label">Ghi chú tộc phả</label>
+                                <textarea class="form-control modern-input" rows="2" v-model="currentMember.ghi_chu" placeholder="Ghi lại tiểu sử, sự nghiệp, vai trò chính..."></textarea>
                             </div>
                         </div>
                     </div>
-                    <div class="modal-footer border-0 p-4 pt-0">
-                        <button v-if="isEditing" type="button" class="btn btn-outline-danger me-auto radius-8 px-3" @click="handleDelete">Xóa</button>
-                        <button type="button" class="btn btn-light px-4 radius-8" data-bs-dismiss="modal">Hủy</button>
-                        <button type="button" class="btn px-4 radius-8 fw-bold" :class="isEditing ? 'btn-warning' : 'btn-primary'" @click="saveMember">
-                            {{ isEditing ? 'Cập Nhật' : 'Lưu Lại' }}
+                    <div class="modal-footer border-top p-4">
+                        <button v-if="isEditing" type="button" class="btn btn-modern-danger me-auto px-4" @click="handleDelete">Xóa nút</button>
+                        <button type="button" class="btn btn-modern-cancel px-4" data-bs-dismiss="modal">Hủy bỏ</button>
+                        <button type="button" class="btn btn-modern-save px-4 fw-bold" :class="isEditing ? 'btn-warn' : 'btn-save'" @click="saveMember">
+                            {{ isEditing ? 'Cập Nhật' : 'Khởi Tạo' }}
                         </button>
                     </div>
                 </div>
@@ -216,15 +219,14 @@ const TreeItem = defineComponent({
         };
         
         const generationClass = `gen-${(this.member.doi_thu % 5) + 1}`;
-        const isHighlighted = this.searchQuery && this.member.ho_ten.toLowerCase().includes(this.searchQuery.toLowerCase());
-        
+        const isHighlighted = this.searchQuery && this.member.ho_ten && this.member.ho_ten.toLowerCase().includes(this.searchQuery.toLowerCase());
         const hasChildren = this.member.children && this.member.children.length > 0;
 
         if (this.member.isDummy) {
             const nodeGroup = h('div', { class: 'tree-node-group' }, [
                 h('div', { 
                     class: 'tree-dummy-node',
-                    style: 'width: 2px; height: 100px; background-color: #ddd; margin: 0 auto;'
+                    style: 'width: 1.5px; height: 100px; background-color: rgba(0,0,0,0.08); margin: 0 auto;'
                 })
             ]);
             const children = hasChildren ? h('ul', 
@@ -249,9 +251,10 @@ const TreeItem = defineComponent({
             }, [
                 h('div', { class: 'node-avatar-container' }, [
                     h('img', { 
-                        src: this.member.avatar ? this.member.avatar : ('https://ui-avatars.com/api/?name=' + this.member.ho_ten + '&background=d4af37&color=fff'), 
-                        class: 'node-avatar shadow-sm'
-                    })
+                        src: this.member.avatar ? this.member.avatar : ('https://ui-avatars.com/api/?name=' + this.member.ho_ten + '&background=f3f4f6&color=111827'), 
+                        class: 'node-avatar'
+                    }),
+                    h('div', { class: 'avatar-neon-ring' })
                 ]),
                 h('div', { class: 'node-content' }, [
                     h('div', { class: 'node-name' }, this.member.ho_ten),
@@ -259,11 +262,11 @@ const TreeItem = defineComponent({
                     h('div', { class: 'node-tag' }, `Đời ${this.member.doi_thu}${getTenDoi(this.member.doi_thu)}`)
                 ]),
                 h('div', { class: 'node-edit-btn' }, [
-                    h('i', { class: 'bx bx-pencil' })
+                    h('i', { class: 'bx bx-edit-alt' })
                 ])
             ]),
             this.member.spouses && this.member.spouses.length ? this.member.spouses.map(spouse => {
-                const isSpouseHighlighted = this.searchQuery && spouse.ho_ten.toLowerCase().includes(this.searchQuery.toLowerCase());
+                const isSpouseHighlighted = this.searchQuery && spouse.ho_ten && spouse.ho_ten.toLowerCase().includes(this.searchQuery.toLowerCase());
                 return [
                     h('div', { class: 'tree-connector-h' }),
                     h('div', { 
@@ -275,16 +278,17 @@ const TreeItem = defineComponent({
                     }, [
                         h('div', { class: 'node-avatar-container' }, [
                             h('img', { 
-                                src: spouse.avatar ? spouse.avatar : ('https://ui-avatars.com/api/?name=' + spouse.ho_ten + '&background=d4af37&color=fff'), 
-                                class: 'node-avatar shadow-sm'
-                            })
+                                src: spouse.avatar ? spouse.avatar : ('https://ui-avatars.com/api/?name=' + spouse.ho_ten + '&background=f3f4f6&color=111827'), 
+                                class: 'node-avatar'
+                            }),
+                            h('div', { class: 'avatar-neon-ring' })
                         ]),
                         h('div', { class: 'node-content' }, [
                             h('div', { class: 'node-name' }, spouse.ho_ten),
-                            h('div', { class: 'node-tag spouse-tag' }, 'Vợ/Chồng')
+                            h('div', { class: 'node-tag spouse-tag' }, 'Phối ngẫu')
                         ]),
                         h('div', { class: 'node-edit-btn' }, [
-                            h('i', { class: 'bx bx-pencil' })
+                            h('i', { class: 'bx bx-edit-alt' })
                         ])
                     ])
                 ];
@@ -317,14 +321,13 @@ export default {
                 loai_quan_he: 'Chính', spouse_of_id: null, trang_thai: 'Còn sống', ngay_mat: null, ngay_sinh: null, ghi_chu: '', avatar: null
             },
             avatarPreview: null,
+            avatarFile: null,
             isEditing: false,
             modal: null,
             searchQuery: '',
-            
-            // Zoom & Pan state
             zoom: 1,
-            posX: 0,
-            posY: 0,
+            posX: 320,  
+            posY: 80,   
             isPanning: false,
             lastMouseX: 0,
             lastMouseY: 0
@@ -334,56 +337,72 @@ export default {
         treeData() {
             let list = JSON.parse(JSON.stringify(this.allMembers));
             
-            // Filter by branch if selected
             if (this.selectedChiNhanhId) {
                 list = list.filter(m => m.chi_nhanh_id === this.selectedChiNhanhId);
             }
 
             const map = {};
             const roots = [];
-            list.forEach(item => { map[item.id] = item; item.children = []; item.spouses = []; });
             
-            // Helper for creating dummy nodes for skipped generations
-            const getDummyNode = (parentId, doi_thu) => {
-                let dummyId = 'dummy_' + parentId + '_' + doi_thu;
-                if (!map[dummyId]) {
-                    map[dummyId] = {
-                        id: dummyId,
-                        isDummy: true,
-                        doi_thu: doi_thu,
-                        children: [],
-                        spouses: []
-                    };
-                    map[parentId].children.push(map[dummyId]);
-                }
-                return map[dummyId];
-            };
-
+            list.forEach(item => { 
+                item.id = String(item.id);
+                if (item.cha_id) item.cha_id = String(item.cha_id);
+                if (item.spouse_of_id) item.spouse_of_id = String(item.spouse_of_id);
+                
+                map[item.id] = item; 
+                item.children = []; 
+                item.spouses = []; 
+                item.doi_thu = parseInt(item.doi_thu) || 1; 
+            });
+            
+            const mainNodes = [];
             list.forEach(item => {
                 if (item.loai_quan_he === 'Vợ/Chồng' && item.spouse_of_id && map[item.spouse_of_id]) {
                     map[item.spouse_of_id].spouses.push(item);
-                } else if (item.cha_id && map[item.cha_id]) {
-                    let parent = map[item.cha_id];
-                    // Handle generation jumps
+                } else if (item.loai_quan_he === 'Chính') {
+                    mainNodes.push(item);
+                    if (!item.cha_id || !map[item.cha_id]) {
+                        roots.push(item);
+                    }
+                }
+            });
+
+            mainNodes.forEach(item => {
+                if (item.cha_id && map[item.cha_id]) {
+                    const parent = map[item.cha_id];
+                    
                     if (item.doi_thu > parent.doi_thu + 1) {
                         let currentParent = parent;
-                        for (let d = parent.doi_thu + 1; d < item.doi_thu; d++) {
-                            currentParent = getDummyNode(currentParent.id, d);
+                        const maxSafeDepth = Math.min(item.doi_thu, parent.doi_thu + 20);
+                        
+                        for (let d = parent.doi_thu + 1; d < maxSafeDepth; d++) {
+                            let dummyId = `dummy_${currentParent.id}_${d}`;
+                            
+                            if (!map[dummyId]) {
+                                map[dummyId] = {
+                                    id: dummyId,
+                                    isDummy: true,
+                                    doi_thu: d,
+                                    children: [],
+                                    spouses: []
+                                };
+                                currentParent.children.push(map[dummyId]);
+                            }
+                            currentParent = map[dummyId];
                         }
                         currentParent.children.push(item);
                     } else {
                         parent.children.push(item);
                     }
-                } else if (item.loai_quan_he === 'Chính') {
-                    roots.push(item);
                 }
             });
+            
             return roots;
         },
         canvasStyle() {
             return {
                 transform: `translate(${this.posX}px, ${this.posY}px) scale(${this.zoom})`,
-                transformOrigin: 'top center'
+                transformOrigin: 'top left' 
             };
         }
     },
@@ -395,8 +414,14 @@ export default {
         this.loadChiNhanh();
         this.loadData();
         
-        // Add wheel listener for zoom
-        this.$refs.viewport.addEventListener('wheel', this.handleWheel, { passive: false });
+        if (this.$refs.viewport) {
+            this.$refs.viewport.addEventListener('wheel', this.handleWheel, { passive: false });
+        }
+    },
+    beforeUnmount() {
+        if (this.$refs.viewport) {
+            this.$refs.viewport.removeEventListener('wheel', this.handleWheel);
+        }
     },
     methods: {
         getHeaders() {
@@ -408,7 +433,7 @@ export default {
                     if (res.data.status) {
                         this.listDoiTocHo = res.data.data.sort((a, b) => a.so_doi - b.so_doi);
                     }
-                });
+                }).catch(e => console.error(e));
         },
         loadData() {
             axios.get('http://127.0.0.1:8000/api/thanh-vien/get-data', this.getHeaders())
@@ -416,7 +441,7 @@ export default {
                     if (res.data.status) {
                         this.allMembers = res.data.data;
                     }
-                });
+                }).catch(e => console.error(e));
         },
         loadChiNhanh() {
             axios.get('http://127.0.0.1:8000/api/chi-nhanh/get-data', this.getHeaders())
@@ -427,15 +452,14 @@ export default {
                             this.selectedChiNhanhId = this.listChiNhanh[0].id;
                         }
                     }
-                });
+                }).catch(e => console.error(e));
         },
-        // View Control Methods
         zoomIn() { if (this.zoom < 2) this.zoom += 0.1; },
         zoomOut() { if (this.zoom > 0.3) this.zoom -= 0.1; },
         resetView() {
             this.zoom = 1;
-            this.posX = 0;
-            this.posY = 0;
+            this.posX = 320;
+            this.posY = 80;
         },
         handleWheel(e) {
             e.preventDefault();
@@ -443,7 +467,7 @@ export default {
             else this.zoomOut();
         },
         startPan(e) {
-            if (e.button !== 0) return; // Only left click
+            if (e.button !== 0) return;
             this.isPanning = true;
             this.lastMouseX = e.clientX;
             this.lastMouseY = e.clientY;
@@ -460,8 +484,6 @@ export default {
         endPan() {
             this.isPanning = false;
         },
-
-        // Modal Methods
         openAddModal() {
             this.isEditing = false;
             this.currentMember = {
@@ -502,7 +524,10 @@ export default {
             }
             
             axios.post(url, formData, {
-                headers: { 'Content-Type': 'multipart/form-data' }
+                headers: { 
+                    'Content-Type': 'multipart/form-data',
+                    Authorization: `Bearer ${localStorage.getItem('access_token')}`
+                }
             })
             .then(res => {
                 if (res.data.status) {
@@ -512,47 +537,173 @@ export default {
                 } else {
                     toastr.error(res.data.message);
                 }
-            });
+            }).catch(e => toastr.error("Có lỗi xảy ra khi lưu!"));
         },
         handleDelete() {
             if (confirm('Xóa thành viên này?')) {
-                axios.post('http://127.0.0.1:8000/api/thanh-vien/delete', { id: this.currentMember.id })
+                axios.post('http://127.0.0.1:8000/api/thanh-vien/delete', { id: this.currentMember.id }, this.getHeaders())
                     .then(res => {
                         if (res.data.status) {
                             toastr.success(res.data.message);
                             this.loadData();
                             this.modal.hide();
                         }
-                    });
+                    }).catch(e => toastr.error("Không thể xóa thành viên này!"));
             }
         }
     }
 }
 </script>
 
-<style>
+<style scoped>
+/* ─── SYSTEM LIGHT THEME COLORS ─── */
+.luxury-panel {
+    background: #ffffff !important;
+    border: 1px solid rgba(0, 0, 0, 0.06) !important;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+    margin: 0 !important;
+    width: 100%;
+}
+
+.panel-title {
+    color: #111827;
+    letter-spacing: 0.3px;
+}
+.text-rose { color: #db2777; }
+
+/* BẢNG MÀU ĐỜI THẾ HỆ PASTEL SÁNG (Đồng bộ tuyệt đối Sidebar) */
+.tree-node-card {
+    --gen-1-color: #4f46e5; /* Đời 1: Royal Indigo */
+    --gen-2-color: #db2777; /* Đời 2: Rose Pink */
+    --gen-3-color: #0d9488; /* Đời 3: Dark Teal */
+    --gen-4-color: #d97706; /* Đời 4: Amber */
+    --gen-5-color: #059669; /* Đời 5: Emerald */
+}
+
+/* ─── MODERN CONTROLS IN LIGHT MODE ─── */
+.modern-select-box {
+    background: #f9fafb;
+    border-radius: 30px;
+    padding: 1px;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+}
+.modern-select {
+    background-color: transparent !important;
+    border: none !important;
+    color: #d97706 !important; 
+    padding-left: 18px;
+    font-size: 14px;
+}
+.modern-select option {
+    background: #ffffff;
+    color: #111827;
+}
+
+.modern-search {
+    background: #f9fafb !important;
+    border: 1px solid rgba(0, 0, 0, 0.06) !important;
+    color: #111827 !important;
+    border-radius: 30px;
+    height: 40px;
+    font-size: 13.5px;
+}
+.modern-search::placeholder { color: #9ca3af; }
+.modern-search:focus {
+    border-color: #db2777 !important;
+    box-shadow: 0 4px 12px rgba(219, 39, 119, 0.1) !important;
+}
+.search-icon-btn { color: #9ca3af; }
+
+/* Cụm điều khiển Zoom hạt kén nền sáng */
+.pill-control-group {
+    background: #f9fafb;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    border-radius: 30px;
+    padding: 2px;
+}
+.btn-pill-action {
+    background: transparent;
+    border: none;
+    color: #6b7280;
+    transition: all 0.2s ease;
+}
+.btn-pill-action:hover {
+    color: #111827;
+    background: rgba(0, 0, 0, 0.03);
+}
+.btn-pill-display {
+    background: #ffffff;
+    border: none;
+    color: #111827;
+    font-size: 13px;
+    cursor: default;
+    pointer-events: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
+
+/* Nút viên thuốc chuyển sắc rực rỡ chuẩn mẫu Get Started */
+.btn-luxury-primary {
+    background: linear-gradient(135deg, #db2777 0%, #f97316 50%, #f59e0b 100%);
+    border: none;
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 13.5px;
+    border-radius: 30px;
+    box-shadow: 0 4px 12px rgba(219, 39, 119, 0.2);
+    transition: all 0.3s ease;
+}
+.btn-luxury-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(219, 39, 119, 0.35);
+    filter: brightness(1.04);
+}
+
+.btn-luxury-secondary {
+    background: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    color: #db2777;
+    font-weight: 600;
+    border-radius: 30px;
+}
+.btn-luxury-secondary:hover {
+    background: #fff5f7;
+}
+
+/* ─── TREE VIEWPORT LIGHT ENVIRONMENT (Lưới không gian mượt) ─── */
+.card-header {
+    background: #ffffff !important;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.04) !important;
+    padding: 20px 24px !important;
+}
+
 .tree-viewport {
-    height: 700px;
-    background: #fdfdfd;
-    background-image: radial-gradient(#e0e0e0 1px, transparent 1px);
-    background-size: 30px 30px;
+    height: calc(100vh - 210px); 
+    min-height: 550px;
+    background: #fafafa;
+    /* Lưới tọa độ xám nhạt tinh xảo ẩn mờ */
+    background-image: linear-gradient(rgba(0, 0, 0, 0.015) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(0, 0, 0, 0.015) 1px, transparent 1px);
+    background-size: 40px 40px;
     position: relative;
     overflow: hidden;
     user-select: none;
+    display: block;
+    border-bottom-left-radius: 16px;
+    border-bottom-right-radius: 16px;
 }
 
 .tree-canvas {
-    padding: 100px;
-    transition: transform 0.1s ease-out;
-    display: inline-block;
-    min-width: 100%;
+    padding: 80px;
+    transition: transform 0.15s cubic-bezier(0.25, 1, 0.5, 1);
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: max-content;
+    height: max-content;
 }
 
-.tree, .tree ul, .tree li {
-    position: relative;
-    transition: all 0.3s;
-}
-
+/* ─── CONNECTOR LINES (Đường liên kết dòng tộc) ─── */
 .tree ul { 
     padding-top: 50px; 
     display: flex !important; 
@@ -562,142 +713,201 @@ export default {
     padding-left: 0; 
     margin-bottom: 0; 
 }
-
 .tree li { 
     text-align: center; 
     list-style-type: none; 
-    padding: 50px 10px 0 10px; 
+    padding: 50px 14px 0 14px; 
     flex: 0 0 auto !important;
 }
 
-/* Connecting Lines */
-.tree li::before, .tree li::after { content: ''; position: absolute; top: 0; right: 50%; border-top: 2px solid #ddd; width: 50%; height: 50px; }
-.tree li::after { right: auto; left: 50%; border-left: 2px solid #ddd; }
+.tree li::before, .tree li::after { content: ''; position: absolute; top: 0; right: 50%; border-top: 1.5px solid rgba(0, 0, 0, 0.06); width: 50%; height: 50px; }
+.tree li::after { right: auto; left: 50%; border-left: 1.5px solid rgba(0, 0, 0, 0.06); }
 .tree li:only-child::after, .tree li:only-child::before { display: none; }
 .tree li:only-child { padding-top: 0; }
 .tree li:first-child::before, .tree li:last-child::after { border: 0 none; }
-.tree li:last-child::before { border-right: 2px solid #ddd; border-radius: 0 10px 0 0; }
-.tree li:first-child::after { border-radius: 10px 0 0 0; }
-.tree ul ul::before { content: ''; position: absolute; top: 0; left: 50%; border-left: 2px solid #ddd; width: 0; height: 50px; }
+.tree li:last-child::before { border-right: 1.5px solid rgba(0, 0, 0, 0.06); border-radius: 0 12px 0 0; }
+.tree li:first-child::after { border-radius: 12px 0 0 0; }
+.tree ul ul::before { content: ''; position: absolute; top: 0; left: 50%; border-left: 1.5px solid rgba(0, 0, 0, 0.06); width: 0; height: 50px; }
 
-/* Node Styling */
 .tree-node-group { display: inline-flex; align-items: center; justify-content: center; position: relative; z-index: 10; }
-.tree-connector-h { width: 30px; height: 2px; background: #ddd; }
+.tree-connector-h { width: 32px; height: 1.5px; background: rgba(0, 0, 0, 0.06); }
 
+/* ─── LIGHT GLASSMORPHIC NODE CARD (Thẻ trắng kén phồng nổi) ─── */
 .tree-node-card {
-    background: #fff;
-    border: 2px solid #ddd;
-    padding: 10px;
-    border-radius: 15px;
-    min-width: 200px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    background: rgba(255, 255, 255, 0.85);
+    border: 1px solid rgba(0, 0, 0, 0.04);
+    padding: 12px 14px;
+    border-radius: 18px;
+    min-width: 210px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.03), 0 1px 3px rgba(0,0,0,0.01);
     cursor: pointer;
     position: relative;
     display: flex;
     align-items: center;
-    gap: 12px;
-    transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    background: rgba(255, 255, 255, 0.9);
-    backdrop-filter: blur(5px);
+    gap: 14px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 .tree-node-card:hover {
-    transform: translateY(-8px) scale(1.05);
-    box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+    transform: translateY(-5px) scale(1.02);
+    border-color: rgba(0, 0, 0, 0.08) !important;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.06), 0 0 15px var(--glow-light, rgba(0,0,0,0.01));
     z-index: 100;
 }
 
-.tree-node-card.highlighted {
-    border-color: #ffc107 !important;
-    background: #fffbeb !important;
-    animation: pulse-border 1.5s infinite;
-}
-
-@keyframes pulse-border {
-    0% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.4); }
-    70% { box-shadow: 0 0 0 15px rgba(255, 193, 7, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0); }
-}
-
-/* Generation Colors */
-.gen-1 { border-color: #4285f4; border-left-width: 6px; }
-.gen-2 { border-color: #34a853; border-left-width: 6px; }
-.gen-3 { border-color: #fbbc05; border-left-width: 6px; }
-.gen-4 { border-color: #ea4335; border-left-width: 6px; }
-.gen-5 { border-color: #a142f4; border-left-width: 6px; }
-
-.tree-node-card.is-dead {
-    filter: grayscale(0.8);
-    opacity: 0.8;
-    background: #f8f9fa;
-}
-
-.node-avatar {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 2px solid #fff;
-}
-
-.node-content {
-    text-align: left;
-    flex-grow: 1;
-}
-
-.node-name {
-    font-weight: 700;
-    font-size: 14px;
-    color: #2c3e50;
-    margin-bottom: 2px;
-}
-
-.node-date {
-    font-size: 11px;
-    color: #7f8c8d;
-}
-
-.node-tag {
-    font-size: 10px;
-    font-weight: 600;
-    color: #2980b9;
-    text-transform: uppercase;
-    margin-top: 4px;
-}
-
-.spouse-tag {
-    color: #e67e22;
-}
+/* Thanh chỉ mốc thế hệ mượt mà bên rìa trái thẻ */
+.gen-1 { border-left: 4px solid var(--gen-1-color); --glow-light: rgba(79, 70, 229, 0.08); }
+.gen-2 { border-left: 4px solid var(--gen-2-color); --glow-light: rgba(219, 39, 119, 0.08); }
+.gen-3 { border-left: 4px solid var(--gen-3-color); --glow-light: rgba(13, 148, 136, 0.08); }
+.gen-4 { border-left: 4px solid var(--gen-4-color); --glow-light: rgba(217, 119, 6, 0.08); }
+.gen-5 { border-left: 4px solid var(--gen-5-color); --glow-light: rgba(5, 150, 105, 0.08); }
 
 .tree-node-card.spouse {
     border-style: dashed;
-    border-left-width: 2px;
-    min-width: 180px;
+    min-width: 190px;
 }
 
+/* Định vị nhấp nháy phát sáng vàng nhạt khi tìm thấy */
+.tree-node-card.highlighted {
+    border-color: #d97706 !important;
+    background: rgba(217, 119, 6, 0.04) !important;
+    animation: light-pulse 2s infinite;
+}
+@keyframes light-pulse {
+    0% { box-shadow: 0 0 0 0 rgba(217, 119, 6, 0.2); }
+    70% { box-shadow: 0 0 0 10px rgba(217, 119, 6, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(217, 119, 6, 0); }
+}
+
+.tree-node-card.is-dead {
+    filter: grayscale(0.6);
+    opacity: 0.55;
+    background: rgba(243, 244, 246, 0.6);
+}
+
+/* Avatar khung tròn */
+.node-avatar-container {
+    position: relative;
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+}
+.node-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid #ffffff;
+    position: relative;
+    z-index: 2;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+.avatar-neon-ring {
+    position: absolute;
+    inset: -2px;
+    border-radius: 50%;
+    border: 1px solid rgba(0,0,0,0.03);
+    z-index: 1;
+}
+
+.node-content { text-align: left; flex-grow: 1; }
+.node-name { font-weight: 600; font-size: 14.5px; color: #111827; margin-bottom: 2px; }
+.node-date { font-size: 11px; color: #6b7280; }
+.node-tag { font-size: 10px; font-weight: 700; color: #9ca3af; text-transform: uppercase; margin-top: 4px; }
+.spouse-tag { color: #f97316 !important; }
+
+/* Icon chỉnh sửa mini ẩn hiện khi hover */
 .node-edit-btn {
     position: absolute;
-    top: -10px;
-    right: -10px;
-    width: 28px;
-    height: 28px;
-    background: #fff;
+    top: -8px;
+    right: -8px;
+    width: 24px;
+    height: 24px;
+    background: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.06);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
     opacity: 0;
-    transition: 0.2s;
-    color: #666;
+    transition: all 0.2s ease;
+    color: #6b7280;
+    font-size: 12px;
+}
+.tree-node-card:hover .node-edit-btn { opacity: 1; }
+.node-edit-btn:hover { background: #db2777; color: #fff; transform: scale(1.1); border-color: transparent; }
+
+/* ─── LUXURY LIGHT MODAL CONTAINER ─── */
+.luxury-modal {
+    background: #ffffff;
+    border-radius: 24px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08);
+}
+.header-create { border-left: 5px solid #0d9488; }
+.header-edit { border-left: 5px solid #d97706; }
+
+.profile-upload-preview {
+    border: 3px solid #f3f4f6;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    object-fit: cover;
+}
+.avatar-upload-trigger {
+    width: 30px;
+    height: 30px;
+    background: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+.avatar-upload-trigger:hover { background: #db2777; color: #fff !important; border-color: transparent; }
+
+.modern-field-label {
+    font-size: 11.5px;
+    font-weight: 600;
+    color: #6b7280;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+}
+.modern-input {
+    background: #f9fafb !important;
+    border: 1px solid rgba(0, 0, 0, 0.06) !important;
+    color: #111827 !important;
+    border-radius: 12px;
+    padding: 10px 14px;
+    font-size: 14px;
+}
+.modern-input:focus {
+    border-color: rgba(0, 0, 0, 0.15) !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.02) !important;
+}
+.modern-radio .form-check-input:checked {
+    background-color: #db2777;
+    border-color: #db2777;
 }
 
-.tree-node-card:hover .node-edit-btn {
-    opacity: 1;
-}
+/* Nút lệnh footer của Modal */
+.btn-modern-danger { background: #fef2f2; border: 1px solid #fee2e2; color: #ef4444; border-radius: 12px; }
+.btn-modern-danger:hover { background: #ef4444; color: #fff; }
+.btn-modern-cancel { background: transparent; border: 1px solid rgba(0,0,0,0.06); color: #6b7280; border-radius: 12px; }
+.btn-modern-cancel:hover { background: #f9fafb; color: #111827; }
+.btn-modern-save { border: none; border-radius: 12px; color: #ffffff; }
+.btn-modern-save.btn-save { background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%); }
+.btn-modern-save.btn-warn { background: linear-gradient(135deg, #d97706 0%, #b45309 100%); }
+.btn-modern-save:hover { filter: brightness(1.05); transform: translateY(-0.5px); }
 
-.node-edit-btn:hover {
-    background: #4285f4;
-    color: #fff;
+/* Tiện ích đệm */
+.bg-luxury-tips { background: rgba(255, 255, 255, 0.9); border: 1px solid rgba(0,0,0,0.04); backdrop-filter: blur(4px); box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
+.empty-glow-icon i { animation: icon-float 3.5s ease-in-out infinite; }
+@keyframes icon-float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
 }
 </style>

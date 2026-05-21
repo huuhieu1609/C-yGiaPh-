@@ -1,8 +1,9 @@
 <template>
-  <nav class="admin-sidebar shadow" :class="{ 'collapsed': isCollapsed }" style="background: linear-gradient(135deg, #1a1c2e 0%, #252740 50%, #1e2035 100%);">
-    <!-- Header / Logo -->
-    <div class="sidebar-header p-3 d-flex align-items-center gap-3 border-bottom border-secondary border-opacity-25 position-relative">
-      <div class="brand-icon d-flex align-items-center justify-content-center bg-white bg-opacity-10 rounded-3 flex-shrink-0" style="width: 40px; height: 40px;">
+  <nav class="admin-sidebar shadow" :class="{ 'sidebar-collapsed-state': isCollapsed }">
+    <div class="sidebar-bg-layer" aria-hidden="true"></div>
+
+    <div class="sidebar-header p-3 d-flex align-items-center gap-3 position-relative">
+      <div class="brand-icon d-flex align-items-center justify-content-center rounded-3 flex-shrink-0">
         <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:24px; height:24px;">
           <circle cx="20" cy="8" r="5" fill="url(#g1)" />
           <line x1="20" y1="13" x2="20" y2="20" stroke="url(#g1)" stroke-width="2"/>
@@ -18,106 +19,157 @@
           <line x1="28" y1="34" x2="36" y2="36" stroke="url(#g3)" stroke-width="1.5" opacity="0.7"/>
           <defs>
             <linearGradient id="g1" x1="0" y1="0" x2="40" y2="40">
-              <stop offset="0%" stop-color="#66bb6a"/>
-              <stop offset="100%" stop-color="#2e7d32"/>
+              <stop offset="0%" stop-color="#10b981"/>
+              <stop offset="100%" stop-color="#059669"/>
             </linearGradient>
             <linearGradient id="g2" x1="0" y1="15" x2="40" y2="35">
-              <stop offset="0%" stop-color="#43a047"/>
-              <stop offset="100%" stop-color="#1b5e20"/>
+              <stop offset="0%" stop-color="#34d399"/>
+              <stop offset="100%" stop-color="#047857"/>
             </linearGradient>
             <linearGradient id="g3" x1="0" y1="30" x2="40" y2="40">
-              <stop offset="0%" stop-color="#81c784"/>
-              <stop offset="100%" stop-color="#388e3c"/>
+              <stop offset="0%" stop-color="#6ee7b7"/>
+              <stop offset="100%" stop-color="#065f46"/>
             </linearGradient>
           </defs>
         </svg>
       </div>
-      <span class="fw-bold fs-5 text-success logo-text text-nowrap hide-on-collapse">Gia Phả Admin</span>
+      <div class="hide-on-collapse logo-wrap lh-1">
+        <span class="logo-text fw-bold">Gia Phả</span>
+        <span class="logo-sub">Admin</span>
+      </div>
     </div>
 
-    <!-- Floating Toggle Button -->
-    <button class="toggle-btn shadow-sm" @click="$emit('toggle-sidebar')" title="Thu gọn/Mở rộng">
+    <button class="toggle-btn" @click.stop="$emit('toggle-sidebar')" :title="isCollapsed ? 'Mở rộng' : 'Thu gọn'">
       <i class='bx' :class="isCollapsed ? 'bx-chevron-right' : 'bx-chevron-left'"></i>
     </button>
 
-    <!-- User Greeting Profile -->
-    <div class="user-greeting p-3 d-flex align-items-center gap-3 border-bottom border-secondary border-opacity-25">
-      <div class="avatar d-flex align-items-center justify-content-center bg-success text-white fw-bold rounded-circle shadow-sm flex-shrink-0" style="width: 44px; height: 44px; font-size: 18px;">
-        {{ userName.charAt(0).toUpperCase() }}
+    <div class="user-greeting d-flex align-items-center gap-3">
+      <div class="avatar flex-shrink-0">
+        <span>{{ userName.charAt(0).toUpperCase() }}</span>
+        <div class="avatar-ring"></div>
       </div>
-      <div class="d-flex flex-column lh-1 hide-on-collapse text-nowrap">
-        <span class="text-white-50 mb-1" style="font-size: 13px;">Xin chào,</span>
-        <strong class="text-white fs-6">{{ userName }}</strong>
+      <div class="d-flex flex-column hide-on-collapse lh-1 text-nowrap">
+        <span class="greeting-label">Xin chào,</span>
+        <strong class="greeting-name">{{ userName }}</strong>
       </div>
     </div>
 
-    <!-- Main Navigation Menu -->
-    <div class="sidebar-body p-3 overflow-auto flex-grow-1">
-      <ul class="nav nav-pills flex-column mb-auto gap-1">
+    <div class="sidebar-body overflow-auto flex-grow-1">
+      <ul class="nav flex-column gap-1">
         <li class="nav-item">
-          <router-link to="/admin/dashboard" class="nav-link text-white-50 d-flex align-items-center gap-3 px-3 py-2" active-class="active" title="Tổng Quan">
-            <i class="bx bx-home-circle fs-5"></i><span class="hide-on-collapse text-nowrap">Tổng Quan</span>
+          <router-link to="/admin/dashboard" class="nav-link" active-class="active" title="Tổng Quan">
+            <span class="nav-icon"><i class="bx bx-home-circle"></i></span>
+            <span class="hide-on-collapse nav-label">Tổng Quan</span>
+            <span class="nav-dot hide-on-collapse"></span>
           </router-link>
         </li>
         <li class="nav-item">
-          <router-link to="/admin/gia-pha" class="nav-link text-white-50 d-flex align-items-center gap-3 px-3 py-2" active-class="active" title="Gia Phả">
-            <i class="bx bx-git-branch fs-5"></i><span class="hide-on-collapse text-nowrap">Gia Phả</span>
+          <router-link to="/admin/gia-pha" class="nav-link" active-class="active" title="Gia Phả">
+            <span class="nav-icon"><i class="bx bx-git-branch"></i></span>
+            <span class="hide-on-collapse nav-label">Gia Phả</span>
+            <span class="nav-dot hide-on-collapse"></span>
           </router-link>
         </li>
         <li class="nav-item">
-          <router-link to="/admin/tra-cuu" class="nav-link text-white-50 d-flex align-items-center gap-3 px-3 py-2" active-class="active" title="Tra Cứu">
-            <i class="bx bx-search-alt fs-5"></i><span class="hide-on-collapse text-nowrap">Tra Cứu</span>
+          <router-link to="/admin/tra-cuu" class="nav-link" active-class="active" title="Tra Cứu">
+            <span class="nav-icon"><i class="bx bx-search-alt"></i></span>
+            <span class="hide-on-collapse nav-label">Tra Cứu</span>
+            <span class="nav-dot hide-on-collapse"></span>
           </router-link>
         </li>
 
-        <!-- Dòng Họ -->
-        <li class="nav-heading text-uppercase text-white-50 mt-4 mb-2 ps-3 hide-on-collapse text-nowrap" style="font-size: 11px; font-weight: 600; letter-spacing: 0.8px;">Quản Lý Dòng Họ</li>
+        <li class="section-heading hide-on-collapse">Quản Lý Dòng Họ</li>
         <li class="nav-item">
-          <router-link to="/admin/chi-nhanh" class="nav-link text-white-50 d-flex align-items-center gap-3 px-3 py-2" active-class="active" title="Chi Nhánh"><i class="bx bx-sitemap fs-5"></i> <span class="hide-on-collapse text-nowrap">Chi Nhánh</span></router-link>
+          <router-link to="/admin/chi-nhanh" class="nav-link" active-class="active" title="Chi Nhánh">
+            <span class="nav-icon"><i class="bx bx-sitemap"></i></span>
+            <span class="hide-on-collapse nav-label">Chi Nhánh</span>
+            <span class="nav-dot hide-on-collapse"></span>
+          </router-link>
         </li>
         <li class="nav-item">
-          <router-link to="/admin/doi-toc-ho" class="nav-link text-white-50 d-flex align-items-center gap-3 px-3 py-2" active-class="active" title="Đời Tộc Họ"><i class="bx bx-list-ul fs-5"></i> <span class="hide-on-collapse text-nowrap">Đời Tộc Họ</span></router-link>
+          <router-link to="/admin/doi-toc-ho" class="nav-link" active-class="active" title="Đời Tộc Họ">
+            <span class="nav-icon"><i class="bx bx-list-ul"></i></span>
+            <span class="hide-on-collapse nav-label">Đời Tộc Họ</span>
+            <span class="nav-dot hide-on-collapse"></span>
+          </router-link>
         </li>
         <li class="nav-item">
-          <router-link to="/admin/nha-tho-ho" class="nav-link text-white-50 d-flex align-items-center gap-3 px-3 py-2" active-class="active" title="Nhà Thờ Họ"><i class="bx bx-building-house fs-5"></i> <span class="hide-on-collapse text-nowrap">Nhà Thờ Họ</span></router-link>
+          <router-link to="/admin/nha-tho-ho" class="nav-link" active-class="active" title="Nhà Thờ Họ">
+            <span class="nav-icon"><i class="bx bx-building-house"></i></span>
+            <span class="hide-on-collapse nav-label">Nhà Thờ Họ</span>
+            <span class="nav-dot hide-on-collapse"></span>
+          </router-link>
         </li>
         <li class="nav-item">
-          <router-link to="/admin/mo-phan" class="nav-link text-white-50 d-flex align-items-center gap-3 px-3 py-2" active-class="active" title="Mộ Phần"><i class="bx bx-map-pin fs-5"></i> <span class="hide-on-collapse text-nowrap">Mộ Phần</span></router-link>
+          <router-link to="/admin/mo-phan" class="nav-link" active-class="active" title="Mộ Phần">
+            <span class="nav-icon"><i class="bx bx-map-pin"></i></span>
+            <span class="hide-on-collapse nav-label">Mộ Phần</span>
+            <span class="nav-dot hide-on-collapse"></span>
+          </router-link>
         </li>
 
-        <!-- Sự Kiện & Quỹ -->
-        <li class="nav-heading text-uppercase text-white-50 mt-4 mb-2 ps-3 hide-on-collapse text-nowrap" style="font-size: 11px; font-weight: 600; letter-spacing: 0.8px;">Sự Kiện & Quỹ</li>
+        <li class="section-heading hide-on-collapse">Sự Kiện & Quỹ</li>
         <li class="nav-item">
-          <router-link to="/admin/su-kien" class="nav-link text-white-50 d-flex align-items-center gap-3 px-3 py-2" active-class="active" title="Sự Kiện"><i class="bx bx-calendar-event fs-5"></i> <span class="hide-on-collapse text-nowrap">Sự Kiện</span></router-link>
+          <router-link to="/admin/su-kien" class="nav-link" active-class="active" title="Sự Kiện">
+            <span class="nav-icon"><i class="bx bx-calendar-event"></i></span>
+            <span class="hide-on-collapse nav-label">Sự Kiện</span>
+            <span class="nav-dot hide-on-collapse"></span>
+          </router-link>
         </li>
         <li class="nav-item">
-          <router-link to="/admin/tham-gia-su-kien" class="nav-link text-white-50 d-flex align-items-center gap-3 px-3 py-2" active-class="active" title="Tham Gia"><i class="bx bx-user-check fs-5"></i> <span class="hide-on-collapse text-nowrap">Tham Gia</span></router-link>
+          <router-link to="/admin/tham-gia-su-kien" class="nav-link" active-class="active" title="Tham Gia">
+            <span class="nav-icon"><i class="bx bx-user-check"></i></span>
+            <span class="hide-on-collapse nav-label">Tham Gia</span>
+            <span class="nav-dot hide-on-collapse"></span>
+          </router-link>
         </li>
         <li class="nav-item">
-          <router-link to="/admin/dong-gop" class="nav-link text-white-50 d-flex align-items-center gap-3 px-3 py-2" active-class="active" title="Đóng Góp"><i class="bx bx-wallet fs-5"></i> <span class="hide-on-collapse text-nowrap">Đóng Góp</span></router-link>
+          <router-link to="/admin/dong-gop" class="nav-link" active-class="active" title="Đóng Góp">
+            <span class="nav-icon"><i class="bx bx-wallet"></i></span>
+            <span class="hide-on-collapse nav-label">Đóng Góp</span>
+            <span class="nav-dot hide-on-collapse"></span>
+          </router-link>
         </li>
 
-        <!-- Hệ Thống -->
-        <li class="nav-heading text-uppercase text-white-50 mt-4 mb-2 ps-3 hide-on-collapse text-nowrap" style="font-size: 11px; font-weight: 600; letter-spacing: 0.8px;">Hệ Thống</li>
+        <li class="section-heading hide-on-collapse">Hệ Thống</li>
         <li class="nav-item">
-          <router-link to="/admin/nguoi-dung" class="nav-link text-white-50 d-flex align-items-center gap-3 px-3 py-2" active-class="active" title="Người Dùng"><i class="bx bx-user fs-5"></i> <span class="hide-on-collapse text-nowrap">Người Dùng</span></router-link>
+          <router-link to="/admin/nguoi-dung" class="nav-link" active-class="active" title="Người Dùng">
+            <span class="nav-icon"><i class="bx bx-user"></i></span>
+            <span class="hide-on-collapse nav-label">Người Dùng</span>
+            <span class="nav-dot hide-on-collapse"></span>
+          </router-link>
         </li>
         <li class="nav-item">
-          <router-link to="/admin/chuc-vu" class="nav-link text-white-50 d-flex align-items-center gap-3 px-3 py-2" active-class="active" title="Chức Vụ"><i class="bx bx-shield fs-5"></i> <span class="hide-on-collapse text-nowrap">Chức Vụ</span></router-link>
+          <router-link to="/admin/chuc-vu" class="nav-link" active-class="active" title="Chức Vụ">
+            <span class="nav-icon"><i class="bx bx-shield"></i></span>
+            <span class="hide-on-collapse nav-label">Chức Vụ</span>
+            <span class="nav-dot hide-on-collapse"></span>
+          </router-link>
         </li>
         <li class="nav-item">
-          <router-link to="/admin/chuc-nang" class="nav-link text-white-50 d-flex align-items-center gap-3 px-3 py-2" active-class="active" title="Chức Năng"><i class="bx bx-slider fs-5"></i> <span class="hide-on-collapse text-nowrap">Chức Năng</span></router-link>
+          <router-link to="/admin/chuc-nang" class="nav-link" active-class="active" title="Chức Năng">
+            <span class="nav-icon"><i class="bx bx-slider"></i></span>
+            <span class="hide-on-collapse nav-label">Chức Năng</span>
+            <span class="nav-dot hide-on-collapse"></span>
+          </router-link>
         </li>
         <li class="nav-item">
-          <router-link to="/admin/phan-quyen" class="nav-link text-white-50 d-flex align-items-center gap-3 px-3 py-2" active-class="active" title="Phân Quyền"><i class="bx bx-shield-alt fs-5"></i> <span class="hide-on-collapse text-nowrap">Phân Quyền</span></router-link>
+          <router-link to="/admin/phan-quyen" class="nav-link" active-class="active" title="Phân Quyền">
+            <span class="nav-icon"><i class="bx bx-shield-alt"></i></span>
+            <span class="hide-on-collapse nav-label">Phân Quyền</span>
+            <span class="nav-dot hide-on-collapse"></span>
+          </router-link>
         </li>
       </ul>
     </div>
 
-    <!-- Footer Actions -->
-    <div class="sidebar-footer p-3 border-top border-secondary border-opacity-25 mt-auto">
-      <button class="btn btn-logout w-100 d-flex align-items-center justify-content-center gap-2 py-2 rounded-3 shadow-sm" @click="logout" title="Đăng Xuất">
-        <i class="bx bx-log-out-circle fs-5"></i> <span class="hide-on-collapse text-nowrap">Đăng Xuất</span>
+    <div class="sidebar-footer d-flex flex-column">
+      <button class="btn-logout d-flex align-items-center justify-content-between" @click="logout" title="Đăng Xuất">
+        <div class="d-flex align-items-center gap-3">
+          <span class="nav-icon"><i class="bx bx-log-out-circle"></i></span>
+          <span class="hide-on-collapse text-nowrap font-bold">Đăng Xuất</span>
+        </div>
+        <span class="logout-arrow hide-on-collapse"><i class="bx bx-up-arrow-alt"></i></span>
       </button>
     </div>
   </nav>
@@ -135,11 +187,26 @@ export default {
   emits: ['toggle-sidebar'],
   data() {
     return {
-      userName: 'Admin'
+      userName: 'Chánh Admin'
+    }
+  },
+  mounted() {
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        if (user && user.ho_ten) {
+          this.userName = user.ho_ten;
+        }
+      } catch (e) {
+        console.error("Lỗi parse thông tin user trong Sidebar:", e);
+      }
     }
   },
   methods: {
     logout() {
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('user');
       this.$router.push('/admin/login');
     }
   }
@@ -147,170 +214,326 @@ export default {
 </script>
 
 <style scoped>
-/* Sidebar Container Layout */
+/* ─── SYSTEM LIGHT CORE VARIABLES ─── */
 .admin-sidebar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  width: 280px;
+  --admin-bg:        #ffffff;
+  --admin-surface:   #f8f9fa;
+  --admin-elevated:  #ffffff;
+  --admin-border:    rgba(0, 0, 0, 0.06);
+  --admin-emerald:   #059669; /* Emerald lục bảo sáng quý tộc */
+
+  --text-main:       #1f2937;
+  --text-sub:        #6b7280;
+  --transition-smooth: 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+/* ─── CONTAINER KÉN CHỮ NHẬT TRẮNG SÁNG NGỌC TRAI ─── */
+.admin-sidebar {
+  position: sticky;
+  top: 15px;
+  left: 15px;
+  height: calc(100vh - 30px);
+  width: 260px !important;
+  min-width: 260px !important;
+  background: var(--admin-bg) !important;
   display: flex;
   flex-direction: column;
   z-index: 1040;
-  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  margin: 15px 0 15px 15px;
+  border-radius: 24px;
+  border: 1px solid var(--admin-border);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.02);
+  transition: width var(--transition-smooth), min-width var(--transition-smooth);
 }
 
-.admin-sidebar.collapsed {
-  width: 80px;
+.admin-sidebar.sidebar-collapsed-state {
+  width: 82px !important;
+  min-width: 82px !important;
 }
 
-.admin-sidebar.collapsed .hide-on-collapse {
+/* ─── DECORATION BG LAYER ─── */
+.sidebar-bg-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  border-radius: 24px;
+  z-index: 0;
+}
+.sidebar-bg-layer::before {
+  content: '';
+  position: absolute;
+  top: -100px;
+  left: -100px;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(5, 150, 105, 0.03) 0%, transparent 70%);
+}
+
+.admin-sidebar > *:not(.sidebar-bg-layer) {
+  position: relative;
+  z-index: 1;
+}
+
+.admin-sidebar.sidebar-collapsed-state .hide-on-collapse {
   display: none !important;
 }
 
-.admin-sidebar.collapsed .sidebar-header {
-  padding: 15px 10px !important;
+/* ─── HEADER LOGO TỘC HỆ ─── */
+.sidebar-header {
+  padding: 24px 20px 16px !important;
+  border-bottom: 1px solid rgba(0,0,0,0.03) !important;
+}
+.admin-sidebar.sidebar-collapsed-state .sidebar-header {
+  padding: 24px 10px 16px !important;
   justify-content: center !important;
 }
 
-.admin-sidebar.collapsed .user-greeting {
-  justify-content: center !important;
-  padding: 15px 10px !important;
+.brand-icon {
+  background: #f3f4f6;
+  border: 1px solid rgba(0,0,0,0.05);
+  padding: 6px;
+  width: 40px;
+  height: 40px;
+}
+.logo-wrap {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+}
+.logo-text {
+  font-size: 19px;
+  color: #111827;
+  font-family: 'Playfair Display', serif;
+}
+.logo-sub {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--admin-emerald);
+  letter-spacing: 1px;
+  text-transform: uppercase;
 }
 
-.admin-sidebar.collapsed .nav-link {
-  justify-content: center !important;
-  padding: 10px !important;
-}
-
-.admin-sidebar.collapsed .nav-link i {
-  font-size: 24px !important;
-}
-
-.admin-sidebar.collapsed .sidebar-footer {
-  padding: 10px !important;
-}
-
-.admin-sidebar.collapsed .btn-logout {
-  padding: 10px !important;
-}
-
-/* Floating Toggle Button */
+/* ─── NÚT TOGGLE THU GỌN - ĐẨY RA RÌA VÁCH NGĂN SÁNG TRẮNG ─── */
 .toggle-btn {
   position: absolute;
-  right: -14px;
-  top: 24px;
-  background: #252740;
+  left: 100%; 
+  top: 32px;
+  transform: translateX(-50%); 
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
-  width: 28px;
-  height: 28px;
-  padding: 0;
+  background: #ffffff;
+  border: 1px solid var(--admin-border);
+  color: var(--text-sub);
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid rgba(255,255,255,0.1);
-  color: #fff !important;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-  z-index: 1050;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
+  z-index: 1055;
+  padding: 0;
+  font-size: 16px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
 }
-
 .toggle-btn:hover {
-  background: #4caf50;
-  transform: scale(1.1);
+  background: var(--admin-emerald);
+  border-color: transparent;
+  color: #ffffff !important;
+  transform: translateX(-50%) scale(1.12); 
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
+}
+.toggle-btn:active {
+  transform: translateX(-50%) scale(0.95);
 }
 
-.toggle-btn i {
-  font-size: 1.2rem;
-}
-
-/* Gradient Logo Text */
-.logo-text {
-  background: linear-gradient(135deg, #81c784, #43a047);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* User Greeting Custom Styles */
+/* ─── USER RECTANGLE BLOCK SÁNG MƯỢT ─── */
 .user-greeting {
-  background: rgba(0, 0, 0, 0.15); /* Slight dark overlay for contrast */
+  padding: 12px 16px;
+  margin: 14px 16px;
+  background: #fdfdfd;
+  border: 1px solid var(--admin-border);
+  border-radius: 16px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.01);
+}
+.admin-sidebar.sidebar-collapsed-state .user-greeting {
+  justify-content: center !important;
+  margin: 12px 8px !important;
+  padding: 12px 6px !important;
 }
 
-/* Navigation Links */
-.nav-item {
+.avatar {
   position: relative;
+  width: 36px;
+  height: 36px;
+}
+.avatar span {
+  position: relative;
+  z-index: 2;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #f3f4f6;
+  border: 1px solid var(--admin-border);
+  color: #111827;
+  font-weight: 700;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.avatar-ring {
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  border: 1px solid transparent;
+  background: linear-gradient(135deg, var(--admin-emerald), #3b82f6) border-box;
+  -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: destination-out;
+  mask-composite: exclude;
+}
+
+.greeting-label { font-size: 11px; color: var(--text-sub); }
+.greeting-name { font-size: 13.5px; color: #111827; }
+
+/* ─── SIDEBAR NAVIGATION MENU ─── */
+.sidebar-body {
+  padding: 10px 16px;
+}
+.sidebar-body::-webkit-scrollbar { width: 3px; }
+.sidebar-body::-webkit-scrollbar-track { background: transparent; }
+.sidebar-body::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.05); border-radius: 99px; }
+
+.section-heading {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #a3a3a3;
+  padding: 20px 12px 6px;
 }
 
 .nav-link {
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  color: var(--text-sub) !important;
+  font-size: 14px;
   font-weight: 500;
-  font-size: 14.5px;
+  transition: all 0.25s ease;
+  text-decoration: none;
+  border: 1px solid transparent;
+}
+.admin-sidebar.sidebar-collapsed-state .nav-link {
+  justify-content: center;
+  padding: 12px 0;
+}
+
+.nav-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--admin-emerald);
+  opacity: 0;
+  transform: scale(0.5);
+  transition: all 0.2s ease;
+  margin-left: auto;
+}
+.nav-link:hover .nav-dot {
+  opacity: 0.5;
+  transform: scale(1);
+}
+
+.nav-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  font-size: 18px;
+  color: #9ca3af;
+  transition: color 0.2s ease;
 }
 
 .nav-link:hover {
-  color: #fff !important;
-  background: rgba(255, 255, 255, 0.08);
-  transform: translateX(4px);
+  color: #111827 !important;
+  background: #f9fafb;
+}
+.nav-link:hover .nav-icon {
+  color: #4b5563;
 }
 
-.nav-link.active,
-.nav-link.router-link-active {
-  color: #fff !important;
-  background: linear-gradient(135deg, rgba(76,175,80,0.25), rgba(56,142,60,0.1));
-  box-shadow: 0 4px 15px rgba(76,175,80,0.15);
+/* TRẠNG THÁI ACTIVE HẠT KÉN TRẮNG NỔI KHỐI MỊN EMERALD */
+.nav-link.active {
+  color: #111827 !important;
+  background: #ffffff !important;
+  border: 1px solid rgba(0, 0, 0, 0.04) !important;
   font-weight: 600;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02), 0 1px 2px rgba(0, 0, 0, 0.01);
+}
+.nav-link.active .nav-icon i {
+  color: var(--admin-emerald) !important;
+}
+.nav-link.active .nav-dot {
+  opacity: 1 !important;
+  transform: scale(1.2);
 }
 
-/* Active Indicator Line */
-.nav-link.active::before,
-.nav-link.router-link-active::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 15%;
-  height: 70%;
-  width: 4px;
-  background: #66bb6a;
-  border-radius: 0 4px 4px 0;
-  box-shadow: 2px 0 8px rgba(102, 187, 106, 0.5);
+/* ─── SIDEBAR FOOTER - VIÊN THUỐC ĐĂNG XUẤT ─── */
+.sidebar-footer {
+  padding: 16px;
+  border-top: 1px solid rgba(0, 0, 0, 0.03);
+  margin-top: auto;
 }
 
-/* Custom Scrollbar for Sidebar */
-.sidebar-body::-webkit-scrollbar {
-  width: 5px;
-}
-.sidebar-body::-webkit-scrollbar-track {
-  background: transparent;
-}
-.sidebar-body::-webkit-scrollbar-thumb {
-  background: rgba(255,255,255,0.15);
-  border-radius: 10px;
-}
-.sidebar-body::-webkit-scrollbar-thumb:hover {
-  background: rgba(255,255,255,0.25);
-}
-
-/* Logout Button - neutral by default, red on hover */
 .btn-logout {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: rgba(255, 255, 255, 0.7);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  width: 100%;
+  background: linear-gradient(135deg, #059669 0%, #10b981 50%, #34d399 100%);
+  border: none;
+  color: #ffffff;
+  border-radius: 30px; 
+  padding: 11px 18px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.2);
+  transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+}
+.btn-logout .nav-icon i { color: #ffffff !important; }
+
+.logout-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  font-size: 13px;
+  transform: rotate(45deg); 
+  transition: transform 0.3s ease;
 }
 
 .btn-logout:hover {
-  background: linear-gradient(135deg, #e53935, #c62828);
-  border-color: transparent;
-  color: #fff;
-  box-shadow: 0 4px 15px rgba(229, 57, 53, 0.35);
-  transform: translateY(-1px);
+  transform: translateY(-1.5px);
+  box-shadow: 0 8px 20px rgba(5, 150, 105, 0.35);
+  filter: brightness(1.02);
+}
+.btn-logout:hover .logout-arrow {
+  transform: rotate(45deg) translateX(1px) translateY(-1px);
 }
 
-.btn-logout:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 8px rgba(229, 57, 53, 0.3);
+/* Thu gọn chân trang */
+.admin-sidebar.sidebar-collapsed-state .btn-logout {
+  padding: 12px 0;
+  justify-content: center;
+  border-radius: 14px;
+  background: #ffffff;
+  border: 1px solid rgba(5, 150, 105, 0.2);
+}
+.admin-sidebar.sidebar-collapsed-state .btn-logout .nav-icon i {
+  color: var(--admin-emerald) !important;
 }
 </style>
