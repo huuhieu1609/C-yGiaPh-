@@ -78,6 +78,14 @@
               </option>
             </select>
           </div>
+          <div class="col-md-2">
+            <button
+              class="btn btn-primary radius-10 w-100 fw-bold shadow-sm"
+              @click="openAddModal"
+            >
+              <i class="bx bx-plus-circle"></i> Thêm Mới
+            </button>
+          </div>
         </div>
 
         <div class="table-responsive">
@@ -227,6 +235,17 @@
                   class="form-control radius-8 border-2 shadow-none"
                   v-model="currentMember.ho_ten"
                   placeholder="Nguyễn Văn A"
+                />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-bold"
+                  >Email (Cho phép user xem gia phả)</label
+                >
+                <input
+                  type="email"
+                  class="form-control radius-8 border-2 shadow-none"
+                  v-model="currentMember.email"
+                  placeholder="example@gmail.com"
                 />
               </div>
               <div class="col-md-3">
@@ -410,10 +429,11 @@ export default {
       currentMember: {
         id: null,
         ho_ten: "",
+        email: "",
         doi_thu: 1,
         cha_id: null,
         gioi_tinh: "Nam",
-        chi_nhanh_id: null,
+        id_chi_nhanh: null,
         loai_quan_he: "Chính",
         spouse_of_id: null,
         trang_thai: "Còn sống",
@@ -429,23 +449,26 @@ export default {
   computed: {
     filteredMembers() {
       return this.allMembers.filter((m) => {
-        const matchSearch = m.ho_ten
+        const name = m.ho_ten || "";
+        const search = this.searchQuery || "";
+        const matchSearch = name
           .toLowerCase()
-          .includes(this.searchQuery.toLowerCase());
+          .includes(search.toLowerCase());
         const matchDoi = this.filterDoi === null || m.doi_thu == this.filterDoi;
         const matchChiNhanh =
           this.selectedChiNhanhId === null ||
-          m.chi_nhanh_id == this.selectedChiNhanhId;
+          m.id_chi_nhanh == this.selectedChiNhanhId;
         return matchSearch && matchDoi && matchChiNhanh;
       });
     },
   },
   mounted() {
-    if (window.bootstrap) {
-      this.modal = new window.bootstrap.Modal(
-        document.getElementById("memberModal")
-      );
-    }
+    this.$nextTick(() => {
+      const modalEl = document.getElementById("memberModal");
+      if (window.bootstrap && modalEl) {
+        this.modal = new window.bootstrap.Modal(modalEl);
+      }
+    });
     this.loadDoiTocHo();
     this.loadChiNhanh();
     this.loadData();
@@ -493,10 +516,11 @@ export default {
       this.currentMember = {
         id: null,
         ho_ten: "",
+        email: "",
         doi_thu: 1,
         cha_id: null,
         gioi_tinh: "Nam",
-        chi_nhanh_id: null,
+        id_chi_nhanh: this.selectedChiNhanhId,
         loai_quan_he: "Chính",
         spouse_of_id: null,
         trang_thai: "Còn sống",
@@ -507,14 +531,22 @@ export default {
       };
       this.avatarFile = null;
       this.avatarPreview = null;
-      this.modal.show();
+      if (this.modal) {
+        this.modal.show();
+      } else {
+        toastr.error("Lỗi tải giao diện Modal. Vui lòng thử lại!");
+      }
     },
     onEdit(member) {
       this.isEditing = true;
       this.currentMember = { ...member };
       this.avatarFile = null;
       this.avatarPreview = null;
-      this.modal.show();
+      if (this.modal) {
+        this.modal.show();
+      } else {
+        toastr.error("Lỗi tải giao diện Modal. Vui lòng thử lại!");
+      }
     },
     onAvatarChange(e) {
       const file = e.target.files[0];
@@ -541,7 +573,10 @@ export default {
 
       axios
         .post(url, formData, {
-          headers: { "Content-Type": "multipart/form-data" },
+          headers: {
+            "Content-Type": "multipart/form-data",
+            ...this.getHeaders().headers,
+          },
         })
         .then((res) => {
           if (res.data.status) {
@@ -556,7 +591,11 @@ export default {
     handleDelete(id) {
       if (confirm("Xác nhận xóa thành viên này?")) {
         axios
-          .post("http://127.0.0.1:8000/api/thanh-vien/delete", { id })
+          .post(
+            "http://127.0.0.1:8000/api/thanh-vien/delete",
+            { id },
+            this.getHeaders()
+          )
           .then((res) => {
             if (res.data.status) {
               toastr.success(res.data.message);

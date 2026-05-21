@@ -294,6 +294,18 @@
                   <option value="Nữ">Nữ</option>
                 </select>
               </div>
+              <div class="col-md-6">
+                <label
+                  class="form-label fw-semibold text-secondary small text-uppercase"
+                  >Email xem gia phả</label
+                >
+                <input
+                  type="email"
+                  class="form-control form-control-lg bg-light border-0 rounded-3 fs-6"
+                  v-model="currentMember.email"
+                  placeholder="example@gmail.com"
+                />
+              </div>
 
               <div class="col-md-6">
                 <label
@@ -415,7 +427,9 @@
                     :key="m.id"
                     :value="m.id"
                     v-show="
-                      m.id !== currentMember.id && m.loai_quan_he === 'Chính'
+                      m.id !== currentMember.id &&
+                      m.loai_quan_he === 'Chính' &&
+                      m.id_chi_nhanh == selectedChiNhanhId
                     "
                   >
                     {{ m.ho_ten }} (Đời {{ m.doi_thu }})
@@ -440,7 +454,10 @@
                     v-for="m in allMembers"
                     :key="m.id"
                     :value="m.id"
-                    v-show="m.loai_quan_he === 'Chính'"
+                    v-show="
+                      m.loai_quan_he === 'Chính' &&
+                      m.id_chi_nhanh == selectedChiNhanhId
+                    "
                   >
                     {{ m.ho_ten }} (Đời {{ m.doi_thu }})
                   </option>
@@ -601,9 +618,11 @@ export default {
       currentMember: {
         id: null,
         ho_ten: "",
+        email: "",
         doi_thu: 1,
         cha_id: null,
         gioi_tinh: "Nam",
+        id_chi_nhanh: null,
         loai_quan_he: "Chính",
         spouse_of_id: null,
         trang_thai: "Còn sống",
@@ -625,6 +644,7 @@ export default {
       isPanning: false,
       lastMouseX: 0,
       lastMouseY: 0,
+      wheelBound: false,
     };
   },
   computed: {
@@ -632,7 +652,7 @@ export default {
       let list = JSON.parse(JSON.stringify(this.allMembers));
 
       if (this.selectedChiNhanhId) {
-        list = list.filter((m) => m.chi_nhanh_id === this.selectedChiNhanhId);
+        list = list.filter((m) => m.id_chi_nhanh == this.selectedChiNhanhId);
       }
 
       const map = {};
@@ -691,20 +711,22 @@ export default {
     },
   },
   mounted() {
-    if (window.bootstrap) {
-      this.modal = new window.bootstrap.Modal(
-        document.getElementById("memberModal")
-      );
-    }
+    this.$nextTick(() => {
+      const modalEl = document.getElementById("memberModal");
+      if (window.bootstrap && modalEl) {
+        this.modal = new window.bootstrap.Modal(modalEl);
+      }
+      this.bindWheelListener();
+    });
     this.loadDoiTocHo();
     this.loadChiNhanh();
     this.loadData();
-    this.$refs.viewport.addEventListener("wheel", this.handleWheel, {
-      passive: false,
-    });
   },
   beforeUnmount() {
-    this.$refs.viewport.removeEventListener("wheel", this.handleWheel);
+    if (this.wheelBound && this.$refs.viewport) {
+      this.$refs.viewport.removeEventListener("wheel", this.handleWheel);
+      this.wheelBound = false;
+    }
   },
   methods: {
     getHeaders() {
@@ -743,8 +765,16 @@ export default {
             if (this.listChiNhanh.length > 0 && !this.selectedChiNhanhId) {
               this.selectedChiNhanhId = this.listChiNhanh[0].id;
             }
+            this.$nextTick(() => this.bindWheelListener());
           }
         });
+    },
+    bindWheelListener() {
+      if (this.wheelBound || !this.$refs.viewport) return;
+      this.$refs.viewport.addEventListener("wheel", this.handleWheel, {
+        passive: false,
+      });
+      this.wheelBound = true;
     },
     // --- View Controls (Pan / Zoom) ---
     zoomIn() {
@@ -785,9 +815,11 @@ export default {
       this.currentMember = {
         id: null,
         ho_ten: "",
+        email: "",
         doi_thu: 1,
         cha_id: null,
         gioi_tinh: "Nam",
+        id_chi_nhanh: this.selectedChiNhanhId,
         loai_quan_he: "Chính",
         spouse_of_id: null,
         trang_thai: "Còn sống",
@@ -798,14 +830,22 @@ export default {
       };
       this.avatarFile = null;
       this.avatarPreview = null;
-      this.modal.show();
+      if (this.modal) {
+        this.modal.show();
+      } else {
+        toastr.error("Lỗi tải giao diện Modal. Vui lòng thử lại!");
+      }
     },
     onEdit(member) {
       this.isEditing = true;
       this.currentMember = { ...member };
       this.avatarFile = null;
       this.avatarPreview = null;
-      this.modal.show();
+      if (this.modal) {
+        this.modal.show();
+      } else {
+        toastr.error("Lỗi tải giao diện Modal. Vui lòng thử lại!");
+      }
     },
     onAvatarChange(e) {
       const file = e.target.files[0];

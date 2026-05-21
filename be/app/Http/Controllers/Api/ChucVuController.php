@@ -73,4 +73,18 @@ class ChucVuController extends Controller
             'data' => $item,
         ]);
     }
+
+    public function search(Request $request)
+    {
+        $query = $request->value;
+        $data = ChucVu::where('ten_chuc_vu', 'like', '%'.$query.'%')
+            ->orWhere('mo_ta', 'like', '%'.$query.'%')
+            ->get();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Tìm thấy '.count($data).' kết quả',
+            'data' => $data,
+        ]);
+    }
 }

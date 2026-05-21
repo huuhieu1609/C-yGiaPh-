@@ -56,6 +56,8 @@ export default {
                             name: 'reset-password', 
                             query: { email: this.email } 
                         });
+                    } else {
+                        toastr.error(res.data.message || 'Email này chưa được đăng ký trong hệ thống!');
                     }
                 })
                 .catch(err => {

@@ -7,27 +7,43 @@ use App\Http\Requests\ChiNhanhCreateRequest;
 use App\Http\Requests\ChiNhanhUpdateRequest;
 use App\Models\ChiNhanh;
 use Exception;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class ChiNhanhController extends Controller
 {
-    public function getData()
+    public function getData(): JsonResponse
     {
-        $data = ChiNhanh::all();
+        try {
+            $user = auth('sanctum')->user();
 
-        return response()->json([
-            'status' => true,
-            'message' => 'Lấy dữ liệu thành công!',
-            'data' => $data,
-        ]);
+            $data = $user && (int) $user->is_doi_tac === 1 && $user->vai_tro !== 'Admin'
+                ? ChiNhanh::where('id_nguoi_dung', $user->id)->get()
+                : ChiNhanh::all();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Lấy dữ liệu thành công!',
+                'data' => $data,
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Có lỗi xảy ra: '.$e->getMessage(),
+            ], 500);
+        }
     }
 
-    public function create(ChiNhanhCreateRequest $request)
+    public function create(ChiNhanhCreateRequest $request): JsonResponse
     {
-        $chiNhanh = ChiNhanh::create([
-            'ten_chi' => $request->ten_chi,
-            'mo_ta' => $request->mo_ta,
-        ]);
+        $data = $request->validated();
+        $user = auth('sanctum')->user();
+
+        if ($user && (int) $user->is_doi_tac === 1 && $user->vai_tro !== 'Admin') {
+            $data['id_nguoi_dung'] = $user->id;
+        }
+
+        $chiNhanh = ChiNhanh::create($data);
 
         return response()->json([
             'status' => true,
@@ -36,23 +52,26 @@ class ChiNhanhController extends Controller
         ]);
     }
 
-    public function update(ChiNhanhUpdateRequest $request)
+    public function update(ChiNhanhUpdateRequest $request): JsonResponse
     {
-        $chiNhanh = ChiNhanh::findOrFail($request->id);
+        try {
+            $chiNhanh = ChiNhanh::findOrFail($request->id);
+            $chiNhanh->update($request->validated());
 
-        $chiNhanh->update([
-            'ten_chi' => $request->ten_chi,
-            'mo_ta' => $request->mo_ta,
-        ]);
-
-        return response()->json([
-            'status' => true,
-            'message' => 'Cập nhật chi nhánh '.$request->ten_chi.' thành công!',
-            'data' => $chiNhanh,
-        ]);
+            return response()->json([
+                'status' => true,
+                'message' => 'Cập nhật chi nhánh '.$request->ten_chi.' thành công!',
+                'data' => $chiNhanh,
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Lỗi khi cập nhật: '.$e->getMessage(),
+            ], 500);
+        }
     }
 
-    public function delete(Request $request)
+    public function delete(Request $request): JsonResponse
     {
         $chiNhanh = ChiNhanh::findOrFail($request->id);
 
@@ -64,28 +83,25 @@ class ChiNhanhController extends Controller
         ]);
     }
 
-    public function status(Request $request)
+    public function status(Request $request): JsonResponse
     {
         try {
-            $item = ChiNhanh::findOrFail($request->id);
+            $chiNhanh = ChiNhanh::findOrFail($request->id);
 
-            if ('ChiNhanh' === 'ThanhVien') {
-                $item->trang_thai = $item->trang_thai == 'Còn sống' ? 'Đã mất' : 'Còn sống';
-            } elseif (isset($item->trang_thai)) {
-                $item->trang_thai = $item->trang_thai == 'Hoạt động' ? 'Khóa' : 'Hoạt động';
-            } else {
+            if (! isset($chiNhanh->trang_thai)) {
                 return response()->json([
                     'status' => false,
                     'message' => 'Model này không hỗ trợ trạng thái!',
                 ]);
             }
 
-            $item->save();
+            $chiNhanh->trang_thai = $chiNhanh->trang_thai === 'Hoạt động' ? 'Khóa' : 'Hoạt động';
+            $chiNhanh->save();
 
             return response()->json([
                 'status' => true,
                 'message' => 'Cập nhật trạng thái thành công!',
-                'trang_thai' => $item->trang_thai,
+                'trang_thai' => $chiNhanh->trang_thai,
             ]);
         } catch (Exception $e) {
             return response()->json([
@@ -95,7 +111,7 @@ class ChiNhanhController extends Controller
         }
     }
 
-    public function search(Request $request)
+    public function search(Request $request): JsonResponse
     {
         try {
             $query = $request->value;

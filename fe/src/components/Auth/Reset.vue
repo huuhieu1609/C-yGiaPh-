@@ -73,6 +73,8 @@ export default {
                     if (res.data.status) {
                         toastr.success(res.data.message);
                         this.$router.push('/login');
+                    } else {
+                        toastr.error(res.data.message || 'Cập nhật mật khẩu thất bại!');
                     }
                 })
                 .catch(err => {

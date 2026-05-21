@@ -174,6 +174,7 @@ export default {
         });
     },
     saveData() {
+      const wasEditing = this.isEditing;
       const url = this.isEditing
         ? "http://127.0.0.1:8000/api/chi-nhanh/update"
         : "http://127.0.0.1:8000/api/chi-nhanh/create";
@@ -185,6 +186,9 @@ export default {
             toastr.success(res.data.message);
             this.loadData();
             this.resetForm();
+            if (!wasEditing) {
+              this.$router.push("/doi-tac/thanh-vien");
+            }
           } else {
             toastr.error(res.data.message);
           }

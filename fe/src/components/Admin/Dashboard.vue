@@ -67,6 +67,43 @@
 	</div>
 	<!--end row-->
 
+	<!-- Chart Row -->
+	<div class="row">
+		<div class="col-12 col-lg-8">
+			<div class="card radius-10">
+				<div class="card-header">
+					<div class="d-flex align-items-center">
+						<div>
+							<h6 class="mb-0">Thống kê tăng trưởng Thành viên & Gia phả</h6>
+						</div>
+					</div>
+				</div>
+				<div class="card-body">
+					<div class="chart-container-1">
+						<Line id="growth-chart" :options="lineOptions" :data="lineData" />
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="col-12 col-lg-4">
+			<div class="card radius-10">
+				<div class="card-header">
+					<div class="d-flex align-items-center">
+						<div>
+							<h6 class="mb-0">Tỷ lệ Trạng thái phê duyệt</h6>
+						</div>
+					</div>
+				</div>
+				<div class="card-body">
+					<div class="chart-container-2">
+						<Doughnut id="status-chart" :options="doughnutOptions" :data="doughnutData" />
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- end chart row -->
+
 	<div class="row">
 		<div class="col-12 col-lg-8">
 			<div class="card radius-10">
@@ -176,12 +213,89 @@
 	</div>
 </template>
 
-<script>
-export default {
-	name: 'AdminDashboard'
-}
+<script setup>
+import { ref } from 'vue';
+import {
+  Chart as ChartJS,
+  Title,
+  Tooltip,
+  Legend,
+  LineElement,
+  PointElement,
+  CategoryScale,
+  LinearScale,
+  ArcElement
+} from 'chart.js';
+import { Line, Doughnut } from 'vue-chartjs';
+
+ChartJS.register(
+  Title,
+  Tooltip,
+  Legend,
+  LineElement,
+  PointElement,
+  CategoryScale,
+  LinearScale,
+  ArcElement
+);
+
+const lineData = ref({
+  labels: ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6'],
+  datasets: [
+    {
+      label: 'Thành viên mới',
+      backgroundColor: 'rgba(23, 162, 184, 0.2)',
+      borderColor: '#17a2b8',
+      data: [40, 60, 45, 80, 55, 90],
+      tension: 0.4,
+      fill: true,
+    },
+    {
+      label: 'Cây gia phả',
+      backgroundColor: 'rgba(220, 53, 69, 0.2)',
+      borderColor: '#dc3545',
+      data: [15, 20, 30, 25, 45, 60],
+      tension: 0.4,
+      fill: true,
+    }
+  ]
+});
+
+const lineOptions = ref({
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: { position: 'bottom' }
+  }
+});
+
+const doughnutData = ref({
+  labels: ['Đã duyệt', 'Chờ duyệt', 'Từ chối'],
+  datasets: [
+    {
+      backgroundColor: ['#17a2b8', '#ffc107', '#dc3545'],
+      data: [75, 15, 10]
+    }
+  ]
+});
+
+const doughnutOptions = ref({
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: { position: 'bottom' }
+  }
+});
 </script>
 
 <style scoped>
+.chart-container-1 {
+  position: relative;
+  height: 280px;
+}
+.chart-container-2 {
+  position: relative;
+  height: 280px;
+}
 /* Bạn có thể thêm CSS tùy chỉnh ở đây nếu cần */
 </style>

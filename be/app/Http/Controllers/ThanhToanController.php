@@ -4,12 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Models\DoiTac;
 use App\Models\DongGop;
+use App\Models\NguoiDung;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
-class ThanhToanControlles extends Controller
+class ThanhToanController extends Controller
 {
     public function index()
     {
@@ -60,12 +61,12 @@ class ThanhToanControlles extends Controller
 
                 foreach ($transactions as $tx) {
                     $amountIn = $tx['amount_in'] ?? $tx['amount'] ?? 0;
-                    $isIn = (isset($tx['transaction_type']) && $tx['transaction_type'] === 'in') 
+                    $isIn = (isset($tx['transaction_type']) && $tx['transaction_type'] === 'in')
                             || ($amountIn > 0);
-                    
+
                     if ($isIn) {
                         $bankContent = strtoupper($tx['transaction_content'] ?? '');
-                        
+
                         // 1. Kiểm tra khớp hoàn toàn (MUAGOI ADMIN12345)
                         if (stripos($bankContent, $expectedContent) !== false) {
                             $matchedTx = $tx;
@@ -79,7 +80,7 @@ class ThanhToanControlles extends Controller
                         $namePart = preg_replace('/\d+$/', '', $namePart);
                         $namePart = trim($namePart);
 
-                        if (stripos($bankContent, 'MUAGOI') !== false && 
+                        if (stripos($bankContent, 'MUAGOI') !== false &&
                             stripos($bankContent, $namePart) !== false) {
                             $matchedTx = $tx;
                             $matchedTx['amount_in'] = $amountIn;
@@ -98,7 +99,7 @@ class ThanhToanControlles extends Controller
                     $dongGop->update(['trang_thai' => 'Đã duyệt']);
 
                     // 2. Tự động kích hoạt/cộng dồn Gói Đối Tác
-                    $user = \App\Models\NguoiDung::find($nguoiDungId);
+                    $user = NguoiDung::find($nguoiDungId);
                     if ($user) {
                         $user->is_doi_tac = 1;
                         $user->save();
@@ -122,7 +123,11 @@ class ThanhToanControlles extends Controller
                         ]);
                     }
 
-                    return response()->json(['success' => true, 'message' => 'Xác nhận thành công!']);
+                    return response()->json([
+                        'success' => true,
+                        'message' => 'Xác nhận thành công!',
+                        'redirect_url' => '/doi-tac',
+                    ]);
                 }
             }
 
