@@ -67,6 +67,24 @@
             <i class="bx bx-search-alt fs-5"></i><span class="hide-on-collapse text-nowrap">Tra Cứu</span>
           </router-link>
         </li>
+        
+        <li class="nav-heading text-uppercase text-white-50 mt-4 mb-2 ps-3 hide-on-collapse text-nowrap" style="font-size: 11px; font-weight: 600; letter-spacing: 0.8px;">Công Cụ & Hoạt Động</li>
+        
+        <li class="nav-item">
+          <router-link to="/doi-tac/thong-bao" class="nav-link text-white-50 d-flex align-items-center gap-3 px-3 py-2" active-class="active" title="Quản Lý Thông Báo">
+            <i class="bx bx-bell fs-5"></i><span class="hide-on-collapse text-nowrap">Quản Lý Thông Báo</span>
+          </router-link>
+        </li>
+        <li class="nav-item">
+          <router-link to="/doi-tac/tai-lieu" class="nav-link text-white-50 d-flex align-items-center gap-3 px-3 py-2" active-class="active" title="Thư Viện Tài Liệu">
+            <i class="bx bx-book-open fs-5"></i><span class="hide-on-collapse text-nowrap">Thư Viện Tài Liệu</span>
+          </router-link>
+        </li>
+        <li class="nav-item">
+          <router-link to="/doi-tac/nhat-ky" class="nav-link text-white-50 d-flex align-items-center gap-3 px-3 py-2" active-class="active" title="Nhật Ký Thao Tác">
+            <i class="bx bx-history fs-5"></i><span class="hide-on-collapse text-nowrap">Nhật Ký Thao Tác</span>
+          </router-link>
+        </li>
       </ul>
     </div>
 
@@ -97,10 +115,25 @@ export default {
       userName: 'Đối Tác'
     }
   },
+  mounted() {
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        if (user && user.ho_ten) {
+          this.userName = user.ho_ten;
+        } else if (user && user.username) {
+          this.userName = user.username;
+        }
+      } catch (e) {}
+    }
+  },
   methods: {
     logout() {
-      // Clear token/session here if needed
-      this.$router.push('/login');
+      // Clear token/session here
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('user');
+      this.$router.push('/');
     },
     goHome() {
       this.$router.push('/');

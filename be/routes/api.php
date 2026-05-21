@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\ChiNhanhController;
 use App\Http\Controllers\Api\ChucNangController;
 use App\Http\Controllers\Api\ChucVuController;
 use App\Http\Controllers\Api\ConNuoiController;
+use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\DoiTacController;
 use App\Http\Controllers\Api\DoiTocHoController;
 use App\Http\Controllers\Api\DongGopController;
@@ -36,6 +37,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', [AuthController::class, 'me']);
     Route::post('/update-profile', [AuthController::class, 'updateProfile']);
     Route::post('/change-password', [AuthController::class, 'changePassword']);
+    
+    Route::get('/admin/dashboard', [DashboardController::class, 'getStatistics']);
     
     Route::prefix('/doi-tac')->group(function () {
         Route::get('/get-profile', [DoiTacController::class, 'getProfile']);

@@ -12,7 +12,7 @@ class NhatKyHoatDongController extends Controller
     public function getData()
     {
         try {
-            $data = NhatKyHoatDong::all();
+            $data = NhatKyHoatDong::with('nguoiDung')->orderBy('id', 'desc')->get();
             return response()->json([
                 'status'  => true,
                 'message' => 'Lấy dữ liệu thành công!',

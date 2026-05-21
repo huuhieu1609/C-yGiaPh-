@@ -9,22 +9,22 @@
                     <div class="package-card shadow-sm rounded-4 overflow-hidden">
                         <div class="package-hero p-4 text-white d-flex flex-column justify-content-between">
                             <div>
-                                <span class="badge bg-warning text-dark mb-3">Dịch Vụ Gói</span>
-                                <h3 class="mb-2 title-package">Gói Gia Phả Tộc</h3>
-                                <p class="mb-0 opacity-75">Chỉ tạo được duy nhất 1 cây gia phả của tộc mình.</p>
+                                <span class="badge bg-warning text-dark mb-3">Đóng Góp Công Đức</span>
+                                <h3 class="mb-2 title-package">Quỹ Gia Phả Dòng Tộc</h3>
+                                <p class="mb-0 opacity-75">Phụng sự xây dựng gia phả trực tuyến, bảo tồn văn hóa và tri ân nguồn cội.</p>
                             </div>
                             <div class="d-flex align-items-center justify-content-between mt-4">
                                 <div>
-                                    <div class="text-white-50 small">Giá</div>
+                                    <div class="text-white-50 small">Đóng góp tùy tâm từ</div>
                                     <div class="package-price">20.000đ</div>
                                 </div>
                             </div>
                         </div>
                         <div class="card-body p-4">
-                            <p class="text-muted mb-0">Gói dịch vụ gồm một cây gia phả duy nhất cho dòng họ của bạn, với khả năng cập nhật và tra cứu thông tin thành viên.</p>
+                            <p class="text-muted mb-0">Chung tay góp sức ủng hộ dòng họ để khởi tạo cây phả hệ số không giới hạn thành viên, tra cứu dễ dàng và lưu giữ gia sản tinh thần cho muôn đời sau.</p>
 
                             <button type="button" class="btn btn-primary w-100 mt-3" @click="viewDetail">
-                                Xem ngay
+                                Đóng Góp Ngay
                             </button>
                         </div>
                     </div>

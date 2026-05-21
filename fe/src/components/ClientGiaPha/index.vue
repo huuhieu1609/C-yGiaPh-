@@ -30,6 +30,7 @@
         <div
           class="tree-viewport"
           ref="viewport"
+          @wheel.prevent="handleWheel"
           @mousedown="startPan"
           @mousemove="doPan"
           @mouseup="endPan"
@@ -262,7 +263,6 @@ export default {
     }
     this.loadDoiTocHo();
     this.loadData();
-    this.$refs.viewport.addEventListener('wheel', this.handleWheel, { passive: false });
   },
   methods: {
     fmtDate,

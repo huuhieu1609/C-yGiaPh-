@@ -189,13 +189,31 @@ const routes = [
         path: '/doi-tac/dong-ho',
         name: 'partner-dong-ho',
         component: () => import('../components/DoiTac/QuanLyDongHo/index.vue'),
-        meta: { layout: 'partner' }
+        meta: { layout: 'partner', requiresAuth: true }
     },
     {
         path: '/admin/phan-quyen',
         name: 'admin-phan-quyen',
         component: () => import('../components/Admin/PhanQuyen/index.vue'),
         meta: { layout: 'default' }
+    },
+    {
+        path: '/doi-tac/thong-bao',
+        name: 'partner-thong-bao',
+        component: () => import('../components/DoiTac/QuanLyThongBao/index.vue'),
+        meta: { layout: 'partner', requiresAuth: true }
+    },
+    {
+        path: '/doi-tac/tai-lieu',
+        name: 'partner-tai-lieu',
+        component: () => import('../components/DoiTac/QuanLyTaiLieu/index.vue'),
+        meta: { layout: 'partner', requiresAuth: true }
+    },
+    {
+        path: '/doi-tac/nhat-ky',
+        name: 'partner-nhat-ky',
+        component: () => import('../components/DoiTac/LichSuThaoTac/index.vue'),
+        meta: { layout: 'partner', requiresAuth: true }
     }
 ]
 

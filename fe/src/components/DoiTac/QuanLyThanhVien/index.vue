@@ -316,7 +316,12 @@ export default {
             }
             if (this.avatarFile) formData.set('avatar', this.avatarFile);
             
-            axios.post(url, formData, { headers: { 'Content-Type': 'multipart/form-data' } })
+            axios.post(url, formData, { 
+                headers: { 
+                    'Content-Type': 'multipart/form-data',
+                    'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+                } 
+            })
             .then(res => {
                 if (res.data.status) {
                     toastr.success(res.data.message);
@@ -329,7 +334,7 @@ export default {
         },
         handleDelete(id) {
             if (confirm('Xác nhận xóa thành viên này?')) {
-                axios.post('http://127.0.0.1:8000/api/thanh-vien/delete', { id })
+                axios.post('http://127.0.0.1:8000/api/thanh-vien/delete', { id }, this.getHeaders())
                     .then(res => {
                         if (res.data.status) {
                             toastr.success(res.data.message);
