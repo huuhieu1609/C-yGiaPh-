@@ -103,7 +103,7 @@
                         <h5 class="modal-title fw-bold text-dark">
                             {{ isEditing ? 'Chỉnh Sửa Thông Tin' : 'Thêm Thành Viên Mới' }}
                         </h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        <div class="btn-close" style="cursor: pointer;" data-bs-dismiss="modal"></div>
                     </div>
                     <div class="modal-body p-4">
                         <div class="row g-4">
@@ -266,6 +266,21 @@ const TreeItem = defineComponent({
             const generationClass = `gen-${(props.member.doi_thu % 5) + 1}`;
             const isHighlighted = props.searchQuery && props.member.ho_ten.toLowerCase().includes(props.searchQuery.toLowerCase());
             
+            // Render nội dung Avatar bọc thẻ span chống bóp vỡ layout chữ viết tắt
+            const renderAvatarContent = (item) => {
+                if (item.avatar) {
+                    return h('img', { src: item.avatar, class: 'node-avatar-img' });
+                }
+                const nameParts = item.ho_ten.trim().split(' ');
+                let text = 'A';
+                if (nameParts.length >= 2) {
+                    text = nameParts[nameParts.length - 2].charAt(0) + nameParts[nameParts.length - 1].charAt(0);
+                } else if (nameParts.length === 1) {
+                    text = nameParts[0].substring(0, 2);
+                }
+                return h('span', { class: 'avatar-text-initials' }, text.toUpperCase());
+            };
+
             const nodeGroup = h('div', { class: 'tree-node-group' }, [
                 h('div', { 
                     class: ['tree-node-card', generationClass, { 
@@ -276,10 +291,7 @@ const TreeItem = defineComponent({
                     onClick: (e) => { e.stopPropagation(); context.emit('edit', props.member); }
                 }, [
                     h('div', { class: 'node-avatar-container' }, [
-                        h('img', { 
-                            src: props.member.avatar ? props.member.avatar : ('https://ui-avatars.com/api/?name=' + props.member.ho_ten + '&background=f3f4f6&color=111827'), 
-                            class: 'node-avatar'
-                        }),
+                        h('div', { class: 'node-avatar' }, [renderAvatarContent(props.member)]),
                         h('div', { class: 'avatar-neon-ring' })
                     ]),
                     h('div', { class: 'node-content' }, [
@@ -304,10 +316,7 @@ const TreeItem = defineComponent({
                             onClick: (e) => { e.stopPropagation(); context.emit('edit', spouse); }
                         }, [
                             h('div', { class: 'node-avatar-container' }, [
-                                h('img', { 
-                                    src: spouse.avatar ? spouse.avatar : ('https://ui-avatars.com/api/?name=' + spouse.ho_ten + '&background=f3f4f6&color=111827'), 
-                                    class: 'node-avatar'
-                                }),
+                                h('div', { class: 'node-avatar' }, [renderAvatarContent(spouse)]),
                                 h('div', { class: 'avatar-neon-ring' })
                             ]),
                             h('div', { class: 'node-content' }, [
@@ -360,13 +369,10 @@ export default {
             isPanning: false,
             lastMouseX: 0,
             lastMouseY: 0,
-            
-            // 🌟 GIẢI PHÁP: Sử dụng shallowRef để triệt tiêu Proxy lặp vô hạn của Vue 3
             processedTreeData: shallowRef([])
         }
     },
     watch: {
-        // Tự động dựng lại cây phả hệ an toàn khi mảng thành viên thay đổi
         allMembers: {
             handler() { this.buildSafeTree(); },
             deep: true
@@ -385,12 +391,34 @@ export default {
     },
     mounted() {
         if (window.bootstrap) {
-            this.modal = new window.bootstrap.Modal(document.getElementById('memberModal'));
+            const modalElement = document.getElementById('memberModal');
+            if (modalElement) {
+                document.body.appendChild(modalElement);
+                this.modal = new window.bootstrap.Modal(modalElement, {
+                    backdrop: true,
+                    keyboard: true
+                });
+            }
         }
         this.loadChiNhanh();
         this.loadDoiTocHo();
         this.loadData();
-        this.$refs.viewport.addEventListener('wheel', this.handleWheel, { passive: false });
+        if (this.$refs.viewport) {
+            this.$refs.viewport.addEventListener('wheel', this.handleWheel, { passive: false });
+        }
+    },
+    beforeUnmount() {
+        if (this.$refs.viewport) {
+            this.$refs.viewport.removeEventListener('wheel', this.handleWheel);
+        }
+        const modalElement = document.getElementById('memberModal');
+        if (modalElement && modalElement.parentNode === document.body) {
+            document.body.removeChild(modalElement);
+        }
+        const backdrops = document.querySelectorAll('.modal-backdrop');
+        backdrops.forEach(b => b.remove());
+        document.body.style.overflow = '';
+        document.body.style.paddingRight = '';
     },
     methods: {
         getHeaders() {
@@ -413,12 +441,10 @@ export default {
                 .then(res => {
                     if (res.data.status) {
                         this.allMembers = res.data.data;
-                        this.buildSafeTree(); // Gọi thuật toán dựng cây chống sập
+                        this.buildSafeTree();
                     }
                 });
         },
-        
-        // 🌟 THUẬT TOÁN ĐỈNH CAO: Khử hoàn toàn vòng lặp đệ quy vô hạn kể cả khi DB bị cấu hình sai lệch
         buildSafeTree() {
             if (!this.allMembers || !this.allMembers.length) {
                 this.processedTreeData = [];
@@ -441,13 +467,11 @@ export default {
                 item.spouses = [];
             });
 
-            const visitedIds = new Set(); // Bộ lọc chặn đứng vòng lặp tuần hoàn
-
             list.forEach(item => {
+                // ƯU TIÊN 2 QUAN HỆ: Đẩy vào mảng spouses nằm ngang, CHẶN không cho nhảy kép vào nhánh con children
                 if (item.loai_quan_he === 'Vợ/Chồng' && item.spouse_of_id && map[item.spouse_of_id]) {
                     map[item.spouse_of_id].spouses.push(item);
                 } else if (item.cha_id && map[item.cha_id]) {
-                    // Kiểm tra phòng chống lặp tuần hoàn (Nếu cha trùng con hoặc tạo vòng kín)
                     if (item.id == item.cha_id) return; 
 
                     let parent = map[item.cha_id];
@@ -470,11 +494,9 @@ export default {
                 }
             });
 
-            // Gán thẳng vào shallowRef và trigger cập nhật thủ công để ép Vue giải phóng bộ nhớ
             this.processedTreeData = roots;
             triggerRef(this.processedTreeData);
         },
-
         filterTree() { this.buildSafeTree(); },
         zoomIn() { if (this.zoom < 2) this.zoom += 0.1; },
         zoomOut() { if (this.zoom > 0.3) this.zoom -= 0.1; },
@@ -533,242 +555,344 @@ export default {
     }
 }
 </script>
-
 <style scoped>
-/* ─── SYSTEM LIGHT THEME COLORS ─── */
+/* ─── SYSTEM CORE LIGHT VARIABLES ─── */
 .luxury-panel {
-    background: rgba(255, 255, 255, 0.85) !important;
-    border: 1px solid rgba(0, 0, 0, 0.04) !important;
-    border-radius: 16px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
-    margin: 0 !important;
-    width: 100%;
+  background: rgba(255, 255, 255, 0.85) !important;
+  border: 1px solid rgba(0, 0, 0, 0.04) !important;
+  border-radius: 24px !important;
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.02);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  margin: 0 !important;
+  width: 100%;
 }
 
 .panel-title {
-    color: #111827;
-    letter-spacing: 0.3px;
+  font-size: 15px;
+  letter-spacing: 0.3px;
 }
 .text-emerald { color: #059669 !important; }
 
-/* ĐỒNG BỘ ĐỊNH DANH MÀU ĐỜI THẾ HỆ PHẢ HỆ PASTEL LIGHT */
+/* HỆ MÀU SẮC ĐỊNH DANH THEO ĐỜI (PASTEL LUXURY) */
 .tree-node-card {
-    --gen-1-color: #4f46e5; 
-    --gen-2-color: #db2777; 
-    --gen-3-color: #0d9488; 
-    --gen-4-color: #d97706; 
-    --gen-5-color: #059669; 
+  --gen-1-color: #4f46e5; /* Đời 1: Tím Indigo */
+  --gen-2-color: #db2777; /* Đời 2: Hồng Rose */
+  --gen-3-color: #0d9488; /* Đời 3: Xanh Teal */
+  --gen-4-color: #d97706; /* Đời 4: Hổ Phách */
+  --gen-5-color: #059669; /* Đời 5: Lục Bảo */
 }
 
-/* ─── MODERN CONTROLS IN LIGHT MODE ─── */
+/* ─── CONTROLS TOOLBAR (Bộ lọc & Tìm kiếm) ─── */
 .modern-select-box {
-    background: #f9fafb;
-    border-radius: 30px;
-    padding: 1px;
-    border: 1px solid rgba(0, 0, 0, 0.06);
+  background: #ffffff;
+  border-radius: 30px;
+  padding: 1px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
 }
 .modern-select {
-    background-color: transparent !important;
-    border: none !important;
-    color: #4b5563 !important; 
-    padding-left: 18px;
-    font-size: 14px;
-    box-shadow: none !important;
+  background-color: transparent !important;
+  border: none !important;
+  color: #4b5563 !important; 
+  padding-left: 18px;
+  font-size: 13.5px;
+  box-shadow: none !important;
+  height: 38px;
 }
+.modern-select option { background: #ffffff; color: #111827; }
 
 .modern-search {
-    background: #f9fafb !important;
-    border: 1px solid rgba(0, 0, 0, 0.06) !important;
-    color: #111827 !important;
-    border-radius: 30px;
-    height: 38px;
-    font-size: 13.5px;
+  background: #ffffff !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  color: #111827 !important;
+  border-radius: 30px;
+  height: 38px;
+  font-size: 13.5px;
 }
 .modern-search::placeholder { color: #9ca3af; }
+.modern-search:focus {
+  border-color: #059669 !important;
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.08) !important;
+}
 .search-icon-btn { color: #9ca3af; }
 
 .pill-control-group {
-    background: #f9fafb;
-    border: 1px solid rgba(0, 0, 0, 0.06);
-    border-radius: 30px;
-    padding: 2px;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 30px;
+  padding: 2px;
 }
 .btn-pill-action {
-    background: transparent;
-    border: none;
-    color: #6b7280;
-    transition: all 0.2s ease;
+  background: transparent;
+  border: none;
+  color: #6b7280;
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
 }
-.btn-pill-action:hover {
-    color: #111827;
-    background: rgba(0, 0, 0, 0.03);
-}
-.btn-pill-display {
-    background: #ffffff;
-    border: none;
-    color: #111827;
-    font-size: 13px;
-    pointer-events: none;
-}
+.btn-pill-action:hover { color: #111827; background: #f3f4f6; }
+.btn-pill-display { background: transparent; border: none; color: #111827; font-size: 13px; pointer-events: none; }
 
 .btn-luxury-primary {
-    background: linear-gradient(135deg, #059669 0%, #10b981 50%, #34d399 100%);
-    border: none;
-    color: #ffffff;
-    font-weight: 600;
-    font-size: 13.5px;
-    border-radius: 30px;
-    height: 38px;
-    display: inline-flex;
-    align-items: center;
-    box-shadow: 0 4px 12px rgba(5, 150, 105, 0.2);
-    transition: all 0.3s ease;
+  background: linear-gradient(135deg, #059669 0%, #10b981 50%, #34d399 100%);
+  border: none;
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 13.5px;
+  border-radius: 30px;
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.2);
+  transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
 }
 .btn-luxury-primary:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 6px 18px rgba(5, 150, 105, 0.35);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(5, 150, 105, 0.35);
 }
 
-/* ─── TREE VIEWPORT LIGHT ENVIRONMENT ─── */
-.card-header {
-    background: #ffffff !important;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.04) !important;
-    padding: 20px 24px !important;
-}
-
+/* ─── MA TRẬN VIEWPORT CÂY PHẢ HỆ ─── */
 .tree-viewport {
-    height: calc(100vh - 210px); 
-    min-height: 550px;
-    background: #fafafa;
-    background-image: linear-gradient(rgba(0, 0, 0, 0.015) 1px, transparent 1px),
-                      linear-gradient(90deg, rgba(0, 0, 0, 0.015) 1px, transparent 1px);
-    background-size: 40px 40px;
-    position: relative;
-    overflow: hidden;
-    user-select: none;
+  height: calc(100vh - 210px); 
+  min-height: 580px;
+  background: rgba(248, 250, 252, 0.4);
+  background-image: linear-gradient(rgba(0, 0, 0, 0.012) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(0, 0, 0, 0.012) 1px, transparent 1px);
+  background-size: 40px 40px;
+  position: relative;
+  overflow: hidden;
+  user-select: none;
+  display: block;
+  border-bottom-left-radius: 24px;
+  border-bottom-right-radius: 24px;
 }
 
 .tree-canvas {
-    padding: 80px;
-    transition: transform 0.15s cubic-bezier(0.25, 1, 0.5, 1);
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: max-content;
-    height: max-content;
+  padding: 60px 100px 100px 100px;
+  transition: transform 0.15s cubic-bezier(0.25, 1, 0.5, 1);
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: max-content;
+  height: max-content;
 }
 
-/* CONNECTOR LINES */
+/* ─── 🌟 TÁI CẤU TRÚC ĐƯỜNG KẺ CHỈ CHUẨN KỸ THUẬT SỐ 🌟 ─── */
+.tree, .tree ul, .tree li {
+  position: relative;
+  margin: 0;
+  padding: 0;
+  list-style-type: none;
+}
+
 .tree ul { 
-    padding-top: 50px; 
-    display: flex !important; 
-    flex-direction: row !important;
-    flex-wrap: nowrap !important;
-    justify-content: center; 
-    padding-left: 0; 
-    margin-bottom: 0; 
+  padding-top: 40px; 
+  display: flex !important; 
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  justify-content: center !important; 
 }
+
 .tree li { 
-    text-align: center; 
-    list-style-type: none; 
-    padding: 50px 14px 0 14px; 
-    flex: 0 0 auto !important;
+  text-align: center; 
+  padding: 40px 20px 0 20px !important; 
+  flex: 0 0 auto !important;
+  position: relative;
 }
 
-.tree li::before, .tree li::after { content: ''; position: absolute; top: 0; right: 50%; border-top: 1.5px solid rgba(0, 0, 0, 0.06); width: 50%; height: 50px; }
-.tree li::after { right: auto; left: 50%; border-left: 1.5px solid rgba(0, 0, 0, 0.06); }
-.tree li:only-child::after, .tree li:only-child::before { display: none; }
-.tree li:only-child { padding-top: 0; }
-.tree li:first-child::before, .tree li:last-child::after { border: 0 none; }
-.tree li:last-child::before { border-right: 1.5px solid rgba(0, 0, 0, 0.06); border-radius: 0 12px 0 0; }
-.tree li:first-child::after { border-radius: 12px 0 0 0; }
-.tree ul ul::before { content: ''; position: absolute; top: 0; left: 50%; border-left: 1.5px solid rgba(0, 0, 0, 0.06); width: 0; height: 50px; }
+/* Khóa chặt đường chỉ kẻ ngang nối nhánh anh em */
+.tree li::before, .tree li::after {
+  content: '' !important;
+  position: absolute !important;
+  top: 0 !important;
+  right: 50% !important;
+  border-top: 2px solid rgba(0, 0, 0, 0.15) !important; /* Tăng độ đậm nét lên 2px */
+  width: 50% !important;
+  height: 40px !important;
+  z-index: 1;
+}
+.tree li::after { 
+  right: auto !important; 
+  left: 50% !important; 
+  border-left: 2px solid rgba(0, 0, 0, 0.15) !important; /* Đường chỉ dọc đi xuống */
+}
 
-.tree-node-group { display: inline-flex; align-items: center; justify-content: center; position: relative; z-index: 10; }
-.tree-connector-h { width: 32px; height: 1.5px; background: rgba(0, 0, 0, 0.06); }
+/* Khử đường chỉ thừa đối với nhánh con một độc nhất */
+.tree li:only-child::after, .tree li:only-child::before { display: none !important; }
+.tree li:only-child { padding-top: 0 !important; }
+.tree li:first-child::before, .tree li:last-child::after { border: 0 none !important; }
 
-/* LIGHT GLASSMORPHIC NODE CARD */
+/* Tạo cua cong mượt mà ở các góc rẽ biên của dòng tộc */
+.tree li:last-child::before { 
+  border-right: 2px solid rgba(0, 0, 0, 0.15) !important; 
+  border-radius: 0 16px 0 0 !important; 
+}
+.tree li:first-child::after { 
+  border-radius: 16px 0 0 0 !important; 
+}
+
+/* Trục dọc trung tâm nối thẳng từ lề dưới của Cha xuống */
+.tree ul ul::before { 
+  content: '' !important; 
+  position: absolute !important;
+  top: 0 !important; 
+  left: 50% !important; 
+  border-left: 2px solid rgba(0, 0, 0, 0.15) !important; 
+  width: 0 !important; 
+  height: 40px !important;
+  transform: translateX(-50%) !important;
+  z-index: 1;
+}
+
+/* Khối bọc kén cụm Node: Giữ hồng tâm trục dọc luôn chuẩn xác */
+.tree-node-group { 
+  display: inline-flex !important; 
+  align-items: center !important; 
+  justify-content: center !important; 
+  position: relative; 
+  z-index: 10;
+  margin: 0 auto !important;
+}
+
+/* Đường chỉ ngang nhỏ nối giữa Vợ và Chồng */
+.tree-connector-h { 
+  width: 24px; 
+  height: 2px; 
+  background: rgba(0, 0, 0, 0.15) !important; 
+}
+
+/* ─── THẺ CARD NHÂN KHẨU (Luxury Glassmorphic Cards) ─── */
 .tree-node-card {
-    background: rgba(255, 255, 255, 0.85);
-    border: 1px solid rgba(0, 0, 0, 0.04);
-    padding: 12px 14px;
-    border-radius: 18px;
-    min-width: 210px;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.03);
-    cursor: pointer;
-    position: relative;
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+  background: #ffffff !important;
+  border: 1px solid rgba(0, 0, 0, 0.05) !important;
+  padding: 14px 16px !important;
+  border-radius: 20px !important; 
+  width: 220px !important;
+  min-width: 220px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 14px !important;
+  box-shadow: 0 8px 20px -6px rgba(0, 0, 0, 0.04) !important;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1) !important;
 }
 
+/* Hiệu ứng nhấc khối phát sáng khi rà chuột */
 .tree-node-card:hover {
-    transform: translateY(-5px) scale(1.02);
-    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.06);
-    z-index: 100;
+  transform: translateY(-6px) scale(1.03) !important;
+  border-color: rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 20px 35px -8px rgba(0, 0, 0, 0.06), 0 0 25px var(--glow-light) !important;
+  z-index: 100;
 }
 
-.gen-1 { border-left: 4px solid var(--gen-1-color); }
-.gen-2 { border-left: 4px solid var(--gen-2-color); }
-.gen-3 { border-left: 4px solid var(--gen-3-color); }
-.gen-4 { border-left: 4px solid var(--gen-4-color); }
-.gen-5 { border-left: 4px solid var(--gen-5-color); }
+.gen-1 { border-left: 4.5px solid var(--gen-1-color) !important; --glow-light: rgba(79, 70, 229, 0.12); }
+.gen-2 { border-left: 4.5px solid var(--gen-2-color) !important; --glow-light: rgba(219, 39, 119, 0.12); }
+.gen-3 { border-left: 4.5px solid var(--gen-3-color) !important; --glow-light: rgba(13, 148, 136, 0.12); }
+.gen-4 { border-left: 4.5px solid var(--gen-4-color) !important; --glow-light: rgba(217, 119, 6, 0.12); }
+.gen-5 { border-left: 4.5px solid var(--gen-5-color) !important; --glow-light: rgba(5, 150, 105, 0.12); }
 
-.tree-node-card.spouse { border-style: dashed; min-width: 190px; }
+.tree-node-card.spouse {
+  border-style: dashed !important;
+  border-left-width: 1.5px !important;
+  border-color: rgba(0, 0, 0, 0.12) !important;
+  background: rgba(255, 255, 255, 0.8) !important;
+  width: 195px !important;
+  min-width: 195px !important;
+  --glow-light: rgba(249, 115, 22, 0.06);
+}
 
 .tree-node-card.highlighted {
-    border-color: #059669 !important;
-    background: rgba(5, 150, 105, 0.04) !important;
-    animation: light-pulse 2s infinite;
+  border-color: #059669 !important;
+  background: rgba(5, 150, 105, 0.05) !important;
+  animation: light-pulse 2s infinite;
 }
 @keyframes light-pulse {
-    0% { box-shadow: 0 0 0 0 rgba(5, 150, 105, 0.2); }
-    70% { box-shadow: 0 0 0 10px rgba(5, 150, 105, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(5, 150, 105, 0); }
+  0% { box-shadow: 0 0 0 0 rgba(5, 150, 105, 0.25); }
+  70% { box-shadow: 0 0 0 12px rgba(5, 150, 105, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(5, 150, 105, 0); }
 }
 
-.tree-node-card.is-dead {
-    filter: grayscale(0.6);
-    opacity: 0.55;
-    background: rgba(243, 244, 246, 0.6);
+.tree-node-card.is-dead { filter: grayscale(0.4) contrast(0.9); opacity: 0.65; background: rgba(249, 250, 251, 0.85) !important; }
+.tree-node-card.is-dead .node-name { color: #4b5563 !important; }
+
+/* VÒNG TRÒN AVATAR */
+.node-avatar-container { position: relative; width: 48px; height: 48px; flex-shrink: 0; }
+.node-avatar { 
+  width: 48px !important; 
+  height: 48px !important; 
+  border-radius: 50% !important; 
+  border: 2px solid #ffffff !important; 
+  box-shadow: 0 4px 10px rgba(0,0,0,0.04) !important; 
+  position: relative; 
+  z-index: 2; 
+  background-color: #f3f4f6 !important;
+  display: flex !important; 
+  align-items: center !important; 
+  justify-content: center !important;
 }
+.avatar-text-initials {
+  font-weight: 700 !important;
+  font-size: 13.5px !important;
+  color: #4b5563 !important;
+  letter-spacing: -0.3px;
+}
+.node-avatar-img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+.avatar-neon-ring { 
+  position: absolute; 
+  inset: -3px; 
+  border-radius: 50%; 
+  border: 1.5px solid transparent; 
+  opacity: 0.25; 
+  z-index: 1; 
+}
+.gen-1 .avatar-neon-ring { border-color: var(--gen-1-color); }
+.gen-2 .avatar-neon-ring { border-color: var(--gen-2-color); }
+.gen-3 .avatar-neon-ring { border-color: var(--gen-3-color); }
+.gen-4 .avatar-neon-ring { border-color: var(--gen-4-color); }
+.gen-5 .avatar-neon-ring { border-color: var(--gen-5-color); }
 
-.node-avatar-container { position: relative; width: 44px; height: 44px; flex-shrink: 0; }
-.node-avatar { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 1px solid #ffffff; position: relative; z-index: 2; }
-.avatar-neon-ring { position: absolute; inset: -2px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.03); z-index: 1; }
+.node-content { text-align: left !important; flex-grow: 1; display: flex; flex-direction: column; gap: 2px; }
+.node-name { font-weight: 700 !important; font-size: 14.5px !important; color: #111827 !important; letter-spacing: -0.2px; line-height: 1.3; }
+.node-date { font-size: 11px !important; color: #6b7280 !important; font-weight: 500; }
+.node-tag { font-size: 10px !important; font-weight: 700 !important; color: #9ca3af !important; text-transform: uppercase; margin-top: 3px; letter-spacing: 0.5px; }
+.spouse-tag { color: #ea580c !important; background: #fff7ed; padding: 1px 6px; border-radius: 4px; display: inline-block; width: max-content; }
 
-.node-content { text-align: left; flex-grow: 1; }
-.node-name { font-weight: 600; font-size: 14.5px; color: #111827; margin-bottom: 2px; }
-.node-date { font-size: 11px; color: #6b7280; }
-.node-tag { font-size: 10px; font-weight: 700; color: #9ca3af; text-transform: uppercase; margin-top: 4px; }
-.spouse-tag { color: #f97316 !important; }
-
+/* BÚT CHÌ EDIT */
 .node-edit-btn {
-    position: absolute;
-    top: -8px;
-    right: -8px;
-    width: 24px;
-    height: 24px;
-    background: #ffffff;
-    border: 1px solid rgba(0, 0, 0, 0.06);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    opacity: 0;
-    transition: all 0.2s ease;
-    color: #6b7280;
-    font-size: 12px;
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 26px;
+  height: 26px;
+  background: #ffffff !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  border-radius: 50% !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06) !important;
+  opacity: 0;
+  transform: scale(0.8);
+  transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+  color: #4b5563 !important;
+  font-size: 13px;
 }
-.tree-node-card:hover .node-edit-btn { opacity: 1; }
-.node-edit-btn:hover { background: var(--gen-5-color); color: #fff; transform: scale(1.1); border-color: transparent; }
+.tree-node-card:hover .node-edit-btn { opacity: 1; transform: scale(1); }
+.node-edit-btn:hover { background: #059669 !important; color: #ffffff !important; transform: scale(1.1) rotate(15deg); border-color: transparent !important; }
 
-/* MODAL LUXURY LIGHT */
-.luxury-modal { background: #ffffff; border-radius: 24px; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08); }
+/* FORM MODAL */
+.luxury-modal {
+  background: #ffffff !important; 
+  border-radius: 24px !important; 
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15) !important;
+  border: none !important;
+}
 .header-create { border-left: 5px solid #059669; }
 .header-edit { border-left: 5px solid #d97706; }
 .profile-upload-preview { border: 3px solid #f3f4f6; box-shadow: 0 4px 12px rgba(0,0,0,0.03); object-fit: cover; }
@@ -786,7 +910,5 @@ export default {
 .btn-modern-save.btn-save { background: linear-gradient(135deg, #059669 0%, #047857 100%); }
 .btn-modern-save.btn-warn { background: linear-gradient(135deg, #d97706 0%, #b45309 100%); }
 
-.bg-luxury-tips { background: rgba(255, 255, 255, 0.9); border: 1px solid rgba(0,0,0,0.04); backdrop-filter: blur(4px); }
-.empty-glow-icon i { animation: icon-float 3.5s ease-in-out infinite; }
-@keyframes icon-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+.bg-luxury-tips { background: rgba(255, 255, 255, 0.85); border: 1px solid rgba(0,0,0,0.04); backdrop-filter: blur(4px); }
 </style>
