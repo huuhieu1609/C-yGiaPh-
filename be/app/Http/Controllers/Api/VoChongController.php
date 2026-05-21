@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\VoChong;
-use Exception;
 use Illuminate\Http\Request;
+use Exception;
 
 class VoChongController extends Controller
 {
@@ -13,16 +13,15 @@ class VoChongController extends Controller
     {
         try {
             $data = VoChong::all();
-
             return response()->json([
-                'status' => true,
+                'status'  => true,
                 'message' => 'Lấy dữ liệu thành công!',
-                'data' => $data,
+                'data'    => $data,
             ]);
         } catch (Exception $e) {
             return response()->json([
-                'status' => false,
-                'message' => 'Có lỗi xảy ra: '.$e->getMessage(),
+                'status'  => false,
+                'message' => 'Có lỗi xảy ra: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -30,18 +29,20 @@ class VoChongController extends Controller
     public function create(Request $request)
     {
         try {
-            $data = $request->only(['chong_id', 'vo_id', 'ngay_cuoi', 'trang_thai']);
+            $data = $request->all();
+            if ('VoChong' === 'NguoiDung' && isset($data['mat_khau'])) {
+                $data['mat_khau'] = bcrypt($data['mat_khau']);
+            }
             $item = VoChong::create($data);
-
             return response()->json([
-                'status' => true,
-                'message' => 'Thêm thông tin vợ chồng thành công!',
-                'data' => $item,
+                'status'  => true,
+                'message' => 'Tạo mới thành công!',
+                'data'    => $item
             ]);
         } catch (Exception $e) {
             return response()->json([
-                'status' => false,
-                'message' => 'Lỗi khi tạo mới: '.$e->getMessage(),
+                'status'  => false,
+                'message' => 'Lỗi khi tạo mới: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -50,18 +51,20 @@ class VoChongController extends Controller
     {
         try {
             $item = VoChong::findOrFail($request->id);
-            $data = $request->only(['chong_id', 'vo_id', 'ngay_cuoi', 'trang_thai']);
+            $data = $request->all();
+            if ('VoChong' === 'NguoiDung' && isset($data['mat_khau'])) {
+                $data['mat_khau'] = bcrypt($data['mat_khau']);
+            }
             $item->update($data);
-
             return response()->json([
-                'status' => true,
-                'message' => 'Cập nhật thông tin vợ chồng thành công!',
-                'data' => $item,
+                'status'  => true,
+                'message' => 'Cập nhật thành công!',
+                'data'    => $item
             ]);
         } catch (Exception $e) {
             return response()->json([
-                'status' => false,
-                'message' => 'Lỗi khi cập nhật: '.$e->getMessage(),
+                'status'  => false,
+                'message' => 'Lỗi khi cập nhật: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -71,15 +74,14 @@ class VoChongController extends Controller
         try {
             $item = VoChong::findOrFail($request->id);
             $item->delete();
-
             return response()->json([
-                'status' => true,
-                'message' => 'Xóa thông tin vợ chồng thành công!',
+                'status'  => true,
+                'message' => 'Xóa thành công!',
             ]);
         } catch (Exception $e) {
             return response()->json([
-                'status' => false,
-                'message' => 'Lỗi khi xóa: '.$e->getMessage(),
+                'status'  => false,
+                'message' => 'Lỗi khi xóa: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -88,29 +90,28 @@ class VoChongController extends Controller
     {
         try {
             $item = VoChong::findOrFail($request->id);
-
+            
             if ('VoChong' === 'ThanhVien') {
                 $item->trang_thai = $item->trang_thai == 'Còn sống' ? 'Đã mất' : 'Còn sống';
             } elseif (isset($item->trang_thai)) {
                 $item->trang_thai = $item->trang_thai == 'Hoạt động' ? 'Khóa' : 'Hoạt động';
             } else {
                 return response()->json([
-                    'status' => false,
+                    'status'  => false,
                     'message' => 'Model này không hỗ trợ trạng thái!',
                 ]);
             }
-
+            
             $item->save();
-
             return response()->json([
-                'status' => true,
+                'status'  => true,
                 'message' => 'Cập nhật trạng thái thành công!',
-                'trang_thai' => $item->trang_thai,
+                'trang_thai' => $item->trang_thai
             ]);
         } catch (Exception $e) {
             return response()->json([
-                'status' => false,
-                'message' => 'Lỗi cập nhật trạng thái: '.$e->getMessage(),
+                'status'  => false,
+                'message' => 'Lỗi cập nhật trạng thái: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -119,17 +120,16 @@ class VoChongController extends Controller
     {
         try {
             $query = $request->value;
-            $data = VoChong::where('id', 'like', '%'.$query.'%')->get();
-
+            $data = VoChong::where('id', 'like', '%' . $query . '%')->get();
             return response()->json([
-                'status' => true,
-                'message' => 'Tìm thấy '.count($data).' kết quả',
-                'data' => $data,
+                'status'  => true,
+                'message' => 'Tìm thấy ' . count($data) . ' kết quả',
+                'data'    => $data,
             ]);
         } catch (Exception $e) {
             return response()->json([
-                'status' => false,
-                'message' => 'Lỗi khi tìm kiếm: '.$e->getMessage(),
+                'status'  => false,
+                'message' => 'Lỗi khi tìm kiếm: ' . $e->getMessage(),
             ], 500);
         }
     }

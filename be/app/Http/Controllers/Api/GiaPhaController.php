@@ -19,9 +19,17 @@ class GiaPhaController extends Controller
 
     public function store(Request $request)
     {
-        $data = $request->all();
+        $validated = $request->validate([
+            'ho_ten'       => 'required|string|max:255',
+            'gioi_tinh'    => 'required|string|in:Nam,Nữ,Khác',
+            'ngay_sinh'    => 'nullable|date',
+            'ngay_mat'     => 'nullable|date',
+            'chi_nhanh_id' => 'required|exists:chi_nhanhs,id',
+            // Thêm các rules khác tùy thuộc vào cấu trúc bảng thanh_viens của bạn
+        ]);
+
         // Xử lý logic cơ bản
-        $thanhVien = ThanhVien::create($data);
+        $thanhVien = ThanhVien::create($validated);
 
         return response()->json([
             'status' => true,
@@ -31,9 +39,17 @@ class GiaPhaController extends Controller
 
     public function update(Request $request)
     {
+        $validated = $request->validate([
+            'ho_ten'       => 'sometimes|required|string|max:255',
+            'gioi_tinh'    => 'sometimes|required|string|in:Nam,Nữ,Khác',
+            'ngay_sinh'    => 'nullable|date',
+            'ngay_mat'     => 'nullable|date',
+            'chi_nhanh_id' => 'sometimes|required|exists:chi_nhanhs,id',
+        ]);
+
         $thanhVien = ThanhVien::find($request->id);
         if ($thanhVien) {
-            $thanhVien->update($request->all());
+            $thanhVien->update($validated);
             return response()->json([
                 'status' => true,
                 'message' => 'Đã cập nhật thông tin thành công!',

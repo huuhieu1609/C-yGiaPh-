@@ -3,77 +3,79 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\ChucNang;
 use Illuminate\Http\Request;
+use App\Models\ChucNang;
 
 class ChucNangController extends Controller
 {
     public function getData()
     {
         $data = ChucNang::all();
-
         return response()->json([
-            'status' => true,
+            'status'  => true,
             'message' => 'Lấy dữ liệu thành công!',
-            'data' => $data,
+            'data'    => $data,
         ]);
     }
 
     public function create(Request $request)
     {
-        $item = ChucNang::create([
-            'ten_chuc_nang' => $request->ten_chuc_nang,
-            'ten_slug' => $request->ten_slug,
-            'url' => $request->url,
-            'mo_ta' => $request->mo_ta,
-            'trang_thai' => $request->trang_thai,
-        ]);
-
+        $item = ChucNang::create($request->all());
         return response()->json([
-            'status' => true,
-            'message' => 'Thêm chức năng '.$request->ten_chuc_nang.' thành công!',
-            'data' => $item,
+            'status'  => true,
+            'message' => 'Tạo mới thành công!',
+            'data'    => $item,
         ]);
     }
 
     public function update(Request $request)
     {
-        $item = ChucNang::findOrFail($request->id);
-        $item->update([
-            'ten_chuc_nang' => $request->ten_chuc_nang,
-            'ten_slug' => $request->ten_slug,
-            'url' => $request->url,
-            'mo_ta' => $request->mo_ta,
-            'trang_thai' => $request->trang_thai,
-        ]);
-
+        $item = ChucNang::find($request->id);
+        if ($item) {
+            $item->update($request->all());
+            return response()->json([
+                'status'  => true,
+                'message' => 'Cập nhật thành công!',
+                'data'    => $item,
+            ]);
+        }
         return response()->json([
-            'status' => true,
-            'message' => 'Cập nhật chức năng '.$request->ten_chuc_nang.' thành công!',
-            'data' => $item,
+            'status'  => false,
+            'message' => 'Không tìm thấy dữ liệu!',
         ]);
     }
 
     public function delete(Request $request)
     {
-        $item = ChucNang::findOrFail($request->id)->delete();
-
+        $item = ChucNang::find($request->id);
+        if ($item) {
+            $item->delete();
+            return response()->json([
+                'status'  => true,
+                'message' => 'Xóa thành công!',
+            ]);
+        }
         return response()->json([
-            'status' => true,
-            'message' => 'Xóa chức năng '.$item->ten_chuc_nang.' thành công!',
+            'status'  => false,
+            'message' => 'Không tìm thấy dữ liệu!',
         ]);
     }
 
     public function status(Request $request)
     {
-        $item = ChucNang::findOrFail($request->id);
-        $item->trang_thai = $item->trang_thai == 'Hoạt động' ? 'Khóa' : 'Hoạt động';
-        $item->save();
-
+        $item = ChucNang::find($request->id);
+        if ($item) {
+            $item->trang_thai = $item->trang_thai == 'Hoạt động' ? 'Khóa' : 'Hoạt động';
+            $item->save();
+            return response()->json([
+                'status'  => true,
+                'message' => 'Đổi trạng thái thành công!',
+                'data'    => $item,
+            ]);
+        }
         return response()->json([
-            'status' => true,
-            'message' => 'Đổi trạng thái thành công!',
-            'data' => $item,
+            'status'  => false,
+            'message' => 'Không tìm thấy dữ liệu!',
         ]);
     }
 }

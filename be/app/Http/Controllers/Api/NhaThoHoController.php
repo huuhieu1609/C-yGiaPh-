@@ -4,109 +4,114 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\NhaThoHo;
-use Exception;
 use Illuminate\Http\Request;
+use Exception;
 
 class NhaThoHoController extends Controller
 {
     public function getData()
     {
-        $data = NhaThoHo::get();
-
-        return response()->json([
-            'status' => true,
-            'message' => 'Lấy dữ liệu thành công!',
-            'data' => $data,
-        ]);
+        try {
+            $data = NhaThoHo::all();
+            return response()->json([
+                'status'  => true,
+                'message' => 'Lấy dữ liệu thành công!',
+                'data'    => $data,
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'status'  => false,
+                'message' => 'Có lỗi xảy ra: ' . $e->getMessage(),
+            ], 500);
+        }
     }
 
     public function create(Request $request)
     {
-        $nhaThoHo = NhaThoHo::create([
-            'ten_nha_tho' => $request->ten_nha_tho,
-            'dia_chi' => $request->dia_chi,
-            'hinh_anh' => $request->hinh_anh,
-            'mo_ta' => $request->mo_ta,
-        ]);
-
-        return response()->json([
-            'status' => true,
-            'message' => 'Thêm nhà thờ họ '.$request->ten_nha_tho.' thành công!',
-            'data' => $nhaThoHo,
-        ]);
+        try {
+            $data = $request->all();
+            if ('NhaThoHo' === 'NguoiDung' && isset($data['mat_khau'])) {
+                $data['mat_khau'] = bcrypt($data['mat_khau']);
+            }
+            $item = NhaThoHo::create($data);
+            return response()->json([
+                'status'  => true,
+                'message' => 'Tạo mới thành công!',
+                'data'    => $item
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'status'  => false,
+                'message' => 'Lỗi khi tạo mới: ' . $e->getMessage(),
+            ], 500);
+        }
     }
 
     public function update(Request $request)
     {
-        $nhaThoHo = NhaThoHo::find($request->id);
-
-        if ($nhaThoHo) {
-            $nhaThoHo->update([
-                'ten_nha_tho' => $request->ten_nha_tho,
-                'dia_chi' => $request->dia_chi,
-                'hinh_anh' => $request->hinh_anh,
-                'mo_ta' => $request->mo_ta,
-            ]);
-
+        try {
+            $item = NhaThoHo::findOrFail($request->id);
+            $data = $request->all();
+            if ('NhaThoHo' === 'NguoiDung' && isset($data['mat_khau'])) {
+                $data['mat_khau'] = bcrypt($data['mat_khau']);
+            }
+            $item->update($data);
             return response()->json([
-                'status' => true,
-                'message' => 'Cập nhật nhà thờ họ '.$request->ten_nha_tho.' thành công!',
-                'data' => $nhaThoHo,
+                'status'  => true,
+                'message' => 'Cập nhật thành công!',
+                'data'    => $item
             ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'status'  => false,
+                'message' => 'Lỗi khi cập nhật: ' . $e->getMessage(),
+            ], 500);
         }
-
-        return response()->json([
-            'status' => false,
-            'message' => 'Không tìm thấy nhà thờ họ '.$request->ten_nha_tho.' để cập nhật!',
-        ]);
     }
 
-    public function delete($id)
+    public function delete(Request $request)
     {
-        $nhaThoHo = NhaThoHo::find($id);
-
-        if ($nhaThoHo) {
-            $nhaThoHo->delete();
-
+        try {
+            $item = NhaThoHo::findOrFail($request->id);
+            $item->delete();
             return response()->json([
-                'status' => true,
-                'message' => 'Xóa nhà thờ họ '.$nhaThoHo->ten_nha_tho.' thành công!',
+                'status'  => true,
+                'message' => 'Xóa thành công!',
             ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'status'  => false,
+                'message' => 'Lỗi khi xóa: ' . $e->getMessage(),
+            ], 500);
         }
-
-        return response()->json([
-            'status' => false,
-            'message' => 'Không tìm thấy nhà thờ họ để xóa!',
-        ]);
     }
 
     public function status(Request $request)
     {
         try {
             $item = NhaThoHo::findOrFail($request->id);
-
+            
             if ('NhaThoHo' === 'ThanhVien') {
                 $item->trang_thai = $item->trang_thai == 'Còn sống' ? 'Đã mất' : 'Còn sống';
             } elseif (isset($item->trang_thai)) {
                 $item->trang_thai = $item->trang_thai == 'Hoạt động' ? 'Khóa' : 'Hoạt động';
             } else {
                 return response()->json([
-                    'status' => false,
+                    'status'  => false,
                     'message' => 'Model này không hỗ trợ trạng thái!',
                 ]);
             }
-
+            
             $item->save();
-
             return response()->json([
-                'status' => true,
+                'status'  => true,
                 'message' => 'Cập nhật trạng thái thành công!',
-                'trang_thai' => $item->trang_thai,
+                'trang_thai' => $item->trang_thai
             ]);
         } catch (Exception $e) {
             return response()->json([
-                'status' => false,
-                'message' => 'Lỗi cập nhật trạng thái: '.$e->getMessage(),
+                'status'  => false,
+                'message' => 'Lỗi cập nhật trạng thái: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -115,17 +120,16 @@ class NhaThoHoController extends Controller
     {
         try {
             $query = $request->value;
-            $data = NhaThoHo::where('ten_nha_tho', 'like', '%'.$query.'%')->get();
-
+            $data = NhaThoHo::where('ten_nha_tho', 'like', '%' . $query . '%')->get();
             return response()->json([
-                'status' => true,
-                'message' => 'Tìm thấy '.count($data).' kết quả',
-                'data' => $data,
+                'status'  => true,
+                'message' => 'Tìm thấy ' . count($data) . ' kết quả',
+                'data'    => $data,
             ]);
         } catch (Exception $e) {
             return response()->json([
-                'status' => false,
-                'message' => 'Lỗi khi tìm kiếm: '.$e->getMessage(),
+                'status'  => false,
+                'message' => 'Lỗi khi tìm kiếm: ' . $e->getMessage(),
             ], 500);
         }
     }

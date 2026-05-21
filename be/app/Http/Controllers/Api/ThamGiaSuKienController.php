@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\ThamGiaSuKien;
-use Exception;
 use Illuminate\Http\Request;
+use Exception;
 
 class ThamGiaSuKienController extends Controller
 {
@@ -13,16 +13,15 @@ class ThamGiaSuKienController extends Controller
     {
         try {
             $data = ThamGiaSuKien::all();
-
             return response()->json([
-                'status' => true,
+                'status'  => true,
                 'message' => 'Lấy dữ liệu thành công!',
-                'data' => $data,
+                'data'    => $data,
             ]);
         } catch (Exception $e) {
             return response()->json([
-                'status' => false,
-                'message' => 'Có lỗi xảy ra: '.$e->getMessage(),
+                'status'  => false,
+                'message' => 'Có lỗi xảy ra: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -30,18 +29,20 @@ class ThamGiaSuKienController extends Controller
     public function create(Request $request)
     {
         try {
-            $data = $request->only(['su_kien_id', 'thanh_vien_id']);
+            $data = $request->all();
+            if ('ThamGiaSuKien' === 'NguoiDung' && isset($data['mat_khau'])) {
+                $data['mat_khau'] = bcrypt($data['mat_khau']);
+            }
             $item = ThamGiaSuKien::create($data);
-
             return response()->json([
-                'status' => true,
-                'message' => 'Thêm tham gia sự kiện thành công!',
-                'data' => $item,
+                'status'  => true,
+                'message' => 'Tạo mới thành công!',
+                'data'    => $item
             ]);
         } catch (Exception $e) {
             return response()->json([
-                'status' => false,
-                'message' => 'Lỗi khi tạo mới: '.$e->getMessage(),
+                'status'  => false,
+                'message' => 'Lỗi khi tạo mới: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -50,18 +51,20 @@ class ThamGiaSuKienController extends Controller
     {
         try {
             $item = ThamGiaSuKien::findOrFail($request->id);
-            $data = $request->only(['su_kien_id', 'thanh_vien_id']);
+            $data = $request->all();
+            if ('ThamGiaSuKien' === 'NguoiDung' && isset($data['mat_khau'])) {
+                $data['mat_khau'] = bcrypt($data['mat_khau']);
+            }
             $item->update($data);
-
             return response()->json([
-                'status' => true,
-                'message' => 'Cập nhật tham gia sự kiện thành công!',
-                'data' => $item,
+                'status'  => true,
+                'message' => 'Cập nhật thành công!',
+                'data'    => $item
             ]);
         } catch (Exception $e) {
             return response()->json([
-                'status' => false,
-                'message' => 'Lỗi khi cập nhật: '.$e->getMessage(),
+                'status'  => false,
+                'message' => 'Lỗi khi cập nhật: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -71,15 +74,14 @@ class ThamGiaSuKienController extends Controller
         try {
             $item = ThamGiaSuKien::findOrFail($request->id);
             $item->delete();
-
             return response()->json([
-                'status' => true,
-                'message' => 'Xóa tham gia sự kiện thành công!',
+                'status'  => true,
+                'message' => 'Xóa thành công!',
             ]);
         } catch (Exception $e) {
             return response()->json([
-                'status' => false,
-                'message' => 'Lỗi khi xóa: '.$e->getMessage(),
+                'status'  => false,
+                'message' => 'Lỗi khi xóa: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -88,29 +90,28 @@ class ThamGiaSuKienController extends Controller
     {
         try {
             $item = ThamGiaSuKien::findOrFail($request->id);
-
+            
             if ('ThamGiaSuKien' === 'ThanhVien') {
                 $item->trang_thai = $item->trang_thai == 'Còn sống' ? 'Đã mất' : 'Còn sống';
             } elseif (isset($item->trang_thai)) {
                 $item->trang_thai = $item->trang_thai == 'Hoạt động' ? 'Khóa' : 'Hoạt động';
             } else {
                 return response()->json([
-                    'status' => false,
+                    'status'  => false,
                     'message' => 'Model này không hỗ trợ trạng thái!',
                 ]);
             }
-
+            
             $item->save();
-
             return response()->json([
-                'status' => true,
+                'status'  => true,
                 'message' => 'Cập nhật trạng thái thành công!',
-                'trang_thai' => $item->trang_thai,
+                'trang_thai' => $item->trang_thai
             ]);
         } catch (Exception $e) {
             return response()->json([
-                'status' => false,
-                'message' => 'Lỗi cập nhật trạng thái: '.$e->getMessage(),
+                'status'  => false,
+                'message' => 'Lỗi cập nhật trạng thái: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -119,17 +120,16 @@ class ThamGiaSuKienController extends Controller
     {
         try {
             $query = $request->value;
-            $data = ThamGiaSuKien::where('id', 'like', '%'.$query.'%')->get();
-
+            $data = ThamGiaSuKien::where('id', 'like', '%' . $query . '%')->get();
             return response()->json([
-                'status' => true,
-                'message' => 'Tìm thấy '.count($data).' kết quả',
-                'data' => $data,
+                'status'  => true,
+                'message' => 'Tìm thấy ' . count($data) . ' kết quả',
+                'data'    => $data,
             ]);
         } catch (Exception $e) {
             return response()->json([
-                'status' => false,
-                'message' => 'Lỗi khi tìm kiếm: '.$e->getMessage(),
+                'status'  => false,
+                'message' => 'Lỗi khi tìm kiếm: ' . $e->getMessage(),
             ], 500);
         }
     }
