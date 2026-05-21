@@ -68,6 +68,18 @@ const routes = [
         meta: { layout: 'client', requiresAuth: true }
     },
     {
+        path: '/de-xuat',
+        name: 'client-de-xuat',
+        component: () => import('../components/ClientDeXuat/index.vue'),
+        meta: { layout: 'client', requiresAuth: true }
+    },
+    {
+        path: '/su-kien',
+        name: 'client-su-kien',
+        component: () => import('../components/ClientSuKien/index.vue'),
+        meta: { layout: 'client', requiresAuth: true }
+    },
+    {
         path: '/admin/login',
         name: 'admin-login',
         component: () => import('../components/Admin/Auth/Login.vue'),
@@ -213,6 +225,18 @@ const routes = [
         path: '/doi-tac/nhat-ky',
         name: 'partner-nhat-ky',
         component: () => import('../components/DoiTac/LichSuThaoTac/index.vue'),
+        meta: { layout: 'partner', requiresAuth: true }
+    },
+    {
+        path: '/doi-tac/de-xuat',
+        name: 'partner-de-xuat',
+        component: () => import('../components/DoiTac/QuanLyDeXuat/index.vue'),
+        meta: { layout: 'partner', requiresAuth: true }
+    },
+    {
+        path: '/doi-tac/su-kien',
+        name: 'partner-su-kien',
+        component: () => import('../components/DoiTac/QuanLySuKien/index.vue'),
         meta: { layout: 'partner', requiresAuth: true }
     }
 ]

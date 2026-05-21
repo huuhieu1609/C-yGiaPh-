@@ -20,6 +20,7 @@ use App\Http\Controllers\Api\TaiLieuController;
 use App\Http\Controllers\Api\ThamGiaSuKienController;
 use App\Http\Controllers\Api\ThanhVienController;
 use App\Http\Controllers\Api\ThongBaoController;
+use App\Http\Controllers\Api\DeXuatController;
 use App\Http\Controllers\Api\VoChongController;
 use App\Http\Controllers\ThanhToanController;
 use Illuminate\Support\Facades\Route;
@@ -159,6 +160,18 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/update', [SuKienController::class, 'update']);
         Route::post('/delete', [SuKienController::class, 'delete']);
         Route::post('/status', [SuKienController::class, 'status']);
+        Route::get('/get-participants/{suKienId}', [SuKienController::class, 'getParticipants']);
+        Route::post('/register', [SuKienController::class, 'register']);
+        Route::post('/unregister', [SuKienController::class, 'unregister']);
+    });
+
+    Route::prefix('/de-xuat')->group(function () {
+        Route::get('/get-data', [DeXuatController::class, 'getData']);
+        Route::get('/my-proposals', [DeXuatController::class, 'myProposals']);
+        Route::post('/create', [DeXuatController::class, 'create']);
+        Route::post('/approve', [DeXuatController::class, 'approve']);
+        Route::post('/reject', [DeXuatController::class, 'reject']);
+        Route::post('/toggle-auto-approve', [DeXuatController::class, 'toggleAutoApprove']);
     });
 
     Route::prefix('/tai-lieu')->group(function () {
