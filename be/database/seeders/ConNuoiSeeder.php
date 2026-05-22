@@ -12,20 +12,31 @@ class ConNuoiSeeder extends Seeder
      */
     public function run(): void
     {
-        $parentId = DB::table('thanh_viens')->where('ho_ten', 'Nguyen Van A')->value('id');
-        $childId = DB::table('thanh_viens')->where('ho_ten', 'Nguyen Van C')->value('id');
+        DB::table('con_nuois')->truncate();
 
-        if (!$parentId || !$childId) {
-            return;
+        $chaId = DB::table('thanh_viens')->where('ho_ten', 'Nguyễn Văn Trung')->value('id');
+        $meId = DB::table('thanh_viens')->where('ho_ten', 'Đỗ Thu Trang')->value('id');
+        $conId = DB::table('thanh_viens')->where('ho_ten', 'Nguyễn Hoài Nam')->value('id');
+
+        if ($conId) {
+            if ($chaId) {
+                DB::table('con_nuois')->insert([
+                    'cha_me_id' => $chaId,
+                    'con_id' => $conId,
+                    'ghi_chu' => 'Nguyễn Hoài Nam là con nuôi của Nguyễn Văn Trung.',
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
+            if ($meId) {
+                DB::table('con_nuois')->insert([
+                    'cha_me_id' => $meId,
+                    'con_id' => $conId,
+                    'ghi_chu' => 'Nguyễn Hoài Nam là con nuôi của Đỗ Thu Trang.',
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
         }
-
-        DB::table('con_nuois')->updateOrInsert(
-            ['cha_me_id' => $parentId, 'con_id' => $childId],
-            [
-                'ghi_chu' => 'Nguyen Van C là con nuôi của Nguyen Van A.',
-                'updated_at' => now(),
-                'created_at' => now(),
-            ]
-        );
     }
 }

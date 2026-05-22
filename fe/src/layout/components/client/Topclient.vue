@@ -8,6 +8,8 @@
         <ul class="nav-links">
           <li><router-link to="/">Trang Chủ</router-link></li>
           <li><router-link to="/gia-pha">Gia Phả</router-link></li>
+          <li v-if="isLoggedIn"><router-link to="/de-xuat">Đề Xuất</router-link></li>
+          <li v-if="isLoggedIn"><router-link to="/su-kien">Sự Kiện</router-link></li>
           <li><router-link to="/tra-cuu">Tra Cứu</router-link></li>
           <li><router-link to="/dich-vu-goi/chi-tiet">Dịch Vụ Gói</router-link></li>
         </ul>
@@ -29,6 +31,12 @@
                 </router-link>
                 <router-link to="/profile" @click="isDropdownOpen = false">
                   <i class="bx bx-user"></i> Hồ sơ cá nhân
+                </router-link>
+                <router-link to="/de-xuat" @click="isDropdownOpen = false">
+                  <i class="bx bx-git-pull-request"></i> Lịch sử đề xuất
+                </router-link>
+                <router-link to="/su-kien" @click="isDropdownOpen = false">
+                  <i class="bx bx-calendar"></i> Sự kiện dòng họ
                 </router-link>
                 <router-link to="/tra-cuu" @click="isDropdownOpen = false">
                   <i class="bx bx-search-alt"></i> Tra cứu xưng hô
@@ -58,6 +66,8 @@
         </template>
         <template v-else>
           <li><router-link to="/profile" @click="isMobileMenuOpen = false">Hồ sơ cá nhân</router-link></li>
+          <li><router-link to="/de-xuat" @click="isMobileMenuOpen = false">Lịch sử đề xuất</router-link></li>
+          <li><router-link to="/su-kien" @click="isMobileMenuOpen = false">Sự kiện dòng họ</router-link></li>
           <li><router-link to="/tra-cuu" @click="isMobileMenuOpen = false">Tra cứu xưng hô</router-link></li>
           <li><a href="javascript:;" @click="handleLogout">Đăng xuất</a></li>
         </template>

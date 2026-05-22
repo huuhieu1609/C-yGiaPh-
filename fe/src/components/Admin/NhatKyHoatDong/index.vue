@@ -11,7 +11,7 @@
                             </p>
                         </div>
                         <div class="col-md-4 text-md-end mt-3 mt-md-0">
-                            <button class="btn btn-outline-primary radius-30 px-4">Xuất báo cáo</button>
+                            <button class="btn btn-outline-primary radius-30 px-4" @click="fetchLogs">Tải lại nhật ký</button>
                         </div>
                     </div>
                 </div>
@@ -68,7 +68,7 @@
                                 <div class="d-flex align-items-center justify-content-between mb-3">
                                     <div>
                                         <p class="mb-1 text-secondary small">Hoạt động mới nhất</p>
-                                        <h4 class="mb-0 fw-bold">{{ latestAction }}</h4>
+                                        <h5 class="mb-0 fw-bold text-truncate" style="max-width: 220px;" :title="latestAction">{{ latestAction }}</h5>
                                     </div>
                                     <div class="icon-box bg-light rounded-circle p-3">
                                         <i class="bx bx-time-five text-success fs-4"></i>
@@ -103,12 +103,12 @@
                                         <span
                                             class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill fw-semibold">{{
                                                 item.type }}</span>
-                                        <h6 class="mt-3 mb-2 fw-bold">{{ item.title }}</h6>
+                                        <h6 class="mt-3 mb-2 fw-bold text-dark">{{ item.title }}</h6>
                                         <p class="mb-2 text-secondary">{{ item.description }}</p>
                                     </div>
                                     <div class="text-md-end">
-                                        <p class="mb-1 text-secondary small">{{ item.user }}</p>
-                                        <p class="mb-0 text-muted small">{{ item.timestamp }}</p>
+                                        <p class="mb-1 text-dark fw-semibold small">{{ item.user }}</p>
+                                        <p class="mb-0 text-muted small">{{ item.date }} {{ item.timestamp }}</p>
                                     </div>
                                 </div>
                                 <div class="mt-3 d-flex flex-wrap gap-2">
@@ -130,6 +130,8 @@
 </template>
 
 <script>
+import axios from 'axios';
+
 export default {
     name: 'NhatKyHoatDong',
     data() {
@@ -139,80 +141,43 @@ export default {
             selectedType: 'all',
             startDate: '',
             endDate: '',
-            users: [
-                { id: 1, name: 'Admin Nguyễn' },
-                { id: 2, name: 'Quản trị viên Linh' },
-                { id: 3, name: 'Người dùng Nam' }
-            ],
             types: [
                 { value: 'Đăng nhập', label: 'Đăng nhập' },
-                { value: 'Cập nhật', label: 'Cập nhật' },
+                { value: 'Cập nhật', label: 'Cập nhật/Chỉnh sửa' },
+                { value: 'Tạo mới', label: 'Tạo mới/Thêm' },
                 { value: 'Xóa', label: 'Xóa' },
-                { value: 'Tạo mới', label: 'Tạo mới' }
+                { value: 'Hệ thống', label: 'Hệ thống' }
             ],
-            logs: [
-                {
-                    id: 1,
-                    userId: 1,
-                    user: 'Admin Nguyễn',
-                    type: 'Đăng nhập',
-                    title: 'Đăng nhập vào hệ thống',
-                    description: 'Admin Nguyễn đã đăng nhập thành công từ trình duyệt Chrome.',
-                    timestamp: '09:12',
-                    ip: '192.168.1.10',
-                    status: 'Thành công',
-                    date: '2026-05-14'
-                },
-                {
-                    id: 2,
-                    userId: 2,
-                    user: 'Quản trị viên Linh',
-                    type: 'Cập nhật',
-                    title: 'Cập nhật thông tin thành viên',
-                    description: 'Đã chỉnh sửa hồ sơ thành viên Nguyễn Văn A.',
-                    timestamp: '08:45',
-                    ip: '192.168.1.12',
-                    status: 'Thành công',
-                    date: '2026-05-14'
-                },
-                {
-                    id: 3,
-                    userId: 3,
-                    user: 'Người dùng Nam',
-                    type: 'Tạo mới',
-                    title: 'Thêm mới hồ sơ thành viên',
-                    description: 'Thêm thành viên mới vào dòng họ Nguyễn.',
-                    timestamp: '17:30',
-                    ip: '192.168.1.22',
-                    status: 'Thành công',
-                    date: '2026-05-13'
-                },
-                {
-                    id: 4,
-                    userId: 1,
-                    user: 'Admin Nguyễn',
-                    type: 'Xóa',
-                    title: 'Xóa bản ghi nhật ký',
-                    description: 'Xóa một bản ghi lỗi hệ thống để dọn sạch dữ liệu thử nghiệm.',
-                    timestamp: '14:50',
-                    ip: '192.168.1.10',
-                    status: 'Thành công',
-                    date: '2026-05-12'
-                }
-            ]
+            logs: []
         };
     },
+    mounted() {
+        this.fetchLogs();
+    },
     computed: {
+        users() {
+            const userMap = {};
+            this.logs.forEach(log => {
+                if (log.userId && log.user) {
+                    userMap[log.userId] = log.user;
+                }
+            });
+            return Object.keys(userMap).map(id => ({
+                id: parseInt(id),
+                name: userMap[id]
+            }));
+        },
         filteredLogs() {
             return this.logs.filter(item => {
                 const matchesSearch = this.searchQuery
-                    ? item.title.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-                    item.description.toLowerCase().includes(this.searchQuery.toLowerCase())
+                    ? (item.title && item.title.toLowerCase().includes(this.searchQuery.toLowerCase())) ||
+                      (item.description && item.description.toLowerCase().includes(this.searchQuery.toLowerCase()))
                     : true;
                 const matchesUser = this.selectedUser ? item.userId === this.selectedUser : true;
                 const matchesType = this.selectedType !== 'all' ? item.type === this.selectedType : true;
                 const matchesDate = (() => {
                     if (!this.startDate && !this.endDate) return true;
+                    if (!item.date) return true;
                     const [year, month, day] = item.date.split('-').map(Number);
                     const itemDate = new Date(year, month - 1, day);
                     const from = this.startDate ? new Date(this.startDate) : null;
@@ -236,6 +201,51 @@ export default {
         },
         uniqueUsers() {
             return [...new Set(this.filteredLogs.map(item => item.userId))].length;
+        }
+    },
+    methods: {
+        async fetchLogs() {
+            try {
+                const res = await axios.get('http://127.0.0.1:8000/api/nhat-ky-hoat-dong/get-data');
+                if (res.data.status) {
+                    this.logs = res.data.data.map(item => {
+                        const dateObj = new Date(item.created_at || item.thoi_gian || new Date());
+                        const hours = String(dateObj.getHours()).padStart(2, '0');
+                        const minutes = String(dateObj.getMinutes()).padStart(2, '0');
+                        const year = dateObj.getFullYear();
+                        const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+                        const day = String(dateObj.getDate()).padStart(2, '0');
+
+                        // Phân loại hoạt động
+                        let actionType = 'Hệ thống';
+                        const actionLower = (item.hanh_dong || '').toLowerCase();
+                        if (actionLower.includes('đăng nhập') || actionLower.includes('login')) {
+                          actionType = 'Đăng nhập';
+                        } else if (actionLower.includes('tạo') || actionLower.includes('thêm') || actionLower.includes('create') || actionLower.includes('insert')) {
+                          actionType = 'Tạo mới';
+                        } else if (actionLower.includes('cập nhật') || actionLower.includes('sửa') || actionLower.includes('update') || actionLower.includes('edit')) {
+                          actionType = 'Cập nhật';
+                        } else if (actionLower.includes('xóa') || actionLower.includes('delete') || actionLower.includes('destroy')) {
+                          actionType = 'Xóa';
+                        }
+
+                        return {
+                            id: item.id,
+                            userId: item.nguoi_dung_id || 999,
+                            user: item.nguoi_dung ? item.nguoi_dung.ho_ten : 'Hệ thống',
+                            type: actionType,
+                            title: item.hanh_dong || 'Hoạt động hệ thống',
+                            description: `${item.nguoi_dung ? item.nguoi_dung.ho_ten : 'Hệ thống'} đã thực hiện hành động: "${item.hanh_dong || ''}"`,
+                            timestamp: `${hours}:${minutes}`,
+                            ip: item.ip || '127.0.0.1',
+                            status: 'Thành công',
+                            date: `${year}-${month}-${day}`
+                        };
+                    });
+                }
+            } catch (error) {
+                console.error('Error fetching activity logs:', error);
+            }
         }
     }
 };

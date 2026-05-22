@@ -46,6 +46,7 @@
                     </div>
                     <div v-else class="tree-viewport" 
                          ref="viewport"
+                         @wheel.prevent="handleWheel"
                          @mousedown="startPan"
                          @mousemove="doPan"
                          @mouseup="endPan"
@@ -394,9 +395,6 @@ export default {
         this.loadDoiTocHo();
         this.loadChiNhanh();
         this.loadData();
-        
-        // Add wheel listener for zoom
-        this.$refs.viewport.addEventListener('wheel', this.handleWheel, { passive: false });
     },
     methods: {
         getHeaders() {
@@ -502,7 +500,10 @@ export default {
             }
             
             axios.post(url, formData, {
-                headers: { 'Content-Type': 'multipart/form-data' }
+                headers: { 
+                    'Content-Type': 'multipart/form-data',
+                    'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+                }
             })
             .then(res => {
                 if (res.data.status) {
@@ -516,7 +517,7 @@ export default {
         },
         handleDelete() {
             if (confirm('Xóa thành viên này?')) {
-                axios.post('http://127.0.0.1:8000/api/thanh-vien/delete', { id: this.currentMember.id })
+                axios.post('http://127.0.0.1:8000/api/thanh-vien/delete', { id: this.currentMember.id }, this.getHeaders())
                     .then(res => {
                         if (res.data.status) {
                             toastr.success(res.data.message);

@@ -7,73 +7,77 @@
     <div class="container-custom content-relative pt-5 pb-5">
       <div class="glass-card shadow-2xl rounded-3xl overflow-hidden mt-5">
         <div class="checkout-header p-5 text-center">
-          <h2 class="text-gradient fw-bold mb-2">Xác Nhận Thanh Toán</h2>
-          <p class="text-white-50">Hoàn tất thanh toán để nâng cấp tài khoản và trải nghiệm đầy đủ tính năng</p>
+          <h2 class="text-gradient fw-bold mb-2">Đóng Góp Quỹ Dòng Họ</h2>
+          <p class="text-white-50">Góp phần xây dựng, bảo tồn gia phả số và tri ân tổ tiên, gìn giữ di sản dòng họ muôn đời sau.</p>
         </div>
         
         <div class="card-body p-4 p-md-5 pt-0">
           <div class="row g-5">
-            <!-- Left Column: Package Details -->
+            <!-- Left Column: Contribution Details -->
             <div class="col-lg-6">
               <div class="package-info-section h-100">
-                <h4 class="text-gold mb-4 fw-bold"><i class="bx bx-receipt me-2"></i>Thông tin đơn hàng</h4>
+                <h4 class="text-gold mb-4 fw-bold"><i class="bx bx-heart me-2"></i>Thông tin đóng góp</h4>
                 
                 <div class="glass-info p-4 rounded-2xl border border-white/10 mb-4">
                   <div class="info-row">
-                    <span>Gói dịch vụ:</span>
-                    <strong class="text-white">{{ ten_goi || 'Gia Phả Tộc' }}</strong>
+                    <span>Mục đích đóng góp:</span>
+                    <strong class="text-white">{{ ten_goi || 'Quỹ phát triển Gia phả Dòng tộc' }}</strong>
                   </div>
                   <div class="info-row">
-                    <span>Thời hạn:</span>
-                    <strong class="text-white">Vĩnh viễn (Server)</strong>
+                    <span>Thời gian ghi nhận:</span>
+                    <strong class="text-white">Lưu danh bảng vàng công đức</strong>
                   </div>
                   <div class="info-row border-0">
-                    <span>Tổng tiền:</span>
+                    <span>Số tiền đóng góp:</span>
                     <strong class="text-gold fs-4">{{ form.so_tien ? form.so_tien.toLocaleString() : '20,000' }} VNĐ</strong>
                   </div>
                 </div>
 
                 <div class="benefits-list mt-4">
-                  <h6 class="text-white-50 small fw-bold text-uppercase mb-3">Quyền lợi gói dịch vụ</h6>
+                  <h6 class="text-white-50 small fw-bold text-uppercase mb-3">Ý nghĩa và Quyền lợi dòng tộc</h6>
                   <div class="benefit-item mb-2">
-                    <i class="bx bx-check-circle text-success me-2"></i>
-                    <span>Tạo 01 cây gia phả dòng họ trực tuyến</span>
+                    <i class="bx bxs-award text-warning me-2"></i>
+                    <span>Khắc ghi tên tuổi trên Bảng Vàng Công Đức dòng họ</span>
                   </div>
                   <div class="benefit-item mb-2">
                     <i class="bx bx-check-circle text-success me-2"></i>
-                    <span>Không giới hạn số lượng thành viên</span>
+                    <span>Khởi tạo và quản lý 01 cây gia phả dòng họ trực tuyến</span>
                   </div>
                   <div class="benefit-item mb-2">
                     <i class="bx bx-check-circle text-success me-2"></i>
-                    <span>Tra cứu và tìm kiếm thông tin nhanh chóng</span>
+                    <span>Không giới hạn số lượng thành viên dòng tộc</span>
                   </div>
                   <div class="benefit-item mb-2">
                     <i class="bx bx-check-circle text-success me-2"></i>
-                    <span>Bảo mật và lưu trữ an toàn trên đám mây</span>
+                    <span>Hỗ trợ tra cứu, kết nối và tìm kiếm thông tin gia tộc nhanh chóng</span>
+                  </div>
+                  <div class="benefit-item mb-2">
+                    <i class="bx bx-check-circle text-success me-2"></i>
+                    <span>Đồng hành bảo mật, lưu trữ di sản và hỗ trợ duy trì server lâu dài</span>
                   </div>
                 </div>
               </div>
             </div>
 
-            <!-- Right Column: Payment Details & QR -->
+            <!-- Right Column: Donation QR -->
             <div class="col-lg-6">
               <div class="payment-section">
-                <h4 class="text-gold mb-4 fw-bold"><i class="bx bx-qr-scan me-2"></i>Chuyển khoản qua mã QR</h4>
+                <h4 class="text-gold mb-4 fw-bold"><i class="bx bx-qr-scan me-2"></i>Đóng đóng góp tâm đức qua mã QR</h4>
                 
                 <div class="qr-payment-section text-center p-4 rounded-3xl mb-4">
                   <div class="qr-image-wrapper mx-auto mb-4">
                     <img :src="qrUrl" alt="QR Code" class="img-fluid rounded-2xl border-2 border-white/10 p-2 bg-white shadow-glow" v-if="form.so_tien">
                     <div v-else class="qr-placeholder rounded-2xl border-2 border-dashed border-white/20 d-flex align-items-center justify-content-center bg-white/5">
-                      <span class="text-white-50">Nhập số tiền để tạo mã QR</span>
+                      <span class="text-white-50">Vui lòng nhập số tiền đóng góp để tạo mã QR công đức</span>
                     </div>
                   </div>
                   
                   <div class="bank-details text-start glass-info p-4 rounded-2xl border border-white/10">
-                    <div class="info-row"><span>Ngân hàng:</span><strong>MB Bank (Quân Đội)</strong></div>
+                    <div class="info-row"><span>Ngân hàng thụ hưởng:</span><strong>MB Bank (Quân Đội)</strong></div>
                     <div class="info-row"><span>Số tài khoản:</span><strong class="text-gold">0342211914</strong></div>
                     <div class="info-row"><span>Chủ tài khoản:</span><strong>TRAN HUU HIEU</strong></div>
                     <div class="info-row border-0">
-                      <span>Nội dung:</span>
+                      <span>Nội dung chuyển khoản:</span>
                       <strong class="text-warning">{{ transferContent }}</strong>
                       <button type="button" class="btn-copy ms-2" @click="copyContent">
                         <i class="bx bx-copy"></i>
@@ -84,13 +88,13 @@
 
                 <form @submit.prevent="submitPayment">
                   <button type="submit" class="btn-gradient-submit w-100" :disabled="isSubmitting">
-                    <span v-if="!isSubmitting"><i class="bx bx-check-circle me-2"></i> XÁC NHẬN ĐÃ CHUYỂN KHOẢN</span>
-                    <span v-else><i class="bx bx-loader-alt bx-spin me-2"></i> ĐANG XỬ LÝ...</span>
+                    <span v-if="!isSubmitting"><i class="bx bx-check-circle me-2"></i> XÁC NHẬN ĐÃ CHUYỂN KHOẢN ĐỒNG GÓP</span>
+                    <span v-else><i class="bx bx-loader-alt bx-spin me-2"></i> ĐANG GHI NHẬN HÓA ĐƠN...</span>
                   </button>
                 </form>
                 
                 <p class="text-center text-white-50 small mt-3">
-                  <i class="bx bx-info-circle me-1"></i> Hệ thống sẽ tự động xác nhận sau 1-3 phút
+                  <i class="bx bx-info-circle me-1"></i> Ban quản lý quỹ sẽ duyệt tự động và ghi nhận sau 1-3 phút.
                 </p>
               </div>
             </div>
@@ -100,9 +104,9 @@
 
       <div class="security-note text-center mt-5">
         <div class="d-inline-flex align-items-center gap-5">
-          <span class="note-item"><i class="bx bx-lock-alt"></i> An toàn & Bảo mật</span>
-          <span class="note-item"><i class="bx bx-support"></i> Hỗ trợ 24/7</span>
-          <span class="note-item"><i class="bx bx-shield-quarter"></i> Chính sách hoàn tiền</span>
+          <span class="note-item"><i class="bx bx-lock-alt"></i> Bảo mật tư liệu</span>
+          <span class="note-item"><i class="bx bx-support"></i> Hỗ trợ dòng tộc 24/7</span>
+          <span class="note-item"><i class="bx bx-shield-quarter"></i> Ghi nhận công đức minh bạch</span>
         </div>
       </div>
     </div>
@@ -143,7 +147,7 @@ export default {
         name = this.userName.split(' ').pop().toUpperCase();
         name = name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/Đ/g, 'D');
       }
-      return `MUAGOI ${name}${this.paymentCode}`;
+      return `DONGGOP ${name}${this.paymentCode}`;
     },
     qrUrl() {
       if (!this.cleanAmount) return '';
@@ -204,13 +208,13 @@ export default {
 
       axios.post('http://127.0.0.1:8000/api/thanh-toan/xac-nhan-thanh-toan', {
         nguoi_dung_id: userId,
-        noi_dung: this.transferContent + ' | Số tiền: ' + this.form.so_tien + ' VNĐ | Chuyển khoản QR',
+        noi_dung: this.transferContent + ' | Đóng góp quỹ: ' + this.form.so_tien + ' VNĐ | QR Công Đức',
         trang_thai: 'Chờ duyệt'
       }, this.getHeaders())
       .then(res => {
         if (res.data.success) {
           this.stopAutoCheck();
-          this.toast.success('Thanh toán thành công! Hệ thống đang chuyển trang...');
+          this.toast.success('Đóng góp thành công! Hệ thống đang chuyển trang...');
           this.$router.push('/doi-tac/dashboard');
         }
       })
@@ -222,7 +226,7 @@ export default {
 
     copyContent() {
       navigator.clipboard.writeText(this.transferContent);
-      this.toast.success('Đã sao chép nội dung chuyển khoản!');
+      this.toast.success('Đã sao chép nội dung đóng góp quỹ!');
     },
     submitPayment() {
       if (!this.cleanAmount) {
@@ -243,20 +247,20 @@ export default {
 
       axios.post('http://127.0.0.1:8000/api/thanh-toan/xac-nhan-thanh-toan', {
         nguoi_dung_id: userId,
-        noi_dung: this.transferContent + ' | Số tiền: ' + this.form.so_tien + ' VNĐ | Chuyển khoản QR',
+        noi_dung: this.transferContent + ' | Đóng góp quỹ: ' + this.form.so_tien + ' VNĐ | QR Công Đức',
         trang_thai: 'Chờ duyệt'
       }, this.getHeaders())
       .then(res => {
         if (res.data.success) {
           this.stopAutoCheck();
-          this.toast.success('Xác nhận thành công! Bạn đã được nâng cấp lên Đối Tác.');
+          this.toast.success('Ghi danh công đức thành công! Cây gia phả đã được kích hoạt.');
           this.$router.push('/doi-tac/dashboard');
         } else {
-          this.toast.error(res.data.message || 'Chưa nhận được thanh toán.');
+          this.toast.error(res.data.message || 'Hệ thống chưa nhận được khoản chuyển đóng góp.');
         }
       })
       .catch((err) => { 
-        this.toast.error('Có lỗi xảy ra!'); 
+        this.toast.error('Có lỗi xảy ra trong quá trình ghi danh!'); 
         console.error(err);
       })
       .finally(() => { this.isSubmitting = false; });

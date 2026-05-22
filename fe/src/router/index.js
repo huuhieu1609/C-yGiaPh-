@@ -76,6 +76,18 @@ const routes = [
 
     // Admin Routes
     {
+        path: '/de-xuat',
+        name: 'client-de-xuat',
+        component: () => import('../components/ClientDeXuat/index.vue'),
+        meta: { layout: 'client', requiresAuth: true }
+    },
+    {
+        path: '/su-kien',
+        name: 'client-su-kien',
+        component: () => import('../components/ClientSuKien/index.vue'),
+        meta: { layout: 'client', requiresAuth: true }
+    },
+    {
         path: '/admin/login',
         name: 'admin-login',
         component: () => import('../components/Admin/Auth/Login.vue'),
@@ -163,49 +175,74 @@ const routes = [
         path: '/admin/tra-cuu',
         name: 'admin-tra-cuu',
         component: () => import('../components/Admin/TraCuu/index.vue'),
-        meta: { layout: 'default', requiresAuth: true }
-    },
-    {
-        path: '/admin/phan-quyen',
-        name: 'admin-phan-quyen',
-        component: () => import('../components/Admin/PhanQuyen/index.vue'),
-        meta: { layout: 'default', requiresAuth: true }
+        meta: { layout: 'default' }
     },
 
     // Partner Routes
     {
-        // Thêm route này để hứng redirect từ Backend cho Đối Tác
-        path: '/doi-tac',
-        redirect: '/doi-tac/dashboard'
-    },
-    {
         path: '/doi-tac/dashboard',
         name: 'partner-dashboard',
         component: () => import('../components/DoiTac/TrangChu/index.vue'),
-        meta: { layout: 'partner', requiresAuth: true }
+        meta: { layout: 'partner' }
     },
     {
         path: '/doi-tac/gia-pha',
         name: 'partner-gia-pha',
         component: () => import('../components/DoiTac/CayGiaPha/index.vue'),
-        meta: { layout: 'partner', requiresAuth: true }
+        meta: { layout: 'partner' }
     },
     {
         path: '/doi-tac/thanh-vien',
         name: 'partner-thanh-vien',
         component: () => import('../components/DoiTac/QuanLyThanhVien/index.vue'),
-        meta: { layout: 'partner', requiresAuth: true }
+        meta: { layout: 'partner' }
     },
     {
         path: '/doi-tac/tra-cuu',
         name: 'partner-tra-cuu',
         component: () => import('../components/DoiTac/TraCuu/index.vue'),
-        meta: { layout: 'partner', requiresAuth: true }
+        meta: { layout: 'partner' }
     },
     {
         path: '/doi-tac/dong-ho',
         name: 'partner-dong-ho',
         component: () => import('../components/DoiTac/QuanLyDongHo/index.vue'),
+        meta: { layout: 'partner', requiresAuth: true }
+    },
+    {
+        path: '/admin/phan-quyen',
+        name: 'admin-phan-quyen',
+        component: () => import('../components/Admin/PhanQuyen/index.vue'),
+        meta: { layout: 'default' }
+    },
+    {
+        path: '/doi-tac/thong-bao',
+        name: 'partner-thong-bao',
+        component: () => import('../components/DoiTac/QuanLyThongBao/index.vue'),
+        meta: { layout: 'partner', requiresAuth: true }
+    },
+    {
+        path: '/doi-tac/tai-lieu',
+        name: 'partner-tai-lieu',
+        component: () => import('../components/DoiTac/QuanLyTaiLieu/index.vue'),
+        meta: { layout: 'partner', requiresAuth: true }
+    },
+    {
+        path: '/doi-tac/nhat-ky',
+        name: 'partner-nhat-ky',
+        component: () => import('../components/DoiTac/LichSuThaoTac/index.vue'),
+        meta: { layout: 'partner', requiresAuth: true }
+    },
+    {
+        path: '/doi-tac/de-xuat',
+        name: 'partner-de-xuat',
+        component: () => import('../components/DoiTac/QuanLyDeXuat/index.vue'),
+        meta: { layout: 'partner', requiresAuth: true }
+    },
+    {
+        path: '/doi-tac/su-kien',
+        name: 'partner-su-kien',
+        component: () => import('../components/DoiTac/QuanLySuKien/index.vue'),
         meta: { layout: 'partner', requiresAuth: true }
     }
 ]
