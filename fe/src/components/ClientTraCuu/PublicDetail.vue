@@ -53,7 +53,7 @@
                                         <i class="bx" :class="member.gioi_tinh === 'Nam' ? 'bx-male-sign text-info' : 'bx-female-sign text-pink'"></i>
                                         {{ member.gioi_tinh }}
                                     </span>
-                                    <span v-slot="member.chi_nhanh" v-if="member.chi_nhanh" class="badge badge-glass radius-30 px-3 py-2 font-13">
+                                    <span v-if="member.chi_nhanh" class="badge badge-glass radius-30 px-3 py-2 font-13">
                                         <i class="bx bx-home-alt text-success me-1"></i>
                                         {{ member.chi_nhanh.ten_chi }}
                                     </span>
@@ -64,36 +64,75 @@
                         <!-- Main Details Grid -->
                         <div class="card bg-white shadow-lg border-0 radius-bottom-15 p-4 mt-0 pt-5">
                             
-                            <!-- DYNAMIC RELATIONSHIP CARD (WOW FACTOR) -->
-                            <div v-if="relationship" class="relationship-card p-4 mb-4 radius-12 shadow-sm border border-gold overflow-hidden position-relative">
-                                <div class="decor-light"></div>
-                                <div class="d-flex align-items-start gap-3 position-relative z-index-2">
-                                    <div class="icon-box rounded-circle bg-warning text-dark d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; flex-shrink: 0;">
-                                        <i class="bx bx-link-alt fs-3"></i>
+                            <!-- UNIFIED RELATIONSHIP PANEL -->
+                            <div v-if="relationship || dynamicRelationship" class="rel-finder-card p-4 mb-4 radius-12 border border-2 border-dashed-gold position-relative overflow-hidden">
+                                <div class="rel-finder-bg-decor"></div>
+                                <div class="position-relative z-index-2">
+                                    <div class="d-flex align-items-center gap-2 mb-3">
+                                        <div class="rel-icon-box">
+                                            <i class="bx bx-dna fs-4 text-warning"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="fw-extrabold text-dark mb-0">Mối Quan Hệ Với Bạn</h6>
+                                            <p class="text-muted font-12 mb-0">
+                                                <template v-if="isLoggedIn">Dựa trên email tài khoản của bạn trong hệ thống gia phả</template>
+                                                <template v-else>Thông tin từ hệ thống nhận diện huyết thống</template>
+                                            </p>
+                                        </div>
                                     </div>
-                                    <div class="flex-grow-1">
-                                        <h6 class="fw-bold text-dark mb-1 text-uppercase font-12 tracking-wider">Hệ thống nhận diện huyết thống</h6>
-                                        <h4 class="fw-extrabold text-primary mb-2">
-                                            Mối quan hệ với bạn: <span class="text-warning-gold bg-dark-gold px-3 py-1 radius-30 ms-1 d-inline-block">{{ relationship.term }}</span>
-                                        </h4>
-                                        <p class="text-secondary font-14 mb-3">{{ relationship.description }}</p>
-                                        
-                                        <!-- Lineage visual path -->
-                                        <div class="path-visual-wrapper mt-3 pt-3 border-top border-light-gold">
-                                            <div class="text-secondary font-12 mb-2 fw-bold"><i class="bx bx-network-chart"></i> Sơ đồ kết nối giữa hai người:</div>
-                                            <div class="d-flex flex-wrap align-items-center gap-2">
-                                                <div v-for="(node, idx) in relationship.path" :key="idx" class="d-flex align-items-center gap-2">
-                                                    <div class="path-node d-flex align-items-center bg-light-gold py-1 px-2 radius-8 border border-light-gold shadow-xs">
-                                                        <img :src="node.avatar || 'https://ui-avatars.com/api/?name=' + node.ho_ten" class="rounded-circle me-1" width="20" height="20">
-                                                        <span class="font-12 fw-bold text-dark">{{ node.ho_ten }}</span>
-                                                        <span class="badge bg-secondary font-9 ms-1">Đời {{ node.doi_thu }}</span>
+
+                                    <!-- Loading state -->
+                                    <div v-if="isLoadingRelationship" class="text-center py-4">
+                                        <div class="spinner-border spinner-border-sm text-warning me-2"></div>
+                                        <span class="text-muted font-13">Hệ thống đang xác định mối quan hệ huyết thống...</span>
+                                    </div>
+
+                                    <!-- Display result (auto-detected for logged-in, or static for others) -->
+                                    <div v-else-if="dynamicRelationship || relationship" class="dyn-result mt-0 p-4 radius-12 animate__animated animate__fadeIn" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: white;">
+                                        <div class="row align-items-center g-3">
+                                            <div class="col-md-4 text-center">
+                                                <div class="font-11 text-warning text-uppercase fw-bold mb-1">
+                                                    <template v-if="isLoggedIn">Bạn gọi người này là</template>
+                                                    <template v-else>Mối quan hệ</template>
+                                                </div>
+                                                <div class="dyn-term-value">{{ (dynamicRelationship || relationship).term }}</div>
+                                            </div>
+                                            <div class="col-md-8">
+                                                <div class="font-13 text-white-50 mb-2">{{ (dynamicRelationship || relationship).description }}</div>
+                                                <div v-if="(dynamicRelationship || relationship).path && (dynamicRelationship || relationship).path.length" class="pt-2 border-top border-secondary">
+                                                    <div class="font-11 text-warning mb-2"><i class="bx bx-git-branch me-1"></i>Đường kết nối huyết thống:</div>
+                                                    <div class="d-flex flex-wrap align-items-center gap-1">
+                                                        <div v-for="(node, idx) in (dynamicRelationship || relationship).path" :key="idx" class="d-flex align-items-center gap-1">
+                                                            <div class="dyn-path-node d-flex align-items-center gap-1 px-2 py-1 radius-8"
+                                                                 :style="idx === 0 && isLoggedIn ? 'background:rgba(212,175,55,0.25); border:1px solid #d4af37;' : idx === (dynamicRelationship || relationship).path.length - 1 && isLoggedIn ? 'background:rgba(59,130,246,0.25); border:1px solid #60a5fa;' : 'background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15);'">
+                                                                <img :src="node.avatar || 'https://ui-avatars.com/api/?name=' + node.ho_ten + '&background=d4af37&color=fff'" class="rounded-circle" width="18" height="18">
+                                                                <span class="font-11 fw-bold">{{ node.ho_ten }}</span>
+                                                                <span v-if="isLoggedIn && idx === 0" class="badge ms-1" style="font-size:8px; background:#d4af37; color:#000;">BẠN</span>
+                                                                <span v-else-if="isLoggedIn && idx === (dynamicRelationship || relationship).path.length - 1" class="badge ms-1" style="font-size:8px; background:#3b82f6;">ĐT</span>
+                                                            </div>
+                                                            <i v-if="idx < (dynamicRelationship || relationship).path.length - 1" class="bx bx-chevron-right" style="font-size:14px; opacity:0.5; color:#d4af37;"></i>
+                                                        </div>
                                                     </div>
-                                                    <i v-if="idx < relationship.path.length - 1" class="bx bx-chevron-right text-warning fs-5"></i>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
+
+                                    <!-- Not found in family tree (for logged-in users) -->
+                                    <div v-else-if="isLoadingRelationship === false && dynamicRelError" class="text-center py-3">
+                                        <i class="bx bx-unlink text-muted fs-2 mb-2 d-block"></i>
+                                        <p class="text-muted font-13 mb-0">{{ dynamicRelError }}</p>
+                                    </div>
                                 </div>
+                            </div>
+
+                            <!-- Gợi ý đăng nhập nếu chưa đăng nhập và không có relationship từ backend -->
+                            <div v-if="!isLoggedIn && !relationship" class="text-center py-3 mb-4 p-3 radius-12 bg-light border border-dashed">
+                                <i class="bx bx-lock-alt text-muted fs-3 mb-2 d-block"></i>
+                                <p class="text-muted font-13 mb-2">Đăng nhập để xem mối quan hệ huyết thống với thành viên này</p>
+                                <router-link to="/login" class="btn btn-sm btn-dark px-4 radius-30 fw-bold">
+                                    <i class="bx bx-log-in me-1"></i> Đăng Nhập Ngay
+                                </router-link>
                             </div>
 
                             <!-- Memorial Panel (Tưởng niệm người đã khuất) -->
@@ -337,7 +376,12 @@ export default {
             mother: null,
             spouses: [],
             children: [],
-            relationship: null
+            relationship: null,
+            // Manual relationship finder
+            dynamicRelationship: null,
+            dynamicRelError: null,
+            isLoadingRelationship: false,
+            isLoggedIn: !!localStorage.getItem('access_token')
         }
     },
     watch: {
@@ -345,7 +389,18 @@ export default {
             immediate: true,
             handler() {
                 this.loadMemberProfile();
+                this.dynamicRelationship = null;
+                this.dynamicRelError = null;
+                this.isLoadingRelationship = false;
+                if (this.isLoggedIn) {
+                    this.$nextTick(() => this.autoDetectMyRelationship());
+                }
             }
+        }
+    },
+    mounted() {
+        if (this.isLoggedIn) {
+            this.autoDetectMyRelationship();
         }
     },
     methods: {
@@ -378,6 +433,64 @@ export default {
                 .finally(() => {
                     this.isLoading = false;
                 });
+        },
+        // Auto-detect logged-in user's member profile by email, then compute relationship
+        autoDetectMyRelationship() {
+            const token = localStorage.getItem('access_token');
+            if (!token) return;
+            const targetId = parseInt(this.$route.params.id);
+
+            // 1. Lay thong tin user hien tai tu /api/me
+            axios.get('http://127.0.0.1:8000/api/me', {
+                headers: { Authorization: `Bearer ${token}` }
+            })
+            .then(meRes => {
+                const userEmail = meRes.data?.user?.email;
+                if (!userEmail) return;
+
+                // 2. Tim thanh vien co email trung khop
+                return axios.get('http://127.0.0.1:8000/api/thanh-vien/get-data')
+                    .then(tvRes => {
+                        if (!tvRes.data.status) return;
+                        const myMember = tvRes.data.data.find(m => m.email === userEmail);
+
+                        if (!myMember) {
+                            // Nguoi dung chua co trong cay gia pha
+                            this.dynamicRelError = 'Tài khoản của bạn chưa được liên kết với thành viên nào trong cây gia phả.';
+                            return;
+                        }
+
+                        if (myMember.id === targetId) {
+                            // Dang xem chinh minh
+                            this.dynamicRelError = 'Đây chính là hồ sơ của bạn trong cây gia phả.';
+                            return;
+                        }
+
+                        // 3. Goi API xac dinh quan he BFS
+                        this.isLoadingRelationship = true;
+                        return axios.post('http://127.0.0.1:8000/api/thanh-vien/xac-dinh-quan-he', {
+                            id_a: myMember.id,
+                            id_b: targetId
+                        })
+                        .then(relRes => {
+                            if (relRes.data.status) {
+                                this.dynamicRelationship = {
+                                    term: relRes.data.term,
+                                    description: relRes.data.description,
+                                    path: relRes.data.path || []
+                                };
+                            } else {
+                                this.dynamicRelError = 'Không tìm thấy mối quan hệ huyết thống giữa bạn và người này.';
+                            }
+                        });
+                    });
+            })
+            .catch(() => {
+                // Silent fail — khong hien loi
+            })
+            .finally(() => {
+                this.isLoadingRelationship = false;
+            });
         },
         formatDate(dateString) {
             if (!dateString) return '---';
@@ -595,4 +708,51 @@ export default {
 .bg-pink { background-color: #e83e8c; }
 .bg-light-primary { background-color: rgba(13, 110, 253, 0.08); }
 .bg-light-warning { background-color: rgba(255, 193, 7, 0.1); }
+
+/* === RELATIONSHIP FINDER PANEL === */
+.border-dashed-gold {
+    border-color: rgba(212, 175, 55, 0.4) !important;
+    border-style: dashed !important;
+}
+.rel-finder-card {
+    background: linear-gradient(135deg, #fffdf5 0%, #fdf8e8 100%);
+}
+.rel-finder-bg-decor {
+    position: absolute;
+    top: 0; right: 0;
+    width: 200px; height: 200px;
+    background: radial-gradient(circle at top right, rgba(212,175,55,0.12) 0%, transparent 70%);
+    pointer-events: none;
+}
+.rel-icon-box {
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    background: rgba(212,175,55,0.15);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+}
+.btn-dark-gold {
+    background: #0f172a;
+    color: #d4af37;
+    border: 1px solid #d4af37;
+    transition: all 0.2s ease;
+}
+.btn-dark-gold:hover:not(:disabled) {
+    background: #d4af37;
+    color: #0f172a;
+    transform: translateY(-1px);
+}
+.btn-dark-gold:disabled { opacity: 0.55; }
+
+.dyn-result { border: 1px solid rgba(212,175,55,0.3); }
+.dyn-term-value {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.5rem;
+    font-weight: 900;
+    color: #d4af37;
+    line-height: 1.1;
+    text-shadow: 0 0 30px rgba(212,175,55,0.3);
+}
+.dyn-path-node { transition: all 0.2s ease; }
+.dyn-path-node:hover { transform: translateY(-1px); }
 </style>

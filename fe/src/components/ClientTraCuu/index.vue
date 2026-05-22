@@ -375,13 +375,19 @@ export default {
             const formData = new FormData();
             formData.append('file', this.qrFile);
 
-            axios.post('https://api.qrserver.com/v1/read-qr-code/', formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data'
-                }
+            // Dùng fetch() thay vì axios để tránh axios interceptors tự động
+            // gắn header Authorization vào request third-party (gây lỗi CORS preflight)
+            fetch('https://api.qrserver.com/v1/read-qr-code/', {
+                method: 'POST',
+                body: formData
+                // KHÔNG set Content-Type header — browser tự set boundary đúng cho multipart/form-data
             })
             .then(res => {
-                const symbol = res.data[0]?.symbol[0];
+                if (!res.ok) throw new Error('HTTP error: ' + res.status);
+                return res.json();
+            })
+            .then(data => {
+                const symbol = data[0]?.symbol[0];
                 if (!symbol || symbol.error) {
                     this.scanError = symbol?.error || 'Không nhận diện được mã QR trong ảnh. Vui lòng thử lại với ảnh rõ nét hơn!';
                     return;
@@ -393,7 +399,7 @@ export default {
                     return;
                 }
 
-                // Phân tích kết quả quét
+                // Phân tích kết quả quét — tìm ID thành viên
                 const detailMatch = qrText.match(/\/thanh-vien\/detail\/(\d+)/);
                 if (detailMatch && detailMatch[1]) {
                     const id = detailMatch[1];
@@ -413,8 +419,8 @@ export default {
 
                 this.scanError = 'Mã QR này không thuộc Hệ thống Gia Phả Số (Dữ liệu không khớp: ' + qrText + ')';
             })
-            .catch(err => {
-                this.scanError = 'Lỗi kết nối máy chủ quét QR hoặc ảnh quá dung lượng cho phép!';
+            .catch(() => {
+                this.scanError = 'Lỗi kết nối máy chủ quét QR! Vui lòng kiểm tra kết nối mạng và thử lại.';
             })
             .finally(() => {
                 this.isScanning = false;
