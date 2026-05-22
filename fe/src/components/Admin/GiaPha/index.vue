@@ -59,6 +59,7 @@
                     </div>
                     <div v-else class="tree-viewport" 
                          ref="viewport"
+                         @wheel.prevent="handleWheel"
                          @mousedown="startPan"
                          @mousemove="doPan"
                          @mouseup="endPan"
@@ -403,6 +404,7 @@ export default {
         this.loadChiNhanh();
         this.loadDoiTocHo();
         this.loadData();
+<<<<<<< HEAD
         if (this.$refs.viewport) {
             this.$refs.viewport.addEventListener('wheel', this.handleWheel, { passive: false });
         }
@@ -419,6 +421,8 @@ export default {
         backdrops.forEach(b => b.remove());
         document.body.style.overflow = '';
         document.body.style.paddingRight = '';
+=======
+>>>>>>> 81ae88bc363c24c58beb23ab4fb36bdbc33721de
     },
     methods: {
         getHeaders() {
@@ -434,7 +438,15 @@ export default {
         },
         loadChiNhanh() {
             axios.get('http://127.0.0.1:8000/api/chi-nhanh/get-data', this.getHeaders())
+<<<<<<< HEAD
                 .then(res => { if (res.data.status) this.listChiNhanh = res.data.data; });
+=======
+                .then(res => {
+                    if (res.data.status) {
+                        this.listChiNhanh = res.data.data;
+                    }
+                });
+>>>>>>> 81ae88bc363c24c58beb23ab4fb36bdbc33721de
         },
         loadData() {
             axios.get('http://127.0.0.1:8000/api/thanh-vien/get-data', this.getHeaders())
@@ -535,7 +547,16 @@ export default {
             }
             if (this.avatarFile) formData.set('avatar', this.avatarFile);
             
+<<<<<<< HEAD
             axios.post(url, formData, { headers: { 'Content-Type': 'multipart/form-data', Authorization: `Bearer ${localStorage.getItem('access_token')}` } })
+=======
+            axios.post(url, formData, { 
+                headers: { 
+                    'Content-Type': 'multipart/form-data',
+                    'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+                } 
+            })
+>>>>>>> 81ae88bc363c24c58beb23ab4fb36bdbc33721de
             .then(res => {
                 if (res.data.status) {
                     toastr.success(res.data.message);

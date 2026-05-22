@@ -13,13 +13,16 @@ class ThanhVien extends Model
 
     protected $fillable = [
         'id_chi_nhanh',
+        'chi_nhanh_id',
         'ho_ten',
         'email',
         'gioi_tinh',
         'ngay_sinh',
         'ngay_mat',
         'id_cha',
+        'cha_id',
         'id_me',
+        'me_id',
         'trang_thai', // Ví dụ: 'Còn sống', 'Đã mất'
         'thong_tin_them',
         'doi_thu',
@@ -29,16 +32,49 @@ class ThanhVien extends Model
         'avatar'
     ];
 
+    protected $appends = ['id_chi_nhanh', 'id_cha', 'id_me'];
+
     // Quan hệ: Thành viên thuộc về 1 Chi nhánh
     public function chiNhanh()
     {
-        return $this->belongsTo(ChiNhanh::class, 'id_chi_nhanh');
+        return $this->belongsTo(ChiNhanh::class, 'chi_nhanh_id');
+    }
+
+    // Accessors & Mutators to transparently support both naming conventions (database vs frontend)
+    public function getIdChiNhanhAttribute()
+    {
+        return $this->attributes['chi_nhanh_id'] ?? null;
+    }
+
+    public function setIdChiNhanhAttribute($value)
+    {
+        $this->attributes['chi_nhanh_id'] = $value;
+    }
+
+    public function getIdChaAttribute()
+    {
+        return $this->attributes['cha_id'] ?? null;
+    }
+
+    public function setIdChaAttribute($value)
+    {
+        $this->attributes['cha_id'] = $value;
+    }
+
+    public function getIdMeAttribute()
+    {
+        return $this->attributes['me_id'] ?? null;
+    }
+
+    public function setIdMeAttribute($value)
+    {
+        $this->attributes['me_id'] = $value;
     }
 
     // Scope tìm kiếm thành viên theo chi nhánh (để DoiTacController sử dụng)
     public function scopeSearch($query, $chiNhanhId, $keyword)
     {
-        return $query->where('id_chi_nhanh', $chiNhanhId)
+        return $query->where('chi_nhanh_id', $chiNhanhId)
                      ->when($keyword, function ($q) use ($keyword) {
                          $q->where(function($subQuery) use ($keyword) {
                              $subQuery->where('ho_ten', 'like', '%' . $keyword . '%')

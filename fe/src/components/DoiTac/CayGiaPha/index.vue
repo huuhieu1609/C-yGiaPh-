@@ -11,12 +11,19 @@
                         </div>
                         <div class="col-md-8 text-md-end d-flex align-items-center justify-content-md-end gap-3 flex-wrap">
                             
+<<<<<<< HEAD
                             <div class="modern-select-box" style="width: 220px;">
                                 <select class="form-select modern-select fw-bold" v-model="selectedChiNhanhId" @change="resetView">
+=======
+                            <!-- Branch Selector (Global Filter) -->
+                            <div class="me-2" style="width: 220px;">
+                                <select class="form-select radius-30 border-2 shadow-none fw-bold" v-model="selectedChiNhanhId" @change="resetView">
+>>>>>>> 81ae88bc363c24c58beb23ab4fb36bdbc33721de
                                     <option v-for="cn in listChiNhanh" :key="cn.id" :value="cn.id">{{ cn.ten_chi }}</option>
                                 </select>
                             </div>
 
+<<<<<<< HEAD
                             <div class="position-relative d-none d-lg-block" style="width: 220px;">
                                 <input type="text" class="form-control modern-search ps-5" v-model="searchQuery" placeholder="Tìm thành viên...">
                                 <span class="position-absolute top-50 translate-middle-y start-0 ms-3 search-icon-btn"><i class="bx bx-search"></i></span>
@@ -27,6 +34,20 @@
                                 <button class="btn btn-pill-display px-2 fw-bold" style="min-width: 60px;">{{ Math.round(zoom * 100) }}%</button>
                                 <button class="btn btn-pill-action px-2_5" @click="zoomIn" title="Phóng to"><i class="bx bx-plus"></i></button>
                                 <button class="btn btn-pill-action px-2_5" @click="resetView" title="Đặt lại"><i class="bx bx-refresh"></i></button>
+=======
+                            <!-- Search Bar -->
+                            <div class="position-relative d-none d-lg-block" style="width: 200px;">
+                                <input type="text" class="form-control ps-5 radius-30 border-2" v-model="searchQuery" placeholder="Tìm thành viên...">
+                                <span class="position-absolute top-50 translate-middle-y start-0 ms-3 text-secondary"><i class="bx bx-search"></i></span>
+                            </div>
+                            
+                            <!-- Zoom Controls -->
+                            <div class="btn-group shadow-sm radius-30 overflow-hidden border">
+                                <button class="btn btn-white px-2" @click="zoomOut" title="Thu nhỏ"><i class="bx bx-minus"></i></button>
+                                <button class="btn btn-white px-1 fw-bold" style="min-width: 50px; font-size: 13px;">{{ Math.round(zoom * 100) }}%</button>
+                                <button class="btn btn-white px-2" @click="zoomIn" title="Phóng to"><i class="bx bx-plus"></i></button>
+                                <button class="btn btn-white px-2" @click="resetView" title="Đặt lại"><i class="bx bx-refresh"></i></button>
+>>>>>>> 81ae88bc363c24c58beb23ab4fb36bdbc33721de
                             </div>
 
                             <button class="btn btn-luxury-primary px-4" @click="openAddModal">
@@ -47,8 +68,10 @@
                             Khởi Tạo Ngay
                         </router-link>
                     </div>
+                    <!-- Pan & Zoom Tree Container -->
                     <div v-else class="tree-viewport" 
                          ref="viewport"
+                         @wheel.prevent="handleWheel"
                          @mousedown="startPan"
                          @mousemove="doPan"
                          @mouseup="endPan"
@@ -79,13 +102,20 @@
                         </div>
                     </div>
 
+<<<<<<< HEAD
                     <div class="view-controls position-absolute bottom-0 end-0 m-4 p-2 bg-luxury-tips rounded-3 small text-muted d-none d-md-block z-2">
                         <i class="bx bx-mouse ms-1 text-rose"></i> Cuộn để thu phóng • <i class="bx bx-move ms-1 text-teal"></i> Kéo để di chuyển tự do
+=======
+                    <!-- Mini Map or Navigation Hint -->
+                    <div class="view-controls position-absolute bottom-0 end-0 m-3 p-2 bg-white bg-opacity-75 rounded-3 shadow-sm border small text-muted d-none d-md-block">
+                        <i class="bx bx-mouse ms-1"></i> Cuộn để thu phóng • <i class="bx bx-move ms-1"></i> Kéo để di chuyển
+>>>>>>> 81ae88bc363c24c58beb23ab4fb36bdbc33721de
                     </div>
                 </div>
             </div>
         </div>
 
+        <!-- Modal Thêm/Sửa Thành Viên (Giữ nguyên logic cũ) -->
         <div class="modal fade" id="memberModal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-lg modal-dialog-centered">
                 <div class="modal-content luxury-modal border-0 shadow-lg">
@@ -413,6 +443,7 @@ export default {
         this.loadDoiTocHo();
         this.loadChiNhanh();
         this.loadData();
+<<<<<<< HEAD
         
         if (this.$refs.viewport) {
             this.$refs.viewport.addEventListener('wheel', this.handleWheel, { passive: false });
@@ -422,6 +453,8 @@ export default {
         if (this.$refs.viewport) {
             this.$refs.viewport.removeEventListener('wheel', this.handleWheel);
         }
+=======
+>>>>>>> 81ae88bc363c24c58beb23ab4fb36bdbc33721de
     },
     methods: {
         getHeaders() {
@@ -526,7 +559,11 @@ export default {
             axios.post(url, formData, {
                 headers: { 
                     'Content-Type': 'multipart/form-data',
+<<<<<<< HEAD
                     Authorization: `Bearer ${localStorage.getItem('access_token')}`
+=======
+                    'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+>>>>>>> 81ae88bc363c24c58beb23ab4fb36bdbc33721de
                 }
             })
             .then(res => {

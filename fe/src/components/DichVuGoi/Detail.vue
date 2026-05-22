@@ -11,21 +11,20 @@
             <header class="header pt-3">
                 <div class="logo">
                     <span class="logo-icon"><i class='bx bx-sitemap'></i></span>
-                    <span class="logo-text">GIA PHẢ SỐ THỜI ĐẠI MỚI</span>
+                    <span class="logo-text">LƯU GIỮ DI SẢN DÒNG TỘC</span>
                 </div>
             </header>
 
             <section class="hero-section text-center">
                 <h1 class="hero-title">
-                    Nền tảng xây dựng <span class="text-gradient">Cây Gia Phả</span> kết nối cội nguồn dòng tộc
+                    Cây Gia Phả Số - Nơi lưu giữ <span class="text-gradient">Di Sản Cội Nguồn</span> dòng tộc
                 </h1>
                 <p class="hero-subtitle">
-                    Tạo lập, quản lý và lưu trữ gia phả dòng họ trực tuyến một cách dễ dàng. Kết nối các thế hệ, tra cứu
-                    thông tin họ hàng và bảo tồn giá trị văn hóa gia đình cho muôn đời sau.
+                    Khởi tạo, lưu trữ và bảo tồn cây gia phả dòng họ trực tuyến một cách trang trọng. Kết nối các thế hệ, tra cứu thông tin họ hàng và truyền lại ngọn lửa văn hóa gia tộc cho muôn đời sau.
                 </p>
 
                 <div class="hero-actions">
-                    <button class="btn btn-gradient" @click="dangKyGoi(20000, 'Gói Gia Phả Tộc')">ĐĂNG KÝ GÓI 20.000Đ</button>
+                    <button class="btn btn-gradient" @click="dangKyGoi(20000, 'Quỹ Gia Phả Dòng Tộc')">ĐỒNG GÓP QUỸ DÒNG HỌ 20.000Đ</button>
                     <button class="btn btn-outline" @click="showSampleImage">
                         XEM CÂY GIA PHẢ MẪU
                     </button>
@@ -33,7 +32,7 @@
 
                 <div class="hero-stats-card">
                     <div class="stat-item">
-                        <h4>1 cây duy nhất</h4>
+                        <h4>01 cây duy nhất</h4>
                         <p>Dành riêng cho tộc của bạn</p>
                     </div>
                     <div class="stat-item">
@@ -41,40 +40,38 @@
                         <p>Số lượng thành viên thêm vào</p>
                     </div>
                     <div class="stat-item">
-                        <h4>Lưu trữ an toàn</h4>
-                        <p>Dữ liệu bảo mật trên đám mây</p>
+                        <h4>Lưu danh công đức</h4>
+                        <p>Lưu truyền bảng vàng dòng họ</p>
                     </div>
                 </div>
             </section>
 
             <section class="pain-points-section">
                 <div class="section-heading text-center">
-                    <h2>Những khó khăn của gia phả truyền thống</h2>
-                    <p>Khi quản lý gia phả bằng sổ sách, các dòng họ thường gặp phải vấn đề này</p>
+                    <h2>Những trăn trở đối với gia phả truyền thống</h2>
+                    <p>Khi bảo tồn gia phả bằng sổ sách giấy, các dòng tộc thường gặp phải các thách thức lớn</p>
                 </div>
 
                 <div class="grid-4-cols mt-5">
                     <div class="feature-card">
                         <i class='bx bx-book-reader icon-blue'></i>
-                        <h3>Dễ hư hỏng, thất lạc</h3>
-                        <p>Sổ sách ghi chép bằng tay dễ bị rách nát, mục nát hoặc thất lạc qua nhiều thế hệ.</p>
+                        <h3>Dễ hư hại, thất lạc</h3>
+                        <p>Sổ sách ghi chép bằng tay dễ bị rách nát, mối mọt, ẩm mốc hoặc thất lạc qua biến thiên lịch sử.</p>
                     </div>
                     <div class="feature-card">
                         <i class='bx bx-edit-alt icon-blue'></i>
                         <h3>Khó khăn khi cập nhật</h3>
-                        <p>Mỗi khi có người mới sinh, kết hôn hay mất đi, việc sửa chữa, chắp vá sổ sách rất mất thẩm
-                            mỹ.</p>
+                        <p>Mỗi khi có thêm thành viên mới sinh, kết hôn hay tạ thế, việc viết chèn, sửa chữa làm mất đi sự trang nghiêm.</p>
                     </div>
                     <div class="feature-card">
                         <i class='bx bx-globe icon-blue'></i>
                         <h3>Con cháu ở xa khó tiếp cận</h3>
-                        <p>Chỉ người giữ sổ mới xem được, con cháu làm ăn xa xứ không thể tra cứu được nguồn cội.</p>
+                        <p>Sổ gốc thường chỉ giữ ở nhà thờ họ, con cháu sinh sống làm ăn xa xứ rất khó xem và nhớ về nguồn cội.</p>
                     </div>
                     <div class="feature-card">
                         <i class='bx bx-network-chart icon-blue'></i>
                         <h3>Khó hình dung vai vế</h3>
-                        <p>Đọc text trên giấy rất khó hình dung sơ đồ quan hệ họ hàng, ai là anh, ai là em trong dòng họ
-                            lớn.</p>
+                        <p>Đọc văn bản giấy rất khó hình dung trực quan toàn bộ sơ đồ phả hệ của một dòng họ lớn, nhiều chi ngành.</p>
                     </div>
                 </div>
             </section>
@@ -82,24 +79,24 @@
             <section class="market-section">
                 <div class="section-heading text-center">
                     <h2>Giải pháp Gia Phả Số toàn diện</h2>
-                    <p>Mang công nghệ vào việc lưu giữ truyền thống gia đình</p>
+                    <p>Ứng dụng công nghệ hiện đại vào việc gìn giữ giá trị truyền thống</p>
                 </div>
 
                 <div class="grid-3-cols mt-5">
                     <div class="stat-card">
                         <h3 class="text-blue">20.000đ</h3>
-                        <p>Chi phí cực kỳ tiết kiệm</p>
-                        <small>Đăng ký 1 lần, sử dụng 1 năm</small>
+                        <p>Ủng hộ đóng góp tùy tâm</p>
+                        <small>Ghi danh công đức, duy trì hệ thống</small>
                     </div>
                     <div class="stat-card">
                         <h3 class="text-blue">1 Click</h3>
                         <p>Chia sẻ cho toàn bộ họ hàng</p>
-                        <small>Gửi link là mọi người đều có thể xem</small>
+                        <small>Gửi đường dẫn liên kết cho con cháu muôn phương</small>
                     </div>
                     <div class="stat-card">
                         <h3 class="text-blue">24/7</h3>
                         <p>Truy cập mọi lúc, mọi nơi</p>
-                        <small>Hỗ trợ trên cả máy tính và điện thoại</small>
+                        <small>Xem trên máy tính, điện thoại, máy tính bảng</small>
                     </div>
                 </div>
 
@@ -109,29 +106,29 @@
                             <tr>
                                 <th class="text-blue">TIÊU CHÍ</th>
                                 <th>GIA PHẢ SỔ SÁCH CŨ</th>
-                                <th class="text-green">GIA PHẢ SỐ TỘC MÌNH</th>
+                                <th class="text-green">BẢN SỐ HÓA DÒNG HỌ</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
                                 <td class="fw-bold text-white">Lưu trữ dữ liệu</td>
                                 <td>Dễ rách nát, phai màu mực, mối mọt</td>
-                                <td class="text-green">Bảo mật vĩnh viễn trên máy chủ Server</td>
+                                <td class="text-green">Lưu trữ an toàn, bảo mật vĩnh viễn trên máy chủ đám mây</td>
                             </tr>
                             <tr>
                                 <td class="fw-bold text-white">Khả năng cập nhật</td>
-                                <td>Gạch xóa, viết chèn làm bẩn sổ</td>
-                                <td class="text-green">Thêm, sửa, xóa thành viên dễ dàng với vài click</td>
+                                <td>Gạch xóa, viết chèn gây khó đọc và thiếu thẩm mỹ</td>
+                                <td class="text-green">Thêm, sửa đổi thông tin thành viên nhanh chóng với vài thao tác</td>
                             </tr>
                             <tr>
                                 <td class="fw-bold text-white">Hiển thị & Tra cứu</td>
-                                <td>Đọc chữ khó hiểu, khó tìm tên người</td>
-                                <td class="text-green">Sơ đồ cây trực quan, tìm kiếm tên trong 1 giây</td>
+                                <td>Đọc chữ khó hình dung liên kết, tìm kiếm lâu</td>
+                                <td class="text-green">Sơ đồ cây phả hệ sinh động, tìm kiếm thành viên trong 1 giây</td>
                             </tr>
                             <tr>
-                                <td class="fw-bold text-white">Tiếp cận</td>
-                                <td>Chỉ người trưởng họ/giữ sổ được xem</td>
-                                <td class="text-green">Toàn bộ con cháu trong tộc đều có thể truy cập</td>
+                                <td class="fw-bold text-white">Gắn kết dòng tộc</td>
+                                <td>Chỉ người giữ sổ ở quê mới tiếp cận được</td>
+                                <td class="text-green">Tất cả con cháu trong dòng tộc ở bất cứ đâu đều xem được cội nguồn</td>
                             </tr>
                         </tbody>
                     </table>
@@ -140,7 +137,7 @@
 
             <section class="footer-cta text-center mt-5 pb-5">
                 <h2>Bắt đầu lưu giữ cội nguồn ngay hôm nay</h2>
-                <p>Đăng ký gói Gia Phả Tộc chỉ với 20.000đ và bắt đầu vẽ cây gia tộc của bạn.</p>
+                <p>Ủng hộ quỹ dòng tộc chỉ với 20.000đ để bắt đầu khởi tạo và bảo tồn cây phả hệ của riêng gia tộc bạn.</p>
             </section>
 
         </div>
@@ -269,11 +266,8 @@ export default {
 
 .logo-text {
     color: #ffffff;
-    /* Đổi màu trắng cho dễ nhìn */
     font-size: 1.1rem;
-    /* Chữ to hơn một chút */
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
-    /* Tạo bóng đổ để nổi trên nền ảnh */
 }
 
 /* 4. HERO SECTION */

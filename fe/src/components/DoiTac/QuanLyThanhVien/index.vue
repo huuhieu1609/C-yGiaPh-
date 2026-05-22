@@ -7,12 +7,37 @@
                         <i class="bx bx-group text-teal"></i> Quản Lý Thành Viên Dòng Họ
                     </h4>
                 </div>
+<<<<<<< HEAD
 
                 <div class="card-body p-4 pt-2">
                     <div v-if="listChiNhanh.length === 0" class="text-center py-5">
                         <div class="mb-4 mt-5 empty-glow-icon">
                             <i class="bx bx-building-house text-muted opacity-20"
                                 style="font-size: 90px !important;"></i>
+=======
+                <h4 class="fw-bold text-dark">Dòng Họ Chưa Được Khởi Tạo!</h4>
+                <p class="text-muted">Bạn cần khởi tạo Dòng Họ (Chi Nhánh) trước khi quản lý thành viên.</p>
+                <router-link to="/doi-tac/dong-ho" class="btn btn-primary radius-30 px-5 mt-3 shadow-sm mb-5">
+                    <i class="bx bx-plus-circle"></i> Khởi Tạo Ngay
+                </router-link>
+            </div>
+            <div v-else-if="allMembers.length === 0" class="text-center py-5">
+                <div class="mb-4 mt-5">
+                    <i class="bx bx-git-branch fs-1 text-muted opacity-25" style="font-size: 100px !important;"></i>
+                </div>
+                <h4 class="fw-bold text-dark">Cây Gia Phả Đang Trống!</h4>
+                <p class="text-muted">Vui lòng thêm thành viên đầu tiên (Thủy Tổ) tại trang <b>Cây Gia Phả</b>.</p>
+                <router-link to="/doi-tac/gia-pha" class="btn btn-primary radius-30 px-5 mt-3 shadow-sm mb-5">
+                    <i class="bx bx-plus"></i> Đi Đến Cây Gia Phả
+                </router-link>
+            </div>
+            <template v-else>
+                <div class="row mb-3 g-3">
+                    <div class="col-md-4">
+                        <div class="position-relative">
+                            <input type="text" class="form-control ps-5 radius-10" v-model="searchQuery" placeholder="Tìm tên thành viên...">
+                            <span class="position-absolute top-50 translate-middle-y start-0 ms-3 text-secondary"><i class="bx bx-search"></i></span>
+>>>>>>> 81ae88bc363c24c58beb23ab4fb36bdbc33721de
                         </div>
                         <h4 class="fw-bold text-dark">Dòng Họ Chưa Được Khởi Tạo!</h4>
                         <p class="text-secondary small">Bạn cần khởi tạo Dòng Họ (Chi Nhánh) trước khi quản lý thành
@@ -21,6 +46,7 @@
                             Khởi Tạo Ngay
                         </router-link>
                     </div>
+<<<<<<< HEAD
 
                     <div v-else-if="allMembers.length === 0" class="text-center py-5">
                         <div class="mb-4 mt-5 empty-glow-icon">
@@ -33,6 +59,20 @@
                             <i class="bx bx-plus"></i> Thêm Thành Viên Ngay
                         </button>
                     </div>
+=======
+                    <div class="col-md-3">
+                        <select class="form-select radius-10" v-model="selectedChiNhanhId">
+                            <option v-for="cn in listChiNhanh" :key="cn.id" :value="cn.id">{{ cn.ten_chi }}</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-select radius-10" v-model="filterDoi">
+                            <option :value="null">-- Tất cả các đời --</option>
+                            <option v-for="doi in listDoiTocHo" :key="doi.id" :value="doi.so_doi">Đời {{ doi.so_doi }}</option>
+                        </select>
+                    </div>
+                </div>
+>>>>>>> 81ae88bc363c24c58beb23ab4fb36bdbc33721de
 
                     <div v-else class="w-100">
                         <div class="row mb-4 g-3 align-items-center">
@@ -137,7 +177,7 @@
                         </div>
                     </div>
                 </div>
-            </div>
+            </template>
         </div>
 
         <div class="modal fade" id="memberModal" tabindex="-1" aria-hidden="true">
@@ -165,6 +205,7 @@
                                 </div>
                             </div>
                             <div class="col-md-6">
+<<<<<<< HEAD
                                 <label class="modern-field-label">Họ và Tên <span class="text-rose">*</span></label>
                                 <input type="text" class="form-control modern-input" v-model="currentMember.ho_ten"
                                     placeholder="Nguyễn Văn A">
@@ -177,13 +218,27 @@
                             <div class="col-md-6">
                                 <label class="modern-field-label">Giới tính</label>
                                 <select class="form-select modern-input" v-model="currentMember.gioi_tinh">
+=======
+                                <label class="form-label fw-bold">Họ và Tên</label>
+                                <input type="text" class="form-control radius-8 border-2 shadow-none" v-model="currentMember.ho_ten" placeholder="Nguyễn Văn A">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label fw-bold">Giới tính</label>
+                                <select class="form-select radius-8 border-2 shadow-none" v-model="currentMember.gioi_tinh">
+>>>>>>> 81ae88bc363c24c58beb23ab4fb36bdbc33721de
                                     <option value="Nam">Nam</option>
                                     <option value="Nữ">Nữ</option>
                                 </select>
                             </div>
+<<<<<<< HEAD
                             <div class="col-md-6">
                                 <label class="modern-field-label">Đời thứ</label>
                                 <select class="form-select modern-input" v-model="currentMember.doi_thu">
+=======
+                            <div class="col-md-3">
+                                <label class="form-label fw-bold">Đời thứ</label>
+                                <select class="form-select radius-8 border-2 shadow-none" v-model="currentMember.doi_thu">
+>>>>>>> 81ae88bc363c24c58beb23ab4fb36bdbc33721de
                                     <option v-for="doi in listDoiTocHo" :key="doi.id" :value="doi.so_doi">
                                         Đời {{ doi.so_doi }} - {{ doi.ten_doi }}
                                     </option>
@@ -224,6 +279,7 @@
                             </div>
 
                             <div class="col-md-6" v-if="currentMember.loai_quan_he === 'Chính'">
+<<<<<<< HEAD
                                 <label class="modern-field-label">Con của ông (Cha)</label>
                                 <select class="form-select modern-input" v-model="currentMember.cha_id">
                                     <option :value="null">--- Thủy Tổ (Đời 1) ---</option>
@@ -233,10 +289,20 @@
                                             {{ m.ho_ten }} (Đời {{ m.doi_thu }})
                                         </option>
                                     </template>
+=======
+                                <label class="form-label fw-bold">Con của ông (Cha)</label>
+                                <select class="form-select radius-8 border-2 shadow-none" v-model="currentMember.cha_id">
+                                    <option :value="null">--- Thủy Tổ ---</option>
+                                    <option v-for="m in allMembers" :key="m.id" :value="m.id" 
+                                        v-show="m.id !== currentMember.id && m.loai_quan_he === 'Chính'">
+                                        {{ m.ho_ten }} (Đời {{ m.doi_thu }})
+                                    </option>
+>>>>>>> 81ae88bc363c24c58beb23ab4fb36bdbc33721de
                                 </select>
                             </div>
 
                             <div class="col-md-6" v-if="currentMember.loai_quan_he === 'Vợ/Chồng'">
+<<<<<<< HEAD
                                 <label class="modern-field-label">Là Vợ/Chồng của ai?</label>
                                 <select class="form-select modern-input" v-model="currentMember.spouse_of_id">
                                     <template v-for="m in allMembers" :key="'vochong_' + m.id">
@@ -244,6 +310,14 @@
                                             {{ m.ho_ten }}
                                         </option>
                                     </template>
+=======
+                                <label class="form-label fw-bold">Là Vợ/Chồng của ai?</label>
+                                <select class="form-select radius-8 border-2 shadow-none" v-model="currentMember.spouse_of_id">
+                                    <option v-for="m in allMembers" :key="m.id" :value="m.id" 
+                                        v-show="m.loai_quan_he === 'Chính'">
+                                        {{ m.ho_ten }}
+                                    </option>
+>>>>>>> 81ae88bc363c24c58beb23ab4fb36bdbc33721de
                                 </select>
                             </div>
 
@@ -284,7 +358,7 @@ export default {
             isEditing: false,
             modal: null,
             currentMember: {
-                id: null, ho_ten: '', email: '', doi_thu: 1, cha_id: null, gioi_tinh: 'Nam', id_chi_nhanh: null,
+                id: null, ho_ten: '', doi_thu: 1, cha_id: null, gioi_tinh: 'Nam', chi_nhanh_id: null,
                 loai_quan_he: 'Chính', spouse_of_id: null, trang_thai: 'Còn sống', ngay_mat: null, ngay_sinh: null, ghi_chu: '', avatar: null
             },
             avatarFile: null,
@@ -294,22 +368,17 @@ export default {
     computed: {
         filteredMembers() {
             return this.allMembers.filter(m => {
-                const name = m.ho_ten || '';
-                const search = this.searchQuery || '';
-                const matchSearch = name.toLowerCase().includes(search.toLowerCase());
+                const matchSearch = m.ho_ten.toLowerCase().includes(this.searchQuery.toLowerCase());
                 const matchDoi = this.filterDoi === null || m.doi_thu == this.filterDoi;
-                const matchChiNhanh = this.selectedChiNhanhId === null || m.id_chi_nhanh == this.selectedChiNhanhId;
+                const matchChiNhanh = this.selectedChiNhanhId === null || m.chi_nhanh_id == this.selectedChiNhanhId;
                 return matchSearch && matchDoi && matchChiNhanh;
             });
         }
     },
     mounted() {
-        this.$nextTick(() => {
-            const modalEl = document.getElementById('memberModal');
-            if (window.bootstrap && modalEl) {
-                this.modal = new window.bootstrap.Modal(modalEl);
-            }
-        });
+        if (window.bootstrap) {
+            this.modal = new window.bootstrap.Modal(document.getElementById('memberModal'));
+        }
         this.loadDoiTocHo();
         this.loadChiNhanh();
         this.loadData();
@@ -344,21 +413,29 @@ export default {
         openAddModal() {
             this.isEditing = false;
             this.currentMember = {
-                id: null, ho_ten: '', email: '', doi_thu: 1, cha_id: null, gioi_tinh: 'Nam', id_chi_nhanh: this.selectedChiNhanhId,
+                id: null, ho_ten: '', doi_thu: 1, cha_id: null, gioi_tinh: 'Nam', chi_nhanh_id: null,
                 loai_quan_he: 'Chính', spouse_of_id: null, trang_thai: 'Còn sống', ngay_mat: null, ngay_sinh: null, ghi_chu: '', avatar: null
             };
             this.avatarFile = null;
             this.avatarPreview = null;
+<<<<<<< HEAD
             if (this.modal) this.modal.show();
             else toastr.error('Lỗi tải giao diện Modal!');
+=======
+            this.modal.show();
+>>>>>>> 81ae88bc363c24c58beb23ab4fb36bdbc33721de
         },
         onEdit(member) {
             this.isEditing = true;
             this.currentMember = { ...member };
             this.avatarFile = null;
             this.avatarPreview = null;
+<<<<<<< HEAD
             if (this.modal) this.modal.show();
             else toastr.error('Lỗi tải giao diện Modal!');
+=======
+            this.modal.show();
+>>>>>>> 81ae88bc363c24c58beb23ab4fb36bdbc33721de
         },
         onAvatarChange(e) {
             const file = e.target.files[0];
@@ -379,11 +456,28 @@ export default {
                 }
             }
             if (this.avatarFile) formData.set('avatar', this.avatarFile);
+<<<<<<< HEAD
 
             axios.post(url, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                     Authorization: `Bearer ${localStorage.getItem('access_token')}`
+=======
+            
+            axios.post(url, formData, { 
+                headers: { 
+                    'Content-Type': 'multipart/form-data',
+                    'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+                } 
+            })
+            .then(res => {
+                if (res.data.status) {
+                    toastr.success(res.data.message);
+                    this.loadData();
+                    this.modal.hide();
+                } else {
+                    toastr.error(res.data.message);
+>>>>>>> 81ae88bc363c24c58beb23ab4fb36bdbc33721de
                 }
             })
                 .then(res => {

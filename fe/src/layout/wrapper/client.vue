@@ -45,7 +45,6 @@ export default {
 @import "../../assets/css/dark-theme.css";
 @import "../../assets/css/semi-dark.css";
 @import "../../assets/css/header-colors.css";
-@import "toastr/build/toastr.css";
 
 /* Ẩn các thanh cuộn tùy chỉnh và thanh cuộn mặc định nếu cần */
 html::-webkit-scrollbar, 

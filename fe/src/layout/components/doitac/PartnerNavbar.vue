@@ -67,6 +67,34 @@
             <span class="nav-dot hide-on-collapse"></span>
           </router-link>
         </li>
+        
+        <li class="nav-heading text-uppercase text-white-50 mt-4 mb-2 ps-3 hide-on-collapse text-nowrap" style="font-size: 11px; font-weight: 600; letter-spacing: 0.8px;">Công Cụ & Hoạt Động</li>
+        
+        <li class="nav-item">
+          <router-link to="/doi-tac/de-xuat" class="nav-link text-white-50 d-flex align-items-center gap-3 px-3 py-2" active-class="active" title="Kiểm Duyệt Đề Xuất">
+            <i class="bx bx-git-pull-request fs-5"></i><span class="hide-on-collapse text-nowrap">Kiểm Duyệt Đề Xuất</span>
+          </router-link>
+        </li>
+        <li class="nav-item">
+          <router-link to="/doi-tac/su-kien" class="nav-link text-white-50 d-flex align-items-center gap-3 px-3 py-2" active-class="active" title="Quản Lý Sự Kiện">
+            <i class="bx bx-calendar-event fs-5"></i><span class="hide-on-collapse text-nowrap">Quản Lý Sự Kiện</span>
+          </router-link>
+        </li>
+        <li class="nav-item">
+          <router-link to="/doi-tac/thong-bao" class="nav-link text-white-50 d-flex align-items-center gap-3 px-3 py-2" active-class="active" title="Quản Lý Thông Báo">
+            <i class="bx bx-bell fs-5"></i><span class="hide-on-collapse text-nowrap">Quản Lý Thông Báo</span>
+          </router-link>
+        </li>
+        <li class="nav-item">
+          <router-link to="/doi-tac/tai-lieu" class="nav-link text-white-50 d-flex align-items-center gap-3 px-3 py-2" active-class="active" title="Thư Viện Tài Liệu">
+            <i class="bx bx-book-open fs-5"></i><span class="hide-on-collapse text-nowrap">Thư Viện Tài Liệu</span>
+          </router-link>
+        </li>
+        <li class="nav-item">
+          <router-link to="/doi-tac/nhat-ky" class="nav-link text-white-50 d-flex align-items-center gap-3 px-3 py-2" active-class="active" title="Nhật Ký Thao Tác">
+            <i class="bx bx-history fs-5"></i><span class="hide-on-collapse text-nowrap">Nhật Ký Thao Tác</span>
+          </router-link>
+        </li>
       </ul>
     </div>
 
@@ -108,17 +136,31 @@ export default {
         const user = JSON.parse(userStr);
         if (user && user.ho_ten) {
           this.userName = user.ho_ten;
+<<<<<<< HEAD
         }
       } catch (e) {
         console.error("Lỗi parse thông tin user trong Sidebar:", e);
       }
+=======
+        } else if (user && user.username) {
+          this.userName = user.username;
+        }
+      } catch (e) {}
+>>>>>>> 81ae88bc363c24c58beb23ab4fb36bdbc33721de
     }
   },
   methods: {
     logout() {
+<<<<<<< HEAD
       localStorage.removeItem('access_token');
       localStorage.removeItem('user');
       this.$router.push('/login');
+=======
+      // Clear token/session here
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('user');
+      this.$router.push('/');
+>>>>>>> 81ae88bc363c24c58beb23ab4fb36bdbc33721de
     },
     goHome() {
       this.$router.push('/');

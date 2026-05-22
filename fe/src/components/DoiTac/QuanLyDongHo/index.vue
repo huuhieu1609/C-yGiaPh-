@@ -142,9 +142,12 @@ export default {
                         toastr.success(res.data.message);
                         this.loadData();
                         this.resetForm();
+<<<<<<< HEAD
                         if (!this.isEditing) {
                             this.$router.push('/doi-tac/gia-pha');
                         }
+=======
+>>>>>>> 81ae88bc363c24c58beb23ab4fb36bdbc33721de
                     } else {
                         toastr.error(res.data.message);
                     }

@@ -207,7 +207,11 @@ export default {
     logout() {
       localStorage.removeItem('access_token');
       localStorage.removeItem('user');
+<<<<<<< HEAD
       this.$router.push('/admin/login');
+=======
+      this.$router.push('/');
+>>>>>>> 81ae88bc363c24c58beb23ab4fb36bdbc33721de
     }
   }
 }

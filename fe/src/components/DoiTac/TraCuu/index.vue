@@ -11,6 +11,7 @@
 
             <div v-if="listChiNhanh.length === 0" class="row justify-content-center animate__animated animate__fadeIn">
                 <div class="col-lg-8">
+<<<<<<< HEAD
                     <div class="luxury-panel p-5 text-center shadow-sm">
                         <div class="mb-4 mt-3 empty-glow-icon">
                             <i class="bx bx-building-house text-muted opacity-20" style="font-size: 80px !important;"></i>
@@ -19,6 +20,16 @@
                         <p class="text-secondary small">Tính năng tra cứu vai vế chỉ khả dụng sau khi bạn đã thiết lập Dòng Họ (Chi Nhánh).</p>
                         <router-link to="/doi-tac/dong-ho" class="btn btn-luxury-primary px-5 mt-3 shadow-sm mb-3">
                             Khởi Tạo Ngay
+=======
+                    <div class="heritage-card p-5 text-center shadow-lg border-warning">
+                        <div class="mb-4 mt-3">
+                            <i class="bx bx-building-house fs-1 text-muted opacity-25" style="font-size: 80px !important;"></i>
+                        </div>
+                        <h4 class="fw-bold text-dark">Dòng Họ Chưa Được Khởi Tạo!</h4>
+                        <p class="text-muted">Tính năng tra cứu chỉ khả dụng sau khi bạn đã thiết lập Dòng Họ (Chi Nhánh).</p>
+                        <router-link to="/doi-tac/dong-ho" class="btn btn-primary radius-30 px-5 mt-3 shadow-sm mb-3">
+                            <i class="bx bx-plus-circle"></i> Khởi Tạo Ngay
+>>>>>>> 81ae88bc363c24c58beb23ab4fb36bdbc33721de
                         </router-link>
                     </div>
                 </div>
@@ -26,6 +37,7 @@
 
             <div v-else-if="allMembers.length === 0" class="row justify-content-center animate__animated animate__fadeIn">
                 <div class="col-lg-8">
+<<<<<<< HEAD
                     <div class="luxury-panel p-5 text-center shadow-sm">
                         <div class="mb-4 mt-3 empty-glow-icon">
                             <i class="bx bx-git-branch text-muted opacity-20" style="font-size: 80px !important;"></i>
@@ -34,11 +46,22 @@
                         <p class="text-secondary small">Bạn cần khởi tạo thành viên vào Cây Gia Phả trước khi có thể thực hiện tra cứu bậc vai vế.</p>
                         <router-link to="/doi-tac/gia-pha" class="btn btn-luxury-primary px-5 mt-3 shadow-sm mb-3">
                             Bắt Đầu Xây Dựng Cây
+=======
+                    <div class="heritage-card p-5 text-center shadow-lg">
+                        <div class="mb-4 mt-3">
+                            <i class="bx bx-git-branch fs-1 text-muted opacity-25" style="font-size: 80px !important;"></i>
+                        </div>
+                        <h4 class="fw-bold text-dark">Chưa Có Thành Viên Để Tra Cứu!</h4>
+                        <p class="text-muted">Bạn cần thêm thành viên vào Cây Gia Phả trước khi có thể tra cứu vai vế.</p>
+                        <router-link to="/doi-tac/gia-pha" class="btn btn-primary radius-30 px-5 mt-3 shadow-sm mb-3">
+                            <i class="bx bx-plus"></i> Bắt Đầu Xây Dựng Cây
+>>>>>>> 81ae88bc363c24c58beb23ab4fb36bdbc33721de
                         </router-link>
                     </div>
                 </div>
             </div>
 
+<<<<<<< HEAD
             <div v-else class="w-100">
                 <div class="row mb-5 justify-content-center animate__animated animate__fadeInDown">
                     <div class="col-lg-6">
@@ -47,12 +70,44 @@
                             <div class="modern-select-box">
                                 <select class="form-select modern-select fw-bold text-center" v-model="selectedChiNhanhId" @change="resetSelection">
                                     <option v-for="cn in listChiNhanh" :key="cn.id" :value="cn.id">{{ cn.ten_chi }}</option>
+=======
+            <!-- Global Branch Selector -->
+            <div v-else class="row mb-5 justify-content-center animate__animated animate__fadeInDown">
+                <div class="col-lg-6">
+                    <div class="heritage-card p-3 text-center border-2 border-warning">
+                        <label class="fw-bold text-dark mb-2 text-uppercase" style="letter-spacing: 1px;">Chọn Dòng Họ Để Tra Cứu:</label>
+                        <select class="form-select form-select-lg radius-15 border-2 shadow-none" v-model="selectedChiNhanhId" @change="resetSelection">
+                            <option v-for="cn in listChiNhanh" :key="cn.id" :value="cn.id">{{ cn.ten_chi }}</option>
+                        </select>
+                        <div v-if="!selectedChiNhanhId" class="mt-2 text-danger small italic">
+                            * Bạn cần chọn dòng họ trước khi tra cứu thành viên
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-4 justify-content-center align-items-stretch" v-if="selectedChiNhanhId">
+                <!-- Person A: The Seeker -->
+                <div class="col-lg-5 animate__animated animate__fadeInLeft">
+                    <div class="heritage-card h-100 p-4">
+                        <div class="card-label">THÀNH VIÊN THỨ NHẤT</div>
+                        
+                        <div class="selection-box mt-4">
+                            <div class="custom-select-wrapper shadow-sm">
+                                <i class="bx bx-user-pin select-icon"></i>
+                                <select class="custom-select" v-model="idA">
+                                    <option :value="null">-- Chọn thành viên --</option>
+                                    <option v-for="m in filteredMembers" :key="m.id" :value="m.id">
+                                        {{ m.ho_ten }} (Đời {{ m.doi_thu }})
+                                    </option>
+>>>>>>> 81ae88bc363c24c58beb23ab4fb36bdbc33721de
                                 </select>
                             </div>
                         </div>
                     </div>
                 </div>
 
+<<<<<<< HEAD
                 <div class="row g-4 justify-content-center align-items-stretch" v-if="selectedChiNhanhId">
                     <div class="col-lg-5 animate__animated animate__fadeInLeft">
                         <div class="luxury-panel h-100 p-4 position-relative">
@@ -66,6 +121,13 @@
                                             {{ m.ho_ten }} (Đời {{ m.doi_thu }})
                                         </option>
                                     </select>
+=======
+                        <div v-if="personA" class="member-profile mt-4 text-center p-4 rounded-4 animate__animated animate__zoomIn">
+                            <div class="profile-avatar-container mb-3">
+                                <img :src="personA.avatar || 'https://ui-avatars.com/api/?name=' + personA.ho_ten + '&background=0f172a&color=fff'" class="profile-avatar">
+                                <div class="profile-gender" :class="personA.gioi_tinh === 'Nam' ? 'male' : 'female'">
+                                    <i :class="personA.gioi_tinh === 'Nam' ? 'bx bx-male' : 'bx bx-female'"></i>
+>>>>>>> 81ae88bc363c24c58beb23ab4fb36bdbc33721de
                                 </div>
                             </div>
 
@@ -138,6 +200,7 @@
                     </div>
                 </div>
 
+<<<<<<< HEAD
                 <div v-if="result" class="row mt-5 animate__animated animate__slideInUp">
                     <div class="col-lg-10 mx-auto">
                         <div class="result-master-card shadow-sm overflow-hidden border border-light-subtle">
@@ -163,6 +226,83 @@
                                             <div class="desc-footer p-3 rounded-3 border-start border-4 border-teal bg-light">
                                                 <i class="bx bx-info-circle me-2 text-teal"></i> {{ result.description }}
                                             </div>
+=======
+                <!-- Central Action -->
+                <div class="col-lg-2 d-flex flex-column align-items-center justify-content-center">
+                    <div class="action-hub">
+                        <div class="hub-line"></div>
+                        <button class="hub-btn shadow-lg" @click="calculateRelationship" :disabled="!idA || !idB || idA === idB">
+                            <i class="bx bxs-bolt"></i>
+                            <span>TRA CỨU</span>
+                        </button>
+                        <div class="hub-line"></div>
+                    </div>
+                </div>
+
+                <!-- Person B: The Reference -->
+                <div class="col-lg-5 animate__animated animate__fadeInRight">
+                    <div class="heritage-card h-100 p-4">
+                        <div class="card-label">THÀNH VIÊN THỨ HAI</div>
+
+                        <div class="selection-box mt-4">
+                            <div class="custom-select-wrapper shadow-sm">
+                                <i class="bx bx-user-pin select-icon icon-secondary"></i>
+                                <select class="custom-select" v-model="idB">
+                                    <option :value="null">-- Chọn thành viên --</option>
+                                    <option v-for="m in filteredMembers" :key="m.id" :value="m.id">
+                                        {{ m.ho_ten }} (Đời {{ m.doi_thu }})
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div v-if="personB" class="member-profile mt-4 text-center p-4 rounded-4 animate__animated animate__zoomIn">
+                            <div class="profile-avatar-container mb-3">
+                                <img :src="personB.avatar || 'https://ui-avatars.com/api/?name=' + personB.ho_ten + '&background=d4af37&color=fff'" class="profile-avatar border-gold">
+                                <div class="profile-gender" :class="personB.gioi_tinh === 'Nam' ? 'male' : 'female'">
+                                    <i :class="personB.gioi_tinh === 'Nam' ? 'bx bx-male' : 'bx bx-female'"></i>
+                                </div>
+                            </div>
+                            <h3 class="profile-name">{{ personB.ho_ten }}</h3>
+                            <div class="profile-stats d-flex justify-content-center gap-2 mt-2">
+                                <span class="stat-tag">Đời {{ personB.doi_thu }}</span>
+                                <span class="stat-tag" v-if="personB.trang_thai === 'Đã mất'">Đã mất</span>
+                            </div>
+                        </div>
+                        <div v-else class="empty-state text-center py-5 opacity-50">
+                            <i class="bx bxs-user-circle display-1 mb-3"></i>
+                            <p>Chọn thành viên thứ hai</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Result View -->
+            <div v-if="result" class="row mt-5 animate__animated animate__slideInUp">
+                <div class="col-lg-10 mx-auto">
+                    <div class="result-master-card shadow-lg overflow-hidden">
+                        <div class="result-header p-4 text-center">
+                            <span class="result-badge">KẾT QUẢ PHÂN TÍCH</span>
+                        </div>
+                        <div class="result-body p-0">
+                            <div class="row g-0">
+                                <div class="col-md-5 result-term-box p-5 d-flex flex-column align-items-center justify-content-center">
+                                    <div class="term-label mb-2">VAI VẾ</div>
+                                    <div class="term-value">{{ result.term }}</div>
+                                    <div class="term-glow"></div>
+                                </div>
+                                <div class="col-md-7 result-desc-box p-5 bg-white">
+                                    <div class="desc-content">
+                                        <div class="quote-icon mb-3"><i class="bx bxs-quote-alt-left"></i></div>
+                                        <p class="fs-4 text-dark mb-4 lh-base">
+                                            Trong cùng gia tộc, <strong class="text-primary">{{ personA.ho_ten }}</strong> sẽ gọi <strong class="text-gold">{{ personB.ho_ten }}</strong> là:
+                                        </p>
+                                        <div class="relation-badge-large mb-4">
+                                            {{ result.term }}
+                                        </div>
+                                        <div class="desc-footer p-3 rounded-3 bg-light border-start border-4 border-warning">
+                                            <i class="bx bx-info-circle me-2 text-warning"></i> {{ result.description }}
+>>>>>>> 81ae88bc363c24c58beb23ab4fb36bdbc33721de
                                         </div>
                                     </div>
                                 </div>
@@ -194,7 +334,11 @@ export default {
     computed: {
         filteredMembers() {
             if (!this.selectedChiNhanhId) return [];
+<<<<<<< HEAD
             return this.allMembers.filter(m => m.id_chi_nhanh == this.selectedChiNhanhId);
+=======
+            return this.allMembers.filter(m => m.chi_nhanh_id === this.selectedChiNhanhId);
+>>>>>>> 81ae88bc363c24c58beb23ab4fb36bdbc33721de
         },
         personA() { return this.allMembers.find(m => m.id == this.idA); },
         personB() { return this.allMembers.find(m => m.id == this.idB); }
@@ -307,6 +451,11 @@ export default {
     background-size: 30px 30px;
     z-index: 0;
 }
+<<<<<<< HEAD
+=======
+.circle-1 { width: 300px; height: 300px; background: rgba(212, 175, 55, 0.1); top: -50px; left: -50px; }
+.circle-2 { width: 400px; height: 400px; background: rgba(15, 23, 42, 0.05); bottom: -100px; right: -100px; }
+>>>>>>> 81ae88bc363c24c58beb23ab4fb36bdbc33721de
 
 .heritage-badge {
     display: inline-block;
@@ -320,12 +469,12 @@ export default {
     border-radius: 50px;
     box-shadow: 0 4px 10px rgba(0,0,0,0.01);
 }
-
 .heritage-title {
     font-size: 2.2rem;
     color: #111827;
     margin-top: 5px;
 }
+<<<<<<< HEAD
 
 /* KHỐI KÉN TRẮNG THỦY TINH */
 .luxury-panel {
@@ -340,12 +489,28 @@ export default {
 
 /* Thẻ tag nhãn của kén chọn thành viên */
 .card-label-premium {
+=======
+.heritage-subtitle { font-size: 1.1rem; color: #64748b; font-style: italic; }
+.heritage-divider { display: flex; align-items: center; justify-content: center; margin: 15px 0; }
+.heritage-divider::before, .heritage-divider::after { content: ""; height: 1px; width: 80px; background: #d4af37; }
+.diamond { width: 8px; height: 8px; background: #d4af37; transform: rotate(45deg); margin: 0 12px; }
+
+.heritage-card {
+    background: white;
+    border-radius: 25px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    position: relative;
+}
+.card-label {
+>>>>>>> 81ae88bc363c24c58beb23ab4fb36bdbc33721de
     position: absolute;
     top: -11px;
     left: 24px;
     color: white;
     padding: 3px 16px;
     font-size: 10px;
+<<<<<<< HEAD
     font-weight: 700;
     letter-spacing: 0.5px;
     border-radius: 30px;
@@ -523,6 +688,54 @@ export default {
     font-size: 18px;
     border-radius: 30px;
     border: 1px solid rgba(219, 39, 119, 0.12);
+=======
+    font-weight: 800;
+    border-radius: 4px;
+}
+
+.custom-select-wrapper { position: relative; background: #f8fafc; border-radius: 12px; }
+.select-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 20px; color: #0f172a; }
+.icon-secondary { color: #d4af37; }
+.custom-select { width: 100%; padding: 12px 12px 12px 40px; border: none; background: transparent; font-weight: 700; color: #0f172a; outline: none; }
+
+.profile-avatar { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 4px solid white; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+.profile-avatar-container { position: relative; display: inline-block; }
+.profile-gender {
+    position: absolute;
+    bottom: 2px; right: 2px;
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-size: 16px; border: 2px solid white;
+}
+.male { background: #008bf8; }
+.female { background: #ff4d6d; }
+.profile-name { font-family: 'Playfair Display', serif; font-weight: 900; color: #0f172a; }
+.stat-tag { background: #f1f5f9; color: #475569; padding: 2px 10px; border-radius: 50px; font-size: 11px; font-weight: 700; }
+
+.action-hub { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.hub-line { width: 2px; flex-grow: 1; background: linear-gradient(to bottom, transparent, #d4af37, transparent); }
+.hub-btn {
+    width: 90px; height: 90px; border-radius: 50%;
+    background: #0f172a; color: white; border: 4px solid #d4af37;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    font-weight: 900; font-size: 10px; transition: 0.3s; margin: 15px 0;
+}
+.hub-btn:hover:not(:disabled) { transform: scale(1.1); background: #1e293b; }
+.hub-btn i { font-size: 26px; color: #d4af37; margin-bottom: 2px; }
+
+.result-master-card { background: white; border-radius: 30px; border: 1px solid #eee; }
+.result-header { background: #0f172a; color: #d4af37; }
+.result-badge { font-weight: 800; letter-spacing: 3px; font-size: 12px; }
+.result-term-box { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: white; position: relative; min-height: 250px; }
+.term-label { font-weight: 700; opacity: 0.5; font-size: 12px; }
+.term-value { font-family: 'Playfair Display', serif; font-size: 4rem; font-weight: 900; color: #d4af37; text-align: center; }
+.quote-icon { font-size: 30px; color: #d4af37; opacity: 0.3; }
+.relation-badge-large {
+    display: inline-block; padding: 8px 30px;
+    background: rgba(212, 175, 55, 0.1); color: #0f172a;
+    font-weight: 900; font-size: 20px; border-radius: 12px; border: 2px solid #d4af37;
+>>>>>>> 81ae88bc363c24c58beb23ab4fb36bdbc33721de
 }
 .text-teal { color: #0d9488 !important; }
 .border-teal { border-color: #0d9488 !important; }
