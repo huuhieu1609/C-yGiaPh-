@@ -341,21 +341,289 @@ export default {
   }
 };
 </script>
-
 <style scoped>
-.radius-15 { border-radius: 15px !important; }
-.radius-10 { border-radius: 10px !important; }
-.radius-8 { border-radius: 8px !important; }
+/* =========================
+   TỔNG THỂ
+========================= */
+.container-fluid {
+    padding: 24px 10px;
+}
+
+.card {
+    border: none !important;
+    border-radius: 24px !important;
+    background: #ffffff !important;
+    box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04) !important;
+    overflow: hidden;
+}
+
+.card-header {
+    background: transparent !important;
+    border-bottom: 1px solid #f1f5f9 !important;
+}
+
+.radius-15 {
+    border-radius: 24px !important;
+}
+
+.radius-10 {
+    border-radius: 14px !important;
+}
+
+.radius-8 {
+    border-radius: 10px !important;
+}
 
 .cursor-pointer {
-  cursor: pointer;
+    cursor: pointer;
+}
+
+/* =========================
+   TEXT
+========================= */
+.text-dark {
+    color: #1e293b !important;
+}
+
+.text-muted {
+    color: #94a3b8 !important;
+}
+
+/* =========================
+   ICON
+========================= */
+.section-icon {
+    background: linear-gradient(135deg, #f97316, #fb923c);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-size: 24px;
+}
+
+/* =========================
+   BUTTON
+========================= */
+.btn-primary {
+    background: linear-gradient(135deg, #f97316 0%, #fb923c 100%) !important;
+    border: none !important;
+    border-radius: 12px !important;
+    font-weight: 600;
+    box-shadow: 0 8px 18px rgba(249, 115, 22, 0.18);
+    transition: all 0.25s ease;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 22px rgba(249, 115, 22, 0.25);
+}
+
+.btn-outline-info {
+    border-radius: 10px !important;
+    border: 1px solid rgba(59, 130, 246, 0.2) !important;
+    color: #2563eb !important;
+}
+
+.btn-outline-info:hover {
+    background: #2563eb !important;
+    color: white !important;
+}
+
+.btn-outline-danger {
+    border-radius: 10px !important;
+    border: 1px solid rgba(239, 68, 68, 0.2) !important;
+    color: #ef4444 !important;
+}
+
+.btn-outline-danger:hover {
+    background: #ef4444 !important;
+    color: white !important;
+}
+
+/* =========================
+   TABLE
+========================= */
+.table {
+    margin-bottom: 0 !important;
+}
+
+.table thead th {
+    background: #f8fafc !important;
+    color: #64748b !important;
+    font-size: 12px;
+    font-weight: 700;
+    border-bottom: 1px solid #e2e8f0 !important;
+    padding: 16px !important;
+    white-space: nowrap;
+}
+
+.table tbody td {
+    padding: 16px !important;
+    vertical-align: middle;
+    border-color: #f1f5f9 !important;
+    color: #334155 !important;
+    font-size: 14px;
+}
+
+.table-hover tbody tr {
+    transition: all 0.2s ease;
 }
 
 .table-hover tbody tr:hover {
-  background-color: rgba(0,0,0,0.01) !important;
+    background: #fff7ed !important;
 }
 
 .table-primary {
-  background-color: rgba(13, 110, 253, 0.05) !important;
+    background: rgba(249, 115, 22, 0.08) !important;
+}
+
+/* =========================
+   BADGE
+========================= */
+.badge {
+    padding: 7px 14px !important;
+    border-radius: 999px !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+}
+
+.bg-warning {
+    background: rgba(245, 158, 11, 0.12) !important;
+    color: #d97706 !important;
+}
+
+.bg-primary {
+    background: rgba(59, 130, 246, 0.12) !important;
+    color: #2563eb !important;
+}
+
+.bg-success {
+    background: rgba(16, 185, 129, 0.12) !important;
+    color: #059669 !important;
+}
+
+.bg-secondary {
+    background: rgba(148, 163, 184, 0.12) !important;
+    color: #64748b !important;
+}
+
+/* =========================
+   EVENT SUMMARY
+========================= */
+.event-summary {
+    background: linear-gradient(135deg, #fff7ed 0%, #ffffff 100%) !important;
+    border: 1px solid rgba(249, 115, 22, 0.15) !important;
+    border-radius: 18px !important;
+}
+
+/* =========================
+   SEARCH INPUT
+========================= */
+.form-control,
+.form-select {
+    border-radius: 12px !important;
+    border: 1px solid #e2e8f0 !important;
+    min-height: 45px;
+    box-shadow: none !important;
+    transition: all 0.2s ease;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: #fb923c !important;
+    box-shadow: 0 0 0 4px rgba(251, 146, 60, 0.12) !important;
+}
+
+/* =========================
+   PARTICIPANTS LIST
+========================= */
+.participants-list-wrapper {
+    background: #f8fafc !important;
+    border: 1px solid #edf2f7 !important;
+    border-radius: 18px !important;
+}
+
+.participants-list-wrapper table tbody tr:hover {
+    background: rgba(249, 115, 22, 0.05);
+}
+
+/* =========================
+   MODAL
+========================= */
+.modal-content {
+    border: none !important;
+    border-radius: 28px !important;
+    overflow: hidden;
+}
+
+.modal-header {
+    background: linear-gradient(135deg, #f97316 0%, #ea580c 100%) !important;
+}
+
+.modal-title {
+    color: white !important;
+    font-size: 22px;
+}
+
+.modal-body {
+    background: #f8fafc;
+}
+
+.modal-footer {
+    background: #ffffff;
+}
+
+/* =========================
+   TEXTAREA
+========================= */
+textarea.form-control {
+    min-height: 120px;
+    resize: none;
+}
+
+/* =========================
+   SCROLLBAR
+========================= */
+.participants-list-wrapper::-webkit-scrollbar {
+    width: 6px;
+}
+
+.participants-list-wrapper::-webkit-scrollbar-thumb {
+    background: rgba(249, 115, 22, 0.3);
+    border-radius: 20px;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+@media (max-width: 768px) {
+
+    .col-md-7,
+    .col-md-5 {
+        margin-bottom: 20px;
+    }
+
+    .table thead {
+        display: none;
+    }
+
+    .table tbody tr {
+        display: block;
+        background: white;
+        margin-bottom: 14px;
+        border-radius: 18px;
+        overflow: hidden;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+    }
+
+    .table tbody td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 14px !important;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .modal-dialog {
+        margin: 12px;
+    }
 }
 </style>

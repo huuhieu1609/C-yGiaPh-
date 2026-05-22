@@ -6,7 +6,7 @@
         <div class="card border-0 shadow-sm radius-15">
           <div class="card-body p-4">
             <h5 class="fw-bold mb-3 text-dark">
-              <i class="bx bx-cog me-2 text-primary"></i>Cấu Hình Tự Động Phê Duyệt
+              <i class="bx bx-cog section-icon"></i> Cấu Hình Tự Động Phê Duyệt
             </h5>
             <p class="text-muted small">Khi kích hoạt, mọi đề xuất chỉnh sửa hoặc thêm thành viên từ khách hàng thuộc chi nhánh tương ứng sẽ tự động được phê duyệt và áp dụng trực tiếp lên cây gia phả tức thì.</p>
             <div class="row g-3 mt-1">
@@ -33,7 +33,7 @@
         <div class="card border-0 shadow-sm radius-15">
           <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
             <h5 class="fw-bold mb-0 text-dark">
-              <i class="bx bx-git-pull-request me-2 text-primary"></i>Quản Lý Kiểm Duyệt Đề Xuất Phả Hệ
+              <i class="bx bx-git-pull-request me-2 proposal-icon"></i> Quản Lý Kiểm Duyệt Đề Xuất Phả Hệ
             </h5>
             <div class="d-flex gap-2">
               <button class="btn btn-outline-secondary radius-10" :class="{active: filterStatus === 'all'}" @click="filterStatus = 'all'">Tất cả</button>
@@ -368,41 +368,353 @@ export default {
 </script>
 
 <style scoped>
-.radius-15 { border-radius: 15px !important; }
-.radius-10 { border-radius: 10px !important; }
-.radius-8 { border-radius: 8px !important; }
+.section-icon{
+    color: #f97316 !important;
+    font-size: 22px;
+}
+.proposal-icon{
+    background: linear-gradient(135deg, #f97316, #fb923c);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-size: 22px;
+}
+/* =========================
+   TỔNG THỂ THEO STYLE WEB
+========================= */
+.container-fluid {
+    padding: 24px 10px;
+}
 
+.card {
+    border: none !important;
+    border-radius: 24px !important;
+    background: #ffffff !important;
+    box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04) !important;
+    overflow: hidden;
+}
+
+.card-header {
+    background: transparent !important;
+    border-bottom: 1px solid #f1f5f9 !important;
+}
+
+.radius-15 {
+    border-radius: 24px !important;
+}
+
+.radius-10 {
+    border-radius: 14px !important;
+}
+
+.radius-8 {
+    border-radius: 10px !important;
+}
+
+/* =========================
+   TEXT
+========================= */
+.text-dark {
+    color: #1e293b !important;
+}
+
+.text-muted {
+    color: #94a3b8 !important;
+}
+
+h5,
+h6 {
+    letter-spacing: -0.3px;
+}
+
+/* =========================
+   CARD AUTO APPROVE
+========================= */
 .branch-config-card {
-  border: 1px solid rgba(0,0,0,0.08);
-  transition: all 0.2s;
+    background: #f8fafc !important;
+    border: 1px solid #edf2f7 !important;
+    border-radius: 20px !important;
+    transition: all 0.25s ease;
+    min-height: 92px;
 }
 
 .branch-config-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    transform: translateY(-3px);
+    border-color: rgba(249, 115, 22, 0.35) !important;
+    box-shadow: 0 10px 25px rgba(249, 115, 22, 0.08);
 }
 
-.bg-light-primary {
-  background-color: rgba(59, 130, 246, 0.05) !important;
-  border-color: rgba(59, 130, 246, 0.15) !important;
+.branch-config-card h6 {
+    font-size: 15px;
+    margin-bottom: 8px !important;
 }
 
-.font-bold {
-  font-weight: 700;
+/* =========================
+   SWITCH
+========================= */
+.form-switch .form-check-input {
+    width: 52px;
+    height: 28px;
+    cursor: pointer;
+    border: none;
+    background-color: #d1d5db;
+    box-shadow: none !important;
 }
 
-.cursor-pointer {
-  cursor: pointer;
+.form-switch .form-check-input:checked {
+    background-color: #f97316;
+    border-color: #f97316;
+}
+
+/* =========================
+   FILTER BUTTONS
+========================= */
+.btn-outline-secondary,
+.btn-outline-warning,
+.btn-outline-success,
+.btn-outline-danger {
+    border-radius: 12px !important;
+    padding: 9px 18px !important;
+    font-size: 13px;
+    font-weight: 600;
+    border: 1px solid #e2e8f0 !important;
+    background: white !important;
+    color: #64748b !important;
+    transition: all 0.25s ease;
+}
+
+.btn-outline-secondary:hover,
+.btn-outline-warning:hover,
+.btn-outline-success:hover,
+.btn-outline-danger:hover {
+    transform: translateY(-1px);
+}
+
+.btn-outline-secondary.active {
+    background: linear-gradient(135deg, #f97316 0%, #fb923c 100%) !important;
+    border-color: transparent !important;
+    color: white !important;
+}
+
+.btn-outline-warning.active {
+    background: #f59e0b !important;
+    border-color: transparent !important;
+    color: white !important;
+}
+
+.btn-outline-success.active {
+    background: #10b981 !important;
+    border-color: transparent !important;
+    color: white !important;
+}
+
+.btn-outline-danger.active {
+    background: #ef4444 !important;
+    border-color: transparent !important;
+    color: white !important;
+}
+
+/* =========================
+   TABLE
+========================= */
+.table-responsive {
+    border-radius: 0 0 24px 24px;
+}
+
+.table {
+    margin-bottom: 0 !important;
+}
+
+.table thead th {
+    background: #f8fafc !important;
+    color: #64748b !important;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 18px 16px !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    white-space: nowrap;
+}
+
+.table tbody td {
+    padding: 18px 16px !important;
+    vertical-align: middle;
+    border-color: #f1f5f9 !important;
+    color: #334155 !important;
+    font-size: 14px;
+}
+
+.table-hover tbody tr {
+    transition: all 0.2s ease;
 }
 
 .table-hover tbody tr:hover {
-  background-color: rgba(0,0,0,0.01) !important;
+    background: #fff7ed !important;
 }
 
-.btn-outline-secondary.active,
-.btn-outline-warning.active,
-.btn-outline-success.active,
-.btn-outline-danger.active {
-  color: #fff !important;
+/* =========================
+   BADGE
+========================= */
+.badge {
+    padding: 7px 14px !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    border-radius: 999px !important;
+    letter-spacing: 0.3px;
+}
+
+.bg-success {
+    background: rgba(16, 185, 129, 0.12) !important;
+    color: #059669 !important;
+}
+
+.bg-secondary {
+    background: rgba(148, 163, 184, 0.15) !important;
+    color: #64748b !important;
+}
+
+.bg-warning {
+    background: rgba(245, 158, 11, 0.15) !important;
+    color: #d97706 !important;
+}
+
+.bg-danger {
+    background: rgba(239, 68, 68, 0.12) !important;
+    color: #dc2626 !important;
+}
+
+.bg-primary {
+    background: rgba(59, 130, 246, 0.12) !important;
+    color: #2563eb !important;
+}
+
+/* =========================
+   BUTTON ACTION
+========================= */
+.btn-primary {
+    background: linear-gradient(135deg, #f97316 0%, #fb923c 100%) !important;
+    border: none !important;
+    border-radius: 12px !important;
+    padding: 10px 18px !important;
+    font-size: 13px;
+    font-weight: 600;
+    box-shadow: 0 6px 16px rgba(249, 115, 22, 0.2);
+    transition: all 0.25s ease;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(249, 115, 22, 0.28);
+}
+
+/* =========================
+   MODAL
+========================= */
+.modal-content {
+    border: none !important;
+    border-radius: 28px !important;
+    overflow: hidden;
+    background: #ffffff !important;
+}
+
+.modal-header {
+    background: linear-gradient(135deg, #f97316 0%, #ea580c 100%) !important;
+    padding: 24px !important;
+}
+
+.modal-title {
+    color: white !important;
+    font-size: 22px;
+}
+
+.modal-body {
+    background: #f8fafc;
+}
+
+.current-info-card,
+.proposed-info-card {
+    background: white !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 20px !important;
+    padding: 20px !important;
+    height: 100%;
+}
+
+.current-info-card:hover,
+.proposed-info-card:hover {
+    border-color: rgba(249, 115, 22, 0.25) !important;
+}
+
+/* =========================
+   TEXTAREA
+========================= */
+textarea.form-control {
+    border-radius: 16px !important;
+    border: 1px solid #e2e8f0 !important;
+    padding: 14px !important;
+    font-size: 14px;
+    box-shadow: none !important;
+}
+
+textarea.form-control:focus {
+    border-color: #fb923c !important;
+    box-shadow: 0 0 0 4px rgba(251, 146, 60, 0.12) !important;
+}
+
+/* =========================
+   DIFF HIGHLIGHT
+========================= */
+.text-danger.bg-warning\/10 {
+    background: rgba(249, 115, 22, 0.12) !important;
+    color: #ea580c !important;
+    border-radius: 8px;
+    padding: 3px 8px;
+    font-weight: 700;
+}
+
+/* =========================
+   EMPTY STATE
+========================= */
+.table tbody tr td.text-center {
+    padding: 60px 20px !important;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+@media (max-width: 768px) {
+    .card-body {
+        padding: 18px !important;
+    }
+
+    .table thead {
+        display: none;
+    }
+
+    .table tbody tr {
+        display: block;
+        margin-bottom: 16px;
+        border-radius: 18px;
+        background: white;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+        overflow: hidden;
+    }
+
+    .table tbody td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 14px !important;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .table tbody td::before {
+        content: attr(data-label);
+        font-weight: 700;
+        color: #64748b;
+        margin-right: 12px;
+    }
+
+    .modal-dialog {
+        margin: 12px;
+    }
 }
 </style>
