@@ -50,6 +50,12 @@ const routes = [
         meta: { layout: 'client', requiresAuth: true }
     },
     {
+        path: '/thanh-vien/detail/:id',
+        name: 'public-member-detail',
+        component: () => import('../components/ClientTraCuu/PublicDetail.vue'),
+        meta: { layout: 'client' }
+    },
+    {
         path: '/dich-vu-goi',
         name: 'dich-vu-goi',
         component: () => import('../components/DichVuGoi/index.vue'),
@@ -64,7 +70,13 @@ const routes = [
     {
         path: '/thanh-toan',
         name: 'thanh-toan',
-        component: () => import('../components/ClientThanhToan/index.vue'),
+        component: () => import('../components/ClientThanhToan/MuaGoi.vue'),
+        meta: { layout: 'client', requiresAuth: true }
+    },
+    {
+        path: '/dong-gop-quy',
+        name: 'dong-gop-quy',
+        component: () => import('../components/ClientThanhToan/DongGopQuy.vue'),
         meta: { layout: 'client', requiresAuth: true }
     },
     {
@@ -85,7 +97,7 @@ const routes = [
         component: () => import('../components/Admin/Auth/Login.vue'),
         meta: { layout: 'blank' }
     },
-    
+
     // Admin Routes
     {
         path: '/admin/dashboard',

@@ -640,4 +640,66 @@ class ThanhVienController extends Controller
             ], 500);
         }
     }
+
+    public function getPublicDetail($id)
+    {
+        try {
+            $member = ThanhVien::with('chiNhanh')->findOrFail($id);
+
+            // Lấy thông tin Cha và Mẹ
+            $father = $member->cha_id ? ThanhVien::find($member->cha_id) : null;
+            $mother = $member->me_id ? ThanhVien::find($member->me_id) : null;
+
+            // Lấy danh sách Vợ/Chồng
+            $spouses = collect();
+            if ($member->spouse_of_id) {
+                $mainSpouse = ThanhVien::find($member->spouse_of_id);
+                if ($mainSpouse) {
+                    $spouses->push($mainSpouse);
+                }
+            }
+            $otherSpouses = ThanhVien::where('spouse_of_id', $id)->get();
+            $spouses = $spouses->merge($otherSpouses);
+
+            // Lấy danh sách Con cái
+            $children = ThanhVien::where('cha_id', $id)
+                ->orWhere('me_id', $id)
+                ->get();
+
+            // Xác định mối quan hệ động nếu người xem đã đăng nhập
+            $relationship = null;
+            $user = auth('sanctum')->user();
+            if ($user) {
+                $me = ThanhVien::where('email', $user->email)->first();
+                if ($me && $me->id != $id) {
+                    $dummyRequest = new Request([
+                        'id_a' => $me->id,
+                        'id_b' => $id
+                    ]);
+                    $relationResponse = $this->xacDinhQuanHe($dummyRequest);
+                    if ($relationResponse->status() === 200) {
+                        $relationship = $relationResponse->getData(true);
+                    }
+                }
+            }
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Lấy dữ liệu thành viên thành công!',
+                'data' => [
+                    'member' => $member,
+                    'father' => $father,
+                    'mother' => $mother,
+                    'spouses' => $spouses,
+                    'children' => $children,
+                    'relationship' => $relationship
+                ]
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Không tìm thấy thành viên hoặc lỗi hệ thống: ' . $e->getMessage()
+            ], 404);
+        }
+    }
 }

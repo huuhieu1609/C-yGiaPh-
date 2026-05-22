@@ -11,7 +11,7 @@
           <li v-if="isLoggedIn"><router-link to="/de-xuat">Đề Xuất</router-link></li>
           <li v-if="isLoggedIn"><router-link to="/su-kien">Sự Kiện</router-link></li>
           <li><router-link to="/tra-cuu">Tra Cứu</router-link></li>
-          <li><router-link to="/dich-vu-goi/chi-tiet">Dịch Vụ Gói</router-link></li>
+          <li><router-link to="/dich-vu-goi">Dịch Vụ Gói</router-link></li>
         </ul>
         <div class="nav-actions">
           <template v-if="!isLoggedIn">

@@ -14,6 +14,18 @@
         <div class="container pb-5 mt-n5-custom">
             <div class="main-card shadow-2xl rounded-5 bg-white border-0 overflow-hidden">
                 <div class="p-4 p-lg-5">
+                    <!-- Section Header with QR Upload Button -->
+                    <div class="d-flex justify-content-between align-items-center mb-5 flex-wrap gap-3 border-bottom pb-4">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bx bx-calculator text-dark fs-3"></i>
+                            <h4 class="fw-bold mb-0 text-dark">Máy Tính Xưng Hô & Tra Cứu</h4>
+                        </div>
+                        <button class="btn btn-gold-glass px-4 py-2.5 rounded-pill fw-bold text-dark d-flex align-items-center gap-2 transition" @click="openQRModal" style="background: rgba(212, 175, 55, 0.15); border: 1px solid rgba(212, 175, 55, 0.3); color: #8a6d1c !important;">
+                            <i class="bx bx-qr-scan fs-4"></i>
+                            Quét QR Từ Ảnh
+                        </button>
+                    </div>
+
                     <div class="row g-4 g-lg-5 align-items-center">
                         <!-- Person 1 Selection -->
                         <div class="col-lg-5">
@@ -172,6 +184,70 @@
                 </div>
             </div>
         </div>
+
+        <!-- Vue QR Scan Modal -->
+        <div v-if="showQRModal" class="custom-modal-backdrop animate__animated animate__fadeIn" @click.self="closeQRModal">
+            <div class="custom-modal-content animate__animated animate__zoomIn p-4 rounded-4 shadow-2xl bg-white position-relative">
+                <button class="btn-close-custom position-absolute top-0 end-0 m-3 border-0 bg-transparent" @click="closeQRModal">
+                    <i class="bx bx-x fs-2 text-muted"></i>
+                </button>
+                
+                <div class="text-center mb-4">
+                    <div class="qr-scan-icon-container bg-gold-soft text-warning rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 70px; height: 70px; background: rgba(212, 175, 55, 0.1) !important;">
+                        <i class="bx bx-qr-scan fs-1" style="color: #d4af37 !important;"></i>
+                    </div>
+                    <h3 class="fw-extrabold text-dark mb-1">Tải Ảnh Mã QR</h3>
+                    <p class="text-secondary font-14">Chọn hoặc kéo thả ảnh QR của thành viên để quét nhanh thông tin</p>
+                </div>
+
+                <!-- Dropzone Area -->
+                <div 
+                    class="dropzone-area p-4 text-center rounded-3 border border-2 border-dashed d-flex flex-column align-items-center justify-content-center transition cursor-pointer"
+                    :class="{'drag-active': dragActive, 'has-file': qrPreview}"
+                    @dragover.prevent="dragActive = true"
+                    @dragleave.prevent="dragActive = false"
+                    @drop.prevent="handleDrop"
+                    @click="triggerFileInput"
+                    style="border-style: dashed !important;"
+                >
+                    <input type="file" ref="fileInput" class="d-none" accept="image/*" @change="handleFileSelect">
+                    
+                    <template v-if="!qrPreview">
+                        <i class="bx bx-cloud-upload text-muted display-4 mb-2"></i>
+                        <p class="mb-1 fw-bold text-dark font-15">Kéo thả ảnh vào đây hoặc nhấp để chọn</p>
+                        <p class="font-12 text-muted mb-0">Hỗ trợ các định dạng PNG, JPG, JPEG</p>
+                    </template>
+                    <template v-else>
+                        <div class="preview-container position-relative mb-2">
+                            <img :src="qrPreview" class="img-fluid rounded border shadow-sm" style="max-height: 200px; object-fit: contain;">
+                            <button class="btn btn-danger btn-sm rounded-circle position-absolute top-0 end-0 m-1 border-0" @click.stop="clearFile">
+                                <i class="bx bx-trash"></i>
+                            </button>
+                        </div>
+                        <p class="mb-0 fw-bold text-success font-14"><i class="bx bx-check-circle"></i> Đã chọn: {{ qrFile.name }}</p>
+                    </template>
+                </div>
+
+                <!-- Scan Progress & Error Message -->
+                <div v-if="isScanning" class="text-center mt-3 py-2">
+                    <div class="spinner-border spinner-border-sm text-warning me-2" role="status"></div>
+                    <span class="fw-bold text-muted">Đang phân tích mã QR trực tuyến...</span>
+                </div>
+                
+                <div v-if="scanError" class="alert alert-danger mt-3 mb-0 radius-10 d-flex align-items-center gap-2 font-13 shadow-xs">
+                    <i class="bx bx-error-circle fs-5"></i>
+                    <div>{{ scanError }}</div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="d-flex gap-3 mt-4">
+                    <button class="btn btn-light w-50 py-2.5 rounded-pill fw-bold border" @click="closeQRModal">Huỷ bỏ</button>
+                    <button class="btn btn-heritage w-50 py-2.5 rounded-pill fw-bold text-white shadow-sm" :disabled="!qrFile || isScanning" @click="scanQRCode">
+                        <i class="bx bx-analyse me-1"></i> Bắt đầu Quét
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 </template>
 
@@ -186,7 +262,13 @@ export default {
             allMembers: [],
             idA: null,
             idB: null,
-            result: null
+            result: null,
+            showQRModal: false,
+            dragActive: false,
+            isScanning: false,
+            scanError: null,
+            qrFile: null,
+            qrPreview: null
         }
     },
     computed: {
@@ -233,6 +315,109 @@ export default {
             })
             .catch(err => {
                 toastr.error(err.response?.data?.message || 'Có lỗi xảy ra khi kết nối máy chủ!');
+            });
+        },
+        openQRModal() {
+            this.showQRModal = true;
+            this.scanError = null;
+            this.clearFile();
+        },
+        closeQRModal() {
+            this.showQRModal = false;
+        },
+        triggerFileInput() {
+            this.$refs.fileInput.click();
+        },
+        handleDragOver() {
+            this.dragActive = true;
+        },
+        handleDragLeave() {
+            this.dragActive = false;
+        },
+        handleDrop(e) {
+            this.dragActive = false;
+            if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                this.setFile(e.dataTransfer.files[0]);
+            }
+        },
+        handleFileSelect(e) {
+            if (e.target.files && e.target.files[0]) {
+                this.setFile(e.target.files[0]);
+            }
+        },
+        setFile(file) {
+            if (!file.type.startsWith('image/')) {
+                this.scanError = 'Chỉ chấp nhận các tệp định dạng hình ảnh!';
+                return;
+            }
+            this.qrFile = file;
+            this.scanError = null;
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                this.qrPreview = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        },
+        clearFile() {
+            this.qrFile = null;
+            this.qrPreview = null;
+            this.scanError = null;
+            if (this.$refs.fileInput) {
+                this.$refs.fileInput.value = '';
+            }
+        },
+        scanQRCode() {
+            if (!this.qrFile) return;
+            this.isScanning = true;
+            this.scanError = null;
+
+            const formData = new FormData();
+            formData.append('file', this.qrFile);
+
+            axios.post('https://api.qrserver.com/v1/read-qr-code/', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            })
+            .then(res => {
+                const symbol = res.data[0]?.symbol[0];
+                if (!symbol || symbol.error) {
+                    this.scanError = symbol?.error || 'Không nhận diện được mã QR trong ảnh. Vui lòng thử lại với ảnh rõ nét hơn!';
+                    return;
+                }
+
+                const qrText = symbol.data;
+                if (!qrText) {
+                    this.scanError = 'Không có dữ liệu trong mã QR này!';
+                    return;
+                }
+
+                // Phân tích kết quả quét
+                const detailMatch = qrText.match(/\/thanh-vien\/detail\/(\d+)/);
+                if (detailMatch && detailMatch[1]) {
+                    const id = detailMatch[1];
+                    toastr.success('Quét mã QR thành công! Đang chuyển hướng...');
+                    this.closeQRModal();
+                    this.$router.push(`/thanh-vien/detail/${id}`);
+                    return;
+                }
+
+                if (/^\d+$/.test(qrText.trim())) {
+                    const id = qrText.trim();
+                    toastr.success('Quét mã QR thành công! Đang chuyển hướng...');
+                    this.closeQRModal();
+                    this.$router.push(`/thanh-vien/detail/${id}`);
+                    return;
+                }
+
+                this.scanError = 'Mã QR này không thuộc Hệ thống Gia Phả Số (Dữ liệu không khớp: ' + qrText + ')';
+            })
+            .catch(err => {
+                this.scanError = 'Lỗi kết nối máy chủ quét QR hoặc ảnh quá dung lượng cho phép!';
+            })
+            .finally(() => {
+                this.isScanning = false;
             });
         }
     }
@@ -434,5 +619,58 @@ export default {
     .bx-chevron-right {
         transform: rotate(90deg);
     }
+}
+
+/* Custom Vue Modal Styling */
+.custom-modal-backdrop {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(8px);
+    z-index: 1050;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+.custom-modal-content {
+    width: 100%;
+    max-width: 480px;
+    background: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+.btn-close-custom {
+    transition: all 0.2s ease;
+}
+.btn-close-custom:hover {
+    transform: rotate(90deg);
+}
+.dropzone-area {
+    min-height: 180px;
+    border-color: #cbd5e1;
+    background-color: #f8fafc;
+    transition: all 0.3s ease;
+}
+.dropzone-area:hover, .dropzone-area.drag-active {
+    border-color: #d4af37;
+    background-color: #fdfefb;
+}
+.dropzone-area.has-file {
+    border-color: #198754;
+    background-color: #f6fff9;
+}
+.text-muted-soft {
+    color: #94a3b8;
+}
+.btn-gold-glass {
+    background: rgba(212, 175, 55, 0.1);
+    border: 1px solid rgba(212, 175, 55, 0.25);
+    color: #ffd891;
+    transition: all 0.3s ease;
+}
+.btn-gold-glass:hover {
+    background: rgba(212, 175, 55, 0.2);
+    border-color: #d4af37;
+    transform: translateY(-2px);
 }
 </style>
