@@ -189,9 +189,9 @@
                     </div>
                     <div class="modal-footer border-0 p-4 pt-0">
                         <button v-if="isEditing" type="button" class="btn btn-outline-danger me-auto radius-8 px-3" @click="handleDelete">Xóa</button>
-                        <button v-if="isEditing" type="button" class="btn btn-warning text-dark radius-8 px-3 fw-bold" style="background:#d4af37; border-color:#d4af37;" @click="showQRCardFromModal">Xem Mã QR</button>
-                        <button type="button" class="btn btn-light px-4 radius-8" data-bs-dismiss="modal">Hủy</button>
-                        <button type="button" class="btn px-4 radius-8 fw-bold" :class="isEditing ? 'btn-warning' : 'btn-primary'" @click="saveMember">
+                        <button v-if="isEditing" type="button" class="btn btn-modern-cancel px-4" @click="showQRCardFromModal">Xem Mã QR</button>
+                        <button type="button" class="btn btn-modern-cancel px-4" data-bs-dismiss="modal">Hủy bỏ</button>
+                        <button type="button" class="btn btn-modern-save px-4 fw-bold" :class="isEditing ? 'btn-warn' : 'btn-save'" @click="saveMember">
                             {{ isEditing ? 'Cập Nhật' : 'Lưu Lại' }}
                         </button>
                     </div>

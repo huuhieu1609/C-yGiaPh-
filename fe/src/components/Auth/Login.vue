@@ -20,7 +20,8 @@
                             <label>Mật khẩu</label>
                             <div class="input-wrapper">
                                 <i class="bx bx-lock-alt"></i>
-                                <input type="password" v-model="loginData.mat_khau" placeholder="Nhập mật khẩu" required>
+                                <input type="password" v-model="loginData.mat_khau" placeholder="Nhập mật khẩu"
+                                    required>
                             </div>
                         </div>
                         <div class="form-options">
@@ -67,18 +68,29 @@ export default {
                 .then(res => {
                     if (res.data.status) {
                         toastr.success(res.data.message);
+
+                        // 1. Lưu thông tin vào LocalStorage trước
                         localStorage.setItem('access_token', res.data.access_token);
                         localStorage.setItem('user', JSON.stringify(res.data.user));
-                        let redirect = this.$route.query.redirect || '/';
-                        if (res.data.user.is_doi_tac == 1) {
-                            redirect = '/doi-tac/dashboard';
+
+                        // 2. Lấy thông tin user vừa đăng nhập để phân quyền chính xác
+                        const user = res.data.user;
+
+                        // 3. Chủ động điều hướng dựa trên vai trò thực tế của User
+                        if (user && user.vai_tro?.toLowerCase() === 'admin') {
+                            this.$router.push('/admin/dashboard');
+                        } else if (user && user.is_doi_tac == 1) {
+                            this.$router.push('/doi-tac/dashboard');
+                        } else {
+                            this.$router.push('/gia-pha');
                         }
-                        this.$router.push(redirect);
+                    } else {
+                        toastr.error(res.data.message);
                     }
                 })
                 .catch(err => {
-                    const msg = err.response?.data?.message || 'Có lỗi xảy ra, vui lòng thử lại!';
-                    toastr.error(msg);
+                    console.error(err);
+                    toastr.error(err.response?.data?.message || 'Email hoặc mật khẩu không đúng!');
                 })
                 .finally(() => {
                     this.isLoading = false;
@@ -92,7 +104,7 @@ export default {
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;600;700&display=swap');
 
 .auth-page {
-    height: 100vh;
+    min-height: 100vh;
     background-size: cover;
     background-position: center;
     position: relative;
@@ -106,12 +118,12 @@ export default {
     display: flex;
     align-items: center;
     justify-content: center;
+    padding: 20px;
 }
 
 .auth-container {
     width: 100%;
     max-width: 450px;
-    padding: 20px;
 }
 
 .auth-card {

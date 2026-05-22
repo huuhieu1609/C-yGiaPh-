@@ -1,25 +1,9 @@
 <template>
   <div class="admin-layout" :class="{ 'sidebar-collapsed': isCollapsed }">
     <PartnerNavbar :is-collapsed="isCollapsed" @toggle-sidebar="isCollapsed = !isCollapsed" />
+    
     <main class="admin-content">
-      <header class="admin-header shadow-sm">
-        <div class="d-flex align-items-center h-100 px-4">
-          <div class="ms-auto d-flex align-items-center gap-3">
-            <div class="header-search d-none d-md-flex align-items-center">
-              <i class='bx bx-search fs-5 text-secondary'></i>
-              <input type="text" class="form-control border-0 bg-transparent" placeholder="Tìm kiếm...">
-            </div>
-            <div class="vertical-divider"></div>
-            <div class="user-profile d-flex align-items-center gap-2">
-              <span class="text-secondary fw-medium">Đối Tác</span>
-              <div class="avatar-sm bg-info text-white rounded-circle d-flex align-items-center justify-content-center">
-                D
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
-      <div class="p-4">
+      <div class="main-workspace-wrapper">
         <router-view></router-view>
       </div>
     </main>
@@ -58,152 +42,138 @@ export default {
 
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  background: #f0f2f5;
-  color: #333;
+  background-color: var(--app-bg) !important;
+  color: var(--text-main) !important;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Layout */
+/* Layout Container */
 .admin-layout {
   display: flex;
   min-height: 100vh;
+  width: 100%;
+  overflow-x: hidden;
 }
 
+/* Khung bọc lớn bên phải */
 .admin-content {
   flex: 1;
-  display: flex;
-  flex-direction: column;
-  margin-left: 280px;
-  width: calc(100% - 280px);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  min-height: 100vh;
+  display: flex !important;
+  flex-direction: column !important;
+  margin-left: 275px; 
+  width: calc(100% - 275px);
+  transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+  height: 100vh;
+  box-sizing: border-box;
+  position: relative;
 }
 
+/* Khi Sidebar co lại về 80px */
 .sidebar-collapsed .admin-content {
-  margin-left: 80px;
-  width: calc(100% - 80px);
+  margin-left: 105px;
+  width: calc(100% - 105px);
 }
 
-.admin-header {
-  height: 70px;
-  background: #fff;
-  border-bottom: 1px solid #f0f0f0;
-  position: sticky;
-  top: 0;
-  z-index: 1000;
+/* ─── 🌟 TỐI ƯU LẠI KHUNG NEO: ĐẨY LÊN TRÊN VÀ PHẲNG TUYỆT ĐỐI ─── */
+.main-workspace-wrapper {
+  width: 100% !important;
+  height: 100% !important;
+  /* Giảm padding-top từ 30px xuống 15px để nội dung dịch sát lên trên */
+  padding: 19px 30px 20px 15px !important; 
+  box-sizing: border-box;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  overflow-y: auto; /* Cuộn nội dung lọt lòng độc lập */
 }
 
-.header-search {
-  background: #f0f2f5;
-  border-radius: 10px;
-  padding: 0 15px;
-  width: 300px;
+/* Triệt tiêu tận gốc mọi cấu trúc margin đè của Bootstrap ở phần tử đầu tiên */
+.main-workspace-wrapper > div,
+.main-workspace-wrapper > .row,
+.main-workspace-wrapper > .card,
+.main-workspace-wrapper > div > .row,
+.main-workspace-wrapper > div > .card {
+  margin-top: 0 !important;
+  top: 0 !important;
+  padding-top: 0 !important;
 }
 
-.vertical-divider {
-  width: 1px;
-  height: 24px;
-  background: #e0e0e0;
+/* Loại bỏ lề âm của hàng đầu tiên tránh đẩy lệch khung */
+.main-workspace-wrapper > .row:first-child,
+.main-workspace-wrapper > div > .row:first-child {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
 }
 
-.avatar-sm {
-  width: 36px;
-  height: 36px;
-  font-weight: 600;
-  font-size: 14px;
+/* ─── HỆ THỐNG BIẾN MÀU THEO CHẾ ĐỘ MÔI TRƯỜNG ─── */
+:root, [data-theme="light"] {
+  --app-bg:        #f0f2f5;
+  --card-bg:       #ffffff;
+  --text-main:     #1f2937;
+  --text-sub:      #6b7280;
+  --border-color:  rgba(0, 0, 0, 0.05);
+  --input-bg:      rgba(0, 0, 0, 0.015);
+}
+
+[data-theme="dark"] {
+  --app-bg:        #121320; 
+  --card-bg:       #1a1c2e; 
+  --text-main:     #f3f4f6;
+  --text-sub:      #9ca3af;
+  --border-color:  rgba(255, 255, 255, 0.08);
+  --input-bg:      rgba(255, 255, 255, 0.03);
+}
+
+/* FORCE OVERRIDE: Chống tràn sáng cho Dark Mode */
+[data-theme="dark"] .card, 
+[data-theme="dark"] .card-header,
+[data-theme="dark"] .bg-white,
+[data-theme="dark"] .table-light {
+  background-color: var(--card-bg) !important;
+  color: var(--text-main) !important;
+  border-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] .table thead th {
+  background-color: var(--app-bg) !important;
+  color: var(--text-sub) !important;
+  border-bottom: 1px solid var(--border-color) !important;
+}
+
+[data-theme="dark"] input, 
+[data-theme="dark"] select, 
+[data-theme="dark"] textarea {
+  background-color: var(--input-bg) !important;
+  color: var(--text-main) !important;
+  border-color: var(--border-color) !important;
 }
 
 /* ========================================
-   Bootstrap Overrides for Child Pages
+   Bootstrap Overrides For Adaptive Theme
    ======================================== */
 .card {
-  border: none;
+  border: none !important;
   border-radius: 14px;
-  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.04);
-  transition: box-shadow 0.2s ease;
-  background: #fff;
+  background-color: var(--card-bg) !important;
+  border: 1px solid var(--border-color) !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.01) !important;
+  transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.2s ease;
 }
-
-.card:hover {
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
-}
-
-.card-header {
-  background: transparent;
-  border-bottom: 1px solid #f0f0f0;
-  padding: 18px 20px;
-}
-
-.card-body {
-  padding: 20px;
-}
-
-.radius-10 {
-  border-radius: 14px !important;
-}
-
-.table {
-  font-size: 14px;
-}
+.card:hover { box-shadow: 0 10px 25px var(--border-color) !important; }
+.card-header { background: transparent !important; border-bottom: 1px solid var(--border-color) !important; padding: 18px 20px; }
+.card-body { padding: 20px; }
+.radius-10 { border-radius: 14px !important; }
+.table { font-size: 14px; color: var(--text-main) !important; }
 
 .table thead th {
-  font-weight: 600;
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: #666;
-  border-bottom-width: 1px;
+  font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;
+  color: var(--text-sub) !important; border-bottom: 1px solid var(--border-color) !important;
 }
 
-/* Badge gradient overrides */
-.bg-gradient-quepal { background: linear-gradient(135deg, #43cea2, #185a9d) !important; }
-.bg-gradient-bloody { background: linear-gradient(135deg, #f5515f, #a1051d) !important; }
-.bg-gradient-ohhappiness { background: linear-gradient(135deg, #00b09b, #96c93d) !important; }
-.bg-gradient-blooker { background: linear-gradient(135deg, #e65100, #ff6d00) !important; }
-.bg-gradient-scooter { background: linear-gradient(135deg, #36d1dc, #5b86e5) !important; }
-
-/* Widget icons */
-.widgets-icons-2 {
-  width: 48px;
-  height: 48px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 24px;
-  border-radius: 12px;
-  flex-shrink: 0;
-}
-
-.bg-light-primary { background: rgba(66, 133, 244, 0.1) !important; }
-.bg-light-success { background: rgba(52, 168, 83, 0.1) !important; }
-.bg-light-warning { background: rgba(251, 188, 4, 0.1) !important; }
-.bg-light-danger  { background: rgba(234, 67, 53, 0.1) !important; }
-.bg-light-info    { background: rgba(66, 133, 244, 0.1) !important; }
-
-/* Scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
+/* Thanh cuộn scroll mượt */
+::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb {
-  background: #d0d0d0;
-  border-radius: 6px;
-}
-::-webkit-scrollbar-thumb:hover { background: #b0b0b0; }
-
-/* Responsive */
-@media (max-width: 767.98px) {
-  .admin-content {
-    margin-left: 0 !important;
-    width: 100% !important;
-  }
-  .admin-sidebar {
-    transform: translateX(-100%);
-  }
-  .admin-sidebar.show-mobile {
-    transform: translateX(0);
-  }
-}
+::-webkit-scrollbar-thumb { background: var(--text-sub); opacity: 0.3; border-radius: 6px; }
 </style>
