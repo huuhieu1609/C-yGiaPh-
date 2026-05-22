@@ -140,7 +140,9 @@ export default {
   },
   methods: {
     logout() {
-      this.$router.push('/admin/login');
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('user');
+      this.$router.push('/');
     }
   }
 }

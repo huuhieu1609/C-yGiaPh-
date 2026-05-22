@@ -6,8 +6,8 @@
 					<div class="d-flex align-items-center">
 						<div>
 							<p class="mb-0 text-secondary">Tổng Thành Viên</p>
-							<h4 class="my-1 text-info">2,564</h4>
-							<p class="mb-0 font-13">+2.5% so với tháng trước</p>
+							<h4 class="my-1 text-info">{{ metrics.total_members }}</h4>
+							<p class="mb-0 font-13">Cập nhật thời gian thực</p>
 						</div>
 						<div class="widgets-icons-2 rounded-circle bg-gradient-scooter text-white ms-auto">
 							<i class='bx bxs-group'></i>
@@ -22,8 +22,8 @@
 					<div class="d-flex align-items-center">
 						<div>
 							<p class="mb-0 text-secondary">Cây Gia Phả</p>
-							<h4 class="my-1 text-danger">425</h4>
-							<p class="mb-0 font-13">+5.4% so với tháng trước</p>
+							<h4 class="my-1 text-danger">{{ metrics.total_trees }}</h4>
+							<p class="mb-0 font-13">Các chi nhánh dòng họ</p>
 						</div>
 						<div class="widgets-icons-2 rounded-circle bg-gradient-bloody text-white ms-auto">
 							<i class='bx bxs-share-alt'></i>
@@ -38,8 +38,8 @@
 					<div class="d-flex align-items-center">
 						<div>
 							<p class="mb-0 text-secondary">Đóng Góp Di Sản</p>
-							<h4 class="my-1 text-success">€34,652</h4>
-							<p class="mb-0 font-13">-4.5% so với tháng trước</p>
+							<h4 class="my-1 text-success">{{ formatCurrency(metrics.total_contributions) }}</h4>
+							<p class="mb-0 font-13">Quỹ dòng họ tự nguyện</p>
 						</div>
 						<div class="widgets-icons-2 rounded-circle bg-gradient-ohhappiness text-white ms-auto">
 							<i class='bx bxs-wallet'></i>
@@ -53,9 +53,9 @@
 				<div class="card-body">
 					<div class="d-flex align-items-center">
 						<div>
-							<p class="mb-0 text-secondary">Yêu Cầu Số Hóa</p>
-							<h4 class="my-1 text-warning">132</h4>
-							<p class="mb-0 font-13">+8.4% so với tháng trước</p>
+							<p class="mb-0 text-secondary">Đóng Góp Quỹ</p>
+							<h4 class="my-1 text-warning">{{ metrics.total_requests }}</h4>
+							<p class="mb-0 font-13">Lượt đóng góp đã nhận</p>
 						</div>
 						<div class="widgets-icons-2 rounded-circle bg-gradient-blooker text-white ms-auto">
 							<i class='bx bxs-cloud-upload'></i>
@@ -112,17 +112,6 @@
 						<div>
 							<h6 class="mb-0">Cập nhật Gia Phả Gần Đây</h6>
 						</div>
-						<div class="dropdown ms-auto">
-							<a class="dropdown-toggle dropdown-toggle-nocaret" href="#" data-bs-toggle="dropdown"><i
-									class='bx bx-dots-horizontal-rounded font-22 text-option'></i>
-							</a>
-							<ul class="dropdown-menu">
-								<li><a class="dropdown-item" href="javascript:;">Xem tất cả</a>
-								</li>
-								<li><a class="dropdown-item" href="javascript:;">Xuất báo cáo</a>
-								</li>
-							</ul>
-						</div>
 					</div>
 				</div>
 				<div class="card-body">
@@ -138,35 +127,23 @@
 								</tr>
 							</thead>
 							<tbody>
-								<tr>
-									<td>Nguyễn Văn A</td>
-									<td>Nguyễn Tộc</td>
-									<td>12/05/2026</td>
-									<td><span class="badge bg-gradient-quepal text-white shadow-sm w-100">Đã duyệt</span></td>
-									<td><div class="d-flex order-actions">
-										<a href="javascript:;" class=""><i class='bx bxs-edit'></i></a>
-										<a href="javascript:;" class="ms-3"><i class='bx bxs-trash'></i></a>
-									</div></td>
+								<tr v-if="recentUpdates.length === 0">
+									<td colspan="5" class="text-center text-secondary py-3">Chưa có dữ liệu thành viên mới nào được ghi nhận.</td>
 								</tr>
-								<tr>
-									<td>Trần Thị B</td>
-									<td>Trần Gia</td>
-									<td>11/05/2026</td>
-									<td><span class="badge bg-gradient-blooker text-white shadow-sm w-100">Chờ duyệt</span></td>
-									<td><div class="d-flex order-actions">
-										<a href="javascript:;" class=""><i class='bx bxs-edit'></i></a>
-										<a href="javascript:;" class="ms-3"><i class='bx bxs-trash'></i></a>
-									</div></td>
-								</tr>
-								<tr>
-									<td>Lê Văn C</td>
-									<td>Lê Tộc</td>
-									<td>10/05/2026</td>
-									<td><span class="badge bg-gradient-bloody text-white shadow-sm w-100">Từ chối</span></td>
-									<td><div class="d-flex order-actions">
-										<a href="javascript:;" class=""><i class='bx bxs-edit'></i></a>
-										<a href="javascript:;" class="ms-3"><i class='bx bxs-trash'></i></a>
-									</div></td>
+								<tr v-for="item in recentUpdates" :key="item.id">
+									<td>{{ item.ho_ten }}</td>
+									<td>{{ item.dong_ho }}</td>
+									<td>{{ item.ngay_cap_nhat }}</td>
+									<td>
+										<span :class="['badge shadow-sm w-100', getStatusBadgeClass(item.trang_thai)]">
+											{{ item.trang_thai || 'Còn sống' }}
+										</span>
+									</td>
+									<td>
+										<div class="d-flex order-actions">
+											<span class="text-info"><i class='bx bx-check-shield'></i> Đã đồng bộ</span>
+										</div>
+									</td>
 								</tr>
 							</tbody>
 						</table>
@@ -188,22 +165,22 @@
 						<div class="traffic-source d-flex align-items-center mb-3">
 							<div class="widgets-icons-2 bg-light-primary text-primary rounded-circle"><i class='bx bxs-user-plus'></i></div>
 							<div class="ms-3">
-								<p class="mb-0 text-secondary">Người dùng mới</p>
-								<h6 class="mb-0">15 tài khoản đăng ký mới hôm nay</h6>
+								<p class="mb-0 text-secondary">Người dùng hoạt động</p>
+								<h6 class="mb-0">{{ systemActivities.new_users_today }} tài khoản hoạt động/mới</h6>
 							</div>
 						</div>
 						<div class="traffic-source d-flex align-items-center mb-3">
 							<div class="widgets-icons-2 bg-light-success text-success rounded-circle"><i class='bx bxs-image-add'></i></div>
 							<div class="ms-3">
-								<p class="mb-0 text-secondary">Ảnh di sản</p>
-								<h6 class="mb-0">45 tệp tin ảnh mới được tải lên</h6>
+								<p class="mb-0 text-secondary">Tư liệu & hình ảnh</p>
+								<h6 class="mb-0">{{ systemActivities.images_uploaded }} hình ảnh được lưu giữ</h6>
 							</div>
 						</div>
 						<div class="traffic-source d-flex align-items-center mb-0">
 							<div class="widgets-icons-2 bg-light-warning text-warning rounded-circle"><i class='bx bxs-bell'></i></div>
 							<div class="ms-3">
 								<p class="mb-0 text-secondary">Thông báo</p>
-								<h6 class="mb-0">3 yêu cầu khôi phục mật khẩu</h6>
+								<h6 class="mb-0">{{ systemActivities.notifications }} thông báo hệ thống</h6>
 							</div>
 						</div>
 					</div>
@@ -214,7 +191,8 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
+import axios from 'axios';
 import {
   Chart as ChartJS,
   Title,
@@ -239,6 +217,20 @@ ChartJS.register(
   ArcElement
 );
 
+const metrics = ref({
+  total_members: 0,
+  total_trees: 0,
+  total_contributions: 0,
+  total_requests: 0,
+});
+
+const recentUpdates = ref([]);
+const systemActivities = ref({
+  new_users_today: 0,
+  images_uploaded: 0,
+  notifications: 0,
+});
+
 const lineData = ref({
   labels: ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6'],
   datasets: [
@@ -246,7 +238,7 @@ const lineData = ref({
       label: 'Thành viên mới',
       backgroundColor: 'rgba(23, 162, 184, 0.2)',
       borderColor: '#17a2b8',
-      data: [40, 60, 45, 80, 55, 90],
+      data: [0, 0, 0, 0, 0, 0],
       tension: 0.4,
       fill: true,
     },
@@ -254,7 +246,7 @@ const lineData = ref({
       label: 'Cây gia phả',
       backgroundColor: 'rgba(220, 53, 69, 0.2)',
       borderColor: '#dc3545',
-      data: [15, 20, 30, 25, 45, 60],
+      data: [0, 0, 0, 0, 0, 0],
       tension: 0.4,
       fill: true,
     }
@@ -274,7 +266,7 @@ const doughnutData = ref({
   datasets: [
     {
       backgroundColor: ['#17a2b8', '#ffc107', '#dc3545'],
-      data: [75, 15, 10]
+      data: [0, 0, 0]
     }
   ]
 });
@@ -285,6 +277,77 @@ const doughnutOptions = ref({
   plugins: {
     legend: { position: 'bottom' }
   }
+});
+
+const formatCurrency = (value) => {
+  if (value === undefined || value === null) return '0đ';
+  return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
+};
+
+const getStatusBadgeClass = (status) => {
+  if (status === 'Còn sống' || status === 'Đã duyệt' || status === 'Hoạt động') {
+    return 'bg-gradient-quepal text-white';
+  }
+  if (status === 'Chờ duyệt') {
+    return 'bg-gradient-blooker text-white';
+  }
+  return 'bg-gradient-bloody text-white';
+};
+
+const fetchDashboardData = async () => {
+  try {
+    const res = await axios.get('http://127.0.0.1:8000/api/admin/dashboard');
+    if (res.data.status) {
+      const dbData = res.data.data;
+      metrics.value = dbData.metrics;
+      recentUpdates.value = dbData.recent_updates;
+      systemActivities.value = dbData.system_activities;
+
+      // Update growth chart
+      lineData.value = {
+        labels: dbData.growth_chart.labels,
+        datasets: [
+          {
+            label: 'Thành viên mới',
+            backgroundColor: 'rgba(23, 162, 184, 0.2)',
+            borderColor: '#17a2b8',
+            data: dbData.growth_chart.members,
+            tension: 0.4,
+            fill: true,
+          },
+          {
+            label: 'Cây gia phả',
+            backgroundColor: 'rgba(220, 53, 69, 0.2)',
+            borderColor: '#dc3545',
+            data: dbData.growth_chart.trees,
+            tension: 0.4,
+            fill: true,
+          }
+        ]
+      };
+
+      // Update doughnut chart
+      doughnutData.value = {
+        labels: ['Đã duyệt', 'Chờ duyệt', 'Từ chối'],
+        datasets: [
+          {
+            backgroundColor: ['#17a2b8', '#ffc107', '#dc3545'],
+            data: [
+              dbData.approval_chart.approved,
+              dbData.approval_chart.pending,
+              dbData.approval_chart.rejected
+            ]
+          }
+        ]
+      };
+    }
+  } catch (error) {
+    console.error('Error fetching dashboard statistics:', error);
+  }
+};
+
+onMounted(() => {
+  fetchDashboardData();
 });
 </script>
 
@@ -297,5 +360,4 @@ const doughnutOptions = ref({
   position: relative;
   height: 280px;
 }
-/* Bạn có thể thêm CSS tùy chỉnh ở đây nếu cần */
 </style>

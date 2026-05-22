@@ -73,13 +73,13 @@ class ThanhToanController extends Controller
                             break;
                         }
 
-                        // 2. Kiểm tra khớp linh hoạt (MUAGOI + TÊN + ĐÚNG SỐ TIỀN)
-                        // Lấy phần tên từ expectedContent (bỏ "MUAGOI " ở đầu và bỏ số ở cuối)
-                        $namePart = preg_replace('/^MUAGOI\s+/', '', $expectedContent);
+                        // 2. Kiểm tra khớp linh hoạt (MUAGOI / DONGGOP / CONGDUC + TÊN + ĐÚNG SỐ TIỀN)
+                        // Lấy phần tên từ expectedContent (bỏ "MUAGOI/DONGGOP/CONGDUC " ở đầu và bỏ số ở cuối)
+                        $namePart = preg_replace('/^(MUAGOI|DONGGOP|CONGDUC)\s+/i', '', $expectedContent);
                         $namePart = preg_replace('/\d+$/', '', $namePart);
                         $namePart = trim($namePart);
 
-                        if (stripos($bankContent, 'MUAGOI') !== false && 
+                        if ((stripos($bankContent, 'MUAGOI') !== false || stripos($bankContent, 'DONGGOP') !== false || stripos($bankContent, 'CONGDUC') !== false) && 
                             stripos($bankContent, $namePart) !== false) {
                             $matchedTx = $tx;
                             $matchedTx['amount_in'] = $amountIn;

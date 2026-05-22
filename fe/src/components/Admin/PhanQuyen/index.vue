@@ -227,7 +227,7 @@ export default {
         selectRole(role) {
             this.selectedRole = role;
             this.searchPermission = '';
-            axios.post('http://127.0.0.1:8000/api/phan-quyen/get-chuc-nang', { chuc_vu_id: role.id }, this.getHeaders())
+            axios.post('http://127.0.0.1:8000/api/phan-quyen/get-chuc-nang', { chuc_vu_id: role.id })
                 .then(res => {
                     if (res.data.status) {
                         this.listChucNang = res.data.data;
@@ -257,7 +257,7 @@ export default {
                 chuc_vu_id: this.selectedRole.id,
                 list_chuc_nang: this.selectedPermissions
             };
-            axios.post('http://127.0.0.1:8000/api/phan-quyen/update', payload, this.getHeaders())
+            axios.post('http://127.0.0.1:8000/api/phan-quyen/update', payload)
                 .then(res => {
                     if (res.data.status) {
                         toastr.success(res.data.message);

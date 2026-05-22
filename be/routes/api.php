@@ -5,6 +5,8 @@ use App\Http\Controllers\Api\ChiNhanhController;
 use App\Http\Controllers\Api\ChucNangController;
 use App\Http\Controllers\Api\ChucVuController;
 use App\Http\Controllers\Api\ConNuoiController;
+use App\Http\Controllers\Api\DashboardController;
+use App\Http\Controllers\Api\DeXuatController;
 use App\Http\Controllers\Api\DoiTacController;
 use App\Http\Controllers\Api\DoiTocHoController;
 use App\Http\Controllers\Api\DongGopController;
@@ -36,7 +38,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', [AuthController::class, 'me']);
     Route::post('/update-profile', [AuthController::class, 'updateProfile']);
     Route::post('/change-password', [AuthController::class, 'changePassword']);
-    
+
+    Route::get('/admin/dashboard', [DashboardController::class, 'getStatistics']);
+
     Route::prefix('/doi-tac')->group(function () {
         Route::get('/get-profile', [DoiTacController::class, 'getProfile']);
         Route::post('/update-profile', [DoiTacController::class, 'updateProfile']);
@@ -73,6 +77,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/delete', [ThanhVienController::class, 'delete']);
         Route::post('/status', [ThanhVienController::class, 'status']);
         Route::post('/search', [ThanhVienController::class, 'search']);
+        Route::post('/xac-dinh-quan-he', [ThanhVienController::class, 'xacDinhQuanHe']);
     });
 
     Route::prefix('/nguoi-dung')->group(function () {
@@ -156,6 +161,18 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/update', [SuKienController::class, 'update']);
         Route::post('/delete', [SuKienController::class, 'delete']);
         Route::post('/status', [SuKienController::class, 'status']);
+        Route::get('/get-participants/{suKienId}', [SuKienController::class, 'getParticipants']);
+        Route::post('/register', [SuKienController::class, 'register']);
+        Route::post('/unregister', [SuKienController::class, 'unregister']);
+    });
+
+    Route::prefix('/de-xuat')->group(function () {
+        Route::get('/get-data', [DeXuatController::class, 'getData']);
+        Route::get('/my-proposals', [DeXuatController::class, 'myProposals']);
+        Route::post('/create', [DeXuatController::class, 'create']);
+        Route::post('/approve', [DeXuatController::class, 'approve']);
+        Route::post('/reject', [DeXuatController::class, 'reject']);
+        Route::post('/toggle-auto-approve', [DeXuatController::class, 'toggleAutoApprove']);
     });
 
     Route::prefix('/tai-lieu')->group(function () {

@@ -41,6 +41,7 @@
                     <!-- Pan & Zoom Tree Container -->
                     <div class="tree-viewport" 
                          ref="viewport"
+                         @wheel.prevent="handleWheel"
                          @mousedown="startPan"
                          @mousemove="doPan"
                          @mouseup="endPan"
@@ -402,12 +403,13 @@ export default {
         this.loadChiNhanh();
         this.loadDoiTocHo();
         this.loadData();
-        
-        this.$refs.viewport.addEventListener('wheel', this.handleWheel, { passive: false });
     },
     methods: {
+        getHeaders() {
+            return { headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` } };
+        },
         loadDoiTocHo() {
-            axios.get('http://127.0.0.1:8000/api/doi-toc-ho/get-data')
+            axios.get('http://127.0.0.1:8000/api/doi-toc-ho/get-data', this.getHeaders())
                 .then(res => {
                     if (res.data.status) {
                         this.listDoiTocHo = res.data.data.sort((a, b) => a.so_doi - b.so_doi);
@@ -415,7 +417,7 @@ export default {
                 });
         },
         loadChiNhanh() {
-            axios.get('http://127.0.0.1:8000/api/chi-nhanh/get-data')
+            axios.get('http://127.0.0.1:8000/api/chi-nhanh/get-data', this.getHeaders())
                 .then(res => {
                     if (res.data.status) {
                         this.listChiNhanh = res.data.data;
@@ -423,7 +425,7 @@ export default {
                 });
         },
         loadData() {
-            axios.get('http://127.0.0.1:8000/api/thanh-vien/get-data')
+            axios.get('http://127.0.0.1:8000/api/thanh-vien/get-data', this.getHeaders())
                 .then(res => {
                     if (res.data.status) {
                         this.allMembers = res.data.data;
@@ -477,7 +479,12 @@ export default {
             }
             if (this.avatarFile) formData.set('avatar', this.avatarFile);
             
-            axios.post(url, formData, { headers: { 'Content-Type': 'multipart/form-data' } })
+            axios.post(url, formData, { 
+                headers: { 
+                    'Content-Type': 'multipart/form-data',
+                    'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+                } 
+            })
             .then(res => {
                 if (res.data.status) {
                     toastr.success(res.data.message);
@@ -488,7 +495,7 @@ export default {
         },
         handleDelete() {
             if (confirm('Xóa thành viên này?')) {
-                axios.post('http://127.0.0.1:8000/api/thanh-vien/delete', { id: this.currentMember.id })
+                axios.post('http://127.0.0.1:8000/api/thanh-vien/delete', { id: this.currentMember.id }, this.getHeaders())
                     .then(res => {
                         if (res.data.status) { toastr.success(res.data.message); this.loadData(); this.modal.hide(); }
                     });

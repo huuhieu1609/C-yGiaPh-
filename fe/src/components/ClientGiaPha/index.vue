@@ -5,7 +5,6 @@
     <div class="glow-blob blob-blue"></div>
 
     <div class="page-content">
-      <br>
       <div class="page-header text-center">
         <span class="subtitle-gradient d-block text-uppercase mb-2">DI SẢN TRỰC TUYẾN</span>
         <h2 class="text-gradient fw-bold display-5 mb-1">Cây Gia Phả Dòng Họ</h2>
@@ -31,6 +30,7 @@
         <div
           class="tree-viewport"
           ref="viewport"
+          @wheel.prevent="handleWheel"
           @mousedown="startPan"
           @mousemove="doPan"
           @mouseup="endPan"
@@ -111,8 +111,73 @@
               </div>
             </div>
           </div>
-          <div class="modal-footer border-0 justify-content-center">
-            <button class="btn btn-secondary px-5 radius-10" data-bs-dismiss="modal">Đóng</button>
+          <div class="modal-footer border-0 justify-content-center gap-2 flex-wrap">
+            <button class="btn btn-outline-warning px-3 radius-10 fw-bold" @click="openProposal('edit')">
+              <i class="bx bx-edit-alt"></i> Đề xuất sửa
+            </button>
+            <button v-if="currentMember.loai_quan_he === 'Chính'" class="btn btn-outline-primary px-3 radius-10 fw-bold" @click="openProposal('add_child')">
+              <i class="bx bx-plus-circle"></i> Đề xuất thêm con
+            </button>
+            <button v-if="currentMember.loai_quan_he === 'Chính'" class="btn btn-outline-info px-3 radius-10 fw-bold" @click="openProposal('add_spouse')">
+              <i class="bx bx-heart"></i> Đề xuất thêm Vợ/Chồng
+            </button>
+            <button class="btn btn-secondary px-4 radius-10" data-bs-dismiss="modal">Đóng</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit/Add Proposal Modal -->
+    <div class="modal fade" id="proposalModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content radius-15 shadow-lg border-0">
+          <div class="modal-header border-0 bg-primary text-white" style="border-radius:15px 15px 0 0">
+            <h5 class="modal-title fw-bold">
+              <i class="bx bx-git-pull-request me-2"></i>{{ proposalTitle }}
+            </h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body p-4">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label fw-bold">Họ và Tên</label>
+                <input type="text" class="form-control radius-8 border-2 shadow-none" v-model="proposalForm.ho_ten" placeholder="Nguyễn Văn A">
+              </div>
+              <div class="col-md-3">
+                <label class="form-label fw-bold">Giới tính</label>
+                <select class="form-select radius-8 border-2 shadow-none" v-model="proposalForm.gioi_tinh">
+                  <option value="Nam">Nam</option>
+                  <option value="Nữ">Nữ</option>
+                </select>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label fw-bold">Đời thứ</label>
+                <input type="number" class="form-control radius-8 border-2 shadow-none" v-model="proposalForm.doi_thu" min="1">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-bold">Ngày sinh</label>
+                <input type="date" class="form-control radius-8 border-2 shadow-none" v-model="proposalForm.ngay_sinh">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-bold">Trạng thái</label>
+                <select class="form-select radius-8 border-2 shadow-none" v-model="proposalForm.trang_thai">
+                  <option value="Còn sống">Còn sống</option>
+                  <option value="Đã mất">Đã mất</option>
+                </select>
+              </div>
+              <div class="col-md-6" v-if="proposalForm.trang_thai === 'Đã mất'">
+                <label class="form-label fw-bold">Ngày mất</label>
+                <input type="date" class="form-control radius-8 border-2 shadow-none" v-model="proposalForm.ngay_mat">
+              </div>
+              <div class="col-md-12">
+                <label class="form-label fw-bold">Ghi chú / Tiểu sử</label>
+                <textarea class="form-control radius-8 border-2 shadow-none" rows="3" v-model="proposalForm.ghi_chu" placeholder="Thông tin thêm về thành viên..."></textarea>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer border-0">
+            <button class="btn btn-light px-4 radius-10" data-bs-dismiss="modal">Hủy</button>
+            <button class="btn btn-primary px-4 radius-10 fw-bold" @click="submitProposal">Gửi Đề Xuất</button>
           </div>
         </div>
       </div>
@@ -123,6 +188,8 @@
 <script>
 import { defineComponent, h } from 'vue';
 import axios from 'axios';
+
+import toastr from 'toastr';
 
 const fmtDate = (d) => d ? new Date(d).toLocaleDateString('vi-VN') : '';
 
@@ -213,7 +280,19 @@ export default {
       posY: 0,
       isPanning: false,
       lastMouseX: 0,
-      lastMouseY: 0
+      lastMouseY: 0,
+      proposalModal: null,
+      proposalType: 'edit',
+      proposalTitle: '',
+      proposalForm: {
+        ho_ten: '',
+        gioi_tinh: 'Nam',
+        doi_thu: 1,
+        ngay_sinh: '',
+        trang_thai: 'Còn sống',
+        ngay_mat: '',
+        ghi_chu: ''
+      }
     };
   },
   computed: {
@@ -260,10 +339,10 @@ export default {
   mounted() {
     if (window.bootstrap) {
       this.modal = new window.bootstrap.Modal(document.getElementById('viewMemberModal'));
+      this.proposalModal = new window.bootstrap.Modal(document.getElementById('proposalModal'));
     }
     this.loadDoiTocHo();
     this.loadData();
-    this.$refs.viewport.addEventListener('wheel', this.handleWheel, { passive: false });
   },
   methods: {
     fmtDate,
@@ -289,7 +368,87 @@ export default {
       this.posY += e.clientY - this.lastMouseY;
       this.lastMouseX = e.clientX; this.lastMouseY = e.clientY;
     },
-    endPan() { this.isPanning = false; }
+    endPan() { this.isPanning = false; },
+    openProposal(type) {
+      this.proposalType = type;
+      if (type === 'edit') {
+        this.proposalTitle = `Đề Xuất Chỉnh Sửa Thông Tin - ${this.currentMember.ho_ten}`;
+        this.proposalForm = {
+          ho_ten: this.currentMember.ho_ten,
+          gioi_tinh: this.currentMember.gioi_tinh || 'Nam',
+          doi_thu: this.currentMember.doi_thu,
+          ngay_sinh: this.currentMember.ngay_sinh ? this.currentMember.ngay_sinh.substring(0, 10) : '',
+          trang_thai: this.currentMember.trang_thai || 'Còn sống',
+          ngay_mat: this.currentMember.ngay_mat ? this.currentMember.ngay_mat.substring(0, 10) : '',
+          ghi_chu: this.currentMember.ghi_chu || ''
+        };
+      } else if (type === 'add_child') {
+        this.proposalTitle = `Đề Xuất Thêm Con của ${this.currentMember.ho_ten}`;
+        this.proposalForm = {
+          ho_ten: '',
+          gioi_tinh: 'Nam',
+          doi_thu: this.currentMember.doi_thu + 1,
+          ngay_sinh: '',
+          trang_thai: 'Còn sống',
+          ngay_mat: '',
+          ghi_chu: ''
+        };
+      } else if (type === 'add_spouse') {
+        this.proposalTitle = `Đề Xuất Thêm Vợ/Chồng của ${this.currentMember.ho_ten}`;
+        this.proposalForm = {
+          ho_ten: '',
+          gioi_tinh: this.currentMember.gioi_tinh === 'Nam' ? 'Nữ' : 'Nam',
+          doi_thu: this.currentMember.doi_thu,
+          ngay_sinh: '',
+          trang_thai: 'Còn sống',
+          ngay_mat: '',
+          ghi_chu: ''
+        };
+      }
+      this.modal.hide();
+      this.proposalModal.show();
+    },
+    submitProposal() {
+      if (!this.proposalForm.ho_ten) {
+        toastr.warning('Vui lòng nhập họ và tên!');
+        return;
+      }
+      const token = localStorage.getItem('access_token');
+      if (!token) {
+        toastr.error('Vui lòng đăng nhập để thực hiện đề xuất!');
+        return;
+      }
+      const payload = {
+        type: this.proposalType,
+        thanh_vien_id: this.currentMember.id,
+        data: {
+          ho_ten: this.proposalForm.ho_ten,
+          gioi_tinh: this.proposalForm.gioi_tinh,
+          doi_thu: this.proposalForm.doi_thu,
+          ngay_sinh: this.proposalForm.ngay_sinh || null,
+          trang_thai: this.proposalForm.trang_thai,
+          ngay_mat: this.proposalForm.trang_thai === 'Đã mất' ? (this.proposalForm.ngay_mat || null) : null,
+          ghi_chu: this.proposalForm.ghi_chu,
+          chi_nhanh_id: this.currentMember.chi_nhanh_id
+        }
+      };
+
+      axios.post('http://127.0.0.1:8000/api/de-xuat/create', payload, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      .then(res => {
+        if (res.data.status) {
+          toastr.success(res.data.message);
+          this.proposalModal.hide();
+          this.loadData();
+        } else {
+          toastr.error(res.data.message);
+        }
+      })
+      .catch(err => {
+        toastr.error(err.response?.data?.message || 'Gửi đề xuất thất bại, vui lòng thử lại.');
+      });
+    }
   }
 };
 </script>
