@@ -128,6 +128,46 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Visual Lineage Path Flowchart -->
+                        <div v-if="result.path && result.path.length > 0" class="lineage-path-card mt-4 p-4 p-lg-5 rounded-4 shadow-sm bg-white border">
+                            <div class="d-flex align-items-center mb-4">
+                                <div class="icon-box bg-dark text-white me-3">
+                                    <i class="bx bx-git-commit fs-4"></i>
+                                </div>
+                                <h4 class="fw-bold mb-0 text-dark">Sơ đồ đường đi huyết thống</h4>
+                            </div>
+                            
+                            <div class="path-flow-container py-3">
+                                <div class="row g-3 justify-content-center align-items-center text-center">
+                                    <template v-for="(node, idx) in result.path" :key="node.id">
+                                        <!-- Member Node -->
+                                        <div class="col-auto">
+                                            <div class="path-node p-3 rounded-3 border d-flex flex-column align-items-center" 
+                                                 :class="{'border-primary bg-primary-soft': idx === 0, 'border-warning bg-gold-soft': idx === result.path.length - 1, 'bg-light': idx > 0 && idx < result.path.length - 1}">
+                                                <div class="avatar-mini-ring mb-2">
+                                                    <img :src="node.avatar || 'https://ui-avatars.com/api/?name=' + node.ho_ten + '&background=' + (idx === 0 ? '0d6efd' : idx === result.path.length - 1 ? 'd4af37' : '6c757d') + '&color=fff'" 
+                                                         class="rounded-circle" width="50" height="50">
+                                                </div>
+                                                <h6 class="fw-bold mb-0 text-dark small">{{ node.ho_ten }}</h6>
+                                                <span class="badge bg-secondary-soft text-secondary mt-1" style="font-size: 10px;">Đời {{ node.doi_thu }}</span>
+                                                <span v-if="idx === 0" class="badge bg-primary text-white mt-1" style="font-size: 9px;">Bạn (A)</span>
+                                                <span v-else-if="idx === result.path.length - 1" class="badge bg-warning text-dark mt-1" style="font-size: 9px;">Đối tượng (B)</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Connection Edge -->
+                                        <div v-if="idx < result.path.length - 1" class="col-auto px-0 d-flex flex-column align-items-center justify-content-center connection-arrow-col">
+                                            <div class="connection-line"></div>
+                                            <span class="badge bg-dark text-white rounded-pill px-2 py-1 my-1 relation-step-label shadow-sm" style="font-size: 10px; z-index: 2;">
+                                                {{ result.path[idx + 1].relation_label }}
+                                            </span>
+                                            <div class="connection-arrow"><i class="bx bx-chevron-right text-muted fs-5"></i></div>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -176,52 +216,24 @@ export default {
                 return;
             }
 
-            const a = this.personA;
-            const b = this.personB;
-            const diff = a.doi_thu - b.doi_thu;
-
-            let term = "Họ hàng";
-            let description = "Cùng nằm trong hệ thống huyết thống của dòng tộc.";
-
-            if (diff === 0) {
-                if (a.cha_id === b.cha_id && a.cha_id !== null) {
-                    term = a.gioi_tinh === 'Nam' ? "Anh/Em" : "Chị/Em";
-                    description = "Là anh chị em ruột, cùng chung huyết thống trực hệ.";
+            axios.post('http://127.0.0.1:8000/api/thanh-vien/xac-dinh-quan-he', {
+                id_a: this.idA,
+                id_b: this.idB
+            })
+            .then(res => {
+                if (res.data.status) {
+                    this.result = {
+                        term: res.data.term,
+                        description: res.data.description,
+                        path: res.data.path
+                    };
                 } else {
-                    term = "Anh/Chị/Em họ";
-                    description = "Cùng một thế hệ nhưng khác nhánh phụ hoặc đời cha mẹ khác nhau.";
+                    toastr.error(res.data.message || 'Lỗi xác định mối quan hệ!');
                 }
-            } else if (diff === 1) {
-                if (a.cha_id === b.id) {
-                    term = b.gioi_tinh === 'Nam' ? "Bố / Cha" : "Mẹ";
-                    description = "Quan hệ cha con/mẹ con trực hệ, một bậc sinh thành.";
-                } else {
-                    term = b.gioi_tinh === 'Nam' ? "Chú / Bác" : "Cô / Dì";
-                    description = b.ho_ten + " là hàng bề trên (cùng thế hệ với cha/mẹ).";
-                }
-            } else if (diff === -1) {
-                if (b.cha_id === a.id) {
-                    term = "Con cái";
-                    description = b.ho_ten + " là hậu duệ trực hệ (đời con).";
-                } else {
-                    term = "Cháu";
-                    description = b.ho_ten + " là hàng cháu, vai dưới một bậc.";
-                }
-            } else if (diff === 2) {
-                term = b.gioi_tinh === 'Nam' ? "Ông" : "Bà";
-                description = b.ho_ten + " là bậc tiền bối đời thứ hai (ông bà).";
-            } else if (diff === -2) {
-                term = "Cháu Nội";
-                description = b.ho_ten + " là hậu duệ đời thứ hai (cháu nội).";
-            } else if (diff >= 3) {
-                term = "Cụ / Cố";
-                description = b.ho_ten + " là bậc đại tiền bối khởi nguồn lâu đời.";
-            } else if (diff <= -3) {
-                term = "Chắt / Chít";
-                description = b.ho_ten + " là hậu duệ đời thứ 3, 4 về sau.";
-            }
-
-            this.result = { term, description };
+            })
+            .catch(err => {
+                toastr.error(err.response?.data?.message || 'Có lỗi xảy ra khi kết nối máy chủ!');
+            });
         }
     }
 }
@@ -360,5 +372,67 @@ export default {
 @media (max-width: 991px) {
     .display-2 { font-size: 2.5rem; }
     .mt-n5 { margin-top: -60px; }
+}
+.bg-primary-soft { background-color: #f0f7ff; }
+.bg-secondary-soft { background-color: #f1f5f9; color: #475569; }
+.avatar-mini-ring {
+    padding: 3px;
+    border: 2px solid #cbd5e1;
+    border-radius: 50%;
+    display: inline-block;
+}
+.border-primary .avatar-mini-ring { border-color: #0d6efd; }
+.border-warning .avatar-mini-ring { border-color: #d4af37; }
+
+.path-node {
+    min-width: 120px;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    transition: all 0.2s ease;
+}
+.path-node:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.connection-line {
+    width: 60px;
+    height: 3px;
+    background: linear-gradient(90deg, #cbd5e1 0%, #94a3b8 100%);
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 1;
+}
+
+.connection-arrow-col {
+    position: relative;
+    width: 90px;
+    height: 100px;
+}
+
+.relation-step-label {
+    position: relative;
+    z-index: 5;
+    background-color: #0f172a !important;
+}
+
+.connection-arrow {
+    position: relative;
+    z-index: 2;
+    margin-top: 2px;
+}
+
+@media (max-width: 768px) {
+    .connection-arrow-col {
+        width: 100%;
+        height: auto;
+        padding: 10px 0 !important;
+    }
+    .connection-line {
+        display: none;
+    }
+    .bx-chevron-right {
+        transform: rotate(90deg);
+    }
 }
 </style>

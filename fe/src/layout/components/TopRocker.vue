@@ -447,7 +447,7 @@ export default {
         handleLogout() {
             localStorage.removeItem('access_token');
             localStorage.removeItem('user');
-            this.$router.push('/admin/login');
+            this.$router.push('/');
         }
     }
 }
