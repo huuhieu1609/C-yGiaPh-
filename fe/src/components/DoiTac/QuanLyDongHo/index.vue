@@ -134,9 +134,6 @@ export default {
                         toastr.success(res.data.message);
                         this.loadData();
                         this.resetForm();
-                        if (!this.isEditing) {
-                            this.$router.push('/doi-tac/thanh-vien');
-                        }
                     } else {
                         toastr.error(res.data.message);
                     }

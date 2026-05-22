@@ -9,17 +9,20 @@
                         </div>
                         <div class="col-md-9 text-md-end d-flex align-items-center justify-content-end gap-2 flex-wrap">
                             
+                            <!-- Branch Selector (Global Filter) -->
                             <div class="me-2" style="width: 220px;">
                                 <select class="form-select radius-30 border-2 shadow-none fw-bold" v-model="selectedChiNhanhId" @change="resetView">
                                     <option v-for="cn in listChiNhanh" :key="cn.id" :value="cn.id">{{ cn.ten_chi }}</option>
                                 </select>
                             </div>
 
+                            <!-- Search Bar -->
                             <div class="position-relative d-none d-lg-block" style="width: 200px;">
                                 <input type="text" class="form-control ps-5 radius-30 border-2" v-model="searchQuery" placeholder="Tìm thành viên...">
                                 <span class="position-absolute top-50 translate-middle-y start-0 ms-3 text-secondary"><i class="bx bx-search"></i></span>
                             </div>
                             
+                            <!-- Zoom Controls -->
                             <div class="btn-group shadow-sm radius-30 overflow-hidden border">
                                 <button class="btn btn-white px-2" @click="zoomOut" title="Thu nhỏ"><i class="bx bx-minus"></i></button>
                                 <button class="btn btn-white px-1 fw-bold" style="min-width: 50px; font-size: 13px;">{{ Math.round(zoom * 100) }}%</button>
@@ -44,6 +47,7 @@
                             <i class="bx bx-plus-circle"></i> Khởi Tạo Ngay
                         </router-link>
                     </div>
+                    <!-- Pan & Zoom Tree Container -->
                     <div v-else class="tree-viewport" 
                          ref="viewport"
                          @wheel.prevent="handleWheel"
@@ -77,6 +81,7 @@
                         </div>
                     </div>
 
+                    <!-- Mini Map or Navigation Hint -->
                     <div class="view-controls position-absolute bottom-0 end-0 m-3 p-2 bg-white bg-opacity-75 rounded-3 shadow-sm border small text-muted d-none d-md-block">
                         <i class="bx bx-mouse ms-1"></i> Cuộn để thu phóng • <i class="bx bx-move ms-1"></i> Kéo để di chuyển
                     </div>
@@ -84,6 +89,7 @@
             </div>
         </div>
 
+        <!-- Modal Thêm/Sửa Thành Viên (Giữ nguyên logic cũ) -->
         <div class="modal fade" id="memberModal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-lg modal-dialog-centered">
                 <div class="modal-content radius-15 shadow-lg border-0">

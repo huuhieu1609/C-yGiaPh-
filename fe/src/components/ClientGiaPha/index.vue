@@ -5,7 +5,6 @@
     <div class="glow-blob blob-blue"></div>
 
     <div class="page-content">
-      <br>
       <div class="page-header text-center">
         <span class="subtitle-gradient d-block text-uppercase mb-2">DI SẢN TRỰC TUYẾN</span>
         <h2 class="text-gradient fw-bold display-5 mb-1">Cây Gia Phả Dòng Họ</h2>
