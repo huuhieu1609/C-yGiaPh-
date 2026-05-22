@@ -7,6 +7,8 @@ import Blank from './Layout/wrapper/blank.vue'
 import Partner from './Layout/wrapper/partner.vue'
 import Toast, { POSITION } from 'vue-toastification';
 import 'vue-toastification/dist/index.css';
+import 'toastr/build/toastr.min.css';
+import './assets/css/custom-toastr.css';
 import axios from 'axios';
 
 // Cấu hình interceptor cho axios để tự động đính kèm token vào header

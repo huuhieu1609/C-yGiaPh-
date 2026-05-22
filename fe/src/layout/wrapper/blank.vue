@@ -7,5 +7,4 @@ export default {
 }
 </script>
 <style>
-@import "toastr/build/toastr.css";
 </style>
