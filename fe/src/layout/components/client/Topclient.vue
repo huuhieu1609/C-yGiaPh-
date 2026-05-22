@@ -87,7 +87,8 @@ export default {
       isAdmin: false,
       isDropdownOpen: false,
       userName: '',
-      userAvatar: 'https://dzfullstack.com/assets/images/logo-1.png'
+      defaultAvatar: "data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%231e293b'/%3E%3Ccircle cx='50' cy='35' r='18' fill='%23d4af37'/%3E%3Cpath d='M15 85 C15 67 30 55 50 55 C70 55 85 67 85 85 Z' fill='%23d4af37'/%3E%3C/svg%3E",
+      userAvatar: "data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%231e293b'/%3E%3Ccircle cx='50' cy='35' r='18' fill='%23d4af37'/%3E%3Cpath d='M15 85 C15 67 30 55 50 55 C70 55 85 67 85 85 Z' fill='%23d4af37'/%3E%3C/svg%3E"
     }
   },
   directives: {
@@ -127,7 +128,12 @@ export default {
         const user = userData.user || userData;
         this.userName = user.ho_ten;
         this.isAdmin = user.vai_tro === 'Admin';
-        this.userAvatar = user.avatar || 'https://dzfullstack.com/assets/images/logo-1.png';
+        const avatar = user.avatar;
+        if (avatar && avatar !== 'https://dzfullstack.com/assets/images/logo-1.png') {
+          this.userAvatar = avatar;
+        } else {
+          this.userAvatar = this.defaultAvatar;
+        }
       } else {
         this.isLoggedIn = false;
         this.isAdmin = false;

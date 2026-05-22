@@ -11,10 +11,10 @@
             <div class="row">
               <!-- Left Column: Avatar & Basic Info -->
               <div class="col-md-4 text-center mb-4 mb-md-0 border-end">
-                <div class="position-relative d-inline-block">
-                  <img :src="profile.avatar || 'https://dzfullstack.com/assets/images/logo-1.png'" class="rounded-circle border border-3 border-warning profile-avatar" alt="Avatar" width="150" height="150" style="object-fit: cover;">
-                  <label for="avatar-upload" class="btn btn-sm btn-warning rounded-circle position-absolute bottom-0 end-0" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer;" title="Cập nhật ảnh đại diện">
-                    <i class="bx bx-camera text-dark fs-5"></i>
+                <div class="profile-avatar-container">
+                  <img :src="profile.avatar || defaultAvatar" class="rounded-circle border border-3 border-warning profile-avatar shadow" alt="Avatar" width="150" height="150" style="object-fit: cover;">
+                  <label for="avatar-upload" class="avatar-upload-btn rounded-circle position-absolute bottom-0 end-0" title="Cập nhật ảnh đại diện">
+                    <i class="bx bx-camera"></i>
                   </label>
                   <input type="file" id="avatar-upload" @change="onFileChange" class="d-none" accept="image/*">
                 </div>
@@ -23,7 +23,7 @@
                 <p class="text-muted small mb-0">{{ profile.email }}</p>
                 
                 <div class="mt-4">
-                  <button type="button" class="btn btn-light w-100 mb-2" @click="handleLogout">
+                  <button type="button" class="btn btn-light w-100 mb-2 border hover-shadow" @click="handleLogout" style="transition: all 0.3s ease;">
                     <i class="bx bx-log-out me-1"></i> Đăng Xuất
                   </button>
                 </div>
@@ -148,6 +148,7 @@ export default {
         vai_tro: ''
       },
       avatarFile: null,
+      defaultAvatar: "data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%231e293b'/%3E%3Ccircle cx='50' cy='35' r='18' fill='%23d4af37'/%3E%3Cpath d='M15 85 C15 67 30 55 50 55 C70 55 85 67 85 85 Z' fill='%23d4af37'/%3E%3C/svg%3E",
       passwordData: {
         current_password: '',
         new_password: '',
@@ -279,6 +280,44 @@ export default {
 <style scoped>
 .profile-container {
   min-height: calc(100vh - 300px);
+}
+.profile-avatar-container {
+  position: relative;
+  display: inline-block;
+  transition: all 0.3s ease;
+}
+.profile-avatar {
+  transition: all 0.3s ease;
+}
+.profile-avatar-container:hover .profile-avatar {
+  filter: brightness(0.9);
+  box-shadow: 0 0 15px rgba(212, 175, 55, 0.4) !important;
+}
+.avatar-upload-btn {
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background-color: #d4af37;
+  color: #1e293b;
+  border: 2px solid #ffffff;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.avatar-upload-btn:hover {
+  background-color: #1e293b;
+  color: #d4af37;
+  transform: scale(1.1);
+  box-shadow: 0 6px 14px rgba(212, 175, 55, 0.3);
+}
+.avatar-upload-btn i {
+  font-size: 20px;
+}
+.hover-shadow:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  background-color: #f8f9fa !important;
 }
 .form-control:focus {
   border-color: #d4af37;
