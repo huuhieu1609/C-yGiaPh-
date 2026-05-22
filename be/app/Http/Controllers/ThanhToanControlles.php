@@ -97,29 +97,34 @@ class ThanhToanController extends Controller
                     );
                     $dongGop->update(['trang_thai' => 'Đã duyệt']);
 
-                    // 2. Tự động kích hoạt/cộng dồn Gói Đối Tác
-                    $user = \App\Models\NguoiDung::find($nguoiDungId);
-                    if ($user) {
-                        $user->is_doi_tac = 1;
-                        $user->save();
-                    }
+                    // 2. Tự động kích hoạt/cộng dồn Gói Đối Tác (Chỉ dành cho MUAGOI)
+                    $isMuaGoi = (stripos($expectedContent, 'MUAGOI') !== false) || 
+                                 (stripos($matchedTx['transaction_content'] ?? '', 'MUAGOI') !== false);
+                    
+                    if ($isMuaGoi) {
+                        $user = \App\Models\NguoiDung::find($nguoiDungId);
+                        if ($user) {
+                            $user->is_doi_tac = 1;
+                            $user->save();
+                        }
 
-                    $doiTac = DoiTac::where('id_nguoi_dung', $nguoiDungId)
-                        ->where('trang_thai', 1)
-                        ->first();
-                    if ($doiTac) {
-                        $doiTac->so_tien += $amountIn;
-                        $doiTac->ngay_ket_thuc = Carbon::parse($doiTac->ngay_ket_thuc)->addYear();
-                        $doiTac->save();
-                    } else {
-                        DoiTac::create([
-                            'id_nguoi_dung' => $nguoiDungId,
-                            'ten_goi' => 'Gói Đối Tác',
-                            'so_tien' => $amountIn,
-                            'ngay_bat_dau' => now(),
-                            'ngay_ket_thuc' => now()->addYear(),
-                            'trang_thai' => 1,
-                        ]);
+                        $doiTac = DoiTac::where('id_nguoi_dung', $nguoiDungId)
+                            ->where('trang_thai', 1)
+                            ->first();
+                        if ($doiTac) {
+                            $doiTac->so_tien += $amountIn;
+                            $doiTac->ngay_ket_thuc = Carbon::parse($doiTac->ngay_ket_thuc)->addYear();
+                            $doiTac->save();
+                        } else {
+                            DoiTac::create([
+                                'id_nguoi_dung' => $nguoiDungId,
+                                'ten_goi' => 'Gói Đối Tác',
+                                'so_tien' => $amountIn,
+                                'ngay_bat_dau' => now(),
+                                'ngay_ket_thuc' => now()->addYear(),
+                                'trang_thai' => 1,
+                            ]);
+                        }
                     }
 
                     return response()->json([

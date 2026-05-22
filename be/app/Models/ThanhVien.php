@@ -29,7 +29,11 @@ class ThanhVien extends Model
         'loai_quan_he',
         'spouse_of_id',
         'ghi_chu',
-        'avatar'
+        'avatar',
+        'ngay_mat_al_ngay',
+        'ngay_mat_al_thang',
+        'ngay_mat_al_nam',
+        'ngay_mat_al_nhuan'
     ];
 
     protected $appends = ['id_chi_nhanh', 'id_cha', 'id_me'];

@@ -217,3 +217,5 @@ Route::prefix('/thanh-toan')->group(function () {
     Route::get('/get-data', [ThanhToanController::class, 'index']);
     Route::post('/xac-nhan-thanh-toan', [ThanhToanController::class, 'paymentVerify']);
 });
+
+Route::get('/thanh-vien/public-detail/{id}', [ThanhVienController::class, 'getPublicDetail']);
