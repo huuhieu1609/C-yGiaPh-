@@ -35,6 +35,12 @@ const routes = [
         meta: { layout: 'client', requiresAuth: true }
     },
     {
+        path: '/tuong-niem',
+        name: 'client-tuong-niem',
+        component: () => import('../components/ClientTuongNiem/index.vue'),
+        meta: { layout: 'client', requiresAuth: true }
+    },
+    {
         path: '/tra-cuu',
         name: 'client-tra-cuu',
         component: () => import('../components/ClientTraCuu/index.vue'),
@@ -66,9 +72,7 @@ const routes = [
     },
     {
         path: '/de-xuat',
-        name: 'client-de-xuat',
-        component: () => import('../components/ClientDeXuat/index.vue'),
-        meta: { layout: 'client', requiresAuth: true }
+        redirect: '/gia-pha'
     },
     {
         path: '/su-kien',
