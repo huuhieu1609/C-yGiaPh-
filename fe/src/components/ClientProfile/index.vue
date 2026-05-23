@@ -107,7 +107,7 @@
                       <i class="bx bx-receipt fs-1 text-muted"></i>
                       <p class="mt-2 text-muted">Chưa có lịch sử giao dịch nào.</p>
                       <div class="d-flex flex-wrap justify-content-center gap-2 mt-3">
-                        <router-link to="/thanh-toan" class="btn btn-sm px-3" style="background:#d4af37;color:#000;font-weight:600;transition:all 0.3s ease;">
+                        <router-link to="/dich-vu-goi" class="btn btn-sm px-3" style="background:#d4af37;color:#000;font-weight:600;transition:all 0.3s ease;">
                           <i class="bx bx-package me-1"></i> Đăng ký Gói Đối Tác
                         </router-link>
                         <router-link to="/dong-gop-quy" class="btn btn-sm btn-dark px-3" style="transition:all 0.3s ease;">

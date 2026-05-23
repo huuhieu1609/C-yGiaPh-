@@ -10,7 +10,7 @@
           <li><router-link to="/gia-pha">Gia Phả</router-link></li>
           <li v-if="isLoggedIn"><router-link to="/su-kien">Sự Kiện</router-link></li>
           <li v-if="isLoggedIn"><router-link to="/ban-do">Bản Đồ Số</router-link></li>
-          <li v-if="isLoggedIn"><router-link to="/tuong-niem">Tưởng Niệm</router-link></li>
+          <li v-if="isLoggedIn"><router-link to="/tuong-niem">Dòng Lịch Sử</router-link></li>
           <li><router-link to="/tra-cuu">Tra Cứu</router-link></li>
           <li><router-link to="/dich-vu-goi">Dịch Vụ Gói</router-link></li>
         </ul>
@@ -40,7 +40,7 @@
                   <i class="bx bx-map-pin"></i> Bản đồ số mộ phần
                 </router-link>
                 <router-link to="/tuong-niem" @click="isDropdownOpen = false">
-                  <i class="bx bx-heart"></i> Tưởng niệm & Dâng hương
+                  <i class="bx bx-history"></i> Dòng Lịch Sử Gia Tộc
                 </router-link>
                 <router-link to="/tra-cuu" @click="isDropdownOpen = false">
                   <i class="bx bx-search-alt"></i> Tra cứu xưng hô
@@ -72,7 +72,7 @@
           <li><router-link to="/profile" @click="isMobileMenuOpen = false">Hồ sơ cá nhân</router-link></li>
           <li><router-link to="/su-kien" @click="isMobileMenuOpen = false">Sự kiện dòng họ</router-link></li>
           <li><router-link to="/ban-do" @click="isMobileMenuOpen = false">Bản đồ số</router-link></li>
-          <li><router-link to="/tuong-niem" @click="isMobileMenuOpen = false">Tưởng niệm</router-link></li>
+          <li><router-link to="/tuong-niem" @click="isMobileMenuOpen = false">Dòng Lịch Sử</router-link></li>
           <li><router-link to="/tra-cuu" @click="isMobileMenuOpen = false">Tra cứu xưng hô</router-link></li>
           <li><a href="javascript:;" @click="handleLogout">Đăng xuất</a></li>
         </template>
