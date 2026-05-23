@@ -19,6 +19,9 @@
             <span class="zoom-label">{{ Math.round(zoom * 100) }}%</span>
             <button class="tb-btn" @click="zoomOut"><i class="bx bx-minus"></i></button>
             <button class="tb-btn" @click="resetView" title="Đặt lại"><i class="bx bx-expand-alt"></i></button>
+            <button class="tb-btn-text text-warning ms-2" @click="openProposalsHistoryModal" title="Lịch sử đề xuất">
+              <i class="bx bx-git-pull-request"></i> Đề xuất
+            </button>
           </div>
           <div class="toolbar-right">
              <span class="toolbar-hint">
@@ -235,6 +238,84 @@
             </div>
         </div>
     </div>
+
+    <!-- proposalsHistoryModal -->
+    <div class="modal fade" id="proposalsHistoryModal" tabindex="-1" aria-hidden="true" style="z-index: 2050 !important;">
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content radius-15 shadow-lg border-0 bg-dark text-white">
+          <div class="modal-header border-0 bg-black/40 pb-2">
+            <h5 class="modal-title fw-bold" style="color:#d4af37">
+              <i class="bx bx-git-pull-request me-2"></i>Lịch Sử Đề Xuất Phả Hệ
+            </h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body p-4 scrollable-proposals" style="max-height: 480px; overflow-y: auto;">
+            
+            <div v-if="isProposalsLoading" class="text-center py-4">
+              <div class="spinner-border text-warning" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+              <p class="text-white-50 mt-2">Đang tải lịch sử đề xuất...</p>
+            </div>
+
+            <div v-else-if="proposalsList.length === 0" class="text-center py-5 text-muted">
+              <i class="bx bx-git-pull-request fs-1 opacity-25 mb-2"></i>
+              <p class="mb-0 text-white-50">Bạn chưa gửi đề xuất chỉnh sửa phả hệ nào.</p>
+            </div>
+
+            <div v-else class="timeline-list">
+              <div v-for="item in proposalsList" :key="item.id" class="proposal-history-item mb-4 p-3 rounded-3" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
+                  <div>
+                    <h6 class="fw-bold mb-1" style="color:#ffd700;">{{ typeLabel(item.type) }}</h6>
+                    <span class="text-white-50 small">
+                      <i class="bx bx-time-five me-1"></i>Gửi lúc: {{ fmtDateTime(item.created_at) }}
+                    </span>
+                  </div>
+                  <span class="badge px-3 py-1.5" :class="statusClass(item.status)">
+                    {{ statusLabel(item.status) }}
+                  </span>
+                </div>
+
+                <div class="proposal-body text-white-50 mt-3">
+                  <!-- Target Deceased/Member -->
+                  <div class="target-member mb-2 p-2 rounded bg-white/5 border border-white/5" v-if="item.thanh_vien">
+                    <span class="small d-block text-white-50 mb-1">
+                      {{ item.type === 'edit' ? 'Thành viên cần chỉnh sửa:' : (item.type === 'add_child' ? 'Đề xuất làm con của:' : 'Đề xuất kết hôn với:') }}
+                    </span>
+                    <strong>{{ item.thanh_vien.ho_ten }}</strong> (Đời {{ item.thanh_vien.doi_thu }})
+                  </div>
+
+                  <!-- Details -->
+                  <div class="p-2 rounded" style="background: rgba(0,0,0,0.2);">
+                    <div class="row g-2 text-start small">
+                      <div class="col-6">Họ tên: <strong class="text-white">{{ item.data.ho_ten }}</strong></div>
+                      <div class="col-6">Giới tính: <strong class="text-white">{{ item.data.gioi_tinh }}</strong></div>
+                      <div class="col-6">Thế hệ: <strong class="text-white">Đời {{ item.data.doi_thu }}</strong></div>
+                      <div class="col-6" v-if="item.data.ngay_sinh">Ngày sinh: <strong class="text-white">{{ fmtDate(item.data.ngay_sinh) }}</strong></div>
+                      <div class="col-6">Trạng thái: <strong :class="item.data.trang_thai === 'Đã mất' ? 'text-danger' : 'text-success'">{{ item.data.trang_thai }}</strong></div>
+                      <div class="col-6" v-if="item.data.trang_thai === 'Đã mất' && item.data.ngay_mat">Ngày mất: <strong class="text-white">{{ fmtDate(item.data.ngay_mat) }}</strong></div>
+                      <div class="col-12 mt-1" v-if="item.data.ghi_chu">Ghi chú: <p class="mb-0 text-white-50">{{ item.data.ghi_chu }}</p></div>
+                    </div>
+                  </div>
+
+                  <!-- Clan Feedback Note -->
+                  <div class="mt-2 p-2 rounded border" :class="item.status === 'approved' ? 'border-success/20 bg-success/5 text-success' : 'border-danger/20 bg-danger/5 text-danger'" v-if="item.note">
+                    <span class="d-block small fw-bold mb-1"><i class="bx bx-comment-detail me-1"></i>Phản hồi từ Gia tộc:</span>
+                    <p class="mb-0 text-white">{{ item.note }}</p>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+
+          </div>
+          <div class="modal-footer border-0">
+            <button class="btn btn-light px-4 radius-10" data-bs-dismiss="modal">Đóng</button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -368,7 +449,10 @@ export default {
         trang_thai: 'Còn sống',
         ngay_mat: '',
         ghi_chu: ''
-      }
+      },
+      proposalsHistoryModal: null,
+      proposalsList: [],
+      isProposalsLoading: false
     };
   },
   computed: {
@@ -416,6 +500,9 @@ export default {
     if (window.bootstrap) {
       this.modal = new window.bootstrap.Modal(document.getElementById('viewMemberModal'));
       this.proposalModal = new window.bootstrap.Modal(document.getElementById('proposalModal'));
+      if (document.getElementById('proposalsHistoryModal')) {
+        this.proposalsHistoryModal = new window.bootstrap.Modal(document.getElementById('proposalsHistoryModal'));
+      }
     }
     this.loadDoiTocHo();
     this.loadData();
@@ -652,6 +739,51 @@ export default {
         .catch(err => {
           toastr.error('Lỗi khi tải mã QR về!');
         });
+    },
+    openProposalsHistoryModal() {
+      if (this.proposalsHistoryModal) this.proposalsHistoryModal.show();
+      const token = localStorage.getItem('access_token');
+      if (!token) return;
+      this.isProposalsLoading = true;
+      axios.get('http://127.0.0.1:8000/api/de-xuat/my-proposals', this.getHeaders())
+        .then(res => {
+          if (res.data.status) {
+            this.proposalsList = res.data.data;
+          } else {
+            toastr.error(res.data.message);
+          }
+        })
+        .catch(err => {
+          toastr.error('Không thể lấy lịch sử đề xuất.');
+        })
+        .finally(() => {
+          this.isProposalsLoading = false;
+        });
+    },
+    fmtDateTime(d) {
+      if (!d) return '';
+      const dt = new Date(d);
+      return dt.toLocaleDateString('vi-VN') + ' ' + dt.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+    },
+    statusLabel(s) {
+      if (s === 'pending') return 'Chờ Duyệt';
+      if (s === 'approved') return 'Đã Duyệt';
+      return 'Từ Chối';
+    },
+    statusClass(s) {
+      if (s === 'pending') return 'bg-warning text-dark';
+      if (s === 'approved') return 'bg-success text-white';
+      return 'bg-danger text-white';
+    },
+    typeIcon(t) {
+      if (t === 'edit') return 'bx bx-edit-alt';
+      if (t === 'add_child') return 'bx bx-plus-circle';
+      return 'bx bx-heart';
+    },
+    typeLabel(t) {
+      if (t === 'edit') return 'Đề xuất Chỉnh sửa Thành viên';
+      if (t === 'add_child') return 'Đề xuất Thêm Con mới';
+      return 'Đề xuất Thêm Vợ/Chồng';
     }
   }
 };
@@ -699,6 +831,17 @@ export default {
   color: #4b5563; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s;
 }
 .tb-btn:hover { background: #d4af37; border-color: #d4af37; color: #fff; transform: translateY(-2px); }
+.tb-btn-text {
+  height: 40px; padding: 0 14px; border-radius: 12px; border: 1px solid #e5e7eb; background: #f9fafb;
+  color: #4b5563; font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 6px;
+  cursor: pointer; transition: all 0.2s; white-space: nowrap;
+}
+.tb-btn-text.text-warning {
+  color: #d4af37 !important;
+  border-color: rgba(212, 175, 55, 0.25) !important;
+  background: rgba(212, 175, 55, 0.05);
+}
+.tb-btn-text:hover { background: #d4af37; border-color: #d4af37; color: #fff !important; transform: translateY(-2px); }
 .zoom-label { font-size: 0.9rem; font-weight: 800; color: #111827; min-width: 50px; text-align: center; }
 .toolbar-hint { font-size: 0.85rem; color: #6b7280; }
 
