@@ -13,12 +13,24 @@ class DoiTocHoController extends Controller
     {
         try {
             $user = auth('sanctum')->user();
-            if ($user && $user->is_doi_tac == 1) {
+            if (!$user) {
+                return response()->json(['status' => false, 'message' => 'Bạn cần đăng nhập!'], 401);
+            }
+
+            if ($user->vai_tro === 'Admin') {
+                $data = DoiTocHo::with('chiNhanh')->get();
+            } elseif ($user->is_doi_tac == 1) {
                 // Lấy ID các chi nhánh thuộc sở hữu của đối tác này
                 $chiNhanhIds = \App\Models\ChiNhanh::where('id_nguoi_dung', $user->id)->pluck('id');
                 $data = DoiTocHo::whereIn('chi_nhanh_id', $chiNhanhIds)->with('chiNhanh')->get();
             } else {
-                $data = DoiTocHo::with('chiNhanh')->get();
+                // Thành viên bình thường chỉ thấy các đời của chi nhánh mình thuộc về
+                $myMember = \App\Models\ThanhVien::where('email', $user->email)->whereNotNull('email')->first();
+                if ($myMember) {
+                    $data = DoiTocHo::where('chi_nhanh_id', $myMember->chi_nhanh_id)->with('chiNhanh')->get();
+                } else {
+                    $data = [];
+                }
             }
 
             return response()->json([

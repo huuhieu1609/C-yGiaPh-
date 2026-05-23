@@ -363,6 +363,7 @@ class DoiTacSeeder extends Seeder
             'chi_nhanh_id' => $cnId,
             'ho_ten' => 'Nguyễn Minh Vy',
             'ten_goi' => 'Minh Vy',
+            'email' => 'minhvy@master.com',
             'gioi_tinh' => 'Nữ',
             'ngay_sinh' => '1996-09-02',
             'cha_id' => $anhNam->id,
@@ -460,6 +461,46 @@ class DoiTacSeeder extends Seeder
                 'tieu_de' => 'Hương ước, Tộc ước dòng họ Nguyễn Đức (File Word)',
                 'file_path' => 'https://example.com/toc-uoc-nguyen-duc.docx',
                 'mo_ta' => 'Hương ước và các điều lệ ứng xử truyền thống của dòng họ, áp dụng cho con cháu muôn đời.',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]
+        ]);
+
+        // 7. Seed mộ phần và nhà thờ cho đối tác để ghim trực quan
+        DB::table('mo_phans')->insert([
+            [
+                'thanh_vien_id' => $cuOng->id,
+                'ten_mo' => 'Mộ Cụ Nguyễn Đức Cường (Thủy Tổ)',
+                'dia_chi' => 'Nghĩa trang Thạch Thất, Hà Nội',
+                'kinh_do' => null,
+                'vi_do' => null,
+                'hinh_anh' => 'https://images.unsplash.com/photo-1595126731003-754972d54756?auto=format&fit=crop&q=80&w=400',
+                'ghi_chu' => 'Mộ Thủy Tổ dòng họ Nguyễn Đức.',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'thanh_vien_id' => $cuBa->id,
+                'ten_mo' => 'Mộ Cụ Phạm Thị Nghĩa',
+                'dia_chi' => 'Nghĩa trang Thạch Thất, Hà Nội',
+                'kinh_do' => null,
+                'vi_do' => null,
+                'hinh_anh' => 'https://images.unsplash.com/photo-1595126731003-754972d54756?auto=format&fit=crop&q=80&w=400',
+                'ghi_chu' => 'Mộ Cụ Bà Thủy Tổ dòng họ Nguyễn Đức.',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]
+        ]);
+
+        DB::table('nha_tho_hos')->insert([
+            [
+                'ten_nha_tho' => 'Nhà Thờ Tổ Dòng Họ Nguyễn Đức',
+                'dia_chi' => 'Xã Tân Hội, Huyện Thạch Thất, Hà Nội',
+                'mo_ta' => 'Nơi thờ tự hương khói chung của toàn chi nhánh Hà Nội.',
+                'chi_nhanh_id' => $cnId,
+                'kinh_do' => null,
+                'vi_do' => null,
+                'hinh_anh' => 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&q=80&w=400',
                 'created_at' => now(),
                 'updated_at' => now(),
             ]

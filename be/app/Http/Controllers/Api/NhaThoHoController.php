@@ -12,7 +12,25 @@ class NhaThoHoController extends Controller
     public function getData()
     {
         try {
-            $data = NhaThoHo::all();
+            $user = auth('sanctum')->user();
+            if (!$user) {
+                return response()->json(['status' => false, 'message' => 'Bạn cần đăng nhập!'], 401);
+            }
+
+            if ($user->vai_tro === 'Admin') {
+                $data = NhaThoHo::with('chiNhanh')->get();
+            } elseif ($user->is_doi_tac == 1) {
+                $chiNhanhIds = \App\Models\ChiNhanh::where('id_nguoi_dung', $user->id)->pluck('id');
+                $data = NhaThoHo::whereIn('chi_nhanh_id', $chiNhanhIds)->with('chiNhanh')->get();
+            } else {
+                $myMember = \App\Models\ThanhVien::where('email', $user->email)->whereNotNull('email')->first();
+                if ($myMember) {
+                    $data = NhaThoHo::where('chi_nhanh_id', $myMember->chi_nhanh_id)->with('chiNhanh')->get();
+                } else {
+                    $data = [];
+                }
+            }
+
             return response()->json([
                 'status'  => true,
                 'message' => 'Lấy dữ liệu thành công!',
