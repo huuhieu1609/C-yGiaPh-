@@ -30,6 +30,14 @@ class NguoiDungSeeder extends Seeder
                 'vai_tro' => 'Thành viên',
                 'trang_thai' => 'Hoạt động',
             ],
+            [
+                'ho_ten' => 'Nguyễn Minh Vy',
+                'email' => 'minhvy@master.com',
+                'mat_khau' => Hash::make('member123'),
+                'so_dien_thoai' => '0966555444',
+                'vai_tro' => 'Thành viên',
+                'trang_thai' => 'Hoạt động',
+            ],
         ];
 
         foreach ($users as $user) {

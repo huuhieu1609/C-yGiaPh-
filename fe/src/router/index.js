@@ -29,6 +29,12 @@ const routes = [
         meta: { layout: 'client', requiresAuth: true }
     },
     {
+        path: '/ban-do',
+        name: 'client-ban-do',
+        component: () => import('../components/ClientBanDo/index.vue'),
+        meta: { layout: 'client', requiresAuth: true }
+    },
+    {
         path: '/tra-cuu',
         name: 'client-tra-cuu',
         component: () => import('../components/ClientTraCuu/index.vue'),
@@ -260,6 +266,11 @@ const routes = [
                 path: 'su-kien',
                 name: 'partner-su-kien',
                 component: () => import('../components/DoiTac/QuanLySuKien/index.vue')
+            },
+            {
+                path: 'ban-do',
+                name: 'partner-ban-do',
+                component: () => import('../components/DoiTac/QuanLyBanDo/index.vue')
             }
         ]
     }

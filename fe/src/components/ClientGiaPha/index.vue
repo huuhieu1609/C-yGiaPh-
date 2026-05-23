@@ -422,13 +422,16 @@ export default {
   },
   methods: {
     fmtDate,
+    getHeaders() {
+      return { headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` } };
+    },
     loadDoiTocHo() {
-      axios.get('http://127.0.0.1:8000/api/doi-toc-ho/get-data')
+      axios.get('http://127.0.0.1:8000/api/doi-toc-ho/get-data', this.getHeaders())
         .then(r => { if (r.data.status) this.listDoiTocHo = r.data.data.sort((a,b)=>a.so_doi-b.so_doi); });
     },
     loadData() {
       this.isLoading = true;
-      axios.get('http://127.0.0.1:8000/api/thanh-vien/get-data')
+      axios.get('http://127.0.0.1:8000/api/thanh-vien/get-data', this.getHeaders())
         .then(r => { if (r.data.status) this.allMembers = r.data.data; })
         .finally(() => { this.isLoading = false; });
     },

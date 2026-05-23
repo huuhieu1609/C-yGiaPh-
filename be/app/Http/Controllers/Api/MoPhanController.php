@@ -12,7 +12,30 @@ class MoPhanController extends Controller
     public function getData()
     {
         try {
-            $data = MoPhan::all();
+            $user = auth('sanctum')->user();
+            if (!$user) {
+                return response()->json(['status' => false, 'message' => 'Bạn cần đăng nhập!'], 401);
+            }
+
+            if ($user->vai_tro === 'Admin') {
+                $data = MoPhan::with('thanhVien')->get();
+            } elseif ($user->is_doi_tac == 1) {
+                $chiNhanhIds = \App\Models\ChiNhanh::where('id_nguoi_dung', $user->id)->pluck('id');
+                // Lấy ra các mộ phần của thành viên thuộc các chi nhánh này
+                $data = MoPhan::whereHas('thanhVien', function($q) use ($chiNhanhIds) {
+                    $q->whereIn('chi_nhanh_id', $chiNhanhIds);
+                })->with('thanhVien')->get();
+            } else {
+                $myMember = \App\Models\ThanhVien::where('email', $user->email)->whereNotNull('email')->first();
+                if ($myMember) {
+                    $data = MoPhan::whereHas('thanhVien', function($q) use ($myMember) {
+                        $q->where('chi_nhanh_id', $myMember->chi_nhanh_id);
+                    })->with('thanhVien')->get();
+                } else {
+                    $data = [];
+                }
+            }
+
             return response()->json([
                 'status'  => true,
                 'message' => 'Lấy dữ liệu thành công!',
