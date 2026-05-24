@@ -7,7 +7,7 @@
 
     <div class="container container-custom content-relative pt-5 pb-5">
       <!-- Section Header -->
-      <div class="text-center mb-5 mt-5">
+      <div class="text-center mb-5 mt-2">
         <span class="badge badge-gold-outline mb-2">Bảng giá dịch vụ</span>
         <h1 class="text-gradient fw-extrabold mb-3">Các Gói Dịch Vụ Gia Phả Số</h1>
         <p class="text-white-50 max-width-600 mx-auto">
