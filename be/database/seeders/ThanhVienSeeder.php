@@ -19,8 +19,10 @@ class ThanhVienSeeder extends Seeder
             'updated_at' => now(),
         ]);
 
-        // Clear existing members
+        // Clear existing members (temporarily disable foreign key checks to allow truncate)
+        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
         DB::table('thanh_viens')->truncate();
+        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
         // 1. Generation 0 (Grandparents)
         $ongTanId = DB::table('thanh_viens')->insertGetId([

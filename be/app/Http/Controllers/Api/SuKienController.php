@@ -14,15 +14,37 @@ class SuKienController extends Controller
     {
         try {
             $user = auth('sanctum')->user();
-            if ($user && $user->is_doi_tac == 1) {
-                // Return all events or events relating to their branch
-                // For simplicity events are shared or can be filtered by branch if branch is in su_kiens table.
-                // Since su_kiens has no chi_nhanh_id in current schema, we return all events or filter based on relationships.
-                // In 2026_05_12_034915_create_su_kiens_table, su_kiens has no chi_nhanh_id. We will return all.
-                $data = SuKien::orderBy('ngay_to_chuc', 'desc')->get();
+            // Events with chi_nhanh_id == null are global/public events.
+            // If user is admin return all events. If partner return events for their branches + global events.
+            // If regular user, attempt to find their member record to determine their chi_nhanh and return global + branch-specific events.
+            $query = SuKien::orderBy('ngay_to_chuc', 'desc');
+
+            if (!$user) {
+                // not authenticated: return only public events
+                $query->whereNull('chi_nhanh_id');
+            } elseif ($user->vai_tro === 'Admin') {
+                // admin: no further filter
+            } elseif ($user->is_doi_tac == 1) {
+                // partner: return global + events for branches owned by this partner
+                $chiNhanhIds = \App\Models\ChiNhanh::where('id_nguoi_dung', $user->id)->pluck('id')->toArray();
+                $query->where(function($q) use ($chiNhanhIds) {
+                    $q->whereNull('chi_nhanh_id')->orWhereIn('chi_nhanh_id', $chiNhanhIds);
+                });
             } else {
-                $data = SuKien::orderBy('ngay_to_chuc', 'desc')->get();
+                // regular member: try to locate their ThanhVien to get chi_nhanh_id
+                $myMember = \App\Models\ThanhVien::where('email', $user->email)->whereNotNull('email')->first();
+                if ($myMember) {
+                    $cnId = $myMember->chi_nhanh_id;
+                    $query->where(function($q) use ($cnId) {
+                        $q->whereNull('chi_nhanh_id')->orWhere('chi_nhanh_id', $cnId);
+                    });
+                } else {
+                    // not associated with a branch: only show public events
+                    $query->whereNull('chi_nhanh_id');
+                }
             }
+
+            $data = $query->get();
 
             return response()->json([
                 'status'  => true,
@@ -45,8 +67,27 @@ class SuKienController extends Controller
                 'noi_dung' => 'nullable|string',
                 'ngay_to_chuc' => 'required|date',
                 'dia_diem' => 'nullable|string|max:255',
+                'chi_nhanh_id' => 'nullable|exists:chi_nhanhs,id',
                 'loai' => 'required|in:Giỗ tổ,Họp họ,Cưới hỏi,Tang lễ',
             ]);
+
+            $user = auth('sanctum')->user();
+
+            // If partner provided chi_nhanh_id ensure they own it; or auto-assign their branch if omitted
+            if ($data['chi_nhanh_id'] ?? null) {
+                if ($user && $user->is_doi_tac == 1) {
+                    $owns = \App\Models\ChiNhanh::where('id', $data['chi_nhanh_id'])->where('id_nguoi_dung', $user->id)->exists();
+                    if (! $owns) {
+                        return response()->json(['status' => false, 'message' => 'Bạn không có quyền gán sự kiện cho chi nhánh này.'], 403);
+                    }
+                }
+            } else {
+                // if partner and no chi_nhanh_id provided, set to first branch they own
+                if ($user && $user->is_doi_tac == 1) {
+                    $branchId = \App\Models\ChiNhanh::where('id_nguoi_dung', $user->id)->value('id');
+                    if ($branchId) $data['chi_nhanh_id'] = $branchId;
+                }
+            }
 
             $item = SuKien::create($data);
             return response()->json([
@@ -71,8 +112,24 @@ class SuKienController extends Controller
                 'noi_dung' => 'nullable|string',
                 'ngay_to_chuc' => 'required|date',
                 'dia_diem' => 'nullable|string|max:255',
+                'chi_nhanh_id' => 'nullable|exists:chi_nhanhs,id',
                 'loai' => 'required|in:Giỗ tổ,Họp họ,Cưới hỏi,Tang lễ',
             ]);
+
+            $user = auth('sanctum')->user();
+            if (isset($data['chi_nhanh_id']) && $data['chi_nhanh_id']) {
+                if ($user && $user->is_doi_tac == 1) {
+                    $owns = \App\Models\ChiNhanh::where('id', $data['chi_nhanh_id'])->where('id_nguoi_dung', $user->id)->exists();
+                    if (! $owns) {
+                        return response()->json(['status' => false, 'message' => 'Bạn không có quyền gán sự kiện cho chi nhánh này.'], 403);
+                    }
+                }
+            } else {
+                if ($user && $user->is_doi_tac == 1) {
+                    $branchId = \App\Models\ChiNhanh::where('id_nguoi_dung', $user->id)->value('id');
+                    if ($branchId) $data['chi_nhanh_id'] = $branchId;
+                }
+            }
 
             $item->update($data);
             return response()->json([

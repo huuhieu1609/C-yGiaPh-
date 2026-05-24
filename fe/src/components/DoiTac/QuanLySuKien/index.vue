@@ -158,6 +158,13 @@
                 <label class="form-label fw-bold text-secondary small text-uppercase font-bold">Nội dung chi tiết / Thông báo</label>
                 <textarea class="form-control premium-textarea" rows="4" v-model="form.noi_dung" placeholder="Mô tả kế hoạch, đóng góp công đức lễ lạt, chương trình nghị sự..."></textarea>
               </div>
+              <div class="col-12">
+                <label class="form-label fw-bold text-secondary small text-uppercase font-bold">Liên kết Chi Nhánh</label>
+                <select class="form-select premium-select" v-model="form.chi_nhanh_id">
+                  <option :value="null">-- Sự kiện công cộng (Toàn hệ) --</option>
+                  <option v-for="cn in listChiNhanh" :key="cn.id" :value="cn.id">{{ cn.ten_chi }}</option>
+                </select>
+              </div>
             </div>
           </div>
           <div class="modal-footer border-0 p-4 justify-content-end gap-2">
@@ -192,6 +199,7 @@ export default {
         dia_diem: '',
         loai: 'Giỗ tổ'
       },
+      listChiNhanh: [],
       searchQuery: '',
       filterDoi: '',
       isEditing: false,
@@ -218,6 +226,7 @@ export default {
   },
   mounted() {
     this.loadEvents();
+    this.loadChiNhanh();
     if (window.bootstrap) {
       this.modal = new window.bootstrap.Modal(document.getElementById('eventCrudModal'));
     }
@@ -246,6 +255,18 @@ export default {
         this.isLoading = false;
       });
     },
+    loadChiNhanh() {
+      axios.get('http://127.0.0.1:8000/api/chi-nhanh/get-data', this.getHeaders())
+      .then(res => {
+        if (res.data.status) {
+          this.listChiNhanh = res.data.data;
+          if (!this.form.chi_nhanh_id && this.listChiNhanh.length) {
+            this.form.chi_nhanh_id = this.listChiNhanh[0].id;
+          }
+        }
+      })
+      .catch(() => {});
+    },
     selectEvent(ev) {
       this.selectedEventId = ev.id;
       this.selectedEventName = ev.tieu_de;
@@ -262,7 +283,7 @@ export default {
     openAddModal() {
       this.isEditing = false;
       this.form = {
-        id: null, tieu_de: '', noi_dung: '', ngay_to_chuc: '', dia_diem: '', loai: 'Giỗ tổ'
+        id: null, tieu_de: '', noi_dung: '', ngay_to_chuc: '', dia_diem: '', loai: 'Giỗ tổ', chi_nhanh_id: (this.listChiNhanh[0] && this.listChiNhanh[0].id) || null
       };
       this.modal.show();
     },
@@ -274,7 +295,8 @@ export default {
         noi_dung: ev.noi_dung || '',
         ngay_to_chuc: ev.ngay_to_chuc ? ev.ngay_to_chuc.substring(0, 16) : '',
         dia_diem: ev.dia_diem || '',
-        loai: ev.loai
+        loai: ev.loai,
+        chi_nhanh_id: ev.chi_nhanh_id || null
       };
       this.modal.show();
     },
