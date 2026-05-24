@@ -105,8 +105,15 @@
                     </div>
                     <div v-else-if="transactions.length === 0" class="text-center py-4">
                       <i class="bx bx-receipt fs-1 text-muted"></i>
-                      <p class="mt-2 text-muted">Chưa có giao dịch nào.</p>
-                      <router-link to="/thanh-toan" class="btn btn-sm" style="background:#d4af37;color:#000;font-weight:600;">Đăng ký gói ngay</router-link>
+                      <p class="mt-2 text-muted">Chưa có lịch sử giao dịch nào.</p>
+                      <div class="d-flex flex-wrap justify-content-center gap-2 mt-3">
+                        <router-link to="/thanh-toan" class="btn btn-sm px-3" style="background:#d4af37;color:#000;font-weight:600;transition:all 0.3s ease;">
+                          <i class="bx bx-package me-1"></i> Đăng ký Gói Đối Tác
+                        </router-link>
+                        <router-link to="/dong-gop-quy" class="btn btn-sm btn-dark px-3" style="transition:all 0.3s ease;">
+                          <i class="bx bx-heart me-1"></i> Đóng góp Quỹ Dòng Họ
+                        </router-link>
+                      </div>
                     </div>
                     <div v-else>
                       <div class="transaction-item" v-for="(t, i) in transactions" :key="i">
@@ -264,8 +271,17 @@ export default {
     },
     loadTransactions() {
       this.isLoadingHistory = true;
-      axios.get('http://127.0.0.1:8000/api/admin/dong-gop/get-data', this.getHeaders())
-        .then(res => { if (res.data.status) this.transactions = res.data.data; })
+      const userStr = localStorage.getItem('user');
+      const user = userStr ? JSON.parse(userStr) : null;
+      const userId = user ? (user.user || user).id : null;
+
+      axios.get('http://127.0.0.1:8000/api/dong-gop/get-data', this.getHeaders())
+        .then(res => { 
+          if (res.data.status && res.data.data) {
+            // Lọc danh sách giao dịch chỉ hiển thị của tài khoản đang đăng nhập
+            this.transactions = res.data.data.filter(t => t.nguoi_dung_id == userId);
+          } 
+        })
         .catch(() => {})
         .finally(() => { this.isLoadingHistory = false; });
     },

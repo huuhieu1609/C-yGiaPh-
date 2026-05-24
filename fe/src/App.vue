@@ -5,7 +5,7 @@
 </template>
 
 <script>
-const default_layout = "default";
+const default_layout = "blank";
 export default {
   computed: {
     layout() {

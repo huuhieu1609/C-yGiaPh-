@@ -58,6 +58,7 @@
                                         :listDoiTocHo="listDoiTocHo"
                                         :searchQuery="searchQuery"
                                         @edit="onEdit"
+                                        @show-qr="showQRCard"
                                     />
                                 </ul>
                             </div>
@@ -188,11 +189,61 @@
                     </div>
                     <div class="modal-footer border-0 p-4 pt-0">
                         <button v-if="isEditing" type="button" class="btn btn-outline-danger me-auto radius-8 px-3" @click="handleDelete">Xóa</button>
-                        <button type="button" class="btn btn-light px-4 radius-8" data-bs-dismiss="modal">Hủy</button>
-                        <button type="button" class="btn px-4 radius-8 fw-bold" :class="isEditing ? 'btn-warning' : 'btn-primary'" @click="saveMember">
+                        <button v-if="isEditing" type="button" class="btn btn-modern-cancel px-4" @click="showQRCardFromModal">Xem Mã QR</button>
+                        <button type="button" class="btn btn-modern-cancel px-4" data-bs-dismiss="modal">Hủy bỏ</button>
+                        <button type="button" class="btn btn-modern-save px-4 fw-bold" :class="isEditing ? 'btn-warn' : 'btn-save'" @click="saveMember">
                             {{ isEditing ? 'Cập Nhật' : 'Lưu Lại' }}
                         </button>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Vue QR Card Modal -->
+        <div v-if="showQRModal" class="custom-modal-backdrop animate__animated animate__fadeIn" @click.self="closeQRModal">
+            <div class="custom-modal-content animate__animated animate__zoomIn p-4 rounded-4 shadow-2xl bg-white position-relative text-center" style="max-width: 420px; z-index: 1060;">
+                <button class="btn-close-custom position-absolute top-0 end-0 m-3 border-0 bg-transparent" @click="closeQRModal">
+                    <i class="bx bx-x fs-2 text-muted"></i>
+                </button>
+                
+                <h5 class="fw-bold mb-3 text-dark">Mã QR Thành Viên</h5>
+
+                <!-- QR Card Canvas container (for printing / visual preview) -->
+                <div id="qr-card-print" class="qr-card-container p-4 rounded-3 border border-3 border-gold bg-royal shadow-sm mb-4 position-relative overflow-hidden">
+                    <div class="card-watermark"></div>
+                    <div class="card-header-royal mb-3 border-bottom border-light-gold pb-2">
+                        <div class="fw-extrabold text-gold tracking-widest font-13 text-uppercase" style="color: #d4af37 !important;">Hệ Thống Gia Phả Số</div>
+                        <div class="text-white-50 font-9 text-uppercase tracking-wider">Thẻ Nhận Diện Thành Viên</div>
+                    </div>
+                    
+                    <div class="d-flex align-items-center gap-3 mb-3 text-start">
+                        <img :src="activeMember.avatar || ('https://ui-avatars.com/api/?name=' + activeMember.ho_ten + '&background=d4af37&color=fff')" class="rounded-circle border border-2 border-gold shadow-sm" width="55" height="55" style="object-fit: cover;">
+                        <div class="overflow-hidden">
+                            <h5 class="fw-extrabold text-white mb-0 text-truncate drop-shadow" style="color: white !important;">{{ activeMember.ho_ten }}</h5>
+                            <div class="d-flex gap-1.5 mt-1 flex-wrap">
+                                <span class="badge badge-gold-soft font-9 px-2 py-0.5" style="background: rgba(212, 175, 55, 0.15) !important; color: #ffd891 !important; border: 1px solid rgba(212, 175, 55, 0.25);">Đời {{ activeMember.doi_thu }}</span>
+                                <span class="badge badge-gold-soft font-9 px-2 py-0.5" style="background: rgba(212, 175, 55, 0.15) !important; color: #ffd891 !important; border: 1px solid rgba(212, 175, 55, 0.25);">{{ activeMember.gioi_tinh }}</span>
+                                <span class="badge badge-gold-soft font-9 px-2 py-0.5" style="background: rgba(212, 175, 55, 0.15) !important; color: #ffd891 !important; border: 1px solid rgba(212, 175, 55, 0.25);">{{ activeMember.trang_thai }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- QR Frame -->
+                    <div class="qr-frame-royal bg-white p-3 rounded-3 shadow-md d-inline-block position-relative border border-2 border-gold">
+                        <img :src="'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + encodeURIComponent(getMemberQRUrl(activeMember))" class="img-fluid" width="180" height="180" alt="QR Code">
+                    </div>
+                    
+                    <p class="text-white-50 font-10 mt-3 mb-0 italic">Quét mã để truy cập tiểu sử & xem mối quan hệ dòng tộc</p>
+                </div>
+
+                <!-- Control Buttons -->
+                <div class="d-flex gap-3">
+                    <button class="btn btn-outline-secondary w-50 py-2 rounded-pill fw-bold" @click="printQRCard">
+                        <i class="bx bx-printer me-1"></i> In Thẻ QR
+                    </button>
+                    <button class="btn btn-gold w-50 py-2 rounded-pill fw-bold text-dark shadow-sm" @click="downloadQRCard" style="background: #d4af37 !important; border-color: #d4af37 !important; font-weight: bold;">
+                        <i class="bx bx-download me-1"></i> Tải Thẻ Về
+                    </button>
                 </div>
             </div>
         </div>
@@ -207,7 +258,13 @@ import toastr from 'toastr';
 const TreeItem = defineComponent({
     name: 'TreeItem',
     props: ['member', 'listDoiTocHo', 'searchQuery'],
-    emits: ['edit'],
+    emits: ['edit', 'show-qr'],
+    data() {
+        return {
+            clickTimeout: null,
+            isDoubleClick: false
+        };
+    },
     render() {
         const getTenDoi = (doi_thu) => {
             if (!this.listDoiTocHo || !this.listDoiTocHo.length) return '';
@@ -234,7 +291,8 @@ const TreeItem = defineComponent({
                     member: child, 
                     listDoiTocHo: this.listDoiTocHo, 
                     searchQuery: this.searchQuery,
-                    onEdit: (m) => this.$emit('edit', m) 
+                    onEdit: (m) => this.$emit('edit', m),
+                    onShowQr: (m) => this.$emit('show-qr', m)
                 }))
             ) : null;
             return h('li', [nodeGroup, children]);
@@ -250,7 +308,22 @@ const TreeItem = defineComponent({
                     'is-dead': this.member.trang_thai === 'Đã mất',
                     'highlighted': isHighlighted
                 }],
-                onClick: (e) => { e.stopPropagation(); this.$emit('edit', this.member); }
+                onClick: (e) => {
+                    e.stopPropagation();
+                    clearTimeout(this.clickTimeout);
+                    this.isDoubleClick = false;
+                    this.clickTimeout = setTimeout(() => {
+                        if (!this.isDoubleClick) {
+                            this.$emit('edit', this.member);
+                        }
+                    }, 200);
+                },
+                onDblclick: (e) => {
+                    e.stopPropagation();
+                    this.isDoubleClick = true;
+                    clearTimeout(this.clickTimeout);
+                    this.$emit('show-qr', this.member);
+                }
             }, [
                 h('div', { class: 'node-avatar-container' }, [
                     h('img', { 
@@ -276,7 +349,22 @@ const TreeItem = defineComponent({
                             'is-dead': spouse.trang_thai === 'Đã mất',
                             'highlighted': isSpouseHighlighted
                         }],
-                        onClick: (e) => { e.stopPropagation(); this.$emit('edit', spouse); }
+                        onClick: (e) => {
+                            e.stopPropagation();
+                            clearTimeout(this.clickTimeout);
+                            this.isDoubleClick = false;
+                            this.clickTimeout = setTimeout(() => {
+                                if (!this.isDoubleClick) {
+                                    this.$emit('edit', spouse);
+                                }
+                            }, 200);
+                        },
+                        onDblclick: (e) => {
+                            e.stopPropagation();
+                            this.isDoubleClick = true;
+                            clearTimeout(this.clickTimeout);
+                            this.$emit('show-qr', spouse);
+                        }
                     }, [
                         h('div', { class: 'node-avatar-container' }, [
                             h('img', { 
@@ -301,7 +389,8 @@ const TreeItem = defineComponent({
                 member: child, 
                 listDoiTocHo: this.listDoiTocHo, 
                 searchQuery: this.searchQuery,
-                onEdit: (m) => this.$emit('edit', m) 
+                onEdit: (m) => this.$emit('edit', m),
+                onShowQr: (m) => this.$emit('show-qr', m)
             }))
         ) : null;
         
@@ -326,6 +415,8 @@ export default {
             isEditing: false,
             modal: null,
             searchQuery: '',
+            showQRModal: false,
+            activeMember: {},
             
             // Zoom & Pan state
             zoom: 1,
@@ -500,6 +591,131 @@ export default {
                         if (res.data.status) { toastr.success(res.data.message); this.loadData(); this.modal.hide(); }
                     });
             }
+        },
+        showQRCard(member) {
+            this.activeMember = member;
+            this.showQRModal = true;
+        },
+        showQRCardFromModal() {
+            this.modal.hide();
+            this.showQRCard(this.currentMember);
+        },
+        closeQRModal() {
+            this.showQRModal = false;
+        },
+        getMemberQRUrl(member) {
+            if (!member || !member.id) return '';
+            const origin = window.location.origin;
+            return `${origin}/thanh-vien/detail/${member.id}`;
+        },
+        printQRCard() {
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+                <html>
+                <head>
+                    <title>In mã QR - ${this.activeMember.ho_ten}</title>
+                    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+                    <style>
+                        body {
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            height: 100vh;
+                            margin: 0;
+                            background: white;
+                        }
+                        .qr-card-container {
+                            width: 380px;
+                            border: 4px solid #d4af37 !important;
+                            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important;
+                            color: white !important;
+                            padding: 25px;
+                            border-radius: 15px;
+                            text-align: center;
+                            -webkit-print-color-adjust: exact;
+                            print-color-adjust: exact;
+                        }
+                        .text-gold { color: #d4af37 !important; }
+                        .badge-gold-soft {
+                            background: rgba(212, 175, 55, 0.2) !important;
+                            color: #ffd891 !important;
+                            border: 1px solid rgba(212, 175, 55, 0.3) !important;
+                            font-size: 10px;
+                            padding: 4px 8px;
+                            border-radius: 4px;
+                            margin-right: 5px;
+                        }
+                        .qr-frame-royal {
+                            background: white !important;
+                            padding: 15px;
+                            border-radius: 10px;
+                            display: inline-block;
+                            border: 2px solid #d4af37;
+                            margin-top: 15px;
+                        }
+                        .drop-shadow { text-shadow: 0 1px 2px rgba(0,0,0,0.5); }
+                        @media print {
+                            body { height: auto; }
+                            .qr-card-container {
+                                page-break-inside: avoid;
+                                margin: 0 auto;
+                            }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="qr-card-container">
+                        <div style="border-bottom: 1px solid rgba(212, 175, 55, 0.3); padding-bottom: 10px; margin-bottom: 15px;">
+                            <div class="text-gold" style="font-weight: 800; font-size: 14px; text-transform: uppercase; letter-spacing: 2px;">Hệ Thống Gia Phả Số</div>
+                            <div style="color: rgba(255,255,255,0.6); font-size: 10px; text-transform: uppercase;">Thẻ Nhận Diện Thành Viên</div>
+                        </div>
+                        
+                        <div style="display: flex; align-items: center; text-align: left; margin-bottom: 15px; gap: 15px;">
+                            <img src="${this.activeMember.avatar || ('https://ui-avatars.com/api/?name=' + this.activeMember.ho_ten + '&background=d4af37&color=fff')}" style="border: 2px solid #d4af37; border-radius: 50%; width: 55px; height: 55px; object-fit: cover;">
+                            <div>
+                                <h4 class="drop-shadow" style="font-weight: bold; margin: 0; color: white;">${this.activeMember.ho_ten}</h4>
+                                <div style="margin-top: 5px;">
+                                    <span class="badge-gold-soft">Đời ${this.activeMember.doi_thu}</span>
+                                    <span class="badge-gold-soft">${this.activeMember.gioi_tinh}</span>
+                                    <span class="badge-gold-soft">${this.activeMember.trang_thai}</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="qr-frame-royal">
+                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(this.getMemberQRUrl(this.activeMember))}" width="180" height="180">
+                        </div>
+                        <p style="color: rgba(255,255,255,0.5); font-size: 10px; margin-top: 15px; margin-bottom: 0; font-style: italic;">Quét mã để xem hồ sơ phả hệ & quan hệ dòng họ</p>
+                    </div>
+                    <script>
+                        window.onload = function() {
+                            window.print();
+                            setTimeout(function() { window.close(); }, 500);
+                        };
+                    <\/script>
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+        },
+        downloadQRCard() {
+            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=${encodeURIComponent(this.getMemberQRUrl(this.activeMember))}`;
+            fetch(qrUrl)
+                .then(response => {
+                    if (!response.ok) throw new Error('Tải ảnh thất bại');
+                    return response.blob();
+                })
+                .then(blob => {
+                    const link = document.createElement('a');
+                    link.href = URL.createObjectURL(blob);
+                    link.download = `QRCode_${this.activeMember.ho_ten.replace(/\s+/g, '_')}.png`;
+                    link.click();
+                    URL.revokeObjectURL(link.href);
+                    toastr.success('Tải mã QR thành công!');
+                })
+                .catch(err => {
+                    toastr.error('Lỗi khi tải mã QR về!');
+                });
         }
     }
 }
@@ -674,5 +890,76 @@ export default {
 .node-edit-btn:hover {
     background: #4285f4;
     color: #fff;
+}
+
+/* Custom Vue Modal Styling for QR Card */
+.custom-modal-backdrop {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(8px);
+    z-index: 1050;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+.custom-modal-content {
+    width: 100%;
+    max-width: 480px;
+    background: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 15px;
+}
+.btn-close-custom {
+    transition: all 0.2s ease;
+}
+.btn-close-custom:hover {
+    transform: rotate(90deg);
+}
+.border-gold {
+    border-color: #d4af37 !important;
+}
+.bg-royal {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important;
+}
+.qr-card-container {
+    color: white !important;
+    border-color: #d4af37 !important;
+    background-size: cover;
+    position: relative;
+}
+.card-header-royal {
+    border-bottom: 1px solid rgba(212, 175, 55, 0.3) !important;
+}
+.badge-gold-soft {
+    background: rgba(212, 175, 55, 0.15) !important;
+    color: #ffd891 !important;
+    border: 1px solid rgba(212, 175, 55, 0.25) !important;
+}
+.qr-frame-royal {
+    background: white;
+}
+.btn-gold {
+    background: #d4af37;
+    color: #3b2c0c;
+    border: none;
+    transition: all 0.3s ease;
+}
+.btn-gold:hover {
+    background: #e5c055;
+    transform: translateY(-2px);
+}
+.card-watermark {
+    position: absolute;
+    top: -40px;
+    right: -40px;
+    width: 140px;
+    height: 140px;
+    background: radial-gradient(circle, rgba(212, 175, 55, 0.08) 0%, transparent 70%);
+    pointer-events: none;
+}
+.drop-shadow {
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
 }
 </style>
