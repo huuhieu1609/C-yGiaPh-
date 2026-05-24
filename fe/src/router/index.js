@@ -40,6 +40,12 @@ const routes = [
     {
         path: '/gia-pha',
         name: 'gia-pha',
+        component: () => import('../components/ClientGiaPha/GiaPhaList.vue'),
+        meta: { layout: 'client', requiresAuth: true }
+    },
+    {
+        path: '/gia-pha/cay/:chiNhanhId',
+        name: 'client-cay-gia-pha',
         component: () => import('../components/ClientGiaPha/index.vue'),
         meta: { layout: 'client', requiresAuth: true }
     },

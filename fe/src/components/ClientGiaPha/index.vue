@@ -5,15 +5,20 @@
     <div class="glow-blob blob-blue"></div>
 
     <div class="page-content">
+      <!-- Page Header with Branch Name -->
       <div class="page-header text-center">
         <span class="subtitle-gradient d-block text-uppercase mb-2">DI SẢN TRỰC TUYẾN</span>
-        <h2 class="text-gradient fw-bold display-5 mb-1">Cây Gia Phả Dòng Họ</h2>
-        <p class="text-white-50 mb-0">Sơ đồ phả hệ các thế hệ dòng họ</p>
+        <h2 class="text-gradient fw-bold display-5 mb-1">{{ tenNhanh || 'Cây Gia Phả Dòng Họ' }}</h2>
+        <p class="text-white-50 mb-0">Sơ đồ phả hệ các thế hệ dòng họ · Chỉ xem</p>
       </div>
 
       <div class="tree-card-wrapper">
         <div class="card-toolbar">
           <div class="toolbar-left">
+            <router-link to="/gia-pha" class="tb-btn tb-btn-back" title="Quay lại">
+              <i class="bx bx-arrow-back"></i>
+            </router-link>
+            <div class="toolbar-divider"></div>
             <button class="tb-btn" @click="loadData" title="Làm mới"><i class="bx bx-refresh"></i></button>
             <button class="tb-btn" @click="zoomIn"><i class="bx bx-plus"></i></button>
             <span class="zoom-label">{{ Math.round(zoom * 100) }}%</span>
@@ -21,7 +26,10 @@
             <button class="tb-btn" @click="resetView" title="Đặt lại"><i class="bx bx-expand-alt"></i></button>
           </div>
           <div class="toolbar-right">
-             <span class="toolbar-hint">
+            <span class="toolbar-branch-name" v-if="tenNhanh">
+              <i class="bx bx-git-branch"></i> {{ tenNhanh }}
+            </span>
+            <span class="toolbar-hint">
               <i class="bx bx-mouse-alt"></i> Cuộn thu phóng &bull; Kéo di chuyển &bull; Click xem chi tiết
             </span>
           </div>
@@ -212,7 +220,8 @@ export default {
       posY: 0,
       isPanning: false,
       lastMouseX: 0,
-      lastMouseY: 0
+      lastMouseY: 0,
+      tenNhanh: ''
     };
   },
   computed: {
@@ -266,18 +275,25 @@ export default {
   },
   methods: {
     fmtDate,
+    getHeaders() {
+      return { headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` } };
+    },
     loadDoiTocHo() {
-      axios.get('http://127.0.0.1:8000/api/doi-toc-ho/get-data')
+      axios.get('http://127.0.0.1:8000/api/doi-toc-ho/get-data', this.getHeaders())
         .then(r => { if (r.data.status) this.listDoiTocHo = r.data.data.sort((a,b)=>a.so_doi-b.so_doi); });
     },
     loadData() {
       this.isLoading = true;
-      const chiNhanhId = this.$route.query.chi_nhanh_id;
-      const url = chiNhanhId 
+      // Nhận chiNhanhId từ route params (ưu tiên) hoặc query
+      const chiNhanhId = this.$route.params.chiNhanhId || this.$route.query.chi_nhanh_id;
+      // Lấy tên nhánh từ query param
+      this.tenNhanh = this.$route.query.ten || '';
+
+      const url = chiNhanhId
         ? `http://127.0.0.1:8000/api/thanh-vien/chi-nhanh/${chiNhanhId}`
         : 'http://127.0.0.1:8000/api/thanh-vien/get-data';
 
-      axios.get(url)
+      axios.get(url, this.getHeaders())
         .then(r => { if (r.data.status) this.allMembers = r.data.data; })
         .finally(() => { this.isLoading = false; });
     },
@@ -338,10 +354,33 @@ export default {
 .tb-btn {
   width: 40px; height: 40px; border-radius: 12px; border: 1px solid #e5e7eb; background: #f9fafb;
   color: #4b5563; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s;
+  text-decoration: none;
 }
 .tb-btn:hover { background: #d4af37; border-color: #d4af37; color: #fff; transform: translateY(-2px); }
+.tb-btn-back {
+  background: #fef3c7;
+  border-color: #fde68a;
+  color: #b45309;
+}
+.tb-btn-back:hover { background: #f59e0b; border-color: #f59e0b; color: #fff; }
+.toolbar-divider {
+  width: 1px; height: 24px; background: #e5e7eb; margin: 0 4px;
+}
 .zoom-label { font-size: 0.9rem; font-weight: 800; color: #111827; min-width: 50px; text-align: center; }
 .toolbar-hint { font-size: 0.85rem; color: #6b7280; }
+.toolbar-branch-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #b45309;
+  background: #fef3c7;
+  border: 1px solid #fde68a;
+  border-radius: 20px;
+  padding: 4px 14px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-right: 8px;
+}
 
 .tree-viewport {
   height: 800px;

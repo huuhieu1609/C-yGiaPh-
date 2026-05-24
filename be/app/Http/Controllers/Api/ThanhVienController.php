@@ -43,6 +43,31 @@ class ThanhVienController extends Controller
     public function getByChiNhanh($chiNhanhId)
     {
         try {
+            $user = auth('sanctum')->user();
+
+            if ($user) {
+                // Admin xem tất cả
+                if ($user->vai_tro === 'Admin') {
+                    // cho phép
+                } elseif ($user->is_doi_tac == 1) {
+                    // Đối tác chỉ xem chi nhánh của mình
+                    $owned = \App\Models\ChiNhanh::where('id', $chiNhanhId)
+                        ->where('id_nguoi_dung', $user->id)->exists();
+                    if (!$owned) {
+                        return response()->json(['status' => false, 'message' => 'Bạn không có quyền truy cập chi nhánh này!'], 403);
+                    }
+                } else {
+                    // User thường: kiểm tra bảng chi_nhanh_nguoi_dung
+                    $hasAccess = $user->quyenTruyCapChiNhanhs()
+                        ->where('chi_nhanhs.id', $chiNhanhId)->exists();
+                    if (!$hasAccess) {
+                        return response()->json(['status' => false, 'message' => 'Bạn không có quyền xem gia phả này!'], 403);
+                    }
+                }
+            } else {
+                return response()->json(['status' => false, 'message' => 'Bạn cần đăng nhập!'], 401);
+            }
+
             $thanhViens = ThanhVien::where('chi_nhanh_id', $chiNhanhId)->get();
             return response()->json(['status' => true, 'data' => $thanhViens]);
         } catch (Exception $e) {

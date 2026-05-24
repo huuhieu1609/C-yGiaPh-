@@ -175,14 +175,32 @@
                   Chưa có ai được cấp quyền.
                 </div>
                 <ul v-else class="list-group list-group-flush">
-                  <li v-for="user in grantedUsers" :key="user.id" class="list-group-item d-flex justify-content-between align-items-center px-0">
-                    <div>
-                      <div class="fw-bold">{{ user.ho_ten }}</div>
-                      <small class="text-muted">{{ user.email }}</small>
+                  <li v-for="user in grantedUsers" :key="user.id" class="list-group-item px-0">
+                    <div class="d-flex justify-content-between align-items-center">
+                      <div>
+                        <div class="fw-bold">{{ user.ho_ten }}</div>
+                        <small class="text-muted">{{ user.email }}</small>
+                      </div>
+                      <button 
+                        v-if="confirmingUserId !== user.id"
+                        class="btn btn-sm btn-outline-danger" 
+                        @click="confirmingUserId = user.id" 
+                        title="Thu hồi quyền">
+                        Thu hồi
+                      </button>
                     </div>
-                    <button class="btn btn-sm btn-outline-danger" @click="revokeAccess(user.id)" title="Thu hồi quyền">
-                      Thu hồi
-                    </button>
+                    <!-- Inline confirm row -->
+                    <div v-if="confirmingUserId === user.id" class="mt-2 p-2 rounded" style="background:#fff5f5; border:1px solid #fecaca;">
+                      <small class="text-danger fw-bold d-block mb-2">⚠️ Xác nhận thu hồi quyền của <span class="text-dark">{{ user.ho_ten }}</span>?</small>
+                      <div class="d-flex gap-2">
+                        <button class="btn btn-danger btn-sm flex-fill" @click="revokeAccess(user.id)">
+                          <i class="bx bx-check me-1"></i>Xác nhận
+                        </button>
+                        <button class="btn btn-light btn-sm flex-fill" @click="confirmingUserId = null">
+                          Hủy
+                        </button>
+                      </div>
+                    </div>
                   </li>
                 </ul>
               </div>
@@ -215,7 +233,8 @@ export default {
       grantedUsers: [],
       isLoadingAccessList: false,
       isGranting: false,
-      accessModal: null
+      accessModal: null,
+      confirmingUserId: null   // ID của user đang hiện confirm thu hồi
     };
   },
   mounted() {
@@ -316,8 +335,6 @@ export default {
         });
     },
     revokeAccess(userId) {
-      if (!confirm("Bạn có chắc chắn muốn thu hồi quyền truy cập của người dùng này?")) return;
-      
       const payload = {
         chi_nhanh_id: this.selectedBranch.id,
         nguoi_dung_id: userId
@@ -327,6 +344,7 @@ export default {
         .then(res => {
           if (res.data.status) {
             toastr.success(res.data.message);
+            this.confirmingUserId = null;
             this.loadGrantedUsers();
           } else {
             toastr.error(res.data.message);

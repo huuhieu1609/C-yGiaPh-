@@ -100,7 +100,7 @@ class DoiTacController extends Controller
                 $data['chiNhanh'] = $chiNhanh;
                 $data['targetUser'] = $targetUser;
                 $data['partnerUser'] = $user;
-                $data['link'] = env('APP_URL', 'http://localhost:5173') . '/gia-pha?chi_nhanh_id=' . $chiNhanh->id;
+                $data['link'] = env('FRONTEND_URL', 'http://localhost:5173') . '/gia-pha';
                 $view = 'emails.grant-branch-access';
 
                 \Illuminate\Support\Facades\Mail::to($targetUser->email)->send(new \App\Mail\MasterMail($tieu_de, $data, $view));
