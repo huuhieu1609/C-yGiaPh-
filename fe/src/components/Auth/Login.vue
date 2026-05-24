@@ -72,7 +72,6 @@ export default {
                         // 1. Lưu thông tin vào LocalStorage trước
                         localStorage.setItem('access_token', res.data.access_token);
                         localStorage.setItem('user', JSON.stringify(res.data.user));
-<<<<<<< HEAD
 
                         // 2. Lấy thông tin user vừa đăng nhập để phân quyền chính xác
                         const user = res.data.user;
@@ -92,18 +91,6 @@ export default {
                 .catch(err => {
                     console.error(err);
                     toastr.error(err.response?.data?.message || 'Email hoặc mật khẩu không đúng!');
-=======
-                        let redirect = this.$route.query.redirect || '/';
-                        if (res.data.user.is_doi_tac == 1) {
-                            redirect = '/doi-tac/dashboard';
-                        }
-                        this.$router.push(redirect);
-                    }
-                })
-                .catch(err => {
-                    const msg = err.response?.data?.message || 'Có lỗi xảy ra, vui lòng thử lại!';
-                    toastr.error(msg);
->>>>>>> 81ae88bc363c24c58beb23ab4fb36bdbc33721de
                 })
                 .finally(() => {
                     this.isLoading = false;
@@ -117,13 +104,7 @@ export default {
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;600;700&display=swap');
 
 .auth-page {
-<<<<<<< HEAD
     min-height: 100vh;
-    display: flex;
-    align-items: center;
-=======
-    height: 100vh;
->>>>>>> 81ae88bc363c24c58beb23ab4fb36bdbc33721de
     background-size: cover;
     background-position: center;
     position: relative;
@@ -132,32 +113,17 @@ export default {
 
 .auth-overlay {
     position: absolute;
-<<<<<<< HEAD
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.7);
-=======
     top: 0; left: 0; right: 0; bottom: 0;
     background: rgba(0, 0, 0, 0.7);
     display: flex;
     align-items: center;
     justify-content: center;
->>>>>>> 81ae88bc363c24c58beb23ab4fb36bdbc33721de
+    padding: 20px;
 }
 
 .auth-container {
     width: 100%;
     max-width: 450px;
-<<<<<<< HEAD
-    margin: 0 auto;
-    padding: 20px;
-    position: relative;
-    z-index: 1;
-=======
-    padding: 20px;
->>>>>>> 81ae88bc363c24c58beb23ab4fb36bdbc33721de
 }
 
 .auth-card {
@@ -165,22 +131,14 @@ export default {
     backdrop-filter: blur(15px);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 20px;
-<<<<<<< HEAD
-    padding: 40px;
-=======
     padding: 50px 40px;
->>>>>>> 81ae88bc363c24c58beb23ab4fb36bdbc33721de
     color: #fff;
     box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
 }
 
 .auth-header {
     text-align: center;
-<<<<<<< HEAD
-    margin-bottom: 30px;
-=======
     margin-bottom: 40px;
->>>>>>> 81ae88bc363c24c58beb23ab4fb36bdbc33721de
 }
 
 .auth-logo {
@@ -189,11 +147,7 @@ export default {
     font-weight: 700;
     color: #fff;
     text-decoration: none;
-<<<<<<< HEAD
-    margin-bottom: 15px;
-=======
     margin-bottom: 20px;
->>>>>>> 81ae88bc363c24c58beb23ab4fb36bdbc33721de
     display: block;
 }
 
@@ -205,43 +159,24 @@ export default {
 
 .auth-header h2 {
     font-family: 'Playfair Display', serif;
-<<<<<<< HEAD
-    font-size: 28px;
-    margin-bottom: 8px;
-=======
     font-size: 32px;
     margin-bottom: 10px;
->>>>>>> 81ae88bc363c24c58beb23ab4fb36bdbc33721de
 }
 
 .auth-header p {
     color: #aaa;
-<<<<<<< HEAD
-    font-size: 13px;
-}
-
-.form-group {
-    margin-bottom: 20px;
-=======
     font-size: 14px;
 }
 
 .form-group {
     margin-bottom: 25px;
->>>>>>> 81ae88bc363c24c58beb23ab4fb36bdbc33721de
 }
 
 .form-group label {
     display: block;
-<<<<<<< HEAD
-    font-size: 12px;
-    font-weight: 600;
-    margin-bottom: 8px;
-=======
     font-size: 13px;
     font-weight: 600;
     margin-bottom: 10px;
->>>>>>> 81ae88bc363c24c58beb23ab4fb36bdbc33721de
     color: #d4af37;
     text-transform: uppercase;
     letter-spacing: 1px;
@@ -257,38 +192,23 @@ export default {
     top: 50%;
     transform: translateY(-50%);
     color: #d4af37;
-<<<<<<< HEAD
-    font-size: 18px;
-=======
     font-size: 20px;
->>>>>>> 81ae88bc363c24c58beb23ab4fb36bdbc33721de
 }
 
 .input-wrapper input {
     width: 100%;
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.1);
-<<<<<<< HEAD
-    padding: 14px 15px 14px 45px;
-    border-radius: 8px;
-    color: #fff;
-    font-size: 14px;
-=======
     padding: 15px 15px 15px 50px;
     border-radius: 10px;
     color: #fff;
     font-size: 15px;
->>>>>>> 81ae88bc363c24c58beb23ab4fb36bdbc33721de
     transition: all 0.3s;
 }
 
 .input-wrapper input::placeholder {
     color: #fff;
-<<<<<<< HEAD
-    opacity: 0.6;
-=======
     opacity: 0.8;
->>>>>>> 81ae88bc363c24c58beb23ab4fb36bdbc33721de
 }
 
 .input-wrapper input:focus {
@@ -297,8 +217,6 @@ export default {
     background: rgba(255, 255, 255, 0.1);
 }
 
-<<<<<<< HEAD
-=======
 .form-options {
     display: flex;
     justify-content: space-between;
@@ -320,22 +238,11 @@ export default {
     text-decoration: none;
 }
 
->>>>>>> 81ae88bc363c24c58beb23ab4fb36bdbc33721de
 .btn-auth {
     width: 100%;
     background: #d4af37;
     color: #000;
     border: none;
-<<<<<<< HEAD
-    padding: 15px;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 700;
-    letter-spacing: 1px;
-    cursor: pointer;
-    transition: all 0.3s;
-    margin-top: 10px;
-=======
     padding: 18px;
     border-radius: 10px;
     font-size: 14px;
@@ -344,7 +251,6 @@ export default {
     cursor: pointer;
     transition: all 0.3s;
     margin-bottom: 25px;
->>>>>>> 81ae88bc363c24c58beb23ab4fb36bdbc33721de
 }
 
 .btn-auth:disabled {
@@ -355,19 +261,12 @@ export default {
 .btn-auth:hover:not(:disabled) {
     background: #fff;
     transform: translateY(-2px);
-<<<<<<< HEAD
-=======
     box-shadow: 0 10px 20px rgba(212, 175, 55, 0.2);
->>>>>>> 81ae88bc363c24c58beb23ab4fb36bdbc33721de
 }
 
 .auth-footer {
     text-align: center;
-<<<<<<< HEAD
-    font-size: 13px;
-=======
     font-size: 14px;
->>>>>>> 81ae88bc363c24c58beb23ab4fb36bdbc33721de
     color: #aaa;
 }
 
@@ -376,12 +275,8 @@ export default {
     text-decoration: none;
     font-weight: 600;
 }
-<<<<<<< HEAD
-</style>
-=======
 
 .auth-footer a:hover {
     text-decoration: underline;
 }
 </style>
->>>>>>> 81ae88bc363c24c58beb23ab4fb36bdbc33721de

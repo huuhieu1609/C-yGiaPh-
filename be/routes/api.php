@@ -21,6 +21,7 @@ use App\Http\Controllers\Api\TaiLieuController;
 use App\Http\Controllers\Api\ThamGiaSuKienController;
 use App\Http\Controllers\Api\ThanhVienController;
 use App\Http\Controllers\Api\ThongBaoController;
+use App\Http\Controllers\Api\TuongNiemController;
 use App\Http\Controllers\Api\VoChongController;
 use App\Http\Controllers\ThanhToanController;
 use Illuminate\Support\Facades\Route;
@@ -155,6 +156,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/status', [NhaThoHoController::class, 'status']);
     });
 
+    Route::prefix('/tuong-niem')->group(function () {
+        Route::get('/thanh-vien/{memberId}', [TuongNiemController::class, 'getTributes']);
+        Route::post('/create', [TuongNiemController::class, 'createTribute']);
+        Route::get('/sap-toi', [TuongNiemController::class, 'getUpcomingAnniversaries']);
+    });
+
     Route::prefix('/su-kien')->group(function () {
         Route::get('/get-data', [SuKienController::class, 'getData']);
         Route::post('/create', [SuKienController::class, 'create']);
@@ -217,3 +224,5 @@ Route::prefix('/thanh-toan')->group(function () {
     Route::get('/get-data', [ThanhToanController::class, 'index']);
     Route::post('/xac-nhan-thanh-toan', [ThanhToanController::class, 'paymentVerify']);
 });
+
+Route::get('/thanh-vien/public-detail/{id}', [ThanhVienController::class, 'getPublicDetail']);

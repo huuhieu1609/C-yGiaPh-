@@ -29,6 +29,18 @@ const routes = [
         meta: { layout: 'client', requiresAuth: true }
     },
     {
+        path: '/ban-do',
+        name: 'client-ban-do',
+        component: () => import('../components/ClientBanDo/index.vue'),
+        meta: { layout: 'client', requiresAuth: true }
+    },
+    {
+        path: '/tuong-niem',
+        name: 'client-tuong-niem',
+        component: () => import('../components/ClientTuongNiem/index.vue'),
+        meta: { layout: 'client', requiresAuth: true }
+    },
+    {
         path: '/tra-cuu',
         name: 'client-tra-cuu',
         component: () => import('../components/ClientTraCuu/index.vue'),
@@ -55,7 +67,23 @@ const routes = [
     {
         path: '/thanh-toan',
         name: 'thanh-toan',
-        component: () => import('../components/ClientThanhToan/index.vue'),
+        component: () => import('../components/ClientThanhToan/MuaGoi.vue'),
+        meta: { layout: 'client', requiresAuth: true }
+    },
+    {
+        path: '/dong-gop-quy',
+        name: 'dong-gop-quy',
+        component: () => import('../components/ClientThanhToan/DongGopQuy.vue'),
+        meta: { layout: 'client', requiresAuth: true }
+    },
+    {
+        path: '/de-xuat',
+        redirect: '/gia-pha'
+    },
+    {
+        path: '/su-kien',
+        name: 'client-su-kien',
+        component: () => import('../components/ClientSuKien/index.vue'),
         meta: { layout: 'client', requiresAuth: true }
     },
     {

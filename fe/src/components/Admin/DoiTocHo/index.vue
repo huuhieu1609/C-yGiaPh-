@@ -146,7 +146,11 @@ export default {
     methods: {
         loadData() {
             this.isLoading = true;
-            axios.get('http://127.0.0.1:8000/api/doi-toc-ho/get-data')
+            axios.get('http://127.0.0.1:8000/api/doi-toc-ho/get-data', {
+                headers: {
+                    Authorization: 'Bearer ' + localStorage.getItem('access_token')
+                }
+            })
                 .then(res => {
                     if (res.data.status) {
                         this.listData = res.data.data;
@@ -162,7 +166,11 @@ export default {
                 ? 'http://127.0.0.1:8000/api/doi-toc-ho/update'
                 : 'http://127.0.0.1:8000/api/doi-toc-ho/create';
             
-            axios.post(url, this.formData)
+            axios.post(url, this.formData, {
+                headers: {
+                    Authorization: 'Bearer ' + localStorage.getItem('access_token')
+                }
+            })
                 .then(res => {
                     if (res.data.status) {
                         toastr.success(res.data.message);
@@ -182,7 +190,11 @@ export default {
         },
         deleteItem(id) {
             if (confirm('Bạn có chắc chắn muốn xóa đời họ này?')) {
-                axios.post('http://127.0.0.1:8000/api/doi-toc-ho/delete', { id })
+                axios.post('http://127.0.0.1:8000/api/doi-toc-ho/delete', { id }, {
+                    headers: {
+                        Authorization: 'Bearer ' + localStorage.getItem('access_token')
+                    }
+                })
                     .then(res => {
                         if (res.data.status) {
                             toastr.success(res.data.message);
