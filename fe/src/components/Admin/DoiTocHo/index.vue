@@ -94,7 +94,7 @@
                                             <button class="btn btn-sm btn-outline-primary radius-8" @click="editItem(item)" title="Sửa">
                                                 <i class="bx bx-edit-alt m-0"></i>
                                             </button>
-                                            <button class="btn btn-sm btn-outline-danger radius-8" data-bs-toggle="modal" data-bs-target="#deleteModal" @click="deleteId = item.id" title="Xóa">
+                                            <button class="btn btn-sm btn-outline-danger radius-8" @click="deleteItem(item.id)" title="Xóa">
                                                 <i class="bx bx-trash m-0"></i>
                                             </button>
                                         </div>
@@ -102,33 +102,6 @@
                                 </tr>
                             </tbody>
                         </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- Delete Confirmation Modal -->
-        <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content radius-10 border-0 shadow">
-                    <div class="modal-header bg-light border-bottom-0">
-                        <h5 class="modal-title text-danger fw-bold" id="deleteModalLabel">
-                            <i class="bx bx-trash me-1"></i> Xác Nhận Xóa Đời Họ
-                        </h5>
-                        <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body p-4">
-                        <div class="alert alert-danger border-0 d-flex align-items-center radius-8 mb-3" role="alert" style="background-color: #fde1e1; color: #d32f2f;">
-                            <i class="bx bx-error-circle fs-1 me-3"></i>
-                            <div>
-                                <h6 class="alert-heading fw-bold mb-1">Cảnh báo nghiêm trọng!</h6>
-                                <span class="small">Dữ liệu đời họ này sẽ bị xóa vĩnh viễn và không thể khôi phục lại được.</span>
-                            </div>
-                        </div>
-                        <p class="mb-0 text-center fs-6 fw-semibold text-dark">Bạn có chắc chắn muốn tiếp tục xóa?</p>
-                    </div>
-                    <div class="modal-footer border-top-0 justify-content-center pb-4">
-                        <button type="button" class="btn btn-light radius-8 px-4 border" data-bs-dismiss="modal">Hủy bỏ</button>
-                        <button type="button" class="btn btn-danger radius-8 px-4 fw-bold shadow-sm" data-bs-dismiss="modal" @click="executeDelete">Đồng ý Xóa</button>
                     </div>
                 </div>
             </div>
@@ -154,8 +127,7 @@ export default {
             },
             isEditing: false,
             isLoading: false,
-            searchQuery: '',
-            deleteId: null
+            searchQuery: ''
         }
     },
     computed: {
@@ -174,7 +146,11 @@ export default {
     methods: {
         loadData() {
             this.isLoading = true;
-            axios.get('http://127.0.0.1:8000/api/doi-toc-ho/get-data')
+            axios.get('http://127.0.0.1:8000/api/doi-toc-ho/get-data', {
+                headers: {
+                    Authorization: 'Bearer ' + localStorage.getItem('access_token')
+                }
+            })
                 .then(res => {
                     if (res.data.status) {
                         this.listData = res.data.data;
@@ -190,7 +166,11 @@ export default {
                 ? 'http://127.0.0.1:8000/api/doi-toc-ho/update'
                 : 'http://127.0.0.1:8000/api/doi-toc-ho/create';
             
-            axios.post(url, this.formData)
+            axios.post(url, this.formData, {
+                headers: {
+                    Authorization: 'Bearer ' + localStorage.getItem('access_token')
+                }
+            })
                 .then(res => {
                     if (res.data.status) {
                         toastr.success(res.data.message);
@@ -208,23 +188,25 @@ export default {
             this.isEditing = true;
             this.formData = { ...item };
         },
-        executeDelete() {
-            if (!this.deleteId) return;
-            axios.delete(`http://127.0.0.1:8000/api/doi-toc-ho/delete/${this.deleteId}`)
-                .then(res => {
-                    if (res.data.status) {
-                        toastr.success(res.data.message);
-                        this.loadData();
-                    } else {
-                        toastr.error(res.data.message);
+        deleteItem(id) {
+            if (confirm('Bạn có chắc chắn muốn xóa đời họ này?')) {
+                axios.post('http://127.0.0.1:8000/api/doi-toc-ho/delete', { id }, {
+                    headers: {
+                        Authorization: 'Bearer ' + localStorage.getItem('access_token')
                     }
                 })
-                .catch(err => {
-                    toastr.error('Có lỗi xảy ra!');
-                })
-                .finally(() => {
-                    this.deleteId = null;
-                });
+                    .then(res => {
+                        if (res.data.status) {
+                            toastr.success(res.data.message);
+                            this.loadData();
+                        } else {
+                            toastr.error(res.data.message);
+                        }
+                    })
+                    .catch(err => {
+                        toastr.error('Có lỗi xảy ra!');
+                    });
+            }
         },
         resetForm() {
             this.isEditing = false;

@@ -14,6 +14,18 @@
         <div class="container pb-5 mt-n5-custom">
             <div class="main-card shadow-2xl rounded-5 bg-white border-0 overflow-hidden">
                 <div class="p-4 p-lg-5">
+                    <!-- Section Header with QR Upload Button -->
+                    <div class="d-flex justify-content-between align-items-center mb-5 flex-wrap gap-3 border-bottom pb-4">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bx bx-calculator text-dark fs-3"></i>
+                            <h4 class="fw-bold mb-0 text-dark">Máy Tính Xưng Hô & Tra Cứu</h4>
+                        </div>
+                        <button class="btn btn-gold-glass px-4 py-2.5 rounded-pill fw-bold text-dark d-flex align-items-center gap-2 transition" @click="openQRModal" style="background: rgba(212, 175, 55, 0.15); border: 1px solid rgba(212, 175, 55, 0.3); color: #8a6d1c !important;">
+                            <i class="bx bx-qr-scan fs-4"></i>
+                            Quét QR Từ Ảnh
+                        </button>
+                    </div>
+
                     <div class="row g-4 g-lg-5 align-items-center">
                         <!-- Person 1 Selection -->
                         <div class="col-lg-5">
@@ -128,7 +140,111 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Visual Lineage Path Flowchart -->
+                        <div v-if="result.path && result.path.length > 0" class="lineage-path-card mt-4 p-4 p-lg-5 rounded-4 shadow-sm bg-white border">
+                            <div class="d-flex align-items-center mb-4">
+                                <div class="icon-box bg-dark text-white me-3">
+                                    <i class="bx bx-git-commit fs-4"></i>
+                                </div>
+                                <h4 class="fw-bold mb-0 text-dark">Sơ đồ đường đi huyết thống</h4>
+                            </div>
+                            
+                            <div class="path-flow-container py-3">
+                                <div class="row g-3 justify-content-center align-items-center text-center">
+                                    <template v-for="(node, idx) in result.path" :key="node.id">
+                                        <!-- Member Node -->
+                                        <div class="col-auto">
+                                            <div class="path-node p-3 rounded-3 border d-flex flex-column align-items-center" 
+                                                 :class="{'border-primary bg-primary-soft': idx === 0, 'border-warning bg-gold-soft': idx === result.path.length - 1, 'bg-light': idx > 0 && idx < result.path.length - 1}">
+                                                <div class="avatar-mini-ring mb-2">
+                                                    <img :src="node.avatar || 'https://ui-avatars.com/api/?name=' + node.ho_ten + '&background=' + (idx === 0 ? '0d6efd' : idx === result.path.length - 1 ? 'd4af37' : '6c757d') + '&color=fff'" 
+                                                         class="rounded-circle" width="50" height="50">
+                                                </div>
+                                                <h6 class="fw-bold mb-0 text-dark small">{{ node.ho_ten }}</h6>
+                                                <span class="badge bg-secondary-soft text-secondary mt-1" style="font-size: 10px;">Đời {{ node.doi_thu }}</span>
+                                                <span v-if="idx === 0" class="badge bg-primary text-white mt-1" style="font-size: 9px;">Bạn (A)</span>
+                                                <span v-else-if="idx === result.path.length - 1" class="badge bg-warning text-dark mt-1" style="font-size: 9px;">Đối tượng (B)</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Connection Edge -->
+                                        <div v-if="idx < result.path.length - 1" class="col-auto px-0 d-flex flex-column align-items-center justify-content-center connection-arrow-col">
+                                            <div class="connection-line"></div>
+                                            <span class="badge bg-dark text-white rounded-pill px-2 py-1 my-1 relation-step-label shadow-sm" style="font-size: 10px; z-index: 2;">
+                                                {{ result.path[idx + 1].relation_label }}
+                                            </span>
+                                            <div class="connection-arrow"><i class="bx bx-chevron-right text-muted fs-5"></i></div>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Vue QR Scan Modal -->
+        <div v-if="showQRModal" class="custom-modal-backdrop animate__animated animate__fadeIn" @click.self="closeQRModal">
+            <div class="custom-modal-content animate__animated animate__zoomIn p-4 rounded-4 shadow-2xl bg-white position-relative">
+                <button class="btn-close-custom position-absolute top-0 end-0 m-3 border-0 bg-transparent" @click="closeQRModal">
+                    <i class="bx bx-x fs-2 text-muted"></i>
+                </button>
+                
+                <div class="text-center mb-4">
+                    <div class="qr-scan-icon-container bg-gold-soft text-warning rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 70px; height: 70px; background: rgba(212, 175, 55, 0.1) !important;">
+                        <i class="bx bx-qr-scan fs-1" style="color: #d4af37 !important;"></i>
+                    </div>
+                    <h3 class="fw-extrabold text-dark mb-1">Tải Ảnh Mã QR</h3>
+                    <p class="text-secondary font-14">Chọn hoặc kéo thả ảnh QR của thành viên để quét nhanh thông tin</p>
+                </div>
+
+                <!-- Dropzone Area -->
+                <div 
+                    class="dropzone-area p-4 text-center rounded-3 border border-2 border-dashed d-flex flex-column align-items-center justify-content-center transition cursor-pointer"
+                    :class="{'drag-active': dragActive, 'has-file': qrPreview}"
+                    @dragover.prevent="dragActive = true"
+                    @dragleave.prevent="dragActive = false"
+                    @drop.prevent="handleDrop"
+                    @click="triggerFileInput"
+                    style="border-style: dashed !important;"
+                >
+                    <input type="file" ref="fileInput" class="d-none" accept="image/*" @change="handleFileSelect">
+                    
+                    <template v-if="!qrPreview">
+                        <i class="bx bx-cloud-upload text-muted display-4 mb-2"></i>
+                        <p class="mb-1 fw-bold text-dark font-15">Kéo thả ảnh vào đây hoặc nhấp để chọn</p>
+                        <p class="font-12 text-muted mb-0">Hỗ trợ các định dạng PNG, JPG, JPEG</p>
+                    </template>
+                    <template v-else>
+                        <div class="preview-container position-relative mb-2">
+                            <img :src="qrPreview" class="img-fluid rounded border shadow-sm" style="max-height: 200px; object-fit: contain;">
+                            <button class="btn btn-danger btn-sm rounded-circle position-absolute top-0 end-0 m-1 border-0" @click.stop="clearFile">
+                                <i class="bx bx-trash"></i>
+                            </button>
+                        </div>
+                        <p class="mb-0 fw-bold text-success font-14"><i class="bx bx-check-circle"></i> Đã chọn: {{ qrFile.name }}</p>
+                    </template>
+                </div>
+
+                <!-- Scan Progress & Error Message -->
+                <div v-if="isScanning" class="text-center mt-3 py-2">
+                    <div class="spinner-border spinner-border-sm text-warning me-2" role="status"></div>
+                    <span class="fw-bold text-muted">Đang phân tích mã QR trực tuyến...</span>
+                </div>
+                
+                <div v-if="scanError" class="alert alert-danger mt-3 mb-0 radius-10 d-flex align-items-center gap-2 font-13 shadow-xs">
+                    <i class="bx bx-error-circle fs-5"></i>
+                    <div>{{ scanError }}</div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="d-flex gap-3 mt-4">
+                    <button class="btn btn-light w-50 py-2.5 rounded-pill fw-bold border" @click="closeQRModal">Huỷ bỏ</button>
+                    <button class="btn btn-heritage w-50 py-2.5 rounded-pill fw-bold text-white shadow-sm" :disabled="!qrFile || isScanning" @click="scanQRCode">
+                        <i class="bx bx-analyse me-1"></i> Bắt đầu Quét
+                    </button>
                 </div>
             </div>
         </div>
@@ -146,7 +262,13 @@ export default {
             allMembers: [],
             idA: null,
             idB: null,
-            result: null
+            result: null,
+            showQRModal: false,
+            dragActive: false,
+            isScanning: false,
+            scanError: null,
+            qrFile: null,
+            qrPreview: null
         }
     },
     computed: {
@@ -176,52 +298,133 @@ export default {
                 return;
             }
 
-            const a = this.personA;
-            const b = this.personB;
-            const diff = a.doi_thu - b.doi_thu;
-
-            let term = "Họ hàng";
-            let description = "Cùng nằm trong hệ thống huyết thống của dòng tộc.";
-
-            if (diff === 0) {
-                if (a.cha_id === b.cha_id && a.cha_id !== null) {
-                    term = a.gioi_tinh === 'Nam' ? "Anh/Em" : "Chị/Em";
-                    description = "Là anh chị em ruột, cùng chung huyết thống trực hệ.";
+            axios.post('http://127.0.0.1:8000/api/thanh-vien/xac-dinh-quan-he', {
+                id_a: this.idA,
+                id_b: this.idB
+            })
+            .then(res => {
+                if (res.data.status) {
+                    this.result = {
+                        term: res.data.term,
+                        description: res.data.description,
+                        path: res.data.path
+                    };
                 } else {
-                    term = "Anh/Chị/Em họ";
-                    description = "Cùng một thế hệ nhưng khác nhánh phụ hoặc đời cha mẹ khác nhau.";
+                    toastr.error(res.data.message || 'Lỗi xác định mối quan hệ!');
                 }
-            } else if (diff === 1) {
-                if (a.cha_id === b.id) {
-                    term = b.gioi_tinh === 'Nam' ? "Bố / Cha" : "Mẹ";
-                    description = "Quan hệ cha con/mẹ con trực hệ, một bậc sinh thành.";
-                } else {
-                    term = b.gioi_tinh === 'Nam' ? "Chú / Bác" : "Cô / Dì";
-                    description = b.ho_ten + " là hàng bề trên (cùng thế hệ với cha/mẹ).";
-                }
-            } else if (diff === -1) {
-                if (b.cha_id === a.id) {
-                    term = "Con cái";
-                    description = b.ho_ten + " là hậu duệ trực hệ (đời con).";
-                } else {
-                    term = "Cháu";
-                    description = b.ho_ten + " là hàng cháu, vai dưới một bậc.";
-                }
-            } else if (diff === 2) {
-                term = b.gioi_tinh === 'Nam' ? "Ông" : "Bà";
-                description = b.ho_ten + " là bậc tiền bối đời thứ hai (ông bà).";
-            } else if (diff === -2) {
-                term = "Cháu Nội";
-                description = b.ho_ten + " là hậu duệ đời thứ hai (cháu nội).";
-            } else if (diff >= 3) {
-                term = "Cụ / Cố";
-                description = b.ho_ten + " là bậc đại tiền bối khởi nguồn lâu đời.";
-            } else if (diff <= -3) {
-                term = "Chắt / Chít";
-                description = b.ho_ten + " là hậu duệ đời thứ 3, 4 về sau.";
+            })
+            .catch(err => {
+                toastr.error(err.response?.data?.message || 'Có lỗi xảy ra khi kết nối máy chủ!');
+            });
+        },
+        openQRModal() {
+            this.showQRModal = true;
+            this.scanError = null;
+            this.clearFile();
+        },
+        closeQRModal() {
+            this.showQRModal = false;
+        },
+        triggerFileInput() {
+            this.$refs.fileInput.click();
+        },
+        handleDragOver() {
+            this.dragActive = true;
+        },
+        handleDragLeave() {
+            this.dragActive = false;
+        },
+        handleDrop(e) {
+            this.dragActive = false;
+            if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                this.setFile(e.dataTransfer.files[0]);
             }
+        },
+        handleFileSelect(e) {
+            if (e.target.files && e.target.files[0]) {
+                this.setFile(e.target.files[0]);
+            }
+        },
+        setFile(file) {
+            if (!file.type.startsWith('image/')) {
+                this.scanError = 'Chỉ chấp nhận các tệp định dạng hình ảnh!';
+                return;
+            }
+            this.qrFile = file;
+            this.scanError = null;
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                this.qrPreview = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        },
+        clearFile() {
+            this.qrFile = null;
+            this.qrPreview = null;
+            this.scanError = null;
+            if (this.$refs.fileInput) {
+                this.$refs.fileInput.value = '';
+            }
+        },
+        scanQRCode() {
+            if (!this.qrFile) return;
+            this.isScanning = true;
+            this.scanError = null;
 
-            this.result = { term, description };
+            const formData = new FormData();
+            formData.append('file', this.qrFile);
+
+            // Dùng fetch() thay vì axios để tránh axios interceptors tự động
+            // gắn header Authorization vào request third-party (gây lỗi CORS preflight)
+            fetch('https://api.qrserver.com/v1/read-qr-code/', {
+                method: 'POST',
+                body: formData
+                // KHÔNG set Content-Type header — browser tự set boundary đúng cho multipart/form-data
+            })
+            .then(res => {
+                if (!res.ok) throw new Error('HTTP error: ' + res.status);
+                return res.json();
+            })
+            .then(data => {
+                const symbol = data[0]?.symbol[0];
+                if (!symbol || symbol.error) {
+                    this.scanError = symbol?.error || 'Không nhận diện được mã QR trong ảnh. Vui lòng thử lại với ảnh rõ nét hơn!';
+                    return;
+                }
+
+                const qrText = symbol.data;
+                if (!qrText) {
+                    this.scanError = 'Không có dữ liệu trong mã QR này!';
+                    return;
+                }
+
+                // Phân tích kết quả quét — tìm ID thành viên
+                const detailMatch = qrText.match(/\/thanh-vien\/detail\/(\d+)/);
+                if (detailMatch && detailMatch[1]) {
+                    const id = detailMatch[1];
+                    toastr.success('Quét mã QR thành công! Đang chuyển hướng...');
+                    this.closeQRModal();
+                    this.$router.push(`/thanh-vien/detail/${id}`);
+                    return;
+                }
+
+                if (/^\d+$/.test(qrText.trim())) {
+                    const id = qrText.trim();
+                    toastr.success('Quét mã QR thành công! Đang chuyển hướng...');
+                    this.closeQRModal();
+                    this.$router.push(`/thanh-vien/detail/${id}`);
+                    return;
+                }
+
+                this.scanError = 'Mã QR này không thuộc Hệ thống Gia Phả Số (Dữ liệu không khớp: ' + qrText + ')';
+            })
+            .catch(() => {
+                this.scanError = 'Lỗi kết nối máy chủ quét QR! Vui lòng kiểm tra kết nối mạng và thử lại.';
+            })
+            .finally(() => {
+                this.isScanning = false;
+            });
         }
     }
 }
@@ -360,5 +563,120 @@ export default {
 @media (max-width: 991px) {
     .display-2 { font-size: 2.5rem; }
     .mt-n5 { margin-top: -60px; }
+}
+.bg-primary-soft { background-color: #f0f7ff; }
+.bg-secondary-soft { background-color: #f1f5f9; color: #475569; }
+.avatar-mini-ring {
+    padding: 3px;
+    border: 2px solid #cbd5e1;
+    border-radius: 50%;
+    display: inline-block;
+}
+.border-primary .avatar-mini-ring { border-color: #0d6efd; }
+.border-warning .avatar-mini-ring { border-color: #d4af37; }
+
+.path-node {
+    min-width: 120px;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    transition: all 0.2s ease;
+}
+.path-node:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.connection-line {
+    width: 60px;
+    height: 3px;
+    background: linear-gradient(90deg, #cbd5e1 0%, #94a3b8 100%);
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 1;
+}
+
+.connection-arrow-col {
+    position: relative;
+    width: 90px;
+    height: 100px;
+}
+
+.relation-step-label {
+    position: relative;
+    z-index: 5;
+    background-color: #0f172a !important;
+}
+
+.connection-arrow {
+    position: relative;
+    z-index: 2;
+    margin-top: 2px;
+}
+
+@media (max-width: 768px) {
+    .connection-arrow-col {
+        width: 100%;
+        height: auto;
+        padding: 10px 0 !important;
+    }
+    .connection-line {
+        display: none;
+    }
+    .bx-chevron-right {
+        transform: rotate(90deg);
+    }
+}
+
+/* Custom Vue Modal Styling */
+.custom-modal-backdrop {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(8px);
+    z-index: 1050;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+.custom-modal-content {
+    width: 100%;
+    max-width: 480px;
+    background: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+.btn-close-custom {
+    transition: all 0.2s ease;
+}
+.btn-close-custom:hover {
+    transform: rotate(90deg);
+}
+.dropzone-area {
+    min-height: 180px;
+    border-color: #cbd5e1;
+    background-color: #f8fafc;
+    transition: all 0.3s ease;
+}
+.dropzone-area:hover, .dropzone-area.drag-active {
+    border-color: #d4af37;
+    background-color: #fdfefb;
+}
+.dropzone-area.has-file {
+    border-color: #198754;
+    background-color: #f6fff9;
+}
+.text-muted-soft {
+    color: #94a3b8;
+}
+.btn-gold-glass {
+    background: rgba(212, 175, 55, 0.1);
+    border: 1px solid rgba(212, 175, 55, 0.25);
+    color: #ffd891;
+    transition: all 0.3s ease;
+}
+.btn-gold-glass:hover {
+    background: rgba(212, 175, 55, 0.2);
+    border-color: #d4af37;
+    transform: translateY(-2px);
 }
 </style>

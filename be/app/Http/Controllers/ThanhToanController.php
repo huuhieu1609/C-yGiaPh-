@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\DoiTac;
 use App\Models\DongGop;
-use App\Models\NguoiDung;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
@@ -61,12 +60,12 @@ class ThanhToanController extends Controller
 
                 foreach ($transactions as $tx) {
                     $amountIn = $tx['amount_in'] ?? $tx['amount'] ?? 0;
-                    $isIn = (isset($tx['transaction_type']) && $tx['transaction_type'] === 'in')
+                    $isIn = (isset($tx['transaction_type']) && $tx['transaction_type'] === 'in') 
                             || ($amountIn > 0);
-
+                    
                     if ($isIn) {
                         $bankContent = strtoupper($tx['transaction_content'] ?? '');
-
+                        
                         // 1. Kiểm tra khớp hoàn toàn (MUAGOI ADMIN12345)
                         if (stripos($bankContent, $expectedContent) !== false) {
                             $matchedTx = $tx;
@@ -74,13 +73,13 @@ class ThanhToanController extends Controller
                             break;
                         }
 
-                        // 2. Kiểm tra khớp linh hoạt (MUAGOI + TÊN + ĐÚNG SỐ TIỀN)
-                        // Lấy phần tên từ expectedContent (bỏ "MUAGOI " ở đầu và bỏ số ở cuối)
-                        $namePart = preg_replace('/^MUAGOI\s+/', '', $expectedContent);
+                        // 2. Kiểm tra khớp linh hoạt (MUAGOI / DONGGOP / CONGDUC + TÊN + ĐÚNG SỐ TIỀN)
+                        // Lấy phần tên từ expectedContent (bỏ "MUAGOI/DONGGOP/CONGDUC " ở đầu và bỏ số ở cuối)
+                        $namePart = preg_replace('/^(MUAGOI|DONGGOP|CONGDUC)\s+/i', '', $expectedContent);
                         $namePart = preg_replace('/\d+$/', '', $namePart);
                         $namePart = trim($namePart);
 
-                        if (stripos($bankContent, 'MUAGOI') !== false &&
+                        if ((stripos($bankContent, 'MUAGOI') !== false || stripos($bankContent, 'DONGGOP') !== false || stripos($bankContent, 'CONGDUC') !== false) && 
                             stripos($bankContent, $namePart) !== false) {
                             $matchedTx = $tx;
                             $matchedTx['amount_in'] = $amountIn;
@@ -98,35 +97,40 @@ class ThanhToanController extends Controller
                     );
                     $dongGop->update(['trang_thai' => 'Đã duyệt']);
 
-                    // 2. Tự động kích hoạt/cộng dồn Gói Đối Tác
-                    $user = NguoiDung::find($nguoiDungId);
-                    if ($user) {
-                        $user->is_doi_tac = 1;
-                        $user->save();
-                    }
+                    // 2. Tự động kích hoạt/cộng dồn Gói Đối Tác (Chỉ dành cho MUAGOI)
+                    $isMuaGoi = (stripos($expectedContent, 'MUAGOI') !== false) || 
+                                 (stripos($matchedTx['transaction_content'] ?? '', 'MUAGOI') !== false);
+                    
+                    if ($isMuaGoi) {
+                        $user = \App\Models\NguoiDung::find($nguoiDungId);
+                        if ($user) {
+                            $user->is_doi_tac = 1;
+                            $user->save();
+                        }
 
-                    $doiTac = DoiTac::where('id_nguoi_dung', $nguoiDungId)
-                        ->where('trang_thai', 1)
-                        ->first();
-                    if ($doiTac) {
-                        $doiTac->so_tien += $amountIn;
-                        $doiTac->ngay_ket_thuc = Carbon::parse($doiTac->ngay_ket_thuc)->addYear();
-                        $doiTac->save();
-                    } else {
-                        DoiTac::create([
-                            'id_nguoi_dung' => $nguoiDungId,
-                            'ten_goi' => 'Gói Đối Tác',
-                            'so_tien' => $amountIn,
-                            'ngay_bat_dau' => now(),
-                            'ngay_ket_thuc' => now()->addYear(),
-                            'trang_thai' => 1,
-                        ]);
+                        $doiTac = DoiTac::where('id_nguoi_dung', $nguoiDungId)
+                            ->where('trang_thai', 1)
+                            ->first();
+                        if ($doiTac) {
+                            $doiTac->so_tien += $amountIn;
+                            $doiTac->ngay_ket_thuc = Carbon::parse($doiTac->ngay_ket_thuc)->addYear();
+                            $doiTac->save();
+                        } else {
+                            DoiTac::create([
+                                'id_nguoi_dung' => $nguoiDungId,
+                                'ten_goi' => 'Gói Đối Tác',
+                                'so_tien' => $amountIn,
+                                'ngay_bat_dau' => now(),
+                                'ngay_ket_thuc' => now()->addYear(),
+                                'trang_thai' => 1,
+                            ]);
+                        }
                     }
 
                     return response()->json([
-                        'success' => true,
+                        'success' => true, 
                         'message' => 'Xác nhận thành công!',
-                        'redirect_url' => '/doi-tac',
+                        'redirect_url' => '/doi-tac'
                     ]);
                 }
             }

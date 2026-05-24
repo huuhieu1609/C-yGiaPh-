@@ -8,8 +8,11 @@
         <ul class="nav-links">
           <li><router-link to="/">Trang Chủ</router-link></li>
           <li><router-link to="/gia-pha">Gia Phả</router-link></li>
+          <li v-if="isLoggedIn"><router-link to="/su-kien">Sự Kiện</router-link></li>
+          <li v-if="isLoggedIn"><router-link to="/ban-do">Bản Đồ Số</router-link></li>
+          <li v-if="isLoggedIn"><router-link to="/tuong-niem">Tưởng Niệm</router-link></li>
           <li><router-link to="/tra-cuu">Tra Cứu</router-link></li>
-          <li><router-link to="/dich-vu-goi/chi-tiet">Dịch Vụ Gói</router-link></li>
+          <li><router-link to="/dich-vu-goi">Dịch Vụ Gói</router-link></li>
         </ul>
         <div class="nav-actions">
           <template v-if="!isLoggedIn">
@@ -29,6 +32,15 @@
                 </router-link>
                 <router-link to="/profile" @click="isDropdownOpen = false">
                   <i class="bx bx-user"></i> Hồ sơ cá nhân
+                </router-link>
+                <router-link to="/su-kien" @click="isDropdownOpen = false">
+                  <i class="bx bx-calendar"></i> Sự kiện dòng họ
+                </router-link>
+                <router-link to="/ban-do" @click="isDropdownOpen = false">
+                  <i class="bx bx-map-pin"></i> Bản đồ số mộ phần
+                </router-link>
+                <router-link to="/tuong-niem" @click="isDropdownOpen = false">
+                  <i class="bx bx-heart"></i> Tưởng niệm & Dâng hương
                 </router-link>
                 <router-link to="/tra-cuu" @click="isDropdownOpen = false">
                   <i class="bx bx-search-alt"></i> Tra cứu xưng hô
@@ -58,6 +70,9 @@
         </template>
         <template v-else>
           <li><router-link to="/profile" @click="isMobileMenuOpen = false">Hồ sơ cá nhân</router-link></li>
+          <li><router-link to="/su-kien" @click="isMobileMenuOpen = false">Sự kiện dòng họ</router-link></li>
+          <li><router-link to="/ban-do" @click="isMobileMenuOpen = false">Bản đồ số</router-link></li>
+          <li><router-link to="/tuong-niem" @click="isMobileMenuOpen = false">Tưởng niệm</router-link></li>
           <li><router-link to="/tra-cuu" @click="isMobileMenuOpen = false">Tra cứu xưng hô</router-link></li>
           <li><a href="javascript:;" @click="handleLogout">Đăng xuất</a></li>
         </template>
@@ -77,7 +92,8 @@ export default {
       isAdmin: false,
       isDropdownOpen: false,
       userName: '',
-      userAvatar: 'https://dzfullstack.com/assets/images/logo-1.png'
+      defaultAvatar: "data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%231e293b'/%3E%3Ccircle cx='50' cy='35' r='18' fill='%23d4af37'/%3E%3Cpath d='M15 85 C15 67 30 55 50 55 C70 55 85 67 85 85 Z' fill='%23d4af37'/%3E%3C/svg%3E",
+      userAvatar: "data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%231e293b'/%3E%3Ccircle cx='50' cy='35' r='18' fill='%23d4af37'/%3E%3Cpath d='M15 85 C15 67 30 55 50 55 C70 55 85 67 85 85 Z' fill='%23d4af37'/%3E%3C/svg%3E"
     }
   },
   directives: {
@@ -117,7 +133,12 @@ export default {
         const user = userData.user || userData;
         this.userName = user.ho_ten;
         this.isAdmin = user.vai_tro === 'Admin';
-        this.userAvatar = user.avatar || 'https://dzfullstack.com/assets/images/logo-1.png';
+        const avatar = user.avatar;
+        if (avatar && avatar !== 'https://dzfullstack.com/assets/images/logo-1.png') {
+          this.userAvatar = avatar;
+        } else {
+          this.userAvatar = this.defaultAvatar;
+        }
       } else {
         this.isLoggedIn = false;
         this.isAdmin = false;

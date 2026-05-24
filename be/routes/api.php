@@ -5,10 +5,11 @@ use App\Http\Controllers\Api\ChiNhanhController;
 use App\Http\Controllers\Api\ChucNangController;
 use App\Http\Controllers\Api\ChucVuController;
 use App\Http\Controllers\Api\ConNuoiController;
+use App\Http\Controllers\Api\DashboardController;
+use App\Http\Controllers\Api\DeXuatController;
 use App\Http\Controllers\Api\DoiTacController;
 use App\Http\Controllers\Api\DoiTocHoController;
 use App\Http\Controllers\Api\DongGopController;
-use App\Http\Controllers\Api\GiaPhaController;
 use App\Http\Controllers\Api\HinhAnhController;
 use App\Http\Controllers\Api\MoPhanController;
 use App\Http\Controllers\Api\NguoiDungController;
@@ -20,10 +21,14 @@ use App\Http\Controllers\Api\TaiLieuController;
 use App\Http\Controllers\Api\ThamGiaSuKienController;
 use App\Http\Controllers\Api\ThanhVienController;
 use App\Http\Controllers\Api\ThongBaoController;
+use App\Http\Controllers\Api\TuongNiemController;
 use App\Http\Controllers\Api\VoChongController;
 use App\Http\Controllers\ThanhToanController;
 use Illuminate\Support\Facades\Route;
 
+// ... (vẫn giữ các use khác)
+
+// Auth Routes
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
@@ -35,6 +40,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/update-profile', [AuthController::class, 'updateProfile']);
     Route::post('/change-password', [AuthController::class, 'changePassword']);
 
+    Route::get('/admin/dashboard', [DashboardController::class, 'getStatistics']);
+
     Route::prefix('/doi-tac')->group(function () {
         Route::get('/get-profile', [DoiTacController::class, 'getProfile']);
         Route::post('/update-profile', [DoiTacController::class, 'updateProfile']);
@@ -44,6 +51,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/tra-cuu-thanh-vien/{chiNhanhId}', [DoiTacController::class, 'traCuuThanhVien']);
     });
 
+    // Resources Routes
     Route::prefix('/chuc-vu')->group(function () {
         Route::get('/get-data', [ChucVuController::class, 'getData']);
         Route::post('/create', [ChucVuController::class, 'create']);
@@ -61,6 +69,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/status', [ChucNangController::class, 'status']);
     });
 
+    // Thêm các prefix route cho 15 models khác tương tự...
     Route::prefix('/thanh-vien')->group(function () {
         Route::get('/get-data', [ThanhVienController::class, 'getData']);
         Route::get('/chi-nhanh/{chiNhanhId}', [ThanhVienController::class, 'getByChiNhanh']);
@@ -69,6 +78,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/delete', [ThanhVienController::class, 'delete']);
         Route::post('/status', [ThanhVienController::class, 'status']);
         Route::post('/search', [ThanhVienController::class, 'search']);
+        Route::post('/xac-dinh-quan-he', [ThanhVienController::class, 'xacDinhQuanHe']);
     });
 
     Route::prefix('/nguoi-dung')->group(function () {
@@ -146,12 +156,30 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/status', [NhaThoHoController::class, 'status']);
     });
 
+    Route::prefix('/tuong-niem')->group(function () {
+        Route::get('/thanh-vien/{memberId}', [TuongNiemController::class, 'getTributes']);
+        Route::post('/create', [TuongNiemController::class, 'createTribute']);
+        Route::get('/sap-toi', [TuongNiemController::class, 'getUpcomingAnniversaries']);
+    });
+
     Route::prefix('/su-kien')->group(function () {
         Route::get('/get-data', [SuKienController::class, 'getData']);
         Route::post('/create', [SuKienController::class, 'create']);
         Route::post('/update', [SuKienController::class, 'update']);
         Route::post('/delete', [SuKienController::class, 'delete']);
         Route::post('/status', [SuKienController::class, 'status']);
+        Route::get('/get-participants/{suKienId}', [SuKienController::class, 'getParticipants']);
+        Route::post('/register', [SuKienController::class, 'register']);
+        Route::post('/unregister', [SuKienController::class, 'unregister']);
+    });
+
+    Route::prefix('/de-xuat')->group(function () {
+        Route::get('/get-data', [DeXuatController::class, 'getData']);
+        Route::get('/my-proposals', [DeXuatController::class, 'myProposals']);
+        Route::post('/create', [DeXuatController::class, 'create']);
+        Route::post('/approve', [DeXuatController::class, 'approve']);
+        Route::post('/reject', [DeXuatController::class, 'reject']);
+        Route::post('/toggle-auto-approve', [DeXuatController::class, 'toggleAutoApprove']);
     });
 
     Route::prefix('/tai-lieu')->group(function () {
@@ -190,16 +218,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/get-chuc-nang', [PhanQuyenController::class, 'getChucNang']);
         Route::post('/update', [PhanQuyenController::class, 'updatePhanQuyen']);
     });
-
-    Route::prefix('/gia-pha')->group(function () {
-        Route::get('/get-data', [GiaPhaController::class, 'getData']);
-        Route::post('/create', [GiaPhaController::class, 'store']);
-        Route::post('/update', [GiaPhaController::class, 'update']);
-        Route::delete('/delete/{id}', [GiaPhaController::class, 'destroy']);
-    });
 });
 
 Route::prefix('/thanh-toan')->group(function () {
     Route::get('/get-data', [ThanhToanController::class, 'index']);
     Route::post('/xac-nhan-thanh-toan', [ThanhToanController::class, 'paymentVerify']);
 });
+
+Route::get('/thanh-vien/public-detail/{id}', [ThanhVienController::class, 'getPublicDetail']);

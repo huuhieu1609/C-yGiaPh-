@@ -200,11 +200,8 @@ export default {
         }
     },
     methods: {
-        getHeaders() {
-            return { headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` } };
-        },
         loadData() {
-            axios.get('http://127.0.0.1:8000/api/chuc-vu/get-data', this.getHeaders())
+            axios.get('http://127.0.0.1:8000/api/chuc-vu/get-data')
                 .then(res => {
                     if (res.data.status) {
                         this.listData = res.data.data;
@@ -224,7 +221,7 @@ export default {
                 ? 'http://127.0.0.1:8000/api/chuc-vu/update'
                 : 'http://127.0.0.1:8000/api/chuc-vu/create';
             
-            axios.post(url, this.formData, this.getHeaders())
+            axios.post(url, this.formData)
                 .then(res => {
                     if (res.data.status) {
                         toastr.success(res.data.message);
@@ -242,7 +239,7 @@ export default {
         },
         deleteItem(id) {
             if (confirm('Bạn có chắc chắn muốn xóa?')) {
-                axios.post('http://127.0.0.1:8000/api/chuc-vu/delete', { id }, this.getHeaders())
+                axios.post('http://127.0.0.1:8000/api/chuc-vu/delete', { id })
                     .then(res => {
                         if (res.data.status) {
                             toastr.success(res.data.message);
@@ -252,7 +249,7 @@ export default {
             }
         },
         changeStatus(id) {
-            axios.post('http://127.0.0.1:8000/api/chuc-vu/status', { id }, this.getHeaders())
+            axios.post('http://127.0.0.1:8000/api/chuc-vu/status', { id })
                 .then(res => {
                     if (res.data.status) {
                         toastr.success(res.data.message);
@@ -273,7 +270,7 @@ export default {
         openPhanQuyen(item) {
             this.selectedRole = item;
             this.searchPermission = '';
-            axios.post('http://127.0.0.1:8000/api/phan-quyen/get-chuc-nang', { chuc_vu_id: item.id }, this.getHeaders())
+            axios.post('http://127.0.0.1:8000/api/phan-quyen/get-chuc-nang', { chuc_vu_id: item.id })
                 .then(res => {
                     if (res.data.status) {
                         this.listChucNang = res.data.data;
@@ -305,7 +302,7 @@ export default {
                 chuc_vu_id: this.selectedRole.id,
                 list_chuc_nang: this.selectedPermissions
             };
-            axios.post('http://127.0.0.1:8000/api/phan-quyen/update', payload, this.getHeaders())
+            axios.post('http://127.0.0.1:8000/api/phan-quyen/update', payload)
                 .then(res => {
                     if (res.data.status) {
                         toastr.success(res.data.message);
@@ -455,3 +452,4 @@ input:checked + .slider:before {
     border-radius: 50%;
 }
 </style>
+

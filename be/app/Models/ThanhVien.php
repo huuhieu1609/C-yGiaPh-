@@ -2,11 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ThanhVien extends Model
 {
@@ -15,78 +12,79 @@ class ThanhVien extends Model
     protected $table = 'thanh_viens';
 
     protected $fillable = [
+        'id_chi_nhanh',
+        'chi_nhanh_id',
         'ho_ten',
-        'ten_goi',
+        'email',
         'gioi_tinh',
         'ngay_sinh',
         'ngay_mat',
-        'noi_sinh',
-        'nghe_nghiep',
-        'avatar',
-        'doi_thu',
-        'chi_nhanh_id',
+        'id_cha',
         'cha_id',
+        'id_me',
         'me_id',
-        'ghi_chu',
-        'trang_thai',
+        'trang_thai', // Ví dụ: 'Còn sống', 'Đã mất'
+        'thong_tin_them',
+        'doi_thu',
         'loai_quan_he',
         'spouse_of_id',
+        'ghi_chu',
+        'avatar',
+        'ngay_mat_al_ngay',
+        'ngay_mat_al_thang',
+        'ngay_mat_al_nam',
+        'ngay_mat_al_nhuan'
     ];
 
-    public function chiNhanh(): BelongsTo
+    protected $appends = ['id_chi_nhanh', 'id_cha', 'id_me'];
+
+    // Quan hệ: Thành viên thuộc về 1 Chi nhánh
+    public function chiNhanh()
     {
         return $this->belongsTo(ChiNhanh::class, 'chi_nhanh_id');
     }
 
-    public function cha(): BelongsTo
+    // Accessors & Mutators to transparently support both naming conventions (database vs frontend)
+    public function getIdChiNhanhAttribute()
     {
-        return $this->belongsTo(self::class, 'cha_id');
+        return $this->attributes['chi_nhanh_id'] ?? null;
     }
 
-    public function me(): BelongsTo
+    public function setIdChiNhanhAttribute($value)
     {
-        return $this->belongsTo(self::class, 'me_id');
+        $this->attributes['chi_nhanh_id'] = $value;
     }
 
-    public function conCai(): HasMany
+    public function getIdChaAttribute()
     {
-        return $this->hasMany(self::class, 'cha_id')->orWhere('me_id', $this->id);
+        return $this->attributes['cha_id'] ?? null;
     }
 
-    public function hinhAnhs(): HasMany
+    public function setIdChaAttribute($value)
     {
-        return $this->hasMany(HinhAnh::class);
+        $this->attributes['cha_id'] = $value;
     }
 
-    public function moPhans(): HasMany
+    public function getIdMeAttribute()
     {
-        return $this->hasMany(MoPhan::class);
+        return $this->attributes['me_id'] ?? null;
     }
 
-    public function voChongs(): HasMany
+    public function setIdMeAttribute($value)
     {
-        return $this->hasMany(VoChong::class, 'chong_id')->orWhere('vo_id', $this->id);
+        $this->attributes['me_id'] = $value;
     }
 
-    public function conNuois(): HasMany
-    {
-        return $this->hasMany(ConNuoi::class, 'cha_me_id');
-    }
-
-    public function thamGiaSuKiens(): HasMany
-    {
-        return $this->hasMany(ThamGiaSuKien::class);
-    }
-
-    public function scopeSearch(Builder $query, int|string $chiNhanhId, ?string $keyword): Builder
+    // Scope tìm kiếm thành viên theo chi nhánh (để DoiTacController sử dụng)
+    public function scopeSearch($query, $chiNhanhId, $keyword)
     {
         return $query->where('chi_nhanh_id', $chiNhanhId)
-            ->when($keyword, function (Builder $query) use ($keyword): void {
-                $query->where(function (Builder $query) use ($keyword): void {
-                    $query->where('ho_ten', 'like', '%'.$keyword.'%')
-                        ->orWhere('ten_goi', 'like', '%'.$keyword.'%')
-                        ->orWhere('ghi_chu', 'like', '%'.$keyword.'%');
-                });
-            });
+                     ->when($keyword, function ($q) use ($keyword) {
+                         $q->where(function($subQuery) use ($keyword) {
+                             $subQuery->where('ho_ten', 'like', '%' . $keyword . '%')
+                                      ->orWhere('thong_tin_them', 'like', '%' . $keyword . '%')
+                                      ->orWhere('ghi_chu', 'like', '%' . $keyword . '%');
+                         });
+                     });
     }
 }

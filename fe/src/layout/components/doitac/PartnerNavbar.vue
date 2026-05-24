@@ -1,105 +1,141 @@
 <template>
-  <nav class="admin-sidebar" :class="{ 'sidebar-collapsed-state': isCollapsed }">
-    <!-- Header / Logo -->
-    <div class="sidebar-header">
-      <div class="brand-logo-container d-flex align-items-center gap-3">
-        <div class="brand-icon-wrapper">
-          <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" class="logo-svg">
-            <circle cx="20" cy="8" r="5" fill="url(#g1)" />
-            <line x1="20" y1="13" x2="20" y2="20" stroke="url(#g1)" stroke-width="2"/>
-            <line x1="20" y1="20" x2="12" y2="28" stroke="url(#g2)" stroke-width="2"/>
-            <line x1="20" y1="20" x2="28" y2="28" stroke="url(#g2)" stroke-width="2"/>
-            <circle cx="12" cy="30" r="4" fill="url(#g2)" />
-            <circle cx="28" cy="30" r="4" fill="url(#g2)" />
-            <defs>
-              <linearGradient id="g1" x1="0" y1="0" x2="40" y2="40">
-                <stop offset="0%" stop-color="#00f2fe"/>
-                <stop offset="100%" stop-color="#4facfe"/>
-              </linearGradient>
-              <linearGradient id="g2" x1="0" y1="15" x2="40" y2="35">
-                <stop offset="0%" stop-color="#38ef7d"/>
-                <stop offset="100%" stop-color="#11998e"/>
-              </linearGradient>
-            </defs>
-          </svg>
-        </div>
-        <div class="d-flex flex-column hide-on-collapse">
-          <span class="fw-bold fs-5 logo-text text-nowrap">Gia Phả <span class="partner-badge">Đối Tác</span></span>
-        </div>
+  <nav class="admin-sidebar shadow-sm" :class="{ 'sidebar-collapsed-state': isCollapsed }">
+    <div class="sidebar-bg-layer" aria-hidden="true"></div>
+
+    <div class="sidebar-header p-3 d-flex align-items-center gap-2 position-relative">
+      <div class="brand-icon d-flex align-items-center justify-content-center rounded-circle flex-shrink-0">
+        <div class="brand-inner-circle"></div>
+      </div>
+      <div class="hide-on-collapse logo-wrap">
+        <span class="logo-text fw-bold">Gia Phả</span>
+        <span class="logo-sub">Đối Tác</span>
       </div>
     </div>
 
-    <!-- Floating Toggle Button (Sleek Mechanical Design) -->
-    <button class="toggle-btn" @click="$emit('toggle-sidebar')" :title="isCollapsed ? 'Mở rộng' : 'Thu gọn'">
+    <button class="toggle-btn shadow-sm" @click.stop="$emit('toggle-sidebar')" :title="isCollapsed ? 'Mở rộng' : 'Thu gọn'">
       <i class='bx' :class="isCollapsed ? 'bx-chevron-right' : 'bx-chevron-left'"></i>
     </button>
 
-    <!-- User Greeting Profile (Premium Card) -->
-    <div class="user-profile-card">
-      <div class="avatar-wrapper position-relative">
+    <div class="user-greeting d-flex align-items-center gap-3 mb-2">
+      <div class="avatar flex-shrink-0">
+        <span>{{ userName.charAt(0).toUpperCase() }}</span>
         <div class="avatar-ring"></div>
-        <div class="avatar-container d-flex align-items-center justify-content-center text-white fw-bold rounded-circle shadow-sm">
-          {{ userName.charAt(0).toUpperCase() }}
+      </div>
+      <div class="d-flex flex-column hide-on-collapse lh-1 text-nowrap">
+        <span class="greeting-label">Xin chào,</span>
+        <strong class="greeting-name">{{ userName }}</strong>
+      </div>
+    </div>
+
+    <div class="theme-toggle-container px-3 mb-2">
+      <button class="btn-theme-toggle d-flex align-items-center justify-content-between w-100" 
+              @click="toggleTheme" 
+              :title="isDarkMode ? 'Chuyển sang nền sáng' : 'Chuyển sang nền tối'">
+        <div class="d-flex align-items-center gap-3">
+          <span class="nav-icon toggle-icon-wrap">
+            <i :class="isDarkMode ? 'bx bx-sun text-warning' : 'bx bx-moon text-secondary'"></i>
+          </span>
+          <span class="hide-on-collapse text-nowrap font-medium toggle-label">
+            {{ isDarkMode ? 'Chế độ tối' : 'Chế độ sáng' }}
+          </span>
         </div>
-        <span class="status-indicator-dot"></span>
-      </div>
-      <div class="user-meta-info hide-on-collapse text-nowrap">
-        <span class="greet-title text-white-50">Xin chào,</span>
-        <strong class="user-fullname text-white" :title="userName">{{ userName }}</strong>
-        <span class="badge premium-rank-badge mt-1">
-          <i class="bx bxs-crown text-warning me-1"></i>Đối Tác Vàng
-        </span>
-      </div>
-    </div>
-
-    <!-- Main Navigation Menu -->
-    <div class="sidebar-body overflow-auto flex-grow-1">
-      <div class="nav-heading text-uppercase text-white-50 px-3 mb-2 hide-on-collapse">Tổng Quan</div>
-      <ul class="nav nav-pills flex-column gap-1 px-2">
-        <li class="nav-item">
-          <router-link to="/doi-tac/dashboard" class="nav-link" active-class="active" title="Tổng Quan Dashboard">
-            <i class="bx bx-grid-alt"></i>
-            <span class="hide-on-collapse">Dashboard</span>
-          </router-link>
-        </li>
-      </ul>
-
-      <div class="nav-heading text-uppercase text-white-50 px-3 mt-4 mb-2 hide-on-collapse">Quản Lý Gia Hệ</div>
-      <ul class="nav nav-pills flex-column gap-1 px-2">
-        <li class="nav-item">
-          <router-link to="/doi-tac/dong-ho" class="nav-link" active-class="active" title="Quản Lý Dòng Họ">
-            <i class="bx bx-building-house"></i>
-            <span class="hide-on-collapse">Quản Lý Dòng Họ</span>
-          </router-link>
-        </li>
-        <li class="nav-item">
-          <router-link to="/doi-tac/gia-pha" class="nav-link" active-class="active" title="Cây Gia Phả">
-            <i class="bx bx-git-branch"></i>
-            <span class="hide-on-collapse">Cây Gia Phả</span>
-          </router-link>
-        </li>
-        <li class="nav-item">
-          <router-link to="/doi-tac/thanh-vien" class="nav-link" active-class="active" title="Quản Lý Thành Viên">
-            <i class="bx bx-group"></i>
-            <span class="hide-on-collapse">Quản Lý Thành Viên</span>
-          </router-link>
-        </li>
-        <li class="nav-item">
-          <router-link to="/doi-tac/tra-cuu" class="nav-link" active-class="active" title="Tra Cứu Gia Phả">
-            <i class="bx bx-search-alt"></i>
-            <span class="hide-on-collapse">Tra Cứu</span>
-          </router-link>
-        </li>
-      </ul>
-    </div>
-
-    <!-- Footer Actions (Premium Buttons) -->
-    <div class="sidebar-footer p-3 gap-2 d-flex flex-column">
-      <button class="btn btn-home-redirect w-100 d-flex align-items-center justify-content-center gap-2 py-2.5 rounded-3" @click="goHome" title="Về Trang Chủ">
-        <i class="bx bx-home-alt"></i> <span class="hide-on-collapse text-nowrap">Trang Chủ</span>
+        <div class="theme-status-dot hide-on-collapse" :class="{ 'dark-active': isDarkMode }"></div>
       </button>
-      <button class="btn btn-logout-action w-100 d-flex align-items-center justify-content-center gap-2 py-2.5 rounded-3" @click="logout" title="Đăng Xuất">
-        <i class="bx bx-power-off"></i> <span class="hide-on-collapse text-nowrap">Đăng Xuất</span>
+    </div>
+
+    <div class="sidebar-body overflow-auto flex-grow-1">
+      <ul class="nav flex-column gap-1">
+        
+        <li class="nav-item item-home">
+          <router-link to="/doi-tac/dashboard" class="nav-link" active-class="active" title="Tổng Quan">
+            <span class="nav-icon"><i class="bx bx-home-circle"></i></span>
+            <span class="hide-on-collapse nav-label">Tổng Quan</span>
+            <span class="nav-dot hide-on-collapse"></span>
+          </router-link>
+        </li>
+
+        <li class="section-heading hide-on-collapse">Quản Lý Gia Phả</li>
+
+        <li class="nav-item item-tree">
+          <router-link to="/doi-tac/gia-pha" class="nav-link" active-class="active" title="Cây Gia Phả">
+            <span class="nav-icon"><i class="bx bx-git-branch"></i></span>
+            <span class="hide-on-collapse nav-label">Cây Gia Phả</span>
+            <span class="nav-dot hide-on-collapse"></span>
+          </router-link>
+        </li>
+        <li class="nav-item item-members">
+          <router-link to="/doi-tac/thanh-vien" class="nav-link" active-class="active" title="Thành Viên">
+            <span class="nav-icon"><i class="bx bx-group"></i></span>
+            <span class="hide-on-collapse nav-label">Thành Viên</span>
+            <span class="nav-dot hide-on-collapse"></span>
+          </router-link>
+        </li>
+        <li class="nav-item item-search">
+          <router-link to="/doi-tac/tra-cuu" class="nav-link" active-class="active" title="Tra Cứu">
+            <span class="nav-icon"><i class="bx bx-search-alt"></i></span>
+            <span class="hide-on-collapse nav-label">Tra Cứu</span>
+            <span class="nav-dot hide-on-collapse"></span>
+          </router-link>
+        </li>
+        <li class="nav-item item-clan">
+          <router-link to="/doi-tac/dong-ho" class="nav-link" active-class="active" title="Dòng Họ">
+            <span class="nav-icon"><i class="bx bx-folder"></i></span>
+            <span class="hide-on-collapse nav-label">Dòng Họ</span>
+            <span class="nav-dot hide-on-collapse"></span>
+          </router-link>
+        </li>
+        
+        <li class="section-heading hide-on-collapse">Công Cụ & Hoạt Động</li>
+        
+        <li class="nav-item item-proposals">
+          <router-link to="/doi-tac/de-xuat" class="nav-link" active-class="active" title="Kiểm Duyệt Đề Xuất">
+            <span class="nav-icon"><i class="bx bx-git-pull-request"></i></span>
+            <span class="hide-on-collapse nav-label">Kiểm Duyệt Đề Xuất</span>
+            <span class="nav-dot hide-on-collapse"></span>
+          </router-link>
+        </li>
+        <li class="nav-item item-events">
+          <router-link to="/doi-tac/su-kien" class="nav-link" active-class="active" title="Quản Lý Sự Kiện">
+            <span class="nav-icon"><i class="bx bx-calendar-event"></i></span>
+            <span class="hide-on-collapse nav-label">Quản Lý Sự Kiện</span>
+            <span class="nav-dot hide-on-collapse"></span>
+          </router-link>
+        </li>
+        <li class="nav-item item-notifs">
+          <router-link to="/doi-tac/thong-bao" class="nav-link" active-class="active" title="Quản Lý Thông Báo">
+            <span class="nav-icon"><i class="bx bx-bell"></i></span>
+            <span class="hide-on-collapse nav-label">Quản Lý Thông Báo</span>
+            <span class="nav-dot hide-on-collapse"></span>
+          </router-link>
+        </li>
+        <li class="nav-item item-docs">
+          <router-link to="/doi-tac/tai-lieu" class="nav-link" active-class="active" title="Thư Viện Tài Liệu">
+            <span class="nav-icon"><i class="bx bx-book-open"></i></span>
+            <span class="hide-on-collapse nav-label">Thư Viện Tài Liệu</span>
+            <span class="nav-dot hide-on-collapse"></span>
+          </router-link>
+        </li>
+        <li class="nav-item item-logs">
+          <router-link to="/doi-tac/nhat-ky" class="nav-link" active-class="active" title="Nhật Ký Thao Tác">
+            <span class="nav-icon"><i class="bx bx-history"></i></span>
+            <span class="hide-on-collapse nav-label">Nhật Ký Thao Tác</span>
+            <span class="nav-dot hide-on-collapse"></span>
+          </router-link>
+        </li>
+      </ul>
+    </div>
+
+    <div class="sidebar-footer d-flex flex-column gap-2">
+      <button class="btn-home d-flex align-items-center gap-3" @click="goHome" title="Về Trang Chủ">
+        <span class="nav-icon"><i class="bx bx-home"></i></span>
+        <span class="hide-on-collapse text-nowrap font-medium">Trang Chủ</span>
+      </button>
+      <button class="btn-logout d-flex align-items-center justify-content-between" @click="logout" title="Đăng Xuất">
+        <div class="d-flex align-items-center gap-3">
+          <span class="nav-icon"><i class="bx bx-log-out-circle"></i></span>
+          <span class="hide-on-collapse text-nowrap font-bold">Đăng Xuất</span>
+        </div>
+        <span class="logout-arrow hide-on-collapse"><i class="bx bx-chevron-right"></i></span>
       </button>
     </div>
   </nav>
@@ -117,19 +153,36 @@ export default {
   emits: ['toggle-sidebar'],
   data() {
     return {
-      userName: 'Đối Tác'
+      userName: 'Đối Tác',
+      isDarkMode: false
     }
   },
   mounted() {
-    this.checkLogin();
+    // Đọc trạng thái theme đã lưu từ trước
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    this.isDarkMode = savedTheme === 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        if (user && user.ho_ten) {
+          this.userName = user.ho_ten;
+        } else if (user && user.username) {
+          this.userName = user.username;
+        }
+      } catch (e) {
+        console.error("Lỗi parse thông tin user trong Sidebar:", e);
+      }
+    }
   },
   methods: {
-    checkLogin() {
-      const userData = JSON.parse(localStorage.getItem('user'));
-      if (userData) {
-        const user = userData.user || userData;
-        this.userName = user.ho_ten || 'Đối Tác';
-      }
+    toggleTheme() {
+      this.isDarkMode = !this.isDarkMode;
+      const themeStr = this.isDarkMode ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', themeStr);
+      localStorage.setItem('theme', themeStr);
     },
     logout() {
       localStorage.removeItem('access_token');
@@ -144,383 +197,154 @@ export default {
 </script>
 
 <style scoped>
-/* Sidebar Main Container */
 .admin-sidebar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  width: 280px;
+  --neo-bg:         var(--card-bg, #ffffff);
+  --neo-border:     var(--border-color, rgba(0, 0, 0, 0.05));
+  
+  --color-home:      #f97316;
+  --color-tree:      #e11d48;
+  --color-members:   #ff7a00;
+  --color-search:    #d97706;
+  --color-clan:      #ea580c;
+
+  --transition-smooth: 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.admin-sidebar {
+  position: fixed !important;
+  top: 15px; left: 15px;
+  height: calc(100vh - 30px);
+  width: 250px !important;
+  min-width: 250px !important;
   display: flex;
   flex-direction: column;
   z-index: 1040;
-  background: linear-gradient(145deg, #0d0f1e 0%, #151930 60%, #0a0b16 100%);
-  border-right: 1px solid rgba(255, 255, 255, 0.05);
-  box-shadow: 10px 0 30px rgba(0, 0, 0, 0.35);
-  transition: all 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
+  background: var(--neo-bg) !important;
+  border: 1px solid var(--neo-border);
+  border-radius: 24px !important;
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.03) !important;
+  transition: width var(--transition-smooth), min-width var(--transition-smooth), background-color 0.3s, border-color 0.3s;
 }
 
-/* Sidebar Collapsed State overrides */
 .admin-sidebar.sidebar-collapsed-state {
-  width: 80px;
+  width: 80px !important;
+  min-width: 80px !important;
 }
 
-.admin-sidebar.sidebar-collapsed-state .hide-on-collapse {
-  display: none !important;
-  opacity: 0;
-  width: 0;
+.sidebar-bg-layer {
+  position: absolute;
+  inset: 0; pointer-events: none; overflow: hidden; border-radius: 24px; z-index: 0;
+}
+.sidebar-bg-layer::before {
+  content: ''; position: absolute; top: -100px; left: -100px; width: 300px; height: 300px;
+  background: radial-gradient(circle, rgba(249, 115, 22, 0.02) 0%, transparent 70%);
 }
 
-/* Header & Brand */
-.sidebar-header {
-  padding: 24px 18px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
-}
+.admin-sidebar > *:not(.sidebar-bg-layer) { position: relative; z-index: 1; }
+.admin-sidebar.sidebar-collapsed-state .hide-on-collapse { display: none !important; }
 
-.brand-icon-wrapper {
-  width: 44px;
-  height: 44px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.02);
-  transition: all 0.3s ease;
-}
+/* BRAND LOGO */
+.sidebar-header { padding: 24px 20px 16px; border-bottom: 1px solid var(--neo-border); }
+.admin-sidebar.sidebar-collapsed-state .sidebar-header { padding: 24px 10px 16px !important; justify-content: center !important; }
 
-.admin-sidebar.sidebar-collapsed-state .sidebar-header {
-  padding: 20px 10px;
-  display: flex;
-  justify-content: center;
+.brand-icon {
+  width: 36px; height: 36px;
+  background: linear-gradient(135deg, #f97316, #db2777, #f59e0b);
+  border-radius: 50%; padding: 2px;
 }
+.brand-inner-circle { width: 100%; height: 100%; background: var(--neo-bg); border-radius: 50%; transition: background-color 0.3s; }
+.logo-wrap { display: flex; align-items: baseline; gap: 4px; }
+.logo-text { font-size: 19px; color: var(--text-main); font-family: 'Playfair Display', serif; }
+.logo-sub { font-size: 11px; font-weight: 700; color: #db2777; letter-spacing: 0.5px; }
 
-.admin-sidebar.sidebar-collapsed-state .brand-logo-container {
-  justify-content: center;
-}
-
-.logo-svg {
-  width: 26px;
-  height: 26px;
-  filter: drop-shadow(0 0 4px rgba(0, 242, 254, 0.3));
-}
-
-.logo-text {
-  font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
-  font-weight: 700 !important;
-  letter-spacing: 0.5px;
-  color: #ffffff;
-  background: linear-gradient(135deg, #ffffff 30%, #a5b4fc 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.partner-badge {
-  font-size: 10px;
-  font-weight: 800;
-  text-transform: uppercase;
-  padding: 2px 6px;
-  border-radius: 6px;
-  margin-left: 2px;
-  vertical-align: middle;
-  background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
-  -webkit-text-fill-color: #0b0c15;
-  color: #0b0c15;
-  box-shadow: 0 2px 8px rgba(0, 242, 254, 0.4);
-}
-
-/* Floating Sidebar Toggle Button (Premium Mechanical Design) */
+/* NÚT TOGGLE */
 .toggle-btn {
-  position: absolute;
-  right: -13px;
-  top: 30px;
-  background: #171c35;
-  border-radius: 50%;
-  width: 28px;
-  height: 28px;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #a5b4fc !important;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
-  z-index: 1050;
-  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-  cursor: pointer;
+  position: absolute; left: 100%; top: 36px; transform: translateX(-50%); 
+  width: 34px !important; height: 34px !important; border-radius: 50% !important;
+  background: var(--neo-bg) !important; border: 1px solid var(--neo-border) !important;
+  color: var(--text-sub) !important; display: flex !important; align-items: center; justify-content: center;
+  cursor: pointer; z-index: 1060; padding: 0; font-size: 18px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important; transition: all 0.25s ease;
 }
+.toggle-btn:hover { background: #f97316 !important; border-color: transparent !important; color: #ffffff !important; transform: translateX(-50%) scale(1.08); }
 
-.toggle-btn:hover {
-  background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
-  color: #0b0c15 !important;
-  transform: scale(1.15) rotate(180deg);
-  box-shadow: 0 0 12px rgba(0, 242, 254, 0.6);
-  border-color: transparent;
+/* USER CARD */
+.user-greeting { padding: 14px 16px; margin: 12px 16px; background: var(--input-bg); border: 1px solid var(--neo-border); border-radius: 18px !important; }
+.admin-sidebar.sidebar-collapsed-state .user-greeting { margin: 12px 6px !important; padding: 12px 4px !important; justify-content: center !important; }
+.avatar { position: relative; width: 36px; height: 36px; }
+.avatar span {
+  position: relative; z-index: 2; width: 36px; height: 36px; border-radius: 50%;
+  background: var(--app-bg); border: 1px solid var(--neo-border); color: var(--text-main);
+  font-weight: 700; font-size: 14px; display: flex; align-items: center; justify-content: center;
 }
-
-.toggle-btn i {
-  font-size: 1.2rem;
-}
-
-/* User Profile Card */
-.user-profile-card {
-  margin: 18px;
-  padding: 16px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.04);
-  border-radius: 16px;
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  transition: all 0.3s ease;
-}
-
-.admin-sidebar.sidebar-collapsed-state .user-profile-card {
-  margin: 15px 5px;
-  padding: 10px 5px;
-  justify-content: center;
-  background: transparent;
-  border-color: transparent;
-}
-
-.avatar-wrapper {
-  flex-shrink: 0;
-}
-
 .avatar-ring {
-  position: absolute;
-  top: -3px;
-  left: -3px;
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  border: 2px dashed rgba(0, 242, 254, 0.4);
-  animation: rotate-ring 12s linear infinite;
+  position: absolute; inset: -2px; border-radius: 50%; border: 1px solid transparent;
+  background: linear-gradient(135deg, #f97316, #db2777) border-box;
+  -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0); -webkit-mask-composite: destination-out; mask-composite: exclude;
 }
+.greeting-label { font-size: 11px; color: var(--text-sub); }
+.greeting-name { font-size: 13.5px; color: var(--text-main); }
 
-@keyframes rotate-ring {
-  100% {
-    transform: rotate(360deg);
-  }
+/* NÚT THỂ HIỆN CHẾ ĐỘ CHUYỂN THEME */
+.btn-theme-toggle {
+  background: var(--input-bg) !important; border: 1px solid var(--neo-border) !important;
+  color: var(--text-sub) !important; border-radius: 14px; padding: 10px 14px; font-size: 13.5px; cursor: pointer; transition: all 0.25s ease;
 }
+.btn-theme-toggle:hover { background: rgba(249, 115, 22, 0.08) !important; color: #f97316 !important; }
+.theme-status-dot { width: 8px; height: 8px; background: #cbd5e1; border-radius: 50%; transition: all 0.3s ease; }
+.theme-status-dot.dark-active { background: #f59e0b; box-shadow: 0 0 8px #f59e0b; }
+.admin-sidebar.sidebar-collapsed-state .theme-toggle-container { padding: 0 8px !important; }
+.admin-sidebar.sidebar-collapsed-state .btn-theme-toggle { justify-content: center !important; padding: 12px 0; }
 
-.avatar-container {
-  width: 46px;
-  height: 46px;
-  font-size: 18px;
-  background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
-  color: #0b0c15 !important;
-  border: 2px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 4px 12px rgba(0, 242, 254, 0.25);
-  border-radius: 50%;
-  z-index: 2;
-  position: relative;
-}
-
-.status-indicator-dot {
-  position: absolute;
-  bottom: 0;
-  right: 0;
-  width: 12px;
-  height: 12px;
-  background-color: #2ecc71;
-  border: 2.5px solid #0d0f1e;
-  border-radius: 50%;
-  z-index: 3;
-  box-shadow: 0 0 10px #2ecc71;
-}
-
-.user-meta-info {
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  line-height: 1.35 !important; /* Spaced out beautifully for diacritics */
-}
-
-.greet-title {
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-  font-weight: 500;
-  color: #6c7293 !important;
-}
-
-.user-fullname {
-  font-size: 14px;
-  font-weight: 600;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.premium-rank-badge {
-  font-size: 9px;
-  font-weight: 700;
-  background: rgba(241, 196, 15, 0.1);
-  color: #f1c40f !important;
-  border: 1px solid rgba(241, 196, 15, 0.25);
-  padding: 3px 6px;
-  border-radius: 6px;
-  width: fit-content;
-  display: flex;
-  align-items: center;
-}
-
-/* Sidebar Body & Navigation */
-.sidebar-body {
-  padding: 10px 0;
-}
-
-.nav-heading {
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 1.2px;
-  color: #4b5275 !important;
-  margin-top: 20px;
-}
-
-.nav-item {
-  width: 100%;
-}
+/* THÂN DANH MỤC */
+.sidebar-body { padding: 12px 16px; }
+.sidebar-body::-webkit-scrollbar { width: 3px; }
+.sidebar-body::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.04); border-radius: 99px; }
+.section-heading { font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--text-sub); opacity: 0.6; padding: 20px 12px 6px; }
 
 .nav-link {
-  color: #a5b4fc !important;
-  background: transparent;
-  border-radius: 12px;
-  font-weight: 500;
-  font-size: 14px;
-  padding: 11px 16px !important;
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
-  border: 1px solid transparent;
-  margin-bottom: 2px;
+  display: flex; align-items: center; gap: 14px; padding: 11px 14px; border-radius: 14px !important;
+  color: var(--text-sub) !important; font-size: 14px; font-weight: 500; transition: all 0.25s ease; text-decoration: none;
 }
+.admin-sidebar.sidebar-collapsed-state .nav-link { justify-content: center; padding: 12px 0; }
+.nav-dot { width: 5px; height: 5px; border-radius: 50%; opacity: 0; transform: scale(0.5); transition: all 0.2s ease; margin-left: auto; }
+.nav-link:hover .nav-dot { opacity: 0.5; transform: scale(1); }
+.nav-icon { display: flex; align-items: center; justify-content: center; width: 20px; height: 20px; font-size: 18px; color: var(--text-sub); }
+.nav-link:hover { color: var(--text-main) !important; background: var(--input-bg); transform: translateX(4px); }
 
-.nav-link i {
-  font-size: 20px;
-  transition: transform 0.25s ease;
-  flex-shrink: 0;
-}
+/* Màu Active tương ứng từng mục */
+.item-home .nav-dot, .item-home .nav-link.active { --c-active: var(--color-home); }
+.item-tree .nav-dot, .item-tree .nav-link.active { --c-active: var(--color-tree); }
+.item-members .nav-dot, .item-members .nav-link.active { --c-active: var(--color-members); }
+.item-search .nav-dot, .item-search .nav-link.active { --c-active: var(--color-search); }
+.item-clan .nav-dot, .item-clan .nav-link.active { --c-active: var(--color-clan); }
 
-.nav-link:hover {
-  background: rgba(255, 255, 255, 0.03);
-  color: #ffffff !important;
-  border-color: rgba(255, 255, 255, 0.05);
-  transform: translateX(4px);
+.nav-link.active {
+  color: var(--text-main) !important; background: var(--neo-bg) !important;
+  border: 1px solid var(--neo-border) !important; font-weight: 600;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03), 0 1px 2px rgba(0, 0, 0, 0.01);
 }
+.nav-link.active .nav-icon i { color: var(--c-active) !important; }
+.nav-link.active .nav-dot { opacity: 1 !important; transform: scale(1.2); background: var(--c-active); }
 
-.nav-link:hover i {
-  transform: scale(1.15);
-  color: #00f2fe;
+/* FOOTER BUTTON */
+.sidebar-footer { padding: 16px; border-top: 1px solid var(--neo-border); margin-top: auto; }
+.btn-home {
+  width: 100%; background: transparent; border: 1px solid var(--neo-border); color: var(--text-sub);
+  border-radius: 14px !important; padding: 10px 14px; font-size: 13.5px; cursor: pointer; transition: all 0.2s ease;
 }
+.btn-home:hover { background: var(--input-bg); color: var(--text-main); }
 
-/* Router Link Active State (Cyan-Blue Cyber Glow) */
-.nav-link.active,
-.nav-link.router-link-active {
-  color: #ffffff !important;
-  background: linear-gradient(135deg, rgba(0, 242, 254, 0.15) 0%, rgba(79, 172, 254, 0.03) 100%);
-  border: 1px solid rgba(0, 242, 254, 0.25);
-  font-weight: 600;
-  box-shadow: 0 4px 20px rgba(0, 242, 254, 0.08);
-  position: relative;
+.btn-logout {
+  width: 100%; background: linear-gradient(135deg, #f43f5e 0%, #f97316 100%) !important;
+  border: none; color: #ffffff; border-radius: 30px !important; padding: 11px 18px; font-size: 14px; font-weight: 600; cursor: pointer;
+  box-shadow: 0 4px 14px rgba(244, 63, 94, 0.25); transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
 }
+.btn-logout:hover { transform: translateY(-1.5px); box-shadow: 0 6px 18px rgba(244, 63, 94, 0.35); }
+.logout-arrow { font-size: 14px; transition: transform 0.3s ease; }
+.btn-logout:hover .logout-arrow { transform: translateX(2px); }
 
-/* 3D Glowing Active Line Indicator */
-.nav-link.active::before,
-.nav-link.router-link-active::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 20%;
-  height: 60%;
-  width: 3px;
-  background: linear-gradient(to bottom, #00f2fe, #4facfe);
-  border-radius: 0 4px 4px 0;
-  box-shadow: 0 0 10px rgba(0, 242, 254, 0.8);
-}
-
-.nav-link.active i,
-.nav-link.router-link-active i {
-  color: #00f2fe;
-  filter: drop-shadow(0 0 5px rgba(0, 242, 254, 0.4));
-}
-
-.admin-sidebar.sidebar-collapsed-state .nav-link {
-  justify-content: center;
-  padding: 12px !important;
-  width: 50px;
-  margin: 0 auto 5px auto;
-}
-
-.admin-sidebar.sidebar-collapsed-state .nav-link i {
-  font-size: 22px;
-}
-
-/* Sidebar Footer (Premium Buttons) */
-.sidebar-footer {
-  border-top: 1px solid rgba(255, 255, 255, 0.03);
-}
-
-.btn-home-redirect {
-  background: rgba(255, 255, 255, 0.03);
-  color: #a5b4fc !important;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  font-size: 13.5px;
-  font-weight: 600;
-  transition: all 0.25s ease;
-}
-
-.btn-home-redirect:hover {
-  background: rgba(255, 255, 255, 0.08);
-  color: #ffffff !important;
-  border-color: rgba(255, 255, 255, 0.15);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-}
-
-.btn-logout-action {
-  background: rgba(231, 76, 60, 0.1);
-  color: #e74c3c !important;
-  border: 1px solid rgba(231, 76, 60, 0.2);
-  font-size: 13.5px;
-  font-weight: 600;
-  transition: all 0.25s ease;
-}
-
-.btn-logout-action:hover {
-  background: #e74c3c;
-  color: #ffffff !important;
-  border-color: transparent;
-  box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
-}
-
-.admin-sidebar.sidebar-collapsed-state .sidebar-footer {
-  padding: 15px 10px;
-}
-
-.admin-sidebar.sidebar-collapsed-state .btn-home-redirect,
-.admin-sidebar.sidebar-collapsed-state .btn-logout-action {
-  padding: 10px !important;
-  width: 44px;
-  height: 44px;
-  border-radius: 10px;
-  margin: 0 auto;
-}
-
-/* Custom Scrollbar for Sidebar Body */
-.sidebar-body::-webkit-scrollbar {
-  width: 4px;
-}
-.sidebar-body::-webkit-scrollbar-track {
-  background: transparent;
-}
-.sidebar-body::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
-}
-.sidebar-body::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
-}
+.admin-sidebar.sidebar-collapsed-state .btn-home,
+.admin-sidebar.sidebar-collapsed-state .btn-logout { padding: 12px 0; justify-content: center; border-radius: 14px !important; }
+.admin-sidebar.sidebar-collapsed-state .btn-logout { background: var(--neo-bg) !important; border: 1px solid rgba(244, 63, 94, 0.2); color: #f43f5e; }
 </style>
