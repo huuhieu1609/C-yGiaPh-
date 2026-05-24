@@ -272,7 +272,12 @@ export default {
     },
     loadData() {
       this.isLoading = true;
-      axios.get('http://127.0.0.1:8000/api/thanh-vien/get-data')
+      const chiNhanhId = this.$route.query.chi_nhanh_id;
+      const url = chiNhanhId 
+        ? `http://127.0.0.1:8000/api/thanh-vien/chi-nhanh/${chiNhanhId}`
+        : 'http://127.0.0.1:8000/api/thanh-vien/get-data';
+
+      axios.get(url)
         .then(r => { if (r.data.status) this.allMembers = r.data.data; })
         .finally(() => { this.isLoading = false; });
     },

@@ -21,4 +21,9 @@ class ChiNhanh extends Model
     {
         return $this->hasMany(ThanhVien::class, 'chi_nhanh_id', 'id');
     }
+
+    public function nguoiDungsDuocPhep()
+    {
+        return $this->belongsToMany(NguoiDung::class, 'chi_nhanh_nguoi_dung', 'chi_nhanh_id', 'nguoi_dung_id');
+    }
 }

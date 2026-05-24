@@ -20,4 +20,9 @@ class NguoiDung extends Authenticatable
     public function dongGops() { return $this->hasMany(DongGop::class); }
     public function doiTac() { return $this->hasOne(DoiTac::class, 'id_nguoi_dung'); }
 
+    public function quyenTruyCapChiNhanhs()
+    {
+        return $this->belongsToMany(ChiNhanh::class, 'chi_nhanh_nguoi_dung', 'nguoi_dung_id', 'chi_nhanh_id');
+    }
+
 }

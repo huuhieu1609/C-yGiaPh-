@@ -44,6 +44,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/tao-chi-nhanh', [DoiTacController::class, 'taoChiNhanh']);
         Route::get('/lay-chi-nhanh', [DoiTacController::class, 'layChiNhanhCuaDoiTac']);
         Route::get('/tra-cuu-thanh-vien/{chiNhanhId}', [DoiTacController::class, 'traCuuThanhVien']);
+        
+        // Phân quyền chi nhánh
+        Route::get('/quyen-chi-nhanh/{chiNhanhId}', [DoiTacController::class, 'danhSachQuyenChiNhanh']);
+        Route::post('/cap-quyen-chi-nhanh', [DoiTacController::class, 'capQuyenChiNhanh']);
+        Route::post('/thu-hoi-quyen-chi-nhanh', [DoiTacController::class, 'thuHoiQuyenChiNhanh']);
     });
 
     // Resources Routes

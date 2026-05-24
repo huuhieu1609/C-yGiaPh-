@@ -113,6 +113,13 @@
                   <td class="text-center">
                     <div class="d-flex justify-content-center gap-2">
                       <button
+                        class="btn btn-sm btn-outline-info radius-8"
+                        @click="openAccessModal(item)"
+                        title="Cấp Quyền"
+                      >
+                        <i class="bx bx-share-alt m-0"></i>
+                      </button>
+                      <button
                         class="btn btn-sm btn-outline-primary radius-8"
                         @click="editItem(item)"
                         title="Sửa"
@@ -124,6 +131,62 @@
                 </tr>
               </tbody>
             </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Access Modal -->
+    <div class="modal fade" id="accessModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content radius-10 border-0">
+          <div class="modal-header bg-light">
+            <h5 class="modal-title fw-bold">Quản Lý Quyền Truy Cập - {{ selectedBranch?.ten_chi }}</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body p-4">
+            <div class="row">
+              <div class="col-md-5 border-end">
+                <h6 class="fw-bold mb-3">Cấp Quyền Mới</h6>
+                <form @submit.prevent="grantAccess">
+                  <div class="mb-3">
+                    <label class="form-label">Email Người Dùng</label>
+                    <input 
+                      type="email" 
+                      class="form-control" 
+                      placeholder="nhap_email@example.com" 
+                      v-model="accessEmail" 
+                      required 
+                    />
+                    <small class="text-muted">Người dùng phải có tài khoản trên hệ thống.</small>
+                  </div>
+                  <button type="submit" class="btn btn-primary w-100" :disabled="isGranting">
+                    <span v-if="isGranting" class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Cấp Quyền & Gửi Email
+                  </button>
+                </form>
+              </div>
+              <div class="col-md-7 ps-4">
+                <h6 class="fw-bold mb-3">Danh Sách Đã Cấp Quyền</h6>
+                <div v-if="isLoadingAccessList" class="text-center py-3">
+                  <div class="spinner-border text-primary spinner-border-sm" role="status"></div>
+                </div>
+                <div v-else-if="grantedUsers.length === 0" class="text-center py-3 text-muted">
+                  <i class="bx bx-user-x fs-1 opacity-50 d-block mb-2"></i>
+                  Chưa có ai được cấp quyền.
+                </div>
+                <ul v-else class="list-group list-group-flush">
+                  <li v-for="user in grantedUsers" :key="user.id" class="list-group-item d-flex justify-content-between align-items-center px-0">
+                    <div>
+                      <div class="fw-bold">{{ user.ho_ten }}</div>
+                      <small class="text-muted">{{ user.email }}</small>
+                    </div>
+                    <button class="btn btn-sm btn-outline-danger" @click="revokeAccess(user.id)" title="Thu hồi quyền">
+                      Thu hồi
+                    </button>
+                  </li>
+                </ul>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -147,10 +210,17 @@ export default {
       },
       isEditing: false,
       isLoading: false,
+      selectedBranch: null,
+      accessEmail: "",
+      grantedUsers: [],
+      isLoadingAccessList: false,
+      isGranting: false,
+      accessModal: null
     };
   },
   mounted() {
     this.loadData();
+    this.accessModal = new window.bootstrap.Modal(document.getElementById('accessModal'));
   },
   methods: {
     getHeaders() {
@@ -201,6 +271,71 @@ export default {
       this.isEditing = false;
       this.formData = { id: null, ten_chi: "", mo_ta: "" };
     },
+    openAccessModal(item) {
+      this.selectedBranch = item;
+      this.accessEmail = "";
+      this.loadGrantedUsers();
+      this.accessModal.show();
+    },
+    loadGrantedUsers() {
+      this.isLoadingAccessList = true;
+      axios.get(`http://127.0.0.1:8000/api/doi-tac/quyen-chi-nhanh/${this.selectedBranch.id}`, this.getHeaders())
+        .then(res => {
+          if (res.data.status) {
+            this.grantedUsers = res.data.data;
+          }
+        })
+        .finally(() => {
+          this.isLoadingAccessList = false;
+        });
+    },
+    grantAccess() {
+      if (!this.accessEmail) return;
+      this.isGranting = true;
+      
+      const payload = {
+        chi_nhanh_id: this.selectedBranch.id,
+        email: this.accessEmail
+      };
+
+      axios.post('http://127.0.0.1:8000/api/doi-tac/cap-quyen-chi-nhanh', payload, this.getHeaders())
+        .then(res => {
+          if (res.data.status) {
+            toastr.success(res.data.message);
+            this.accessEmail = "";
+            this.loadGrantedUsers();
+          } else {
+            toastr.error(res.data.message);
+          }
+        })
+        .catch(err => {
+          toastr.error(err.response?.data?.message || "Có lỗi xảy ra!");
+        })
+        .finally(() => {
+          this.isGranting = false;
+        });
+    },
+    revokeAccess(userId) {
+      if (!confirm("Bạn có chắc chắn muốn thu hồi quyền truy cập của người dùng này?")) return;
+      
+      const payload = {
+        chi_nhanh_id: this.selectedBranch.id,
+        nguoi_dung_id: userId
+      };
+
+      axios.post('http://127.0.0.1:8000/api/doi-tac/thu-hoi-quyen-chi-nhanh', payload, this.getHeaders())
+        .then(res => {
+          if (res.data.status) {
+            toastr.success(res.data.message);
+            this.loadGrantedUsers();
+          } else {
+            toastr.error(res.data.message);
+          }
+        })
+        .catch(err => {
+          toastr.error(err.response?.data?.message || "Có lỗi xảy ra!");
+        });
+    }
   },
 };
 </script>

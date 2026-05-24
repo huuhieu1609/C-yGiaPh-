@@ -3,4 +3,9 @@ require 'vendor/autoload.php';
 $app = require_once 'bootstrap/app.php';
 $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
 $kernel->bootstrap();
-print_r(Illuminate\Support\Facades\Schema::getColumnListing('thanh_viens'));
+
+$partners = App\Models\NguoiDung::where('is_doi_tac', 1)->get();
+foreach ($partners as $p) {
+    echo "Partner: " . $p->email . "\n";
+}
+

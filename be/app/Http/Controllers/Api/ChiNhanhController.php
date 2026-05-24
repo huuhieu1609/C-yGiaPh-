@@ -19,8 +19,8 @@ class ChiNhanhController extends Controller
                 } elseif ($user->is_doi_tac == 1) {
                     $data = ChiNhanh::where('id_nguoi_dung', $user->id)->get();
                 } else {
-                    // Lấy ra các chi nhánh (cây gia phả) có thành viên mang email của user đang đăng nhập
-                    $chiNhanhIds = \App\Models\ThanhVien::where('email', $user->email)->whereNotNull('email')->pluck('id_chi_nhanh');
+                    // Lấy ra các chi nhánh (cây gia phả) mà user đã được cấp quyền truy cập
+                    $chiNhanhIds = $user->quyenTruyCapChiNhanhs()->pluck('chi_nhanhs.id');
                     $data = ChiNhanh::whereIn('id', $chiNhanhIds)->get();
                 }
             } else {

@@ -94,7 +94,13 @@
                 <div class="modal-content luxury-modal border-0 shadow-lg">
                     <div class="modal-header border-bottom p-4" :class="isEditing ? 'header-edit' : 'header-create'">
                         <h5 class="modal-title fw-bold text-dark">
-                            {{ isEditing ? 'Chỉnh Sửa Thông Tin' : 'Khởi Tạo Thành Viên Mới' }}
+                            {{ 
+                                modalActionType === 'edit' ? 'Chỉnh Sửa Thông Tin' : 
+                                modalActionType === 'add-child' ? 'Thêm Con' :
+                                modalActionType === 'add-husband' ? 'Thêm chồng' :
+                                modalActionType === 'add-wife' ? 'Thêm vợ' :
+                                'Khởi Tạo Thành Viên Mới' 
+                            }}
                         </h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
@@ -253,8 +259,25 @@ const TreeItem = defineComponent({
             cardTypeClass = 'card-male';
         }
 
+        const formatDate = (dateStr) => {
+            if (!dateStr) return '...';
+            const d = new Date(dateStr);
+            if (isNaN(d.getTime())) return dateStr;
+            return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+        };
+
         const renderCard = (m, typeClass, isSpouse = false) => {
             const isHl = this.searchQuery && m.ho_ten && m.ho_ten.toLowerCase().includes(this.searchQuery.toLowerCase());
+            
+            let datesText = null;
+            if (m.ngay_sinh || m.ngay_mat) {
+                if (m.trang_thai === 'Đã mất') {
+                    datesText = `${formatDate(m.ngay_sinh)} - ${formatDate(m.ngay_mat)}`;
+                } else if (m.ngay_sinh) {
+                    datesText = formatDate(m.ngay_sinh);
+                }
+            }
+            
             return h('div', { 
                 class: ['tree-modern-card', typeClass, { 'highlighted': isHl, 'is-dead': m.trang_thai === 'Đã mất', 'is-spouse': isSpouse }],
                 onClick: (e) => { e.stopPropagation(); this.$emit('edit', m); }
@@ -268,7 +291,7 @@ const TreeItem = defineComponent({
                         alt: m.ho_ten 
                     }),
                     h('div', { class: 'card-name' }, m.ho_ten),
-                    m.ngay_sinh ? h('div', { class: 'card-year' }, new Date(m.ngay_sinh).getFullYear()) : null
+                    datesText ? h('div', { class: 'card-year' }, datesText) : null
                 ]),
                 h('div', { class: 'card-actions' }, [
                     h('button', { class: 'btn-action btn-add', onClick: (e) => { e.stopPropagation(); this.$emit('add-child', m); } }, h('i', { class: 'bx bx-plus' })),
@@ -278,12 +301,14 @@ const TreeItem = defineComponent({
             ]);
         };
 
-        const spouseIds = this.member.spouses ? this.member.spouses.map(s => s.id) : [];
-        const fatherOnlyChildren = this.member.children ? this.member.children.filter(c => !c.me_id || !spouseIds.includes(String(c.me_id))) : [];
+        const hasSpouses = this.member.spouses && this.member.spouses.length > 0;
+        const allChildren = this.member.children || [];
+        const spouseIds = hasSpouses ? this.member.spouses.map(s => Number(s.id)) : [];
 
-        const renderChildUl = (childrenArray) => {
-            if (!childrenArray || !childrenArray.length) return null;
-            return h('ul', childrenArray.map(child => h(TreeItem, {
+        // Helper: render children list for a specific parent
+        const renderChildUl = (childrenArr) => {
+            if (!childrenArr || !childrenArr.length) return null;
+            return h('ul', { class: 'member-children' }, childrenArr.map(child => h(TreeItem, {
                 member: child, 
                 listDoiTocHo: this.listDoiTocHo, 
                 searchQuery: this.searchQuery,
@@ -293,28 +318,77 @@ const TreeItem = defineComponent({
             })));
         };
 
-        const hasSpouses = this.member.spouses && this.member.spouses.length > 0;
-        
-        const husbandGroup = h('div', { class: ['member-group', 'husband-group', { 'has-spouses': hasSpouses }] }, [
-            renderCard(this.member, cardTypeClass, false),
-            renderChildUl(fatherOnlyChildren)
-        ]);
-
-        const spouseGroups = hasSpouses ? this.member.spouses.map((spouse, index) => {
-            let spouseType = spouse.gioi_tinh === 'Nam' ? 'card-male' : (spouse.gioi_tinh === 'Nữ' ? 'card-female' : 'card-default');
-            const wifeChildren = this.member.children.filter(c => String(c.me_id) === String(spouse.id));
-            return h('div', { class: ['member-group', 'wife-group', { 'is-last': index === this.member.spouses.length - 1 }] }, [
-                renderCard(spouse, spouseType, true),
-                renderChildUl(wifeChildren)
+        // If no spouses, render simple: card + all children below (classic layout)
+        if (!hasSpouses) {
+            const nodeGroup = h('div', { class: 'tree-node-group-modern' }, [
+                renderCard(this.member, cardTypeClass, false)
             ]);
-        }) : null;
+            const childrenUl = allChildren.length > 0 ? h('ul', allChildren.map(child => h(TreeItem, {
+                member: child, listDoiTocHo: this.listDoiTocHo, searchQuery: this.searchQuery,
+                onEdit: (m) => this.$emit('edit', m), 
+                onAddChild: (m) => this.$emit('add-child', m),
+                onAddSpouse: (m) => this.$emit('add-spouse', m)
+            }))) : null;
+            return h('li', [nodeGroup, childrenUl]);
+        }
 
-        const nodeGroup = h('div', { class: 'tree-node-group-modern' }, [
-            husbandGroup,
-            spouseGroups
-        ]);
+        // Has spouses → build column layout
+        // Children without me_id default to the first marriage if spouses exist
+        let unassignedChildren = allChildren.filter(c => !c.me_id || !spouseIds.includes(Number(c.me_id)));
+        let husbandChildren = hasSpouses ? [] : unassignedChildren;
         
-        return h('li', [nodeGroup]);
+        // --- HYBRID LAYOUT FOR ALL SPOUSES ---
+        // Keeps spouses compact but cleanly separates their children pools!
+        if (hasSpouses) {
+            const columns = [];
+            
+            // --- First Marriage (H + W1 + P1) ---
+            const spouse1 = this.member.spouses[0];
+            let spouse1Type = spouse1.gioi_tinh === 'Nam' ? 'card-male' : (spouse1.gioi_tinh === 'Nữ' ? 'card-female' : 'card-default');
+            let wife1Children = allChildren.filter(c => Number(c.me_id) === Number(spouse1.id));
+            wife1Children = [...unassignedChildren, ...wife1Children]; // Default unassigned to first marriage
+            
+            const hasWife1Children = wife1Children.length > 0;
+            const parentsRow1 = h('div', { class: ['compact-parents-row', { 'has-children': hasWife1Children }] }, [
+                renderCard(this.member, cardTypeClass, false),
+                h('div', { class: 'compact-connector' }, [
+                    h('div', { class: 'spouse-heart-icon' }, h('i', { class: 'bx bxs-heart' }))
+                ]),
+                renderCard(spouse1, spouse1Type, true)
+            ]);
+            
+            columns.push(
+                h('div', { class: 'hybrid-marriage-unit' }, [
+                    parentsRow1,
+                    renderChildUl(wife1Children)
+                ])
+            );
+            
+            // --- Subsequent Marriages (W_i + P_i) ---
+            for (let i = 1; i < this.member.spouses.length; i++) {
+                const spouse = this.member.spouses[i];
+                let spouseType = spouse.gioi_tinh === 'Nam' ? 'card-male' : (spouse.gioi_tinh === 'Nữ' ? 'card-female' : 'card-default');
+                let wifeChildren = allChildren.filter(c => Number(c.me_id) === Number(spouse.id));
+                const hasWifeChildren = wifeChildren.length > 0;
+                
+                const parentsRowI = h('div', { class: ['compact-parents-row', { 'has-children': hasWifeChildren }] }, [
+                    h('div', { class: 'long-connector' }, [
+                        h('div', { class: 'spouse-heart-icon' }, h('i', { class: 'bx bxs-heart' }))
+                    ]),
+                    renderCard(spouse, spouseType, true)
+                ]);
+                
+                columns.push(
+                    h('div', { class: 'hybrid-marriage-unit' }, [
+                        parentsRowI,
+                        renderChildUl(wifeChildren)
+                    ])
+                );
+            }
+            
+            const nodeGroup = h('div', { class: 'tree-node-group-hybrid' }, columns);
+            return h('li', [nodeGroup]);
+        }
     }
 });
 
@@ -334,6 +408,7 @@ export default {
             avatarPreview: null,
             avatarFile: null,
             isEditing: false,
+            modalActionType: 'create-root',
             modal: null,
             searchQuery: '',
             zoom: 1,
@@ -503,6 +578,7 @@ export default {
         },
         openAddModal() {
             this.isEditing = false;
+            this.modalActionType = 'create-root';
             this.currentMember = {
                 id: null, ho_ten: '', doi_thu: 1, cha_id: null, gioi_tinh: 'Nam',
                 loai_quan_he: 'Chính', spouse_of_id: null, trang_thai: 'Còn sống', ngay_mat: null, ngay_sinh: null, ghi_chu: '', avatar: null,
@@ -526,6 +602,7 @@ export default {
         },
         onAddChild(parentMember) {
             this.isEditing = false;
+            this.modalActionType = 'add-child';
             let defaultCha = null;
             let defaultMe = null;
             
@@ -556,6 +633,7 @@ export default {
         },
         onAddSpouse(mainMember) {
             this.isEditing = false;
+            this.modalActionType = mainMember.gioi_tinh === 'Nữ' ? 'add-husband' : 'add-wife';
             this.currentMember = {
                 id: null, ho_ten: '', doi_thu: mainMember.doi_thu, cha_id: null, gioi_tinh: mainMember.gioi_tinh === 'Nam' ? 'Nữ' : 'Nam',
                 loai_quan_he: 'Vợ/Chồng', spouse_of_id: Number(mainMember.id), trang_thai: 'Còn sống', ngay_mat: null, ngay_sinh: null, ghi_chu: '', avatar: null,
@@ -567,6 +645,7 @@ export default {
         },
         onEdit(member) {
             this.isEditing = true;
+            this.modalActionType = 'edit';
             this.currentMember = { ...member };
             this.avatarFile = null;
             this.avatarPreview = null;
@@ -775,56 +854,195 @@ export default {
 }
 
 /* ─── MODERN CONNECTOR LINES ─── */
-.tree ul { padding-top: 50px; display: flex !important; flex-direction: row !important; flex-wrap: nowrap !important; justify-content: center; padding-left: 0; margin-bottom: 0; position: relative; }
-.tree li { text-align: center; list-style-type: none; padding: 50px 14px 0 14px; position: relative; flex: 0 0 auto !important; }
+.tree ul { padding-top: 40px; display: flex !important; flex-direction: row !important; flex-wrap: nowrap !important; justify-content: center; padding-left: 0; margin-bottom: 0; position: relative; }
+.tree li { text-align: center; list-style-type: none; padding: 40px 16px 0 16px; position: relative; flex: 0 0 auto !important; }
 
 .tree li::before, .tree li::after {
     content: ''; position: absolute; top: 0; right: 50%;
-    border-top: 3px solid #ef4444; width: 50%; height: 50px;
+    border-top: 2px solid #cbd5e1; width: 50%; height: 40px; z-index: 1;
 }
-.tree li::after { right: auto; left: 50%; border-left: 3px solid #ef4444; }
+.tree li::after { right: auto; left: 50%; border-left: 2px solid #cbd5e1; }
 .tree li:only-child::after, .tree li:only-child::before { display: none; }
 .tree li:only-child { padding-top: 0; }
 .tree li:first-child::before, .tree li:last-child::after { border: 0 none; }
-.tree li:last-child::before { border-right: 3px solid #ef4444; border-radius: 0 4px 0 0; }
-.tree li:first-child::after { border-radius: 4px 0 0 0; }
+.tree li:last-child::before { border-right: 2px solid #cbd5e1; border-radius: 0 5px 0 0; }
+.tree li:first-child::after { border-radius: 5px 0 0 0; }
 .tree ul ul::before {
     content: ''; position: absolute; top: 0; left: 50%;
-    border-left: 3px solid #ef4444; width: 0; height: 50px;
+    border-left: 2px solid #cbd5e1; width: 0; height: 40px; z-index: 1;
 }
 
-.tree-node-group-modern { display: inline-flex; align-items: flex-start; justify-content: center; position: relative; z-index: 10; }
+.tree-node-group-modern { display: inline-flex; align-items: flex-start; justify-content: center; position: relative; z-index: 5; }
 
-.member-group { display: flex; flex-direction: column; align-items: center; position: relative; padding: 0 10px; }
-
-/* Horizontal line for spouses */
-.husband-group.has-spouses::after,
-.wife-group:not(.is-last)::after {
-    content: ''; position: absolute; top: 75px; left: 50%; right: 0; border-top: 3px solid #ef4444; z-index: 0;
-}
-.wife-group::before {
-    content: ''; position: absolute; top: 75px; left: 0; right: 50%; border-top: 3px solid #ef4444; z-index: 0;
+/* Each member column: card on top, children below */
+.member-column {
+    display: flex; flex-direction: column; align-items: center; 
+    position: relative; min-width: 240px;
 }
 
-.spouse-heart-badge {
-    position: absolute; left: -24px; top: 50%; transform: translateY(-50%); width: 28px; height: 28px; border-radius: 50%;
-    background: #fafafa; color: #ec4899; display: flex; align-items: center; justify-content: center; z-index: 5; font-size: 14px;
-    border: 2px solid #fdf2f8;
+/* Modern Spouse Connector Lines */
+.tree-node-group-modern.has-spouses {
+    position: relative;
+}
+.marriage-column {
+    display: flex; flex-direction: column; align-items: center;
+    position: relative; min-width: 40px;
+}
+.marriage-column::before {
+    content: ''; position: absolute; top: 80px; left: 0; width: 100%; height: 2px; background: #f9a8d4; z-index: 0;
+}
+.column-husband::before {
+    content: ''; position: absolute; top: 80px; left: 50%; width: 50%; height: 2px; background: #f9a8d4; z-index: 0;
+}
+.column-wife-last::before {
+    content: ''; position: absolute; top: 80px; left: 0; width: 50%; height: 2px; background: #f9a8d4; z-index: 0;
+}
+.column-wife-middle::before {
+    content: ''; position: absolute; top: 80px; left: 0; width: 100%; height: 2px; background: #f9a8d4; z-index: 0;
+}
+.spouse-heart-icon {
+    position: absolute; top: 80px; left: 50%; transform: translate(-50%, -50%);
+    width: 24px; height: 24px; border-radius: 50%; background: #fff;
+    display: flex; align-items: center; justify-content: center;
+    color: #ec4899; font-size: 12px; border: 2px solid #fce7f3;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08); z-index: 2;
+}
+.marriage-vertical-line {
+    position: absolute; top: 92px; left: 50%; width: 0; height: 54px; 
+    border-left: 2px solid #f9a8d4; z-index: 1;
+}
+.marriage-children-spacer {
+    margin-top: 146px; 
+    width: 100%;
+    display: flex; justify-content: center;
+}
+
+/* Hybrid Marriage Unit Layout */
+.tree-node-group-hybrid {
+    display: flex; justify-content: center;
+}
+.hybrid-marriage-unit {
+    display: flex; flex-direction: column; align-items: center;
+    position: relative;
+}
+/* Connect multiple marriage units with a continuous line */
+.hybrid-marriage-unit:not(:last-child)::before {
+    content: ''; position: absolute; top: 80px; left: 50%; right: 0; height: 2px; background: #f9a8d4; z-index: -1;
+}
+.hybrid-marriage-unit:not(:first-child)::after {
+    content: ''; position: absolute; top: 80px; left: 0; right: 50%; height: 2px; background: #f9a8d4; z-index: -1;
+}
+
+/* Compact Layout for Single Spouse */
+.compact-family {
+    display: flex; flex-direction: column; align-items: center;
+}
+.compact-parents-row {
+    display: flex; align-items: flex-start; justify-content: center;
+    position: relative;
+}
+.compact-parents-row.has-children::after {
+    content: ''; position: absolute; top: 92px; left: 50%; bottom: 0;
+    border-left: 2px solid #f9a8d4; z-index: 1;
+}
+.compact-connector {
+    width: 80px;
+    height: 2px;
+    background: #f9a8d4;
+    margin-top: 80px;
+    position: relative;
+    z-index: 0;
+}
+.compact-connector .spouse-heart-icon {
+    top: 50%; /* Override global top: 80px */
+}
+
+.long-connector {
+    width: 320px;
+    height: 2px;
+    background: #f9a8d4;
+    margin-top: 80px;
+    position: relative;
+    z-index: 0;
+}
+.long-connector .spouse-heart-icon {
+    top: 50%; left: auto; right: 40px; transform: translate(50%, -50%);
+}
+
+/* Children list inside a member-column */
+.member-children {
+    padding-top: 35px !important; display: flex !important; flex-direction: row !important;
+    flex-wrap: nowrap !important; justify-content: center !important; padding-left: 0 !important;
+    margin-bottom: 0 !important; position: relative !important; list-style: none !important;
+}
+
+/* Vertical stem from card down to children */
+.member-children::before {
+    content: '' !important; display: block !important;
+    position: absolute !important; top: 0 !important; left: 50% !important;
+    border-left: 2px solid #cbd5e1 !important; width: 0 !important; height: 35px !important; z-index: 1 !important;
+}
+
+/* Child items spacing */
+.member-children > li {
+    padding: 35px 10px 0 10px !important; position: relative !important;
+    text-align: center !important; list-style: none !important; flex: 0 0 auto !important;
+}
+
+/* Horizontal branch lines for siblings */
+.member-children > li::before, .member-children > li::after {
+    content: '' !important; display: block !important;
+    position: absolute !important; top: 0 !important; right: 50% !important;
+    border-top: 2px solid #cbd5e1 !important; width: 50% !important; height: 35px !important; z-index: 1 !important;
+}
+.member-children > li::after {
+    right: auto !important; left: 50% !important; border-left: 2px solid #cbd5e1 !important;
+}
+.member-children > li:first-child::before, .member-children > li:last-child::after {
+    border: 0 none !important;
+}
+.member-children > li:last-child::before {
+    border-right: 2px solid #cbd5e1 !important; border-radius: 0 5px 0 0 !important;
+}
+.member-children > li:first-child::after {
+    border-radius: 5px 0 0 0 !important;
+}
+
+/* CRITICAL: Override only-child hiding from .tree rules */
+.member-children > li:only-child {
+    padding-top: 35px !important;
+}
+.member-children > li:only-child::before {
+    display: none !important;
+}
+.member-children > li:only-child::after {
+    display: block !important;
+    content: '' !important; position: absolute !important;
+    top: 0 !important; left: 50% !important;
+    border-left: 2px solid #cbd5e1 !important; border-top: 0 none !important;
+    width: 0 !important; height: 35px !important; z-index: 1 !important;
 }
 
 /* ─── MODERN CARD DESIGN ─── */
 .tree-modern-card {
     background: #ffffff;
     border: 2px solid #e5e7eb;
-    border-radius: 12px;
+    border-radius: 14px;
     padding: 16px 20px;
     width: 240px;
+    min-width: 240px;
+    min-height: 145px;
+    flex-shrink: 0;
     position: relative;
     z-index: 10;
-    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
 }
 .tree-modern-card:hover { transform: translateY(-3px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
 

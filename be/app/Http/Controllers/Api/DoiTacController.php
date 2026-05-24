@@ -57,4 +57,80 @@ class DoiTacController extends Controller
 
         return response()->json(['data' => $thanhViens]);
     }
+
+    public function danhSachQuyenChiNhanh($chiNhanhId)
+    {
+        $user = auth('sanctum')->user();
+        $chiNhanh = ChiNhanh::where('id', $chiNhanhId)->where('id_nguoi_dung', $user->id)->first();
+        
+        if (!$chiNhanh) {
+            return response()->json(['status' => false, 'message' => 'Không tìm thấy chi nhánh hoặc không có quyền.'], 404);
+        }
+
+        $users = $chiNhanh->nguoiDungsDuocPhep()->select('nguoi_dungs.id', 'nguoi_dungs.ho_ten', 'nguoi_dungs.email')->get();
+        return response()->json(['status' => true, 'data' => $users]);
+    }
+
+    public function capQuyenChiNhanh(Request $request)
+    {
+        $request->validate([
+            'chi_nhanh_id' => 'required|integer',
+            'email' => 'required|email'
+        ]);
+
+        $user = auth('sanctum')->user();
+        $chiNhanh = ChiNhanh::where('id', $request->chi_nhanh_id)->where('id_nguoi_dung', $user->id)->first();
+
+        if (!$chiNhanh) {
+            return response()->json(['status' => false, 'message' => 'Không tìm thấy chi nhánh hoặc không có quyền.'], 404);
+        }
+
+        $targetUser = \App\Models\NguoiDung::where('email', $request->email)->first();
+        if (!$targetUser) {
+            return response()->json(['status' => false, 'message' => 'Người dùng với email này chưa đăng ký tài khoản trên hệ thống.'], 404);
+        }
+
+        // Tránh trùng lặp
+        if (!$chiNhanh->nguoiDungsDuocPhep()->where('nguoi_dung_id', $targetUser->id)->exists()) {
+            $chiNhanh->nguoiDungsDuocPhep()->attach($targetUser->id);
+
+            // gửi email
+            try {
+                $tieu_de = "Thông báo cấp quyền xem nhánh tộc";
+                $data['chiNhanh'] = $chiNhanh;
+                $data['targetUser'] = $targetUser;
+                $data['partnerUser'] = $user;
+                $data['link'] = env('APP_URL', 'http://localhost:5173') . '/gia-pha?chi_nhanh_id=' . $chiNhanh->id;
+                $view = 'emails.grant-branch-access';
+
+                \Illuminate\Support\Facades\Mail::to($targetUser->email)->send(new \App\Mail\MasterMail($tieu_de, $data, $view));
+            } catch (\Exception $e) {
+                // Log the exception if needed, but we don't want to fail the whole process if email fails
+                return response()->json(['status' => true, 'message' => 'Cấp quyền thành công nhưng có lỗi khi gửi email.', 'error' => $e->getMessage()]);
+            }
+            
+            return response()->json(['status' => true, 'message' => 'Cấp quyền và gửi email thông báo thành công.']);
+        }
+
+        return response()->json(['status' => false, 'message' => 'Người dùng này đã có quyền xem chi nhánh này.']);
+    }
+
+    public function thuHoiQuyenChiNhanh(Request $request)
+    {
+        $request->validate([
+            'chi_nhanh_id' => 'required|integer',
+            'nguoi_dung_id' => 'required|integer'
+        ]);
+
+        $user = auth('sanctum')->user();
+        $chiNhanh = ChiNhanh::where('id', $request->chi_nhanh_id)->where('id_nguoi_dung', $user->id)->first();
+
+        if (!$chiNhanh) {
+            return response()->json(['status' => false, 'message' => 'Không tìm thấy chi nhánh hoặc không có quyền.'], 404);
+        }
+
+        $chiNhanh->nguoiDungsDuocPhep()->detach($request->nguoi_dung_id);
+
+        return response()->json(['status' => true, 'message' => 'Thu hồi quyền truy cập thành công.']);
+    }
 }
