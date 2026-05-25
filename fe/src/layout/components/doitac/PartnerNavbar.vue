@@ -220,11 +220,7 @@ export default {
   --color-members:   #ff7a00;
   --color-search:    #d97706;
   --color-clan:      #ea580c;
-<<<<<<< Updated upstream
   --color-map:       #10b981;
-=======
-  --color-map:       #06b6d4;
->>>>>>> Stashed changes
 
   --transition-smooth: 0.35s cubic-bezier(0.25, 1, 0.5, 1);
 }
