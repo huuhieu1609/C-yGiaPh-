@@ -17,111 +17,45 @@
 
       <!-- Package Grid -->
       <div class="row g-4 align-items-stretch justify-content-center">
-        <!-- Package 1: Khởi Tạo (Basic) -->
-        <div class="col-lg-4 col-md-6 d-flex">
-          <div class="glass-card package-card d-flex flex-column w-100">
+        <!-- Dynamic Packages from DB -->
+        <div class="col-lg-4 col-md-6 d-flex" v-for="pkg in listPackages" :key="pkg.id">
+          <div class="glass-card package-card d-flex flex-column w-100" :class="{'featured-card': pkg.ten_goi.includes('Hưng Thịnh'), 'premium-card': pkg.ten_goi.includes('Trường Tồn')}">
+            <div class="featured-ribbon" v-if="pkg.ten_goi.includes('Hưng Thịnh')">PHỔ BIẾN NHẤT</div>
             <div class="card-header-custom p-4 border-bottom border-white/5">
-              <span class="badge bg-slate-700 text-white-50 mb-2">Cơ bản</span>
-              <h3 class="package-title text-white">Gói Khởi Tạo</h3>
-              <p class="package-desc text-white-50">Phù hợp cho chi ngành nhỏ hoặc dòng tộc bắt đầu số hóa phả hệ.</p>
+              <span class="badge mb-2" :class="{'bg-gold text-dark': pkg.ten_goi.includes('Hưng Thịnh'), 'bg-purple-600 text-white': pkg.ten_goi.includes('Trường Tồn'), 'bg-slate-700 text-white-50': !pkg.ten_goi.includes('Hưng Thịnh') && !pkg.ten_goi.includes('Trường Tồn')}">
+                {{ pkg.ten_goi.includes('Hưng Thịnh') ? 'Đặc quyền' : (pkg.ten_goi.includes('Trường Tồn') ? 'Vĩnh cửu' : 'Cơ bản') }}
+              </span>
+              <h3 class="package-title text-white">{{ pkg.ten_goi }}</h3>
+              <p class="package-desc text-white-50">{{ pkg.mo_ta }}</p>
               <div class="price-container mt-4">
-                <span class="price-num">100,000đ</span>
-                <span class="price-duration text-white-50">/ Năm</span>
+                <span class="price-num" :class="{'text-gold': pkg.ten_goi.includes('Hưng Thịnh'), 'text-purple-400': pkg.ten_goi.includes('Trường Tồn')}">
+                  {{ formatCurrencyNoVND(pkg.gia_ca) }}đ
+                </span>
+                <span class="price-duration text-white-50">/ {{ pkg.thoi_han }} Tháng</span>
               </div>
             </div>
             
             <div class="card-body-custom p-4 flex-grow-1">
               <ul class="features-list list-unstyled mb-0">
-                <li><i class="bx bx-check-circle text-success me-2"></i>Tối đa <strong>5 đời</strong> (thế hệ)</li>
-                <li><i class="bx bx-check-circle text-success me-2"></i>Tối đa <strong>100 thành viên</strong></li>
-                <li><i class="bx bx-check-circle text-success me-2"></i>Sơ đồ cây phả hệ 2D động</li>
-                <li><i class="bx bx-check-circle text-success me-2"></i>Công cụ tìm kiếm cơ bản</li>
-                <li><i class="bx bx-check-circle text-success me-2"></i>Bảo mật dữ liệu đám mây</li>
-                <li class="disabled"><i class="bx bx-x-circle text-danger me-2"></i>Nhật ký hoạt động bảo mật</li>
-                <li class="disabled"><i class="bx bx-x-circle text-danger me-2"></i>Tủ sách tài liệu & Sự kiện</li>
+                <li><i class="bx bx-check-circle text-success me-2"></i>Tối đa <strong>{{ pkg.max_doi >= 999 ? 'Không giới hạn' : pkg.max_doi + ' đời' }}</strong></li>
+                <li><i class="bx bx-check-circle text-success me-2"></i>Tối đa <strong>{{ pkg.max_thanh_vien >= 99999 ? 'Không giới hạn' : pkg.max_thanh_vien + ' thành viên' }}</strong></li>
+                <li><i class="bx bx-check-circle text-success me-2"></i>Sơ đồ cây phả hệ tương tác</li>
+                <li><i class="bx bx-check-circle text-success me-2"></i>Tủ sách tài liệu & Quản lý</li>
+                <li :class="{'disabled': !pkg.ten_goi.includes('Hưng Thịnh') && !pkg.ten_goi.includes('Trường Tồn')}">
+                  <i :class="pkg.ten_goi.includes('Hưng Thịnh') || pkg.ten_goi.includes('Trường Tồn') ? 'bx bx-check-circle text-success' : 'bx bx-x-circle text-danger'" class="me-2"></i>
+                  Nhật ký hoạt động bảo mật
+                </li>
+                <li :class="{'disabled': !pkg.ten_goi.includes('Trường Tồn')}">
+                  <i :class="pkg.ten_goi.includes('Trường Tồn') ? 'bx bx-check-circle text-success' : 'bx bx-x-circle text-danger'" class="me-2"></i>
+                  Thông báo tự động & VIP hỗ trợ
+                </li>
               </ul>
             </div>
             
             <div class="card-footer-custom p-4 border-top border-white/5 text-center">
-              <button @click="dangKyGoi(100000, 'Gói Khởi Tạo')" class="btn btn-package-outline w-100 mb-3">
+              <button @click="dangKyGoi(pkg.gia_ca, pkg.ten_goi)" class="btn w-100 mb-3" :class="pkg.ten_goi.includes('Hưng Thịnh') ? 'btn-package-gold' : 'btn-package-outline'">
                 Đăng Ký Ngay
               </button>
-              <router-link to="/dich-vu-goi/chi-tiet?goi=khoi-tao" class="btn-detail-link text-decoration-none">
-                Xem chi tiết gói <i class="bx bx-right-arrow-alt align-middle"></i>
-              </router-link>
-            </div>
-          </div>
-        </div>
-
-        <!-- Package 2: Hưng Thịnh (Standard - Featured) -->
-        <div class="col-lg-4 col-md-6 d-flex">
-          <div class="glass-card package-card featured-card d-flex flex-column w-100">
-            <div class="featured-ribbon">PHỔ BIẾN NHẤT</div>
-            <div class="card-header-custom p-4 border-bottom border-white/5">
-              <span class="badge bg-gold text-dark mb-2">Đặc quyền</span>
-              <h3 class="package-title text-white">Gói Hưng Thịnh</h3>
-              <p class="package-desc text-white-50">Giải pháp toàn diện cho các dòng tộc quy mô trung bình.</p>
-              <div class="price-container mt-4">
-                <span class="price-num text-gold">250,000đ</span>
-                <span class="price-duration text-white-50">/ Năm</span>
-              </div>
-            </div>
-            
-            <div class="card-body-custom p-4 flex-grow-1">
-              <ul class="features-list list-unstyled mb-0">
-                <li><i class="bx bx-check-circle text-success me-2"></i>Tối đa <strong>10 đời</strong> (thế hệ)</li>
-                <li><i class="bx bx-check-circle text-success me-2"></i>Tối đa <strong>500 thành viên</strong></li>
-                <li><i class="bx bx-check-circle text-success me-2"></i>Sơ đồ cây tương tác nâng cao</li>
-                <li><i class="bx bx-check-circle text-success me-2"></i>Nhật ký hoạt động & Thao tác</li>
-                <li><i class="bx bx-check-circle text-success me-2"></i>Tủ sách tài liệu dòng họ</li>
-                <li><i class="bx bx-check-circle text-success me-2"></i>Phê duyệt đề xuất của con cháu</li>
-                <li class="disabled"><i class="bx bx-x-circle text-danger me-2"></i>Thông báo tự động & VIP hỗ trợ</li>
-              </ul>
-            </div>
-            
-            <div class="card-footer-custom p-4 border-top border-white/5 text-center">
-              <button @click="dangKyGoi(250000, 'Gói Hưng Thịnh')" class="btn btn-package-gold w-100 mb-3">
-                Đăng Ký Ngay
-              </button>
-              <router-link to="/dich-vu-goi/chi-tiet?goi=hung-thinh" class="btn-detail-link text-decoration-none text-gold">
-                Xem chi tiết gói <i class="bx bx-right-arrow-alt align-middle text-gold"></i>
-              </router-link>
-            </div>
-          </div>
-        </div>
-
-        <!-- Package 3: Trường Tồn (Premium) -->
-        <div class="col-lg-4 col-md-6 d-flex">
-          <div class="glass-card package-card premium-card d-flex flex-column w-100">
-            <div class="card-header-custom p-4 border-bottom border-white/5">
-              <span class="badge bg-purple-600 text-white mb-2">Vĩnh cửu</span>
-              <h3 class="package-title text-white">Gói Trường Tồn</h3>
-              <p class="package-desc text-white-50">Không giới hạn đặc quyền dành cho đại gia tộc lớn nhiều chi nhánh.</p>
-              <div class="price-container mt-4">
-                <span class="price-num text-purple-400">500,000đ</span>
-                <span class="price-duration text-white-50">/ Năm</span>
-              </div>
-            </div>
-            
-            <div class="card-body-custom p-4 flex-grow-1">
-              <ul class="features-list list-unstyled mb-0">
-                <li><i class="bx bx-check-circle text-success me-2"></i><strong>Không giới hạn</strong> số đời</li>
-                <li><i class="bx bx-check-circle text-success me-2"></i><strong>Không giới hạn</strong> thành viên</li>
-                <li><i class="bx bx-check-circle text-success me-2"></i>Tất cả đặc quyền Quản trị cao cấp</li>
-                <li><i class="bx bx-check-circle text-success me-2"></i>Quản lý sự kiện, lễ giỗ Tổ họ</li>
-                <li><i class="bx bx-check-circle text-success me-2"></i>Hệ thống tự động gửi thông báo</li>
-                <li><i class="bx bx-check-circle text-success me-2"></i>Xuất cây phả hệ PDF in khổ lớn</li>
-                <li><i class="bx bx-check-circle text-success me-2"></i>Hỗ trợ kỹ thuật VIP 24/7</li>
-              </ul>
-            </div>
-            
-            <div class="card-footer-custom p-4 border-top border-white/5 text-center">
-              <button @click="dangKyGoi(500000, 'Gói Trường Tồn')" class="btn btn-package-outline w-100 mb-3">
-                Đăng Ký Ngay
-              </button>
-              <router-link to="/dich-vu-goi/chi-tiet?goi=truong-ton" class="btn-detail-link text-decoration-none">
-                Xem chi tiết gói <i class="bx bx-right-arrow-alt align-middle"></i>
-              </router-link>
             </div>
           </div>
         </div>
@@ -148,9 +82,35 @@
 </template>
 
 <script>
+import axios from 'axios';
+
 export default {
   name: 'DichVuGoi',
+  data() {
+    return {
+      listPackages: []
+    }
+  },
+  mounted() {
+    this.loadPackages();
+  },
   methods: {
+    loadPackages() {
+      axios.get('http://127.0.0.1:8000/api/goi-dich-vu/get-data')
+        .then(res => {
+          if (res.data.status) {
+            this.listPackages = res.data.data.filter(p => p.trang_thai === 'Hoạt động');
+          }
+        })
+        .catch(err => {
+          // fallback if backend is down
+          this.listPackages = [
+            { id: 1, ten_goi: 'Gói Khởi Tạo', gia_ca: 100000, thoi_han: 12, max_doi: 5, max_thanh_vien: 100, mo_ta: 'Phù hợp cho chi ngành nhỏ hoặc dòng tộc bắt đầu số hóa phả hệ.', trang_thai: 'Hoạt động' },
+            { id: 2, ten_goi: 'Gói Hưng Thịnh', gia_ca: 250000, thoi_han: 12, max_doi: 10, max_thanh_vien: 500, mo_ta: 'Giải pháp toàn diện cho các dòng tộc quy mô trung bình.', trang_thai: 'Hoạt động' },
+            { id: 3, ten_goi: 'Gói Trường Tồn', gia_ca: 500000, thoi_han: 12, max_doi: 999, max_thanh_vien: 99999, mo_ta: 'Không giới hạn đặc quyền dành cho đại gia tộc lớn nhiều chi nhánh.', trang_thai: 'Hoạt động' }
+          ];
+        });
+    },
     dangKyGoi(so_tien, ten_goi) {
       const isAuthenticated = localStorage.getItem('access_token');
       if (!isAuthenticated) {
@@ -167,6 +127,9 @@ export default {
           ten_goi: ten_goi
         }
       });
+    },
+    formatCurrencyNoVND(value) {
+      return new Intl.NumberFormat('vi-VN').format(value);
     }
   }
 }

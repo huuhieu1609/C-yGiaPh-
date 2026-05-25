@@ -89,10 +89,8 @@ class DongGopController extends Controller
         try {
             $item = DongGop::findOrFail($request->id);
 
-            if ('DongGop' === 'ThanhVien') {
-                $item->trang_thai = $item->trang_thai == 'Còn sống' ? 'Đã mất' : 'Còn sống';
-            } elseif (isset($item->trang_thai)) {
-                $item->trang_thai = $item->trang_thai == 'Hoạt động' ? 'Khóa' : 'Hoạt động';
+            if (isset($item->trang_thai)) {
+                $item->trang_thai = $item->trang_thai == 'Đã duyệt' ? 'Chờ duyệt' : 'Đã duyệt';
             } else {
                 return response()->json([
                     'status' => false,

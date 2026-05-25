@@ -135,4 +135,137 @@ class DoiTacController extends Controller
             ],
         );
     }
+
+    public function adminGetData(): JsonResponse
+    {
+        try {
+            $data = DoiTac::with('nguoiDung')->get();
+            return response()->json([
+                'status' => true,
+                'data' => $data,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Lỗi: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function adminCreate(Request $request): JsonResponse
+    {
+        try {
+            $validated = $request->validate([
+                'id_nguoi_dung' => 'required|exists:nguoi_dungs,id',
+                'ten_goi' => 'required|string|max:255',
+                'so_tien' => 'required|numeric|min:0',
+                'ngay_bat_dau' => 'required|date',
+                'ngay_ket_thuc' => 'required|date|after_or_equal:ngay_bat_dau',
+                'trang_thai' => 'required|in:0,1',
+            ]);
+
+            // Kiểm tra xem người dùng đã là đối tác chưa
+            $exists = DoiTac::where('id_nguoi_dung', $validated['id_nguoi_dung'])->exists();
+            if ($exists) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Người dùng này đã là đối tác trong hệ thống!',
+                ]);
+            }
+
+            $doiTac = DoiTac::create($validated);
+
+            // Đồng bộ trạng thái is_doi_tac = 1 của NguoiDung
+            $user = \App\Models\NguoiDung::find($validated['id_nguoi_dung']);
+            if ($user) {
+                $user->update(['is_doi_tac' => 1]);
+            }
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Thêm đối tác thành công!',
+                'data' => $doiTac,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Lỗi khi thêm đối tác: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function adminUpdate(Request $request): JsonResponse
+    {
+        try {
+            $doiTac = DoiTac::findOrFail($request->id);
+            $validated = $request->validate([
+                'ten_goi' => 'required|string|max:255',
+                'so_tien' => 'required|numeric|min:0',
+                'ngay_bat_dau' => 'required|date',
+                'ngay_ket_thuc' => 'required|date|after_or_equal:ngay_bat_dau',
+                'trang_thai' => 'required|in:0,1',
+            ]);
+
+            $doiTac->update($validated);
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Cập nhật thông tin đối tác thành công!',
+                'data' => $doiTac,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Lỗi khi cập nhật đối tác: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function adminDelete(Request $request): JsonResponse
+    {
+        try {
+            $doiTac = DoiTac::findOrFail($request->id);
+            $userId = $doiTac->id_nguoi_dung;
+            $doiTac->delete();
+
+            // Reset is_doi_tac = 0 cho người dùng nếu không còn bản ghi đối tác nào khác
+            $stillPartner = DoiTac::where('id_nguoi_dung', $userId)->exists();
+            if (!$stillPartner) {
+                $user = \App\Models\NguoiDung::find($userId);
+                if ($user) {
+                    $user->update(['is_doi_tac' => 0]);
+                }
+            }
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Xóa đối tác thành công!',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Lỗi khi xóa đối tác: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function adminStatus(Request $request): JsonResponse
+    {
+        try {
+            $doiTac = DoiTac::findOrFail($request->id);
+            $doiTac->trang_thai = $doiTac->trang_thai == 1 ? 0 : 1;
+            $doiTac->save();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Cập nhật trạng thái đối tác thành công!',
+                'trang_thai' => $doiTac->trang_thai,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Lỗi khi cập nhật trạng thái: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }
