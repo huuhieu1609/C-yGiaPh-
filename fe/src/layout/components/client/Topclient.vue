@@ -30,6 +30,9 @@
                 <router-link v-if="isAdmin" to="/admin" @click="isDropdownOpen = false">
                   <i class="bx bx-shield-quarter"></i> Quản trị hệ thống
                 </router-link>
+                <router-link v-if="isDoiTac" to="/doi-tac/dashboard" @click="isDropdownOpen = false" class="partner-link">
+                  <i class="bx bxs-briefcase text-gold"></i> Quản trị đối tác
+                </router-link>
                 <router-link to="/profile" @click="isDropdownOpen = false">
                   <i class="bx bx-user"></i> Hồ sơ cá nhân
                 </router-link>
@@ -69,6 +72,8 @@
           <li><router-link to="/login" class="mobile-btn" @click="isMobileMenuOpen = false">Đăng Nhập</router-link></li>
         </template>
         <template v-else>
+          <li v-if="isDoiTac"><router-link to="/doi-tac/dashboard" @click="isMobileMenuOpen = false" style="color: #d4af37;">Quản trị đối tác</router-link></li>
+          <li v-if="isAdmin"><router-link to="/admin" @click="isMobileMenuOpen = false" style="color: #3b82f6;">Quản trị hệ thống</router-link></li>
           <li><router-link to="/profile" @click="isMobileMenuOpen = false">Hồ sơ cá nhân</router-link></li>
           <li><router-link to="/su-kien" @click="isMobileMenuOpen = false">Sự kiện dòng họ</router-link></li>
           <li><router-link to="/ban-do" @click="isMobileMenuOpen = false">Bản đồ số</router-link></li>
@@ -90,6 +95,7 @@ export default {
       isMobileMenuOpen: false,
       isLoggedIn: false,
       isAdmin: false,
+      isDoiTac: false,
       isDropdownOpen: false,
       userName: '',
       defaultAvatar: "data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%231e293b'/%3E%3Ccircle cx='50' cy='35' r='18' fill='%23d4af37'/%3E%3Cpath d='M15 85 C15 67 30 55 50 55 C70 55 85 67 85 85 Z' fill='%23d4af37'/%3E%3C/svg%3E",
@@ -133,6 +139,7 @@ export default {
         const user = userData.user || userData;
         this.userName = user.ho_ten;
         this.isAdmin = user.vai_tro === 'Admin';
+        this.isDoiTac = user.is_doi_tac == 1 || user.is_doi_tac === true || user.vai_tro === 'Đối tác';
         const avatar = user.avatar;
         if (avatar && avatar !== 'https://dzfullstack.com/assets/images/logo-1.png') {
           this.userAvatar = avatar;
@@ -142,6 +149,7 @@ export default {
       } else {
         this.isLoggedIn = false;
         this.isAdmin = false;
+        this.isDoiTac = false;
       }
     },
     closeDropdown() {
@@ -151,6 +159,8 @@ export default {
       localStorage.removeItem('access_token');
       localStorage.removeItem('user');
       this.isLoggedIn = false;
+      this.isAdmin = false;
+      this.isDoiTac = false;
       this.isDropdownOpen = false;
       this.$router.push('/login');
     }
@@ -424,5 +434,12 @@ export default {
   .mobile-toggle {
     display: block;
   }
+}
+
+.text-gold {
+  color: #d4af37 !important;
+}
+.partner-link:hover {
+  background: #fdf8ef !important;
 }
 </style>

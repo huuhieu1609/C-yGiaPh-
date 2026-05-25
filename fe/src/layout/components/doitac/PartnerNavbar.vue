@@ -84,6 +84,13 @@
             <span class="nav-dot hide-on-collapse"></span>
           </router-link>
         </li>
+        <li class="nav-item item-map">
+          <router-link to="/doi-tac/ban-do" class="nav-link" active-class="active" title="Bản Đồ Số">
+            <span class="nav-icon"><i class="bx bx-map-alt"></i></span>
+            <span class="hide-on-collapse nav-label">Bản Đồ Số</span>
+            <span class="nav-dot hide-on-collapse"></span>
+          </router-link>
+        </li>
         
         <li class="section-heading hide-on-collapse">Công Cụ & Hoạt Động</li>
         
@@ -213,7 +220,11 @@ export default {
   --color-members:   #ff7a00;
   --color-search:    #d97706;
   --color-clan:      #ea580c;
+<<<<<<< Updated upstream
   --color-map:       #10b981;
+=======
+  --color-map:       #06b6d4;
+>>>>>>> Stashed changes
 
   --transition-smooth: 0.35s cubic-bezier(0.25, 1, 0.5, 1);
 }

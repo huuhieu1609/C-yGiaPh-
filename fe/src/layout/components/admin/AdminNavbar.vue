@@ -28,7 +28,7 @@
     </div>
 
     <div class="sidebar-body overflow-auto flex-grow-1">
-      <ul class="nav flex-column gap-2">
+      <ul class="nav flex-column gap-1">
         
         <li class="nav-item item-home">
           <router-link to="/admin/dashboard" class="nav-link" active-class="active" title="Tổng Quan">
@@ -38,12 +38,12 @@
           </router-link>
         </li>
 
-        <li class="section-heading hide-on-collapse">Hệ Thống Tổng</li>
+        <li class="section-heading hide-on-collapse">Quản Lý Gia Phả</li>
 
         <li class="nav-item item-tree">
           <router-link to="/admin/gia-pha" class="nav-link" active-class="active" title="Quản Lý Gia Phả">
             <span class="nav-icon"><i class="bx bx-git-branch"></i></span>
-            <span class="hide-on-collapse nav-label">Quản Lý Gia Phả</span>
+            <span class="hide-on-collapse nav-label">Gia Phả Hệ</span>
             <span class="nav-dot hide-on-collapse"></span>
           </router-link>
         </li>
@@ -51,7 +51,7 @@
         <li class="nav-item item-members">
           <router-link to="/admin/chi-nhanh" class="nav-link" active-class="active" title="Quản Lý Chi Nhánh">
             <span class="nav-icon"><i class="bx bx-buildings"></i></span>
-            <span class="hide-on-collapse nav-label">Quản Lý Chi Nhánh</span>
+            <span class="hide-on-collapse nav-label">Chi Nhánh Họ</span>
             <span class="nav-dot hide-on-collapse"></span>
           </router-link>
         </li>
@@ -60,6 +60,70 @@
           <router-link to="/admin/doi-toc-ho" class="nav-link" active-class="active" title="Đời Tộc Họ">
             <span class="nav-icon"><i class="bx bx-layer"></i></span>
             <span class="hide-on-collapse nav-label">Đời Tộc Họ</span>
+            <span class="nav-dot hide-on-collapse"></span>
+          </router-link>
+        </li>
+
+        <li class="section-heading hide-on-collapse">Đối Tác & Người Dùng</li>
+
+        <li class="nav-item item-user">
+          <router-link to="/admin/nguoi-dung" class="nav-link" active-class="active" title="Quản Lý Người Dùng">
+            <span class="nav-icon"><i class="bx bx-user"></i></span>
+            <span class="hide-on-collapse nav-label">Người Dùng</span>
+            <span class="nav-dot hide-on-collapse"></span>
+          </router-link>
+        </li>
+
+        <li class="nav-item item-partner">
+          <router-link to="/admin/doi-tac" class="nav-link" active-class="active" title="Quản Lý Đối Tác">
+            <span class="nav-icon"><i class="bx bx-briefcase"></i></span>
+            <span class="hide-on-collapse nav-label">Đối Tác & Gói</span>
+            <span class="nav-dot hide-on-collapse"></span>
+          </router-link>
+        </li>
+
+        <li class="section-heading hide-on-collapse">Gói & Thanh Toán</li>
+
+        <li class="nav-item item-partner">
+          <router-link to="/admin/goi-dich-vu" class="nav-link" active-class="active" title="Quản Lý Gói Dịch Vụ">
+            <span class="nav-icon"><i class="bx bx-package"></i></span>
+            <span class="hide-on-collapse nav-label">Quản Lý Gói Dịch Vụ</span>
+            <span class="nav-dot hide-on-collapse"></span>
+          </router-link>
+        </li>
+
+
+
+        <li class="section-heading hide-on-collapse">Hệ Thống & Bảo Mật</li>
+
+        <li class="nav-item item-security">
+          <router-link to="/admin/phan-quyen" class="nav-link" active-class="active" title="Phân Quyền">
+            <span class="nav-icon"><i class="bx bx-shield-quarter"></i></span>
+            <span class="hide-on-collapse nav-label">Phân Quyền</span>
+            <span class="nav-dot hide-on-collapse"></span>
+          </router-link>
+        </li>
+
+        <li class="nav-item item-security">
+          <router-link to="/admin/chuc-vu" class="nav-link" active-class="active" title="Quản Lý Chức Vụ">
+            <span class="nav-icon"><i class="bx bx-id-card"></i></span>
+            <span class="hide-on-collapse nav-label">Quản Lý Chức Vụ</span>
+            <span class="nav-dot hide-on-collapse"></span>
+          </router-link>
+        </li>
+
+        <li class="nav-item item-security">
+          <router-link to="/admin/chuc-nang" class="nav-link" active-class="active" title="Quản Lý Chức Năng">
+            <span class="nav-icon"><i class="bx bx-cog"></i></span>
+            <span class="hide-on-collapse nav-label">Quản Lý Chức Năng</span>
+            <span class="nav-dot hide-on-collapse"></span>
+          </router-link>
+        </li>
+
+        <li class="nav-item item-security">
+          <router-link to="/admin/nhat-ky-hoat-dong" class="nav-link" active-class="active" title="Nhật Ký Hoạt Động">
+            <span class="nav-icon"><i class="bx bx-history"></i></span>
+            <span class="hide-on-collapse nav-label">Nhật Ký Hoạt Động</span>
             <span class="nav-dot hide-on-collapse"></span>
           </router-link>
         </li>
@@ -129,6 +193,10 @@ export default {
   --color-tree:      #db2777;
   --color-members:   #0d9488;
   --color-clan:      #059669;
+  --color-user:      #f59e0b;
+  --color-partner:   #06b6d4;
+  --color-payment:   #8b5cf6;
+  --color-security:  #ef4444;
   --text-sub:       #6b7280;
   --transition-smooth: 0.4s cubic-bezier(0.25, 1, 0.5, 1);
 }
@@ -189,6 +257,10 @@ export default {
 .item-tree .nav-link.active { --c-active: var(--color-tree); }
 .item-members .nav-link.active { --c-active: var(--color-members); }
 .item-clan .nav-link.active { --c-active: var(--color-clan); }
+.item-user .nav-link.active { --c-active: var(--color-user); }
+.item-partner .nav-link.active { --c-active: var(--color-partner); }
+.item-payment .nav-link.active { --c-active: var(--color-payment); }
+.item-security .nav-link.active { --c-active: var(--color-security); }
 
 .nav-link.active { color: #111827 !important; background: #ffffff !important; border: 1px solid rgba(0, 0, 0, 0.04) !important; font-weight: 600; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03); }
 .nav-link.active .nav-icon i { color: var(--c-active) !important; }

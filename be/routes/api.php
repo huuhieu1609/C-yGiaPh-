@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\DeXuatController;
 use App\Http\Controllers\Api\DoiTacController;
 use App\Http\Controllers\Api\DoiTocHoController;
 use App\Http\Controllers\Api\DongGopController;
+use App\Http\Controllers\Api\GoiDichVuController;
 use App\Http\Controllers\Api\HinhAnhController;
 use App\Http\Controllers\Api\MoPhanController;
 use App\Http\Controllers\Api\NguoiDungController;
@@ -48,7 +49,14 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/statistics', [DoiTacController::class, 'getStatistics']);
         Route::post('/tao-chi-nhanh', [DoiTacController::class, 'taoChiNhanh']);
         Route::get('/lay-chi-nhanh', [DoiTacController::class, 'layChiNhanhCuaDoiTac']);
-        Route::get('/tra-cuu-thanh-vien/{chiNhanhId}', [DoiTacController::class, 'traCuuThanhVien']);
+    });
+
+    Route::prefix('/admin/doi-tac')->group(function () {
+        Route::get('/get-data', [DoiTacController::class, 'adminGetData']);
+        Route::post('/create', [DoiTacController::class, 'adminCreate']);
+        Route::post('/update', [DoiTacController::class, 'adminUpdate']);
+        Route::post('/delete', [DoiTacController::class, 'adminDelete']);
+        Route::post('/status', [DoiTacController::class, 'adminStatus']);
     });
 
     // Resources Routes
@@ -217,6 +225,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('/phan-quyen')->group(function () {
         Route::post('/get-chuc-nang', [PhanQuyenController::class, 'getChucNang']);
         Route::post('/update', [PhanQuyenController::class, 'updatePhanQuyen']);
+    });
+
+    Route::prefix('/goi-dich-vu')->group(function () {
+        Route::get('/get-data', [GoiDichVuController::class, 'getData']);
+        Route::post('/create', [GoiDichVuController::class, 'create']);
+        Route::post('/update', [GoiDichVuController::class, 'update']);
+        Route::post('/delete', [GoiDichVuController::class, 'delete']);
+        Route::post('/status', [GoiDichVuController::class, 'status']);
     });
 });
 

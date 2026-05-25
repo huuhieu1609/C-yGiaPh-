@@ -47,6 +47,13 @@
 						<div class="menu-title">Tra Cứu</div>
 					</router-link>
 				</li>
+				<li class="nav-item">
+					<router-link to="/doi-tac/ban-do" class="nav-link">
+						<div class="parent-icon"><i class='bx bx-map-alt'></i>
+						</div>
+						<div class="menu-title">Bản Đồ Số</div>
+					</router-link>
+				</li>
 			</ul>
 		</nav>
 	</div>
