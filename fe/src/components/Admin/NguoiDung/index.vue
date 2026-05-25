@@ -11,30 +11,37 @@
                     <form @submit.prevent="saveData">
                         <div class="mb-3">
                             <label class="form-label fw-semibold">Họ Và Tên</label>
-                            <input type="text" class="form-control radius-8 border-2 shadow-none" placeholder="Nhập họ tên" v-model="formData.ho_ten" required>
+                            <input type="text" class="form-control radius-8 border-2 shadow-none"
+                                placeholder="Nhập họ tên" v-model="formData.ho_ten" required>
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-semibold">Email</label>
-                            <input type="email" class="form-control radius-8 border-2 shadow-none" placeholder="Nhập email" v-model="formData.email" required>
+                            <input type="email" class="form-control radius-8 border-2 shadow-none"
+                                placeholder="Nhập email" v-model="formData.email" required>
                         </div>
                         <div class="mb-3" v-if="!isEditing">
                             <label class="form-label fw-semibold">Mật Khẩu</label>
-                            <input type="password" class="form-control radius-8 border-2 shadow-none" placeholder="Nhập mật khẩu" v-model="formData.mat_khau" required>
+                            <input type="password" class="form-control radius-8 border-2 shadow-none"
+                                placeholder="Nhập mật khẩu" v-model="formData.mat_khau" required>
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-semibold">Số Điện Thoại</label>
-                            <input type="text" class="form-control radius-8 border-2 shadow-none" placeholder="Nhập số điện thoại" v-model="formData.so_dien_thoai">
+                            <input type="text" class="form-control radius-8 border-2 shadow-none"
+                                placeholder="Nhập số điện thoại" v-model="formData.so_dien_thoai">
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-semibold">Chức Vụ</label>
                             <select class="form-select radius-8 border-2 shadow-none" v-model="formData.id_chuc_vu">
                                 <option :value="null">-- Chọn Chức Vụ --</option>
-                                <option v-for="cv in listChucVu" :key="cv.id" :value="cv.id">{{ cv.ten_chuc_vu }}</option>
+                                <option v-for="cv in listChucVu" :key="cv.id" :value="cv.id">{{ cv.ten_chuc_vu }}
+                                </option>
                             </select>
                         </div>
                         <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
-                            <button type="button" class="btn btn-light radius-8 px-4" v-if="isEditing" @click="resetForm">Hủy</button>
-                            <button type="submit" class="btn text-white radius-8 px-4 fw-bold shadow-sm" style="background-color: #008bf8; border-color: #008bf8;">
+                            <button type="button" class="btn btn-light radius-8 px-4" v-if="isEditing"
+                                @click="resetForm">Hủy</button>
+                            <button type="submit" class="btn text-white radius-8 px-4 fw-bold shadow-sm"
+                                style="background-color: #008bf8; border-color: #008bf8;">
                                 {{ isEditing ? 'Cập Nhật' : 'Thêm Mới' }}
                             </button>
                         </div>
@@ -45,7 +52,8 @@
 
         <div class="col-lg-8 col-md-12">
             <div class="card shadow-sm border-0 radius-10 h-100">
-                <div class="card-header bg-white py-3 border-0 border-bottom d-flex align-items-center justify-content-between">
+                <div
+                    class="card-header bg-white py-3 border-0 border-bottom d-flex align-items-center justify-content-between">
                     <h5 class="mb-0 fw-bold text-uppercase" style="color: #333;">
                         <i class="bx bx-group me-1"></i> Danh Sách Người Dùng
                     </h5>
@@ -69,19 +77,24 @@
                                     <td class="fw-semibold">{{ item.ho_ten }}</td>
                                     <td>{{ item.email }}</td>
                                     <td class="text-center">
-                                        <span class="badge bg-info text-white radius-10 px-3">{{ getTenChucVu(item.id_chuc_vu) }}</span>
+                                        <span class="badge bg-info text-white radius-10 px-3">{{
+                                            getTenChucVu(item.id_chuc_vu) }}</span>
                                     </td>
                                     <td class="text-center">
-                                        <button @click="changeStatus(item.id)" :class="item.trang_thai == 'Hoạt động' ? 'btn-success' : 'btn-danger'" class="btn btn-sm radius-8 w-100">
+                                        <button @click="changeStatus(item.id)"
+                                            :class="item.trang_thai == 'Hoạt động' ? 'btn-success' : 'btn-danger'"
+                                            class="btn btn-sm radius-8 w-100">
                                             {{ item.trang_thai }}
                                         </button>
                                     </td>
                                     <td class="text-center">
                                         <div class="d-flex justify-content-center gap-2">
-                                            <button class="btn btn-sm btn-outline-primary radius-8" @click="editItem(item)" title="Sửa">
+                                            <button class="btn btn-sm btn-outline-primary radius-8"
+                                                @click="editItem(item)" title="Sửa">
                                                 <i class="bx bx-edit-alt m-0"></i>
                                             </button>
-                                            <button class="btn btn-sm btn-outline-danger radius-8" @click="deleteItem(item.id)" title="Xóa">
+                                            <button class="btn btn-sm btn-outline-danger radius-8"
+                                                @click="deleteItem(item.id)" title="Xóa">
                                                 <i class="bx bx-trash m-0"></i>
                                             </button>
                                         </div>
@@ -123,16 +136,28 @@ export default {
         this.loadChucVu();
     },
     methods: {
+        getHeaders() {
+            const token = localStorage.getItem('access_token');
+            return {
+                headers: {
+                    Authorization: token ? `Bearer ${token}` : ''
+                }
+            };
+        },
         loadData() {
-            axios.get('http://127.0.0.1:8000/api/nguoi-dung/get-data')
+            axios.get('http://127.0.0.1:8000/api/nguoi-dung/get-data', this.getHeaders())
                 .then(res => {
                     if (res.data.status) {
                         this.listData = res.data.data;
                     }
+                })
+                .catch(err => {
+                    console.error(err);
+                    toastr.error('Không thể tải danh sách người dùng');
                 });
         },
         loadChucVu() {
-            axios.get('http://127.0.0.1:8000/api/chuc-vu/get-data')
+            axios.get('http://127.0.0.1:8000/api/chuc-vu/get-data', this.getHeaders())
                 .then(res => {
                     if (res.data.status) {
                         this.listChucVu = res.data.data;
@@ -144,11 +169,11 @@ export default {
             return cv ? cv.ten_chuc_vu : 'Chưa gán';
         },
         saveData() {
-            const url = this.isEditing 
+            const url = this.isEditing
                 ? 'http://127.0.0.1:8000/api/nguoi-dung/update'
                 : 'http://127.0.0.1:8000/api/nguoi-dung/create';
-            
-            axios.post(url, this.formData)
+
+            axios.post(url, this.formData, this.getHeaders())
                 .then(res => {
                     if (res.data.status) {
                         toastr.success(res.data.message);
@@ -157,31 +182,43 @@ export default {
                     } else {
                         toastr.error(res.data.message);
                     }
+                })
+                .catch(err => {
+                    const message = err.response?.data?.message || 'Lỗi khi lưu người dùng';
+                    toastr.error(message);
                 });
         },
         editItem(item) {
             this.isEditing = true;
             this.formData = { ...item };
-            this.formData.mat_khau = ''; // Don't show password
+            this.formData.mat_khau = ''; 
         },
         deleteItem(id) {
             if (confirm('Bạn có chắc chắn muốn xóa?')) {
-                axios.post('http://127.0.0.1:8000/api/nguoi-dung/delete', { id })
+                axios.post('http://127.0.0.1:8000/api/nguoi-dung/delete', { id }, this.getHeaders())
                     .then(res => {
                         if (res.data.status) {
                             toastr.success(res.data.message);
                             this.loadData();
                         }
+                    })
+                    .catch(err => {
+                        const message = err.response?.data?.message || 'Lỗi khi xóa người dùng';
+                        toastr.error(message);
                     });
             }
         },
         changeStatus(id) {
-            axios.post('http://127.0.0.1:8000/api/nguoi-dung/status', { id })
+            axios.post('http://127.0.0.1:8000/api/nguoi-dung/status', { id }, this.getHeaders())
                 .then(res => {
                     if (res.data.status) {
                         toastr.success(res.data.message);
                         this.loadData();
                     }
+                })
+                .catch(err => {
+                    const message = err.response?.data?.message || 'Lỗi khi cập nhật trạng thái';
+                    toastr.error(message);
                 });
         },
         resetForm() {
@@ -201,6 +238,11 @@ export default {
 </script>
 
 <style scoped>
-.radius-10 { border-radius: 10px; }
-.radius-8 { border-radius: 8px; }
+.radius-10 {
+    border-radius: 10px;
+}
+
+.radius-8 {
+    border-radius: 8px;
+}
 </style>

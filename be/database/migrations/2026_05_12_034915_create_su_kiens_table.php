@@ -14,7 +14,7 @@ return new class extends Migration
             $table->text("noi_dung")->nullable();
             $table->date("ngay_to_chuc");
             $table->string("dia_diem")->nullable();
-            $table->enum("loai", ["Giỗ tổ", "Họp họ", "Cưới hỏi", "Tang lễ"]);
+            $table->enum("loai", ["Gặp mặt", "Thăm viếng", "Từ thiện"]);
             $table->timestamps();
         });
     }
