@@ -119,16 +119,9 @@ const routes = [
         meta: { layout: 'blank' }
     },
 
-<<<<<<< HEAD
-    // =========================================================================
-    // ADMIN ROUTES (NESTED UNDER DEFAULT-LAYOUT COMPONENT)
-    // =========================================================================
-=======
-    // Admin Routes
->>>>>>> 03738f7 (Bo_sung_chuc_nang_con_thieu_ADMIM)
     {
         path: '/admin',
-        component: () => import('../layout/wrapper/index.vue'), // Default Layout gốc làm cha
+        component: () => import('../layout/wrapper/index.vue'), 
         meta: { requiresAuth: true, layout: 'blank' },
         children: [
             {
@@ -218,7 +211,7 @@ const routes = [
     // =========================================================================
     {
         path: '/doi-tac',
-        component: () => import('../layout/wrapper/partner.vue'), // Sử dụng Partner Layout làm gốc 
+        component: () => import('../layout/wrapper/partner.vue'), 
         meta: { requiresAuth: true, layout: 'blank' },
         children: [
             {
