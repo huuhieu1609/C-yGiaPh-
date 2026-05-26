@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\ChucNang;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class ChucNangController extends Controller
 {
@@ -21,46 +22,71 @@ class ChucNangController extends Controller
 
     public function create(Request $request)
     {
+        $validated = $request->validate([
+            'ten_chuc_nang' => 'required|string|max:255',
+            'ten_slug' => 'nullable|string|max:255',
+            'url' => 'nullable|string|max:255',
+            'mo_ta' => 'nullable|string',
+            'trang_thai' => 'required|in:Hoạt động,Khóa',
+        ]);
+
+        $slug = $validated['ten_slug'] ?? Str::slug($validated['ten_chuc_nang']);
+        $url = $validated['url'] ?? '/' . $slug;
+
         $item = ChucNang::create([
-            'ten_chuc_nang' => $request->ten_chuc_nang,
-            'ten_slug' => $request->ten_slug,
-            'url' => $request->url,
-            'mo_ta' => $request->mo_ta,
-            'trang_thai' => $request->trang_thai,
+            'ten_chuc_nang' => $validated['ten_chuc_nang'],
+            'ten_slug' => $slug,
+            'url' => $url,
+            'mo_ta' => $validated['mo_ta'] ?? null,
+            'trang_thai' => $validated['trang_thai'],
         ]);
 
         return response()->json([
             'status' => true,
-            'message' => 'Thêm chức năng '.$request->ten_chuc_nang.' thành công!',
+            'message' => 'Thêm chức năng ' . $validated['ten_chuc_nang'] . ' thành công!',
             'data' => $item,
         ]);
     }
 
     public function update(Request $request)
     {
-        $item = ChucNang::findOrFail($request->id);
+        $validated = $request->validate([
+            'id' => 'required|integer|exists:chuc_nangs,id',
+            'ten_chuc_nang' => 'required|string|max:255',
+            'ten_slug' => 'nullable|string|max:255',
+            'url' => 'nullable|string|max:255',
+            'mo_ta' => 'nullable|string',
+            'trang_thai' => 'required|in:Hoạt động,Khóa',
+        ]);
+
+        $item = ChucNang::findOrFail($validated['id']);
+        $slug = $validated['ten_slug'] ?? Str::slug($validated['ten_chuc_nang']);
+        $url = $validated['url'] ?? '/' . $slug;
+
         $item->update([
-            'ten_chuc_nang' => $request->ten_chuc_nang,
-            'ten_slug' => $request->ten_slug,
-            'url' => $request->url,
-            'mo_ta' => $request->mo_ta,
-            'trang_thai' => $request->trang_thai,
+            'ten_chuc_nang' => $validated['ten_chuc_nang'],
+            'ten_slug' => $slug,
+            'url' => $url,
+            'mo_ta' => $validated['mo_ta'] ?? null,
+            'trang_thai' => $validated['trang_thai'],
         ]);
 
         return response()->json([
             'status' => true,
-            'message' => 'Cập nhật chức năng '.$request->ten_chuc_nang.' thành công!',
+            'message' => 'Cập nhật chức năng ' . $validated['ten_chuc_nang'] . ' thành công!',
             'data' => $item,
         ]);
     }
 
     public function delete(Request $request)
     {
-        $item = ChucNang::findOrFail($request->id)->delete();
+        $item = ChucNang::findOrFail($request->id);
+        $name = $item->ten_chuc_nang;
+        $item->delete();
 
         return response()->json([
             'status' => true,
-            'message' => 'Xóa chức năng '.$item->ten_chuc_nang.' thành công!',
+            'message' => 'Xóa chức năng ' . $name . ' thành công!',
         ]);
     }
 

@@ -440,10 +440,12 @@ export default {
           this.newForm.lat = latVal;
           this.newForm.lng = lngVal;
           this.updateCreationMarker();
+          this.reverseGeocode(latVal, lngVal, 'new');
         } else if (this.editingItem) {
           this.editingItem.lat = latVal;
           this.editingItem.lng = lngVal;
           this.updateMarkerPosition();
+          this.reverseGeocode(latVal, lngVal, 'edit');
         }
       });
     },
@@ -589,8 +591,11 @@ export default {
 
         this.activePinMarker.on('dragend', (e) => {
           const pos = e.target.getLatLng();
-          this.newForm.lat = parseFloat(pos.lat.toFixed(6));
-          this.newForm.lng = parseFloat(pos.lng.toFixed(6));
+          const latVal = parseFloat(pos.lat.toFixed(6));
+          const lngVal = parseFloat(pos.lng.toFixed(6));
+          this.newForm.lat = latVal;
+          this.newForm.lng = lngVal;
+          this.reverseGeocode(latVal, lngVal, 'new');
         });
       } else {
         this.activePinMarker.setLatLng([this.newForm.lat, this.newForm.lng]);
@@ -692,8 +697,11 @@ export default {
 
         this.activePinMarker.on('dragend', (event) => {
           const position = event.target.getLatLng();
-          this.editingItem.lat = parseFloat(position.lat.toFixed(6));
-          this.editingItem.lng = parseFloat(position.lng.toFixed(6));
+          const latVal = parseFloat(position.lat.toFixed(6));
+          const lngVal = parseFloat(position.lng.toFixed(6));
+          this.editingItem.lat = latVal;
+          this.editingItem.lng = lngVal;
+          this.reverseGeocode(latVal, lngVal, 'edit');
         });
       } else {
         this.activePinMarker.setLatLng([lat, lng]);
@@ -784,6 +792,46 @@ export default {
         })
         .finally(() => {
           this.isSaving = false;
+        });
+    },
+    reverseGeocode(lat, lng, target) {
+      if (!lat || !lng) return;
+      const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`;
+      
+      axios.get(url, {
+        headers: {
+          'Accept-Language': 'vi,en;q=0.9'
+        }
+      })
+        .then(res => {
+          if (res.data && res.data.display_name) {
+            let displayAddress = res.data.display_name;
+            
+            // Clean up Nominatim response to be neat and standard for VN address
+            const addr = res.data.address;
+            if (addr) {
+              const road = addr.road || addr.suburb || addr.neighbourhood || addr.village || '';
+              const quarter = addr.quarter || '';
+              const suburb = addr.suburb || '';
+              const town = addr.town || addr.city || addr.district || '';
+              const county = addr.county || '';
+              const state = addr.state || '';
+              
+              const parts = [road, quarter, suburb, town, county, state].filter(p => !!p);
+              if (parts.length > 0) {
+                displayAddress = parts.join(', ');
+              }
+            }
+
+            if (target === 'new') {
+              this.newForm.address = displayAddress;
+            } else if (target === 'edit' && this.editingItem) {
+              this.editingItem.address = displayAddress;
+            }
+          }
+        })
+        .catch(err => {
+          console.warn("Lỗi khi giải ngược địa chỉ:", err);
         });
     }
   }

@@ -5,30 +5,40 @@
                 <div class="card-header bg-white py-3 border-0 border-bottom">
                     <div class="row align-items-center">
                         <div class="col-md-3">
-                            <h5 class="mb-0 fw-bold text-dark"><i class="bx bx-git-branch text-primary"></i> Quản Lý Cây Gia Phả</h5>
+                            <h5 class="mb-0 fw-bold text-dark"><i class="bx bx-git-branch text-primary"></i> Quản Lý Cây
+                                Gia Phả</h5>
                         </div>
                         <div class="col-md-9 text-md-end d-flex align-items-center justify-content-end gap-3 flex-wrap">
                             <!-- Branch Filter -->
                             <div class="d-flex align-items-center gap-2">
-                                <label class="small fw-bold text-uppercase text-secondary text-nowrap mb-0">Dòng họ:</label>
-                                <select class="form-select radius-30 border-2 shadow-none" style="width: 200px;" v-model="selectedChiNhanh" @change="filterTree">
+                                <label class="small fw-bold text-uppercase text-secondary text-nowrap mb-0">Dòng
+                                    họ:</label>
+                                <select class="form-select radius-30 border-2 shadow-none" style="width: 200px;"
+                                    v-model="selectedChiNhanh" @change="filterTree">
                                     <option :value="null">-- Tất cả --</option>
-                                    <option v-for="cn in listChiNhanh" :key="cn.id" :value="cn.id">{{ cn.ten_chi }}</option>
+                                    <option v-for="cn in listChiNhanh" :key="cn.id" :value="cn.id">{{ cn.ten_chi }}
+                                    </option>
                                 </select>
                             </div>
 
                             <!-- Search Bar -->
                             <div class="position-relative" style="width: 220px;">
-                                <input type="text" class="form-control ps-5 radius-30 border-2" v-model="searchQuery" placeholder="Tìm thành viên...">
-                                <span class="position-absolute top-50 translate-middle-y start-0 ms-3 text-secondary"><i class="bx bx-search"></i></span>
+                                <input type="text" class="form-control ps-5 radius-30 border-2" v-model="searchQuery"
+                                    placeholder="Tìm thành viên...">
+                                <span class="position-absolute top-50 translate-middle-y start-0 ms-3 text-secondary"><i
+                                        class="bx bx-search"></i></span>
                             </div>
-                            
+
                             <!-- Zoom Controls -->
                             <div class="btn-group shadow-sm radius-30 overflow-hidden border">
-                                <button class="btn btn-white px-3" @click="zoomOut" title="Thu nhỏ"><i class="bx bx-minus"></i></button>
-                                <button class="btn btn-white px-2 fw-bold" style="min-width: 60px;">{{ Math.round(zoom * 100) }}%</button>
-                                <button class="btn btn-white px-3" @click="zoomIn" title="Phóng to"><i class="bx bx-plus"></i></button>
-                                <button class="btn btn-white px-3" @click="resetView" title="Đặt lại"><i class="bx bx-refresh"></i></button>
+                                <button class="btn btn-white px-3" @click="zoomOut" title="Thu nhỏ"><i
+                                        class="bx bx-minus"></i></button>
+                                <button class="btn btn-white px-2 fw-bold" style="min-width: 60px;">{{ Math.round(zoom *
+                                    100) }}%</button>
+                                <button class="btn btn-white px-3" @click="zoomIn" title="Phóng to"><i
+                                        class="bx bx-plus"></i></button>
+                                <button class="btn btn-white px-3" @click="resetView" title="Đặt lại"><i
+                                        class="bx bx-refresh"></i></button>
                             </div>
 
                             <button class="btn btn-primary radius-30 px-4 shadow-sm" @click="openAddModal">
@@ -39,27 +49,16 @@
                 </div>
                 <div class="card-body p-0 position-relative">
                     <!-- Pan & Zoom Tree Container -->
-                    <div class="tree-viewport" 
-                         ref="viewport"
-                         @wheel.prevent="handleWheel"
-                         @mousedown="startPan"
-                         @mousemove="doPan"
-                         @mouseup="endPan"
-                         @mouseleave="endPan"
-                         :style="{ cursor: isPanning ? 'grabbing' : 'grab' }">
-                        
+                    <div class="tree-viewport" ref="viewport" @wheel.prevent="handleWheel" @mousedown="startPan"
+                        @mousemove="doPan" @mouseup="endPan" @mouseleave="endPan"
+                        :style="{ cursor: isPanning ? 'grabbing' : 'grab' }">
+
                         <div class="tree-canvas" :style="canvasStyle">
                             <div class="tree" v-if="treeData.length">
                                 <ul>
-                                    <TreeItem 
-                                        v-for="member in treeData" 
-                                        :key="member.id" 
-                                        :member="member" 
-                                        :listDoiTocHo="listDoiTocHo"
-                                        :searchQuery="searchQuery"
-                                        @edit="onEdit"
-                                        @show-qr="showQRCard"
-                                    />
+                                    <TreeItem v-for="member in treeData" :key="member.id" :member="member"
+                                        :listDoiTocHo="listDoiTocHo" :searchQuery="searchQuery" @select="onEdit"
+                                        @show-qr="showQRCard" />
                                 </ul>
                             </div>
                             <div v-else class="text-center py-5 mt-5">
@@ -68,185 +67,257 @@
                                 </div>
                                 <h5 class="text-muted">Chưa có dữ liệu thành viên cho nhánh này</h5>
                                 <p class="text-muted small">Hãy kiểm tra bộ lọc hoặc bắt đầu thêm thành viên.</p>
-                                <button class="btn btn-outline-primary btn-sm radius-30 px-4 mt-2" @click="openAddModal">Thêm ngay</button>
+                                <button class="btn btn-outline-primary btn-sm radius-30 px-4 mt-2"
+                                    @click="openAddModal">Thêm ngay</button>
                             </div>
                         </div>
                     </div>
 
                     <!-- Mini Map or Navigation Hint -->
-                    <div class="view-controls position-absolute bottom-0 end-0 m-3 p-2 bg-white bg-opacity-75 rounded-3 shadow-sm border small text-muted d-none d-md-block">
-                        <i class="bx bx-mouse ms-1"></i> Cuộn để thu phóng • <i class="bx bx-move ms-1"></i> Kéo để di chuyển
+                    <div
+                        class="view-controls position-absolute bottom-0 end-0 m-3 p-2 bg-white bg-opacity-75 rounded-3 shadow-sm border small text-muted d-none d-md-block">
+                        <i class="bx bx-mouse ms-1"></i> Cuộn để thu phóng • <i class="bx bx-move ms-1"></i> Kéo để di
+                        chuyển
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Modal Thêm/Sửa Thành Viên (Giữ logic cũ của Admin) -->
-        <div class="modal fade" id="memberModal" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-lg modal-dialog-centered">
-                <div class="modal-content radius-15 shadow-lg border-0">
-                    <div class="modal-header border-0 text-white radius-top-15" :class="isEditing ? 'bg-warning text-dark' : 'bg-primary'">
-                        <h5 class="modal-title fw-bold">
-                            {{ isEditing ? 'Chỉnh Sửa Thông Tin' : 'Thêm Thành Viên Mới' }}
-                        </h5>
-                        <button type="button" class="btn-close" :class="!isEditing ? 'btn-close-white' : ''" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body p-4">
-                        <div class="row g-4">
-                            <div class="col-md-12 text-center mb-1">
-                                <div class="position-relative d-inline-block">
-                                    <img :src="avatarPreview || currentMember.avatar || ('https://ui-avatars.com/api/?name=' + (currentMember.ho_ten || 'A') + '&background=d4af37&color=fff')" class="rounded-circle border border-3 border-warning" alt="Avatar" width="100" height="100" style="object-fit: cover;">
-                                    <label for="member-avatar-upload" class="btn btn-sm btn-warning rounded-circle position-absolute bottom-0 end-0 shadow-sm" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer;" title="Chọn ảnh">
-                                        <i class="bx bx-camera text-dark"></i>
+        <teleport to="body">
+            <div class="modal fade" id="memberModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-xl modal-dialog-centered member-modal">
+                    <div class="modal-content border-0 shadow-lg">
+                        <div class="modal-header member-header"
+                            :class="isEditing ? 'bg-warning text-dark' : 'bg-primary text-white'">
+
+                            <h4 class="modal-title fw-bold">
+                                {{ isEditing ? 'Chỉnh Sửa Thông Tin' : 'Thêm Thành Viên Mới' }}
+                            </h4>
+                            <button type="button" class="btn-close" :class="!isEditing ? 'btn-close-white' : ''"
+                                data-bs-dismiss="modal">
+                            </button>
+                        </div>
+                        <div class="modal-body p-5">
+                            <div class="row g-4">
+                                <div class="col-12 text-center mb-2">
+                                    <div class="avatar-wrapper">
+                                        <img :src="avatarPreview || currentMember.avatar || ('https://ui-avatars.com/api/?name=' + (currentMember.ho_ten || 'A') + '&background=d4af37&color=fff')"
+                                            class="member-avatar">
+                                        <label for="member-avatar-upload" class="avatar-camera-btn">
+                                            <i class="bx bx-camera"></i>
+                                        </label>
+                                        <input type="file" id="member-avatar-upload" class="d-none" accept="image/*"
+                                            @change="onAvatarChange">
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <label class="member-label">
+                                        Thuộc Dòng Họ
                                     </label>
-                                    <input type="file" id="member-avatar-upload" @change="onAvatarChange" class="d-none" accept="image/*">
+                                    <select class="form-select member-input" v-model="currentMember.chi_nhanh_id">
+                                        <option :value="null">
+                                            -- Không xác định --
+                                        </option>
+                                        <option v-for="cn in listChiNhanh" :key="cn.id" :value="cn.id">
+                                            {{ cn.ten_chi }}
+                                        </option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="member-label">
+                                        Họ và Tên
+                                    </label>
+                                    <input type="text" class="form-control member-input" v-model="currentMember.ho_ten">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="member-label">
+                                        Giới tính
+                                    </label>
+                                    <select class="form-select member-input" v-model="currentMember.gioi_tinh">
+                                        <option value="Nam">Nam</option>
+                                        <option value="Nữ">Nữ</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="member-label">
+                                        Đời thứ
+                                    </label>
+                                    <select class="form-select member-input" v-model="currentMember.doi_thu">
+                                        <option v-for="doi in listDoiTocHo" :key="doi.id" :value="doi.so_doi">
+                                            Đời {{ doi.so_doi }} - {{ doi.ten_doi }}
+                                        </option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="member-label">
+                                        Ngày sinh
+                                    </label>
+                                    <input type="date" class="form-control member-input"
+                                        v-model="currentMember.ngay_sinh">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="member-label d-block">
+                                        Trạng thái
+                                    </label>
+                                    <div class="d-flex align-items-center gap-4 pt-2">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" value="Còn sống"
+                                                v-model="currentMember.trang_thai" id="status1">
+                                            <label class="form-check-label" for="status1">
+                                                Còn sống
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" value="Đã mất"
+                                                v-model="currentMember.trang_thai" id="status2">
+                                            <label class="form-check-label" for="status2">
+                                                Đã mất
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6" v-if="currentMember.trang_thai === 'Đã mất'">
+
+                                    <label class="member-label">
+                                        Ngày mất
+                                    </label>
+                                    <input type="date" class="form-control member-input"
+                                        v-model="currentMember.ngay_mat">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="member-label">
+                                        Quan hệ với dòng họ
+                                    </label>
+                                    <select class="form-select member-input" v-model="currentMember.loai_quan_he">
+                                        <option value="Chính">
+                                            Thành viên chính (Con cháu)
+                                        </option>
+                                        <option value="Vợ/Chồng">
+                                            Người phối ngẫu (Vợ/Chồng)
+                                        </option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6" v-if="currentMember.loai_quan_he === 'Chính'">
+
+                                    <label class="member-label">
+                                        Con của ông (Cha)
+                                    </label>
+                                    <select class="form-select member-input" v-model="currentMember.cha_id">
+                                        <option :value="null">
+                                            --- Thủy Tổ ---
+                                        </option>
+                                        <option v-for="m in allMembers" :key="m.id" :value="m.id"
+                                            v-show="m.id !== currentMember.id && m.loai_quan_he === 'Chính' && m.chi_nhanh_id === currentMember.chi_nhanh_id">
+
+                                            {{ m.ho_ten }} (Đời {{ m.doi_thu }})
+                                        </option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6" v-if="currentMember.loai_quan_he === 'Vợ/Chồng'">
+                                    <label class="member-label">
+                                        Là Vợ/Chồng của ai?
+                                    </label>
+                                    <select class="form-select member-input" v-model="currentMember.spouse_of_id">
+                                        <option v-for="m in allMembers" :key="m.id" :value="m.id">
+                                            {{ m.ho_ten }}
+                                        </option>
+                                    </select>
+                                </div>
+                                <div class="col-12">
+                                    <label class="member-label">
+                                        Ghi chú
+                                    </label>
+                                    <textarea class="form-control member-input" rows="3"
+                                        v-model="currentMember.ghi_chu">
+                            </textarea>
                                 </div>
                             </div>
-                            <div class="col-md-12">
-                                <label class="form-label fw-bold">Thuộc Dòng Họ</label>
-                                <select class="form-select radius-8 border-2 shadow-none" v-model="currentMember.chi_nhanh_id">
-                                    <option :value="null">-- Không xác định --</option>
-                                    <option v-for="cn in listChiNhanh" :key="cn.id" :value="cn.id">{{ cn.ten_chi }}</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold">Họ và Tên</label>
-                                <input type="text" class="form-control radius-8 border-2 shadow-none" v-model="currentMember.ho_ten">
-                            </div>
-                            <div class="col-md-3">
-                                <label class="form-label fw-bold">Giới tính</label>
-                                <select class="form-select radius-8 border-2 shadow-none" v-model="currentMember.gioi_tinh">
-                                    <option value="Nam">Nam</option>
-                                    <option value="Nữ">Nữ</option>
-                                </select>
-                            </div>
-                            <div class="col-md-3">
-                                <label class="form-label fw-bold">Đời thứ</label>
-                                <select class="form-select radius-8 border-2 shadow-none" v-model="currentMember.doi_thu">
-                                    <option v-for="doi in listDoiTocHo" :key="doi.id" :value="doi.so_doi">
-                                        Đời {{ doi.so_doi }} - {{ doi.ten_doi }}
-                                    </option>
-                                </select>
-                            </div>
-
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold">Ngày sinh</label>
-                                <input type="date" class="form-control radius-8 border-2 shadow-none" v-model="currentMember.ngay_sinh">
-                            </div>
-
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold">Trạng thái</label>
-                                <div class="d-flex gap-3 pt-1">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" value="Còn sống" v-model="currentMember.trang_thai" id="status1">
-                                        <label class="form-check-label" for="status1">Còn sống</label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" value="Đã mất" v-model="currentMember.trang_thai" id="status2">
-                                        <label class="form-check-label" for="status2">Đã mất</label>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6" v-if="currentMember.trang_thai === 'Đã mất'">
-                                <label class="form-label fw-bold">Ngày mất</label>
-                                <input type="date" class="form-control radius-8 border-2 shadow-none" v-model="currentMember.ngay_mat">
-                            </div>
-
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold">Quan hệ với dòng họ</label>
-                                <select class="form-select radius-8 border-2 shadow-none" v-model="currentMember.loai_quan_he">
-                                    <option value="Chính">Thành viên chính (Con cháu)</option>
-                                    <option value="Vợ/Chồng">Người phối ngẫu (Vợ/Chồng)</option>
-                                </select>
-                            </div>
-
-                            <div class="col-md-6" v-if="currentMember.loai_quan_he === 'Chính'">
-                                <label class="form-label fw-bold">Con của ông (Cha)</label>
-                                <select class="form-select radius-8 border-2 shadow-none" v-model="currentMember.cha_id">
-                                    <option :value="null">--- Thủy Tổ ---</option>
-                                    <option v-for="m in allMembers" :key="m.id" :value="m.id" 
-                                        v-show="m.id !== currentMember.id && m.loai_quan_he === 'Chính' && m.chi_nhanh_id === currentMember.chi_nhanh_id">
-                                        {{ m.ho_ten }} (Đời {{ m.doi_thu }})
-                                    </option>
-                                </select>
-                            </div>
-
-                            <div class="col-md-6" v-if="currentMember.loai_quan_he === 'Vợ/Chồng'">
-                                <label class="form-label fw-bold">Là Vợ/Chồng của ai?</label>
-                                <select class="form-select radius-8 border-2 shadow-none" v-model="currentMember.spouse_of_id">
-                                    <option v-for="m in allMembers" :key="m.id" :value="m.id" 
-                                        v-show="m.loai_quan_he === 'Chính' && m.chi_nhanh_id === currentMember.chi_nhanh_id">
-                                        {{ m.ho_ten }}
-                                    </option>
-                                </select>
-                            </div>
-                            
-                            <div class="col-md-12">
-                                <label class="form-label fw-bold">Ghi chú</label>
-                                <textarea class="form-control radius-8 border-2 shadow-none" rows="2" v-model="currentMember.ghi_chu"></textarea>
+                        </div>
+                        <div class="modal-footer border-0 px-5 pb-4">
+                            <div class="ms-auto d-flex gap-3">
+                                <button v-if="isEditing" type="button" class="btn btn-light member-btn"
+                                    @click="showQRCardFromModal">
+                                    Xem Mã QR
+                                </button>
+                                <button type="button" class="btn btn-light member-btn" data-bs-dismiss="modal">
+                                    Hủy bỏ
+                                </button>
+                                <button type="button" class="btn btn-primary member-btn-save"
+                                    :class="isEditing ? 'btn-warning text-dark border-0' : ''" @click="saveMember">
+                                    {{ isEditing ? 'Cập Nhật' : 'Lưu Lại' }}
+                                </button>
                             </div>
                         </div>
                     </div>
-                    <div class="modal-footer border-0 p-4 pt-0">
-                        <button v-if="isEditing" type="button" class="btn btn-outline-danger me-auto radius-8 px-3" @click="handleDelete">Xóa</button>
-                        <button v-if="isEditing" type="button" class="btn btn-modern-cancel px-4" @click="showQRCardFromModal">Xem Mã QR</button>
-                        <button type="button" class="btn btn-modern-cancel px-4" data-bs-dismiss="modal">Hủy bỏ</button>
-                        <button type="button" class="btn btn-modern-save px-4 fw-bold" :class="isEditing ? 'btn-warn' : 'btn-save'" @click="saveMember">
-                            {{ isEditing ? 'Cập Nhật' : 'Lưu Lại' }}
+                </div>
+            </div>
+        </teleport>
+        <teleport to="body">
+            <div v-if="showQRModal" class="custom-modal-backdrop animate__animated animate__fadeIn"
+                @click.self="closeQRModal">
+                <div class="custom-modal-content animate__animated animate__zoomIn p-4 rounded-4 shadow-2xl bg-white position-relative text-center"
+                    style="max-width: 420px; z-index: 1060;">
+                    <button class="btn-close-custom position-absolute top-0 end-0 m-3 border-0 bg-transparent"
+                        @click="closeQRModal">
+                        <i class="bx bx-x fs-2 text-muted"></i>
+                    </button>
+
+                    <h5 class="fw-bold mb-3 text-dark">Mã QR Thành Viên</h5>
+                    <div id="qr-card-print"
+                        class="qr-card-container p-4 rounded-3 border border-3 border-gold bg-royal shadow-sm mb-4 position-relative overflow-hidden">
+                        <div class="card-watermark"></div>
+                        <div class="card-header-royal mb-3 border-bottom border-light-gold pb-2">
+                            <div class="fw-extrabold text-gold tracking-widest font-13 text-uppercase"
+                                style="color: #d4af37 !important;">Hệ Thống Gia Phả Số</div>
+                            <div class="text-white-50 font-9 text-uppercase tracking-wider">Thẻ Nhận Diện Thành Viên
+                            </div>
+                        </div>
+
+                        <div class="d-flex align-items-center gap-3 mb-3 text-start">
+                            <img :src="activeMember.avatar || ('https://ui-avatars.com/api/?name=' + activeMember.ho_ten + '&background=d4af37&color=fff')"
+                                class="rounded-circle border border-2 border-gold shadow-sm" width="55" height="55"
+                                style="object-fit: cover;">
+                            <div class="overflow-hidden">
+                                <h5 class="fw-extrabold text-white mb-0 text-truncate drop-shadow"
+                                    style="color: white !important;">{{ activeMember.ho_ten }}</h5>
+                                <div class="d-flex gap-1.5 mt-1 flex-wrap">
+                                    <span class="badge badge-gold-soft font-9 px-2 py-0.5"
+                                        style="background: rgba(212, 175, 55, 0.15) !important; color: #ffd891 !important; border: 1px solid rgba(212, 175, 55, 0.25);">Đời
+                                        {{ activeMember.doi_thu }}</span>
+                                    <span class="badge badge-gold-soft font-9 px-2 py-0.5"
+                                        style="background: rgba(212, 175, 55, 0.15) !important; color: #ffd891 !important; border: 1px solid rgba(212, 175, 55, 0.25);">{{
+                                            activeMember.gioi_tinh }}</span>
+                                    <span class="badge badge-gold-soft font-9 px-2 py-0.5"
+                                        style="background: rgba(212, 175, 55, 0.15) !important; color: #ffd891 !important; border: 1px solid rgba(212, 175, 55, 0.25);">{{
+                                            activeMember.trang_thai }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div
+                            class="qr-frame-royal bg-white p-3 rounded-3 shadow-md d-inline-block position-relative border border-2 border-gold">
+                            <img :src="'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + encodeURIComponent(getMemberQRUrl(activeMember))"
+                                class="img-fluid" width="180" height="180" alt="QR Code">
+                        </div>
+
+                        <p class="text-white-50 font-10 mt-3 mb-0 italic">Quét mã để truy cập tiểu sử & xem mối quan hệ
+                            dòng
+                            tộc</p>
+                    </div>
+
+                    <div class="d-flex gap-3">
+                        <button class="btn btn-outline-secondary w-50 py-2 rounded-pill fw-bold" @click="printQRCard">
+                            <i class="bx bx-printer me-1"></i> In Thẻ QR
+                        </button>
+                        <button class="btn btn-gold w-50 py-2 rounded-pill fw-bold text-dark shadow-sm"
+                            @click="downloadQRCard"
+                            style="background: #d4af37 !important; border-color: #d4af37 !important; font-weight: bold;">
+                            <i class="bx bx-download me-1"></i> Tải Thẻ Về
                         </button>
                     </div>
                 </div>
             </div>
-        </div>
-
-        <!-- Vue QR Card Modal -->
-        <div v-if="showQRModal" class="custom-modal-backdrop animate__animated animate__fadeIn" @click.self="closeQRModal">
-            <div class="custom-modal-content animate__animated animate__zoomIn p-4 rounded-4 shadow-2xl bg-white position-relative text-center" style="max-width: 420px; z-index: 1060;">
-                <button class="btn-close-custom position-absolute top-0 end-0 m-3 border-0 bg-transparent" @click="closeQRModal">
-                    <i class="bx bx-x fs-2 text-muted"></i>
-                </button>
-                
-                <h5 class="fw-bold mb-3 text-dark">Mã QR Thành Viên</h5>
-
-                <!-- QR Card Canvas container (for printing / visual preview) -->
-                <div id="qr-card-print" class="qr-card-container p-4 rounded-3 border border-3 border-gold bg-royal shadow-sm mb-4 position-relative overflow-hidden">
-                    <div class="card-watermark"></div>
-                    <div class="card-header-royal mb-3 border-bottom border-light-gold pb-2">
-                        <div class="fw-extrabold text-gold tracking-widest font-13 text-uppercase" style="color: #d4af37 !important;">Hệ Thống Gia Phả Số</div>
-                        <div class="text-white-50 font-9 text-uppercase tracking-wider">Thẻ Nhận Diện Thành Viên</div>
-                    </div>
-                    
-                    <div class="d-flex align-items-center gap-3 mb-3 text-start">
-                        <img :src="activeMember.avatar || ('https://ui-avatars.com/api/?name=' + activeMember.ho_ten + '&background=d4af37&color=fff')" class="rounded-circle border border-2 border-gold shadow-sm" width="55" height="55" style="object-fit: cover;">
-                        <div class="overflow-hidden">
-                            <h5 class="fw-extrabold text-white mb-0 text-truncate drop-shadow" style="color: white !important;">{{ activeMember.ho_ten }}</h5>
-                            <div class="d-flex gap-1.5 mt-1 flex-wrap">
-                                <span class="badge badge-gold-soft font-9 px-2 py-0.5" style="background: rgba(212, 175, 55, 0.15) !important; color: #ffd891 !important; border: 1px solid rgba(212, 175, 55, 0.25);">Đời {{ activeMember.doi_thu }}</span>
-                                <span class="badge badge-gold-soft font-9 px-2 py-0.5" style="background: rgba(212, 175, 55, 0.15) !important; color: #ffd891 !important; border: 1px solid rgba(212, 175, 55, 0.25);">{{ activeMember.gioi_tinh }}</span>
-                                <span class="badge badge-gold-soft font-9 px-2 py-0.5" style="background: rgba(212, 175, 55, 0.15) !important; color: #ffd891 !important; border: 1px solid rgba(212, 175, 55, 0.25);">{{ activeMember.trang_thai }}</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- QR Frame -->
-                    <div class="qr-frame-royal bg-white p-3 rounded-3 shadow-md d-inline-block position-relative border border-2 border-gold">
-                        <img :src="'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + encodeURIComponent(getMemberQRUrl(activeMember))" class="img-fluid" width="180" height="180" alt="QR Code">
-                    </div>
-                    
-                    <p class="text-white-50 font-10 mt-3 mb-0 italic">Quét mã để truy cập tiểu sử & xem mối quan hệ dòng tộc</p>
-                </div>
-
-                <!-- Control Buttons -->
-                <div class="d-flex gap-3">
-                    <button class="btn btn-outline-secondary w-50 py-2 rounded-pill fw-bold" @click="printQRCard">
-                        <i class="bx bx-printer me-1"></i> In Thẻ QR
-                    </button>
-                    <button class="btn btn-gold w-50 py-2 rounded-pill fw-bold text-dark shadow-sm" @click="downloadQRCard" style="background: #d4af37 !important; border-color: #d4af37 !important; font-weight: bold;">
-                        <i class="bx bx-download me-1"></i> Tải Thẻ Về
-                    </button>
-                </div>
-            </div>
-        </div>
+        </teleport>
     </div>
 </template>
 
@@ -258,7 +329,7 @@ import toastr from 'toastr';
 const TreeItem = defineComponent({
     name: 'TreeItem',
     props: ['member', 'listDoiTocHo', 'searchQuery'],
-    emits: ['edit', 'show-qr'],
+    emits: ['select', 'show-qr'],
     data() {
         return {
             clickTimeout: null,
@@ -281,17 +352,17 @@ const TreeItem = defineComponent({
 
         if (this.member.isDummy) {
             const nodeGroup = h('div', { class: 'tree-node-group' }, [
-                h('div', { 
+                h('div', {
                     class: 'tree-dummy-node',
                     style: 'width: 2px; height: 100px; background-color: #ddd; margin: 0 auto;'
                 })
             ]);
-            const children = hasChildren ? h('ul', 
-                this.member.children.map(child => h(TreeItem, { 
-                    member: child, 
-                    listDoiTocHo: this.listDoiTocHo, 
+            const children = hasChildren ? h('ul',
+                this.member.children.map(child => h(TreeItem, {
+                    member: child,
+                    listDoiTocHo: this.listDoiTocHo,
                     searchQuery: this.searchQuery,
-                    onEdit: (m) => this.$emit('edit', m),
+                    onSelect: (m) => this.$emit('select', m),
                     onShowQr: (m) => this.$emit('show-qr', m)
                 }))
             ) : null;
@@ -300,11 +371,11 @@ const TreeItem = defineComponent({
 
         const generationClass = `gen-${(this.member.doi_thu % 5) + 1}`;
         const isHighlighted = this.searchQuery && this.member.ho_ten.toLowerCase().includes(this.searchQuery.toLowerCase());
-        
+
         const nodeGroup = h('div', { class: 'tree-node-group' }, [
-            h('div', { 
-                class: ['tree-node-card', generationClass, { 
-                    'principal': !this.member.cha_id, 
+            h('div', {
+                class: ['tree-node-card', generationClass, {
+                    'principal': !this.member.cha_id,
                     'is-dead': this.member.trang_thai === 'Đã mất',
                     'highlighted': isHighlighted
                 }],
@@ -314,7 +385,7 @@ const TreeItem = defineComponent({
                     this.isDoubleClick = false;
                     this.clickTimeout = setTimeout(() => {
                         if (!this.isDoubleClick) {
-                            this.$emit('edit', this.member);
+                            this.$emit('select', this.member);
                         }
                     }, 200);
                 },
@@ -326,8 +397,8 @@ const TreeItem = defineComponent({
                 }
             }, [
                 h('div', { class: 'node-avatar-container' }, [
-                    h('img', { 
-                        src: this.member.avatar ? this.member.avatar : ('https://ui-avatars.com/api/?name=' + this.member.ho_ten + '&background=d4af37&color=fff'), 
+                    h('img', {
+                        src: this.member.avatar ? this.member.avatar : ('https://ui-avatars.com/api/?name=' + this.member.ho_ten + '&background=d4af37&color=fff'),
                         class: 'node-avatar shadow-sm'
                     })
                 ]),
@@ -344,8 +415,8 @@ const TreeItem = defineComponent({
                 const isSpouseHighlighted = this.searchQuery && spouse.ho_ten.toLowerCase().includes(this.searchQuery.toLowerCase());
                 return [
                     h('div', { class: 'tree-connector-h' }),
-                    h('div', { 
-                        class: ['tree-node-card spouse', { 
+                    h('div', {
+                        class: ['tree-node-card spouse', {
                             'is-dead': spouse.trang_thai === 'Đã mất',
                             'highlighted': isSpouseHighlighted
                         }],
@@ -355,7 +426,7 @@ const TreeItem = defineComponent({
                             this.isDoubleClick = false;
                             this.clickTimeout = setTimeout(() => {
                                 if (!this.isDoubleClick) {
-                                    this.$emit('edit', spouse);
+                                    this.$emit('select', spouse);
                                 }
                             }, 200);
                         },
@@ -367,8 +438,8 @@ const TreeItem = defineComponent({
                         }
                     }, [
                         h('div', { class: 'node-avatar-container' }, [
-                            h('img', { 
-                                src: spouse.avatar ? spouse.avatar : ('https://ui-avatars.com/api/?name=' + spouse.ho_ten + '&background=d4af37&color=fff'), 
+                            h('img', {
+                                src: spouse.avatar ? spouse.avatar : ('https://ui-avatars.com/api/?name=' + spouse.ho_ten + '&background=d4af37&color=fff'),
                                 class: 'node-avatar shadow-sm'
                             })
                         ]),
@@ -383,17 +454,17 @@ const TreeItem = defineComponent({
                 ];
             }) : null
         ]);
-        
-        const children = hasChildren ? h('ul', 
-            this.member.children.map(child => h(TreeItem, { 
-                member: child, 
-                listDoiTocHo: this.listDoiTocHo, 
+
+        const children = hasChildren ? h('ul',
+            this.member.children.map(child => h(TreeItem, {
+                member: child,
+                listDoiTocHo: this.listDoiTocHo,
                 searchQuery: this.searchQuery,
-                onEdit: (m) => this.$emit('edit', m),
+                onSelect: (m) => this.$emit('select', m),
                 onShowQr: (m) => this.$emit('show-qr', m)
             }))
         ) : null;
-        
+
         return h('li', [nodeGroup, children]);
     }
 });
@@ -417,7 +488,7 @@ export default {
             searchQuery: '',
             showQRModal: false,
             activeMember: {},
-            
+
             // Zoom & Pan state
             zoom: 1,
             posX: 0,
@@ -430,19 +501,19 @@ export default {
     computed: {
         treeData() {
             let list = JSON.parse(JSON.stringify(this.allMembers));
-            
+
             // Branch filtering
             if (this.selectedChiNhanh) {
-                list = list.filter(item => 
-                    item.chi_nhanh_id == this.selectedChiNhanh || 
+                list = list.filter(item =>
+                    item.chi_nhanh_id == this.selectedChiNhanh ||
                     (item.loai_quan_he === 'Vợ/Chồng')
                 );
             }
-            
+
             const map = {};
             const roots = [];
             list.forEach(item => { map[item.id] = item; item.children = []; item.spouses = []; });
-            
+
             // Helper for creating dummy nodes for skipped generations
             const getDummyNode = (parentId, doi_thu) => {
                 let dummyId = 'dummy_' + parentId + '_' + doi_thu;
@@ -558,10 +629,10 @@ export default {
             if (file) { this.avatarFile = file; this.avatarPreview = URL.createObjectURL(file); }
         },
         saveMember() {
-            const url = this.isEditing 
-                ? 'http://127.0.0.1:8000/api/thanh-vien/update' 
+            const url = this.isEditing
+                ? 'http://127.0.0.1:8000/api/thanh-vien/update'
                 : 'http://127.0.0.1:8000/api/thanh-vien/create';
-            
+
             const formData = new FormData();
             for (let key in this.currentMember) {
                 if (this.currentMember[key] !== null && this.currentMember[key] !== undefined) {
@@ -569,20 +640,20 @@ export default {
                 }
             }
             if (this.avatarFile) formData.set('avatar', this.avatarFile);
-            
-            axios.post(url, formData, { 
-                headers: { 
+
+            axios.post(url, formData, {
+                headers: {
                     'Content-Type': 'multipart/form-data',
                     'Authorization': `Bearer ${localStorage.getItem('access_token')}`
-                } 
+                }
             })
-            .then(res => {
-                if (res.data.status) {
-                    toastr.success(res.data.message);
-                    this.loadData();
-                    this.modal.hide();
-                } else { toastr.error(res.data.message); }
-            });
+                .then(res => {
+                    if (res.data.status) {
+                        toastr.success(res.data.message);
+                        this.loadData();
+                        this.modal.hide();
+                    } else { toastr.error(res.data.message); }
+                });
         },
         handleDelete() {
             if (confirm('Xóa thành viên này?')) {
@@ -739,41 +810,95 @@ export default {
     min-width: 100%;
 }
 
-.tree, .tree ul, .tree li {
+.tree,
+.tree ul,
+.tree li {
     position: relative;
     transition: all 0.3s;
 }
 
-.tree ul { 
-    padding-top: 50px; 
-    display: flex !important; 
+.tree ul {
+    padding-top: 50px;
+    display: flex !important;
     flex-direction: row !important;
     flex-wrap: nowrap !important;
-    justify-content: center; 
-    padding-left: 0; 
-    margin-bottom: 0; 
+    justify-content: center;
+    padding-left: 0;
+    margin-bottom: 0;
 }
 
-.tree li { 
-    text-align: center; 
-    list-style-type: none; 
-    padding: 50px 10px 0 10px; 
+.tree li {
+    text-align: center;
+    list-style-type: none;
+    padding: 50px 10px 0 10px;
     flex: 0 0 auto !important;
 }
 
 /* Connecting Lines */
-.tree li::before, .tree li::after { content: ''; position: absolute; top: 0; right: 50%; border-top: 2px solid #ddd; width: 50%; height: 50px; }
-.tree li::after { right: auto; left: 50%; border-left: 2px solid #ddd; }
-.tree li:only-child::after, .tree li:only-child::before { display: none; }
-.tree li:only-child { padding-top: 0; }
-.tree li:first-child::before, .tree li:last-child::after { border: 0 none; }
-.tree li:last-child::before { border-right: 2px solid #ddd; border-radius: 0 10px 0 0; }
-.tree li:first-child::after { border-radius: 10px 0 0 0; }
-.tree ul ul::before { content: ''; position: absolute; top: 0; left: 50%; border-left: 2px solid #ddd; width: 0; height: 50px; }
+.tree li::before,
+.tree li::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 50%;
+    border-top: 2px solid #ddd;
+    width: 50%;
+    height: 50px;
+}
+
+.tree li::after {
+    right: auto;
+    left: 50%;
+    border-left: 2px solid #ddd;
+}
+
+.tree li:only-child::after,
+.tree li:only-child::before {
+    display: none;
+}
+
+.tree li:only-child {
+    padding-top: 0;
+}
+
+.tree li:first-child::before,
+.tree li:last-child::after {
+    border: 0 none;
+}
+
+.tree li:last-child::before {
+    border-right: 2px solid #ddd;
+    border-radius: 0 10px 0 0;
+}
+
+.tree li:first-child::after {
+    border-radius: 10px 0 0 0;
+}
+
+.tree ul ul::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    border-left: 2px solid #ddd;
+    width: 0;
+    height: 50px;
+}
 
 /* Node Styling */
-.tree-node-group { display: inline-flex; align-items: center; justify-content: center; position: relative; z-index: 10; }
-.tree-connector-h { width: 30px; height: 2px; background: #ddd; }
+.tree-node-group {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 10;
+}
+
+.tree-connector-h {
+    width: 30px;
+    height: 2px;
+    background: #ddd;
+}
 
 .tree-node-card {
     background: #fff;
@@ -781,7 +906,7 @@ export default {
     padding: 10px;
     border-radius: 15px;
     min-width: 200px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
     cursor: pointer;
     position: relative;
     display: flex;
@@ -794,7 +919,7 @@ export default {
 
 .tree-node-card:hover {
     transform: translateY(-8px) scale(1.05);
-    box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
     z-index: 100;
 }
 
@@ -805,17 +930,44 @@ export default {
 }
 
 @keyframes pulse-border {
-    0% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.4); }
-    70% { box-shadow: 0 0 0 15px rgba(255, 193, 7, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0); }
+    0% {
+        box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.4);
+    }
+
+    70% {
+        box-shadow: 0 0 0 15px rgba(255, 193, 7, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(255, 193, 7, 0);
+    }
 }
 
 /* Generation Colors */
-.gen-1 { border-color: #4285f4; border-left-width: 6px; }
-.gen-2 { border-color: #34a853; border-left-width: 6px; }
-.gen-3 { border-color: #fbbc05; border-left-width: 6px; }
-.gen-4 { border-color: #ea4335; border-left-width: 6px; }
-.gen-5 { border-color: #a142f4; border-left-width: 6px; }
+.gen-1 {
+    border-color: #4285f4;
+    border-left-width: 6px;
+}
+
+.gen-2 {
+    border-color: #34a853;
+    border-left-width: 6px;
+}
+
+.gen-3 {
+    border-color: #fbbc05;
+    border-left-width: 6px;
+}
+
+.gen-4 {
+    border-color: #ea4335;
+    border-left-width: 6px;
+}
+
+.gen-5 {
+    border-color: #a142f4;
+    border-left-width: 6px;
+}
 
 .tree-node-card.is-dead {
     filter: grayscale(0.8);
@@ -877,7 +1029,7 @@ export default {
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     opacity: 0;
     transition: 0.2s;
     color: #666;
@@ -895,7 +1047,10 @@ export default {
 /* Custom Vue Modal Styling for QR Card */
 .custom-modal-backdrop {
     position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     background-color: rgba(15, 23, 42, 0.6);
     backdrop-filter: blur(8px);
     z-index: 1050;
@@ -904,6 +1059,7 @@ export default {
     justify-content: center;
     padding: 20px;
 }
+
 .custom-modal-content {
     width: 100%;
     max-width: 480px;
@@ -911,45 +1067,56 @@ export default {
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 15px;
 }
+
 .btn-close-custom {
     transition: all 0.2s ease;
 }
+
 .btn-close-custom:hover {
     transform: rotate(90deg);
 }
+
 .border-gold {
     border-color: #d4af37 !important;
 }
+
 .bg-royal {
     background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important;
 }
+
 .qr-card-container {
     color: white !important;
     border-color: #d4af37 !important;
     background-size: cover;
     position: relative;
 }
+
 .card-header-royal {
     border-bottom: 1px solid rgba(212, 175, 55, 0.3) !important;
 }
+
 .badge-gold-soft {
     background: rgba(212, 175, 55, 0.15) !important;
     color: #ffd891 !important;
     border: 1px solid rgba(212, 175, 55, 0.25) !important;
 }
+
 .qr-frame-royal {
     background: white;
 }
+
 .btn-gold {
     background: #d4af37;
     color: #3b2c0c;
     border: none;
     transition: all 0.3s ease;
 }
+
 .btn-gold:hover {
     background: #e5c055;
     transform: translateY(-2px);
 }
+
 .card-watermark {
     position: absolute;
     top: -40px;
@@ -959,7 +1126,71 @@ export default {
     background: radial-gradient(circle, rgba(212, 175, 55, 0.08) 0%, transparent 70%);
     pointer-events: none;
 }
+
 .drop-shadow {
-    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.member-modal {
+    max-width: 850px !important;
+}
+
+.modal-content {
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.member-header {
+    padding: 16px 22px;
+}
+
+.member-header h4 {
+    font-size: 24px;
+}
+
+.modal-body {
+    padding: 28px !important;
+}
+
+.member-label {
+    font-weight: 700;
+    font-size: 14px;
+    margin-bottom: 6px;
+    display: block;
+}
+
+.member-input {
+    border-radius: 8px;
+    min-height: 42px;
+    border: 1.5px solid #d9d9d9;
+    box-shadow: none !important;
+    font-size: 14px;
+}
+
+.member-avatar {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    border: 3px solid #d4af37;
+    object-fit: cover;
+}
+
+.avatar-camera-btn {
+    width: 30px;
+    height: 30px;
+    font-size: 14px;
+}
+
+.member-btn,
+.member-btn-save {
+    min-width: 105px;
+    height: 40px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.modal-footer {
+    padding: 0 28px 24px !important;
 }
 </style>

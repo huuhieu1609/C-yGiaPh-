@@ -22,7 +22,7 @@ class NguoiDungController extends Controller
         } catch (Exception $e) {
             return response()->json([
                 'status' => false,
-                'message' => 'Có lỗi xảy ra: '.$e->getMessage(),
+                'message' => 'Có lỗi xảy ra: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -34,11 +34,11 @@ class NguoiDungController extends Controller
                 'ho_ten' => $request->ho_ten,
                 'email' => $request->email,
                 'so_dien_thoai' => $request->so_dien_thoai,
-                'avatar' => $request->avatar,
-                'vai_tro' => $request->vai_tro,
+                'avatar' => $request->input('avatar', null),
+                'vai_tro' => $request->input('vai_tro', 'Thành viên'),
                 'id_chuc_vu' => $request->id_chuc_vu,
-                'trang_thai' => $request->trang_thai,
-                'is_doi_tac' => $request->is_doi_tac,
+                'trang_thai' => $request->input('trang_thai', 'Hoạt động'),
+                'is_doi_tac' => $request->input('is_doi_tac', 0),
             ];
             if ($request->has('mat_khau') && $request->mat_khau) {
                 $data['mat_khau'] = bcrypt($request->mat_khau);
@@ -47,13 +47,13 @@ class NguoiDungController extends Controller
 
             return response()->json([
                 'status' => true,
-                'message' => 'Thêm người dùng '.$request->ho_ten.' thành công!',
+                'message' => 'Thêm người dùng ' . $request->ho_ten . ' thành công!',
                 'data' => $item,
             ]);
         } catch (Exception $e) {
             return response()->json([
                 'status' => false,
-                'message' => 'Lỗi khi tạo mới: '.$e->getMessage(),
+                'message' => 'Lỗi khi tạo mới: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -66,11 +66,11 @@ class NguoiDungController extends Controller
                 'ho_ten' => $request->ho_ten,
                 'email' => $request->email,
                 'so_dien_thoai' => $request->so_dien_thoai,
-                'avatar' => $request->avatar,
-                'vai_tro' => $request->vai_tro,
+                'avatar' => $request->input('avatar', null),
+                'vai_tro' => $request->input('vai_tro', 'Thành viên'),
                 'id_chuc_vu' => $request->id_chuc_vu,
-                'trang_thai' => $request->trang_thai,
-                'is_doi_tac' => $request->is_doi_tac,
+                'trang_thai' => $request->input('trang_thai', 'Hoạt động'),
+                'is_doi_tac' => $request->input('is_doi_tac', 0),
             ];
             if ($request->has('mat_khau') && $request->mat_khau) {
                 $data['mat_khau'] = bcrypt($request->mat_khau);
@@ -79,13 +79,13 @@ class NguoiDungController extends Controller
 
             return response()->json([
                 'status' => true,
-                'message' => 'Cập nhật người dùng '.$request->ho_ten.' thành công!',
+                'message' => 'Cập nhật người dùng ' . $request->ho_ten . ' thành công!',
                 'data' => $item,
             ]);
         } catch (Exception $e) {
             return response()->json([
                 'status' => false,
-                'message' => 'Lỗi khi cập nhật: '.$e->getMessage(),
+                'message' => 'Lỗi khi cập nhật: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -99,12 +99,12 @@ class NguoiDungController extends Controller
 
             return response()->json([
                 'status' => true,
-                'message' => 'Xóa người dùng '.$ho_ten.' thành công!',
+                'message' => 'Xóa người dùng ' . $ho_ten . ' thành công!',
             ]);
         } catch (Exception $e) {
             return response()->json([
                 'status' => false,
-                'message' => 'Lỗi khi xóa: '.$e->getMessage(),
+                'message' => 'Lỗi khi xóa: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -135,7 +135,7 @@ class NguoiDungController extends Controller
         } catch (Exception $e) {
             return response()->json([
                 'status' => false,
-                'message' => 'Lỗi cập nhật trạng thái: '.$e->getMessage(),
+                'message' => 'Lỗi cập nhật trạng thái: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -144,17 +144,17 @@ class NguoiDungController extends Controller
     {
         try {
             $query = $request->value;
-            $data = NguoiDung::where('ho_ten', 'like', '%'.$query.'%')->get();
+            $data = NguoiDung::where('ho_ten', 'like', '%' . $query . '%')->get();
 
             return response()->json([
                 'status' => true,
-                'message' => 'Tìm thấy '.count($data).' kết quả',
+                'message' => 'Tìm thấy ' . count($data) . ' kết quả',
                 'data' => $data,
             ]);
         } catch (Exception $e) {
             return response()->json([
                 'status' => false,
-                'message' => 'Lỗi khi tìm kiếm: '.$e->getMessage(),
+                'message' => 'Lỗi khi tìm kiếm: ' . $e->getMessage(),
             ], 500);
         }
     }

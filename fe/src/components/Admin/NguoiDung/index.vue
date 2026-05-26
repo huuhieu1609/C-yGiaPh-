@@ -125,8 +125,11 @@ export default {
                 email: '',
                 mat_khau: '',
                 so_dien_thoai: '',
+                avatar: '',
+                vai_tro: 'Thành viên',
                 id_chuc_vu: null,
-                trang_thai: 'Hoạt động'
+                trang_thai: 'Hoạt động',
+                is_doi_tac: 0
             },
             isEditing: false
         }
@@ -191,7 +194,7 @@ export default {
         editItem(item) {
             this.isEditing = true;
             this.formData = { ...item };
-            this.formData.mat_khau = ''; 
+            this.formData.mat_khau = '';
         },
         deleteItem(id) {
             if (confirm('Bạn có chắc chắn muốn xóa?')) {
@@ -229,8 +232,11 @@ export default {
                 email: '',
                 mat_khau: '',
                 so_dien_thoai: '',
+                avatar: '',
+                vai_tro: 'Thành viên',
                 id_chuc_vu: null,
-                trang_thai: 'Hoạt động'
+                trang_thai: 'Hoạt động',
+                is_doi_tac: 0
             };
         }
     }
