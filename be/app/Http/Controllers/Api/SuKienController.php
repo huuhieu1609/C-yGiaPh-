@@ -50,7 +50,6 @@ class SuKienController extends Controller
                 }
             }
 
-            $data = $query->get();
 
             return response()->json([
                 'status'  => true,
