@@ -2,20 +2,24 @@
   <nav class="admin-sidebar shadow" :class="{ 'sidebar-collapsed-state': isCollapsed }">
     <div class="sidebar-bg-layer" aria-hidden="true"></div>
 
-    <div class="sidebar-header p-3 d-flex align-items-center gap-3 position-relative">
-      <div class="brand-icon d-flex align-items-center justify-content-center rounded-circle flex-shrink-0">
-        <div class="brand-inner-circle"></div>
-      </div>
-      <div class="hide-on-collapse logo-wrap">
-        <span class="logo-text fw-bold">Gia Phả</span>
-        <span class="logo-sub text-primary">Hệ Thống</span>
+    <div class="sidebar-header p-3 d-flex align-items-center justify-content-between position-relative">
+      <div class="d-flex align-items-center gap-3">
+        <div class="brand-icon d-flex align-items-center justify-content-center flex-shrink-0">
+          <div class="brand-inner-circle"></div>
+        </div>
+        <div class="hide-on-collapse logo-wrap d-flex flex-column lh-1">
+          <span class="logo-text">Gia Phả</span>
+          <span class="logo-sub mt-1">Hệ Thống</span>
+        </div>
       </div>
     </div>
 
+    <!-- Toggle Collapse Button -->
     <button class="toggle-btn" @click.stop="$emit('toggle-sidebar')" :title="isCollapsed ? 'Mở rộng' : 'Thu gọn'">
       <i class='bx' :class="isCollapsed ? 'bx-chevron-right' : 'bx-chevron-left'"></i>
     </button>
 
+    <!-- User Section -->
     <div class="user-greeting d-flex align-items-center gap-3">
       <div class="avatar flex-shrink-0">
         <span>A</span>
@@ -27,6 +31,23 @@
       </div>
     </div>
 
+    <!-- Dark Mode Toggle Button (Nằm dưới User) -->
+    <div class="theme-toggle-container px-3 mb-2 hide-on-collapse" style="transition: opacity 0.2s;" :style="isCollapsed ? 'opacity: 0; pointer-events: none; height: 0;' : 'opacity: 1;'">
+      <button @click="toggleTheme" class="btn-theme-toggle w-100 d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center gap-2">
+          <i class='bx' :class="isDarkMode ? 'bx-moon' : 'bx-sun'"></i>
+          <span>Chế độ {{ isDarkMode ? 'tối' : 'sáng' }}</span>
+        </div>
+        <div class="theme-status-dot" :class="{ 'dark-active': isDarkMode }"></div>
+      </button>
+    </div>
+    <div class="theme-toggle-container px-2 mb-2 d-none show-on-collapse" :class="{ 'd-block': isCollapsed }">
+      <button @click="toggleTheme" class="btn-theme-toggle w-100 d-flex justify-content-center">
+        <i class='bx fs-5' :class="isDarkMode ? 'bx-moon' : 'bx-sun'"></i>
+      </button>
+    </div>
+
+    <!-- Menu Links -->
     <div class="sidebar-body overflow-auto flex-grow-1">
       <ul class="nav flex-column gap-1">
         
@@ -84,15 +105,13 @@
 
         <li class="section-heading hide-on-collapse">Gói & Thanh Toán</li>
 
-        <li class="nav-item item-partner">
+        <li class="nav-item item-payment">
           <router-link to="/admin/goi-dich-vu" class="nav-link" active-class="active" title="Quản Lý Gói Dịch Vụ">
             <span class="nav-icon"><i class="bx bx-package"></i></span>
             <span class="hide-on-collapse nav-label">Quản Lý Gói Dịch Vụ</span>
             <span class="nav-dot hide-on-collapse"></span>
           </router-link>
         </li>
-
-
 
         <li class="section-heading hide-on-collapse">Hệ Thống & Bảo Mật</li>
 
@@ -131,11 +150,13 @@
       </ul>
     </div>
 
+    <!-- Bottom Actions -->
     <div class="sidebar-footer d-flex flex-column gap-2">
-      <button class="btn-home d-flex align-items-center gap-3" @click="goHome" title="Về Trang Chủ">
+      <button class="btn-home d-flex align-items-center gap-3" @click="goHome" title="Trang Chủ">
         <span class="nav-icon"><i class="bx bx-home"></i></span>
         <span class="hide-on-collapse text-nowrap font-medium">Trang Chủ</span>
       </button>
+      
       <button class="btn-logout d-flex align-items-center justify-content-between" @click="logout" title="Đăng Xuất">
         <div class="d-flex align-items-center gap-3">
           <span class="nav-icon"><i class="bx bx-log-out-circle"></i></span>
@@ -159,19 +180,37 @@ export default {
   emits: ['toggle-sidebar'],
   data() {
     return {
-      userName: 'Quản Trị Viên'
+      userName: 'Quản Trị Viên',
+      isDarkMode: false
     }
   },
   mounted() {
+    // Đọc trạng thái theme đã lưu từ trước
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    this.isDarkMode = savedTheme === 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+
     const userStr = localStorage.getItem('user');
     if (userStr) {
       try {
         const user = JSON.parse(userStr);
-        this.userName = user.ho_ten || user.username || 'Quản Trị Viên';
-      } catch (e) {}
+        if (user && user.ho_ten) {
+          this.userName = user.ho_ten;
+        } else if (user && user.username) {
+          this.userName = user.username;
+        }
+      } catch (e) {
+        console.error("Lỗi parse thông tin user trong Sidebar:", e);
+      }
     }
   },
   methods: {
+    toggleTheme() {
+      this.isDarkMode = !this.isDarkMode;
+      const themeStr = this.isDarkMode ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', themeStr);
+      localStorage.setItem('theme', themeStr);
+    },
     logout() {
       localStorage.removeItem('access_token');
       localStorage.removeItem('user');
@@ -185,10 +224,10 @@ export default {
 </script>
 
 <style scoped>
-/* Đồng bộ biến CSS Premium Light của hệ thống */
 .admin-sidebar {
-  --neo-bg:         #ffffff;
-  --neo-border:     rgba(0, 0, 0, 0.06);
+  --neo-bg:         var(--card-bg, #ffffff);
+  --neo-border:     var(--border-color, rgba(0, 0, 0, 0.05));
+  
   --color-home:      #4f46e5;
   --color-tree:      #db2777;
   --color-members:   #0d9488;
@@ -197,78 +236,149 @@ export default {
   --color-partner:   #06b6d4;
   --color-payment:   #8b5cf6;
   --color-security:  #ef4444;
-  --text-sub:       #6b7280;
-  --transition-smooth: 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+
+  --transition-smooth: 0.35s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 .admin-sidebar {
-  position: sticky;
+  position: fixed !important;
   top: 15px; left: 15px;
   height: calc(100vh - 30px);
-  width: 260px !important;
-  min-width: 260px !important;
-  background: var(--neo-bg) !important;
+  width: 250px !important;
+  min-width: 250px !important;
   display: flex;
   flex-direction: column;
   z-index: 1040;
-  margin: 15px 0 15px 15px;
-  border-radius: 24px;
+  background: var(--neo-bg) !important;
   border: 1px solid var(--neo-border);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-  transition: width var(--transition-smooth), min-width var(--transition-smooth);
+  border-radius: 24px !important;
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.03) !important;
+  transition: width var(--transition-smooth), min-width var(--transition-smooth), background-color 0.3s, border-color 0.3s;
 }
 
-.admin-sidebar.sidebar-collapsed-state { width: 82px !important; min-width: 82px !important; }
-.sidebar-bg-layer { position: absolute; inset: 0; pointer-events: none; overflow: hidden; border-radius: 24px; z-index: 0; }
-.sidebar-bg-layer::before { content: ''; position: absolute; top: -100px; left: -100px; width: 300px; height: 300px; background: radial-gradient(circle, rgba(59, 130, 246, 0.03) 0%, transparent 70%); }
+.admin-sidebar.sidebar-collapsed-state {
+  width: 80px !important;
+  min-width: 80px !important;
+}
+
+.sidebar-bg-layer {
+  position: absolute;
+  inset: 0; pointer-events: none; overflow: hidden; border-radius: 24px; z-index: 0;
+}
+.sidebar-bg-layer::before {
+  content: ''; position: absolute; top: -100px; left: -100px; width: 300px; height: 300px;
+  background: radial-gradient(circle, rgba(79, 70, 229, 0.02) 0%, transparent 70%);
+}
+
 .admin-sidebar > *:not(.sidebar-bg-layer) { position: relative; z-index: 1; }
 .admin-sidebar.sidebar-collapsed-state .hide-on-collapse { display: none !important; }
+.admin-sidebar:not(.sidebar-collapsed-state) .show-on-collapse { display: none !important; }
 
 /* BRAND LOGO */
-.sidebar-header { padding: 24px 20px 16px; border-bottom: 1px solid rgba(0, 0, 0, 0.03); }
-.brand-icon { width: 36px; height: 36px; background: linear-gradient(135deg, #3b82f6, #10b981, #f59e0b); border-radius: 50%; padding: 2px; }
-.brand-inner-circle { width: 100%; height: 100%; background: var(--neo-bg); border-radius: 50%; }
+.sidebar-header { padding: 24px 20px 16px; border-bottom: 1px solid var(--neo-border); }
+.admin-sidebar.sidebar-collapsed-state .sidebar-header { padding: 24px 10px 16px !important; justify-content: center !important; }
+
+.brand-icon {
+  width: 36px; height: 36px;
+  background: linear-gradient(135deg, #4f46e5, #06b6d4, #10b981);
+  border-radius: 50%; padding: 2px;
+}
+.brand-inner-circle { width: 100%; height: 100%; background: var(--neo-bg); border-radius: 50%; transition: background-color 0.3s; }
 .logo-wrap { display: flex; align-items: baseline; gap: 4px; }
-.logo-text { font-size: 19px; color: #111827; font-family: 'Playfair Display', serif; }
-.logo-sub { font-size: 11px; font-weight: 700; letter-spacing: 0.5px; }
+.logo-text { font-size: 19px; color: var(--text-main); font-family: 'Playfair Display', serif; }
+.logo-sub { font-size: 11px; font-weight: 700; color: #06b6d4; letter-spacing: 0.5px; }
 
-/* TOGGLE BUTTON */
-.toggle-btn { position: absolute; left: 100%; top: 32px; transform: translateX(-50%); width: 32px; height: 32px; border-radius: 50%; background: #ffffff; border: 1px solid var(--neo-border); color: var(--text-sub); display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 1055; box-shadow: 0 4px 10px rgba(0,0,0,0.06); transition: all 0.3s ease; }
-.toggle-btn:hover { background: #3b82f6; border-color: transparent; color: #ffffff !important; transform: translateX(-50%) scale(1.12); }
+/* NÚT TOGGLE */
+.toggle-btn {
+  position: absolute; left: 100%; top: 36px; transform: translateX(-50%); 
+  width: 34px !important; height: 34px !important; border-radius: 50% !important;
+  background: var(--neo-bg) !important; border: 1px solid var(--neo-border) !important;
+  color: var(--text-sub) !important; display: flex !important; align-items: center; justify-content: center;
+  cursor: pointer; z-index: 1060; padding: 0; font-size: 18px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important; transition: all 0.25s ease;
+}
+.toggle-btn:hover { background: #4f46e5 !important; border-color: transparent !important; color: #ffffff !important; transform: translateX(-50%) scale(1.08); }
 
-/* GREETING & LINKS */
-.user-greeting { padding: 12px 16px; margin: 12px 16px; background: #fdfdfd; border: 1px solid var(--neo-border); border-radius: 16px; }
+/* USER CARD */
+.user-greeting { padding: 14px 16px; margin: 12px 16px; background: var(--input-bg); border: 1px solid var(--neo-border); border-radius: 18px !important; }
+.admin-sidebar.sidebar-collapsed-state .user-greeting { margin: 12px 6px !important; padding: 12px 4px !important; justify-content: center !important; }
 .avatar { position: relative; width: 36px; height: 36px; }
-.avatar span { position: relative; z-index: 2; width: 36px; height: 36px; border-radius: 50%; background: #f3f4f6; border: 1px solid var(--neo-border); color: #111827; font-weight: 700; display: flex; align-items: center; justify-content: center; }
-.avatar-ring { position: absolute; inset: -2px; border-radius: 50%; background: linear-gradient(135deg, #3b82f6, #10b981) border-box; -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0); -webkit-mask-composite: destination-out; mask-composite: exclude; }
+.avatar span {
+  position: relative; z-index: 2; width: 36px; height: 36px; border-radius: 50%;
+  background: var(--app-bg); border: 1px solid var(--neo-border); color: var(--text-main);
+  font-weight: 700; font-size: 14px; display: flex; align-items: center; justify-content: center;
+}
+.avatar-ring {
+  position: absolute; inset: -2px; border-radius: 50%; border: 1px solid transparent;
+  background: linear-gradient(135deg, #4f46e5, #06b6d4) border-box;
+  -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0); -webkit-mask-composite: destination-out; mask-composite: exclude;
+}
 .greeting-label { font-size: 11px; color: var(--text-sub); }
-.greeting-name { font-size: 13.5px; color: #111827; }
+.greeting-name { font-size: 13.5px; color: var(--text-main); }
 
+/* NÚT THỂ HIỆN CHẾ ĐỘ CHUYỂN THEME */
+.btn-theme-toggle {
+  background: var(--input-bg) !important; border: 1px solid var(--neo-border) !important;
+  color: var(--text-sub) !important; border-radius: 14px; padding: 10px 14px; font-size: 13.5px; cursor: pointer; transition: all 0.25s ease;
+}
+.btn-theme-toggle:hover { background: rgba(79, 70, 229, 0.08) !important; color: #4f46e5 !important; }
+.theme-status-dot { width: 8px; height: 8px; background: #cbd5e1; border-radius: 50%; transition: all 0.3s ease; }
+.theme-status-dot.dark-active { background: #f59e0b; box-shadow: 0 0 8px #f59e0b; }
+.admin-sidebar.sidebar-collapsed-state .theme-toggle-container { padding: 0 8px !important; }
+.admin-sidebar.sidebar-collapsed-state .btn-theme-toggle { justify-content: center !important; padding: 12px 0; }
+
+/* THÂN DANH MỤC */
 .sidebar-body { padding: 12px 16px; }
-.section-heading { font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #a3a3a3; padding: 20px 12px 6px; }
-.nav-link { display: flex; align-items: center; gap: 14px; padding: 11px 14px; border-radius: 14px; color: var(--text-sub) !important; font-size: 14px; font-weight: 500; transition: all 0.25s ease; text-decoration: none; }
+.sidebar-body::-webkit-scrollbar { width: 3px; }
+.sidebar-body::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.04); border-radius: 99px; }
+.section-heading { font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--text-sub); opacity: 0.6; padding: 20px 12px 6px; }
+
+.nav-link {
+  display: flex; align-items: center; gap: 14px; padding: 11px 14px; border-radius: 14px !important;
+  color: var(--text-sub) !important; font-size: 14px; font-weight: 500; transition: all 0.25s ease; text-decoration: none;
+}
+.admin-sidebar.sidebar-collapsed-state .nav-link { justify-content: center; padding: 12px 0; }
 .nav-dot { width: 5px; height: 5px; border-radius: 50%; opacity: 0; transform: scale(0.5); transition: all 0.2s ease; margin-left: auto; }
 .nav-link:hover .nav-dot { opacity: 0.5; transform: scale(1); }
-.nav-icon { display: flex; align-items: center; justify-content: center; width: 20px; height: 20px; font-size: 18px; color: #9ca3af; }
-.nav-link:hover { color: #111827 !important; background: #f9fafb; }
+.nav-icon { display: flex; align-items: center; justify-content: center; width: 20px; height: 20px; font-size: 18px; color: var(--text-sub); }
+.nav-link:hover { color: var(--text-main) !important; background: var(--input-bg); transform: translateX(4px); }
 
-/* ACTIVE STATE */
-.item-home .nav-link.active { --c-active: var(--color-home); }
-.item-tree .nav-link.active { --c-active: var(--color-tree); }
-.item-members .nav-link.active { --c-active: var(--color-members); }
-.item-clan .nav-link.active { --c-active: var(--color-clan); }
-.item-user .nav-link.active { --c-active: var(--color-user); }
-.item-partner .nav-link.active { --c-active: var(--color-partner); }
-.item-payment .nav-link.active { --c-active: var(--color-payment); }
-.item-security .nav-link.active { --c-active: var(--color-security); }
+/* Màu Active tương ứng từng mục */
+.item-home .nav-dot, .item-home .nav-link.active { --c-active: var(--color-home); }
+.item-tree .nav-dot, .item-tree .nav-link.active { --c-active: var(--color-tree); }
+.item-members .nav-dot, .item-members .nav-link.active { --c-active: var(--color-members); }
+.item-clan .nav-dot, .item-clan .nav-link.active { --c-active: var(--color-clan); }
+.item-user .nav-dot, .item-user .nav-link.active { --c-active: var(--color-user); }
+.item-partner .nav-dot, .item-partner .nav-link.active { --c-active: var(--color-partner); }
+.item-payment .nav-dot, .item-payment .nav-link.active { --c-active: var(--color-payment); }
+.item-security .nav-dot, .item-security .nav-link.active { --c-active: var(--color-security); }
 
-.nav-link.active { color: #111827 !important; background: #ffffff !important; border: 1px solid rgba(0, 0, 0, 0.04) !important; font-weight: 600; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03); }
+.nav-link.active {
+  color: var(--text-main) !important; background: var(--neo-bg) !important;
+  border: 1px solid var(--neo-border) !important; font-weight: 600;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03), 0 1px 2px rgba(0, 0, 0, 0.01);
+}
 .nav-link.active .nav-icon i { color: var(--c-active) !important; }
-.nav-link.active .nav-dot { opacity: 1 !important; transform: scale(1.2); }
+.nav-link.active .nav-dot { opacity: 1 !important; transform: scale(1.2); background: var(--c-active); }
 
-/* FOOTER */
-.sidebar-footer { padding: 16px; border-top: 1px solid rgba(0, 0, 0, 0.03); margin-top: auto; }
-.btn-home { width: 100%; background: transparent; border: 1px solid var(--neo-border); color: var(--text-sub); border-radius: 14px; padding: 10px 14px; font-size: 13.5px; cursor: pointer; transition: all 0.2s ease; }
-.btn-logout { width: 100%; background: linear-gradient(135deg, #3b82f6 0%, #10b981 100%); border: none; color: #ffffff; border-radius: 30px; padding: 11px 18px; font-size: 14px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2); }
-.logout-arrow { display: flex; align-items: center; justify-content: center; width: 20px; height: 20px; background: rgba(255, 255, 255, 0.2); border-radius: 50%; font-size: 13px; transform: rotate(45deg); }
+/* FOOTER BUTTON */
+.sidebar-footer { padding: 16px; border-top: 1px solid var(--neo-border); margin-top: auto; }
+.btn-home {
+  width: 100%; background: transparent; border: 1px solid var(--neo-border); color: var(--text-sub);
+  border-radius: 14px !important; padding: 10px 14px; font-size: 13.5px; cursor: pointer; transition: all 0.2s ease;
+}
+.btn-home:hover { background: var(--input-bg); color: var(--text-main); }
+
+.btn-logout {
+  width: 100%; background: linear-gradient(135deg, #4f46e5 0%, #10b981 100%) !important;
+  border: none; color: #ffffff; border-radius: 30px !important; padding: 11px 18px; font-size: 14px; font-weight: 600; cursor: pointer;
+  box-shadow: 0 4px 14px rgba(79, 70, 229, 0.25); transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+}
+.btn-logout:hover { transform: translateY(-1.5px); box-shadow: 0 6px 18px rgba(79, 70, 229, 0.35); }
+.logout-arrow { font-size: 14px; transition: transform 0.3s ease; }
+.btn-logout:hover .logout-arrow { transform: translateX(2px); }
+
+.admin-sidebar.sidebar-collapsed-state .btn-home,
+.admin-sidebar.sidebar-collapsed-state .btn-logout { padding: 12px 0; justify-content: center; border-radius: 14px !important; }
+.admin-sidebar.sidebar-collapsed-state .btn-logout { background: var(--neo-bg) !important; border: 1px solid rgba(79, 70, 229, 0.2); color: #4f46e5; }
 </style>
