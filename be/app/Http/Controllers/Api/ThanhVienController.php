@@ -63,7 +63,7 @@ class ThanhVienController extends Controller
                 }
             } else {
                 // Thành viên bình thường phải thuộc về chi nhánh này
-                $belongsToBranch = ThanhVien::where('email', $user->email)->whereNotNull('email')->where('chi_nhanh_id', $chiNhanhId)->exists();
+                $belongsToBranch = ($user->chi_nhanh_id && (int)$user->chi_nhanh_id === (int)$chiNhanhId) || ThanhVien::where('email', $user->email)->whereNotNull('email')->where('chi_nhanh_id', $chiNhanhId)->exists();
                 if ($belongsToBranch) {
                     $thanhViens = ThanhVien::where('chi_nhanh_id', $chiNhanhId)->get();
                 } else {
@@ -96,9 +96,15 @@ class ThanhVienController extends Controller
                 $data = ThanhVien::whereIn('chi_nhanh_id', $chiNhanhIds)->get();
             } else {
                 // Thành viên bình thường chỉ được lấy danh sách thành viên thuộc chi nhánh dòng họ của mình
-                $myMember = ThanhVien::where('email', $user->email)->whereNotNull('email')->first();
-                if ($myMember) {
-                    $data = ThanhVien::where('chi_nhanh_id', $myMember->chi_nhanh_id)->get();
+                $cnId = $user->chi_nhanh_id;
+                if (!$cnId) {
+                    $myMember = ThanhVien::where('email', $user->email)->whereNotNull('email')->first();
+                    if ($myMember) {
+                        $cnId = $myMember->chi_nhanh_id;
+                    }
+                }
+                if ($cnId) {
+                    $data = ThanhVien::where('chi_nhanh_id', $cnId)->get();
                 } else {
                     $data = [];
                 }

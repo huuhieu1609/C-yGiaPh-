@@ -57,13 +57,10 @@ class DoiTacController extends Controller
 
         return response()->json(['data' => $thanhViens]);
     }
-<<<<<<< Updated upstream
-}
-=======
 
-    private function partnerProfile(Request $request): DoiTac
+    private function partnerProfile(Request $request): \App\Models\DoiTac
     {
-        return DoiTac::firstOrCreate(
+        return \App\Models\DoiTac::firstOrCreate(
             ['id_nguoi_dung' => $request->user()->id],
             [
                 'ten_goi' => 'Gói Đối Tác',
@@ -75,10 +72,23 @@ class DoiTacController extends Controller
         );
     }
 
-    public function adminGetData(): JsonResponse
+    public function adminGetData(): \Illuminate\Http\JsonResponse
     {
         try {
-            $data = DoiTac::with('nguoiDung')->get();
+            $data = \App\Models\DoiTac::with(['nguoiDung.chiNhanh'])->get();
+            
+            // Map each partner to resolve which branch/lineage they manage
+            $data->each(function ($item) {
+                $ownedBranch = ChiNhanh::where('id_nguoi_dung', $item->id_nguoi_dung)->first();
+                if ($ownedBranch) {
+                    $item->dong_ho = $ownedBranch->ten_chi;
+                } elseif ($item->nguoiDung && $item->nguoiDung->chiNhanh) {
+                    $item->dong_ho = $item->nguoiDung->chiNhanh->ten_chi;
+                } else {
+                    $item->dong_ho = 'Chưa liên kết dòng họ';
+                }
+            });
+
             return response()->json([
                 'status' => true,
                 'data' => $data,
@@ -91,7 +101,7 @@ class DoiTacController extends Controller
         }
     }
 
-    public function adminCreate(Request $request): JsonResponse
+    public function adminCreate(Request $request): \Illuminate\Http\JsonResponse
     {
         try {
             $validated = $request->validate([
@@ -104,7 +114,7 @@ class DoiTacController extends Controller
             ]);
 
             // Kiểm tra xem người dùng đã là đối tác chưa
-            $exists = DoiTac::where('id_nguoi_dung', $validated['id_nguoi_dung'])->exists();
+            $exists = \App\Models\DoiTac::where('id_nguoi_dung', $validated['id_nguoi_dung'])->exists();
             if ($exists) {
                 return response()->json([
                     'status' => false,
@@ -112,7 +122,7 @@ class DoiTacController extends Controller
                 ]);
             }
 
-            $doiTac = DoiTac::create($validated);
+            $doiTac = \App\Models\DoiTac::create($validated);
 
             // Đồng bộ trạng thái is_doi_tac = 1 của NguoiDung
             $user = \App\Models\NguoiDung::find($validated['id_nguoi_dung']);
@@ -133,10 +143,10 @@ class DoiTacController extends Controller
         }
     }
 
-    public function adminUpdate(Request $request): JsonResponse
+    public function adminUpdate(Request $request): \Illuminate\Http\JsonResponse
     {
         try {
-            $doiTac = DoiTac::findOrFail($request->id);
+            $doiTac = \App\Models\DoiTac::findOrFail($request->id);
             $validated = $request->validate([
                 'ten_goi' => 'required|string|max:255',
                 'so_tien' => 'required|numeric|min:0',
@@ -160,15 +170,15 @@ class DoiTacController extends Controller
         }
     }
 
-    public function adminDelete(Request $request): JsonResponse
+    public function adminDelete(Request $request): \Illuminate\Http\JsonResponse
     {
         try {
-            $doiTac = DoiTac::findOrFail($request->id);
+            $doiTac = \App\Models\DoiTac::findOrFail($request->id);
             $userId = $doiTac->id_nguoi_dung;
             $doiTac->delete();
 
             // Reset is_doi_tac = 0 cho người dùng nếu không còn bản ghi đối tác nào khác
-            $stillPartner = DoiTac::where('id_nguoi_dung', $userId)->exists();
+            $stillPartner = \App\Models\DoiTac::where('id_nguoi_dung', $userId)->exists();
             if (!$stillPartner) {
                 $user = \App\Models\NguoiDung::find($userId);
                 if ($user) {
@@ -188,10 +198,10 @@ class DoiTacController extends Controller
         }
     }
 
-    public function adminStatus(Request $request): JsonResponse
+    public function adminStatus(Request $request): \Illuminate\Http\JsonResponse
     {
         try {
-            $doiTac = DoiTac::findOrFail($request->id);
+            $doiTac = \App\Models\DoiTac::findOrFail($request->id);
             $doiTac->trang_thai = $doiTac->trang_thai == 1 ? 0 : 1;
             $doiTac->save();
 
@@ -208,4 +218,3 @@ class DoiTacController extends Controller
         }
     }
 }
->>>>>>> Stashed changes
