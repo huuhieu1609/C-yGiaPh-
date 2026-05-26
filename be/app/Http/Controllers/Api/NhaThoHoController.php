@@ -23,9 +23,16 @@ class NhaThoHoController extends Controller
                 $chiNhanhIds = \App\Models\ChiNhanh::where('id_nguoi_dung', $user->id)->pluck('id');
                 $data = NhaThoHo::whereIn('chi_nhanh_id', $chiNhanhIds)->with('chiNhanh')->get();
             } else {
-                $myMember = \App\Models\ThanhVien::where('email', $user->email)->whereNotNull('email')->first();
-                if ($myMember) {
-                    $data = NhaThoHo::where('chi_nhanh_id', $myMember->chi_nhanh_id)->with('chiNhanh')->get();
+                $cnId = $user->chi_nhanh_id;
+                if (!$cnId) {
+                    $myMember = \App\Models\ThanhVien::where('email', $user->email)->whereNotNull('email')->first();
+                    if ($myMember) {
+                        $cnId = $myMember->chi_nhanh_id;
+                    }
+                }
+
+                if ($cnId) {
+                    $data = NhaThoHo::where('chi_nhanh_id', $cnId)->with('chiNhanh')->get();
                 } else {
                     $data = [];
                 }

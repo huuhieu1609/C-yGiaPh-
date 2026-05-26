@@ -26,10 +26,17 @@ class MoPhanController extends Controller
                     $q->whereIn('chi_nhanh_id', $chiNhanhIds);
                 })->with('thanhVien')->get();
             } else {
-                $myMember = \App\Models\ThanhVien::where('email', $user->email)->whereNotNull('email')->first();
-                if ($myMember) {
-                    $data = MoPhan::whereHas('thanhVien', function($q) use ($myMember) {
-                        $q->where('chi_nhanh_id', $myMember->chi_nhanh_id);
+                $cnId = $user->chi_nhanh_id;
+                if (!$cnId) {
+                    $myMember = \App\Models\ThanhVien::where('email', $user->email)->whereNotNull('email')->first();
+                    if ($myMember) {
+                        $cnId = $myMember->chi_nhanh_id;
+                    }
+                }
+
+                if ($cnId) {
+                    $data = MoPhan::whereHas('thanhVien', function($q) use ($cnId) {
+                        $q->where('chi_nhanh_id', $cnId);
                     })->with('thanhVien')->get();
                 } else {
                     $data = [];
