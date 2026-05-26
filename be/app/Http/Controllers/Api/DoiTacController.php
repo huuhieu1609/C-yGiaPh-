@@ -3,30 +3,88 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\ChiNhanh;
+use App\Models\DoiTac;
+use App\Models\SuKien;
 use App\Models\ThanhVien;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class DoiTacController extends Controller
 {
-    public function taoChiNhanh(Request $request)
+    public function getProfile(Request $request): JsonResponse
     {
-        $user = auth('sanctum')->user(); // Dùng sanctum theo cấu hình hiện tại của bạn
+        $profile = $this->partnerProfile($request);
 
+        return response()->json([
+            'status' => true,
+            'data' => $profile,
+        ]);
+    }
+
+    public function updateProfile(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'ten_goi' => 'required|string|max:255',
+        ]);
+
+        $profile = $this->partnerProfile($request);
+        $profile->update([
+            'ten_goi' => $validated['ten_goi'],
+        ]);
+
+        ChiNhanh::updateOrCreate(
+            ['id_nguoi_dung' => $request->user()->id],
+            [
+                'ten_chi' => $validated['ten_goi'],
+                'mo_ta' => 'Cây gia phả của '.$validated['ten_goi'],
+            ],
+        );
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Cập nhật thông tin đối tác thành công!',
+            'data' => $profile->fresh(),
+        ]);
+    }
+
+    public function getStatistics(Request $request): JsonResponse
+    {
+        $chiNhanhIds = ChiNhanh::where('id_nguoi_dung', $request->user()->id)->pluck('id');
+        $memberQuery = ThanhVien::whereIn('chi_nhanh_id', $chiNhanhIds);
+
+        return response()->json([
+            'status' => true,
+            'data' => [
+                'total_members' => (clone $memberQuery)->count(),
+                'max_generation' => (int) (clone $memberQuery)->max('doi_thu'),
+                'upcoming_events' => SuKien::whereDate('ngay_to_chuc', '>=', now()->toDateString())->count(),
+                'recent_members' => (clone $memberQuery)->latest('updated_at')->limit(5)->get(),
+            ],
+        ]);
+    }
+
+    public function taoChiNhanh(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'ten_chi' => 'required|string|max:255',
+            'mo_ta' => 'nullable|string|max:255',
+        ]);
+
+        $user = $request->user();
         $chiNhanhDaCo = ChiNhanh::where('id_nguoi_dung', $user->id)->first();
-        
+
         if ($chiNhanhDaCo) {
             return response()->json([
                 'success' => false,
                 'message' => 'Đối tác chỉ được phép tạo duy nhất 1 chi nhánh dòng họ.',
-                'chi_nhanh' => $chiNhanhDaCo
+                'chi_nhanh' => $chiNhanhDaCo,
             ], 403);
         }
 
         $chiNhanh = ChiNhanh::create([
-            'ten_chi' => $request->input('ten_chi'),
-            'mo_ta' => $request->input('mo_ta'),
+            'ten_chi' => $validated['ten_chi'],
+            'mo_ta' => $validated['mo_ta'] ?? null,
             'id_nguoi_dung' => $user->id,
         ]);
 
@@ -34,25 +92,31 @@ class DoiTacController extends Controller
             'success' => true,
             'message' => 'Thêm chi nhánh thành công.',
             'chi_nhanh' => $chiNhanh,
-            'redirect_url' => '/cay-gia-pha' // Gửi kèm URL để Frontend tự động redirect
+            'redirect_url' => '/cay-gia-pha',
         ], 201);
     }
 
-    // API 2: Lấy danh sách chi nhánh (Để đổ vào thẻ <select> ở trang cây gia phả)
-    public function layChiNhanhCuaDoiTac()
+    public function layChiNhanhCuaDoiTac(Request $request): JsonResponse
     {
-        $user = auth('sanctum')->user();
-        // Đối tác chỉ có 1, nhưng ta cứ trả về dạng mảng để FE dễ đổ vào Select
-        $chiNhanhs = ChiNhanh::where('id_nguoi_dung', $user->id)->get();
-        
+        $chiNhanhs = ChiNhanh::where('id_nguoi_dung', $request->user()->id)->get();
+
         return response()->json(['data' => $chiNhanhs]);
     }
 
-    // API 3: Tra cứu thành viên thuộc chi nhánh (Dùng chung cho cả Cây Gia Phả & Danh Sách)
-    public function traCuuThanhVien(Request $request, $chiNhanhId)
+    public function traCuuThanhVien(Request $request, int|string $chiNhanhId): JsonResponse
     {
         $keyword = $request->input('tu_khoa');
-        
+        $ownsBranch = ChiNhanh::where('id_nguoi_dung', $request->user()->id)
+            ->where('id', $chiNhanhId)
+            ->exists();
+
+        if (! $ownsBranch) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Bạn không có quyền tra cứu chi nhánh này.',
+            ], 403);
+        }
+
         $thanhViens = ThanhVien::search($chiNhanhId, $keyword)->get();
 
         return response()->json(['data' => $thanhViens]);

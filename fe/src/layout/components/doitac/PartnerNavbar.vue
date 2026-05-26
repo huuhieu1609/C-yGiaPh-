@@ -101,13 +101,6 @@
             <span class="nav-dot hide-on-collapse"></span>
           </router-link>
         </li>
-        <li class="nav-item item-map">
-          <router-link to="/doi-tac/ban-do" class="nav-link" active-class="active" title="Bản Đồ Số">
-            <span class="nav-icon"><i class="bx bx-map-pin"></i></span>
-            <span class="hide-on-collapse nav-label">Bản Đồ Số</span>
-            <span class="nav-dot hide-on-collapse"></span>
-          </router-link>
-        </li>
         <li class="nav-item item-events">
           <router-link to="/doi-tac/su-kien" class="nav-link" active-class="active" title="Quản Lý Sự Kiện">
             <span class="nav-icon"><i class="bx bx-calendar-event"></i></span>
@@ -220,7 +213,6 @@ export default {
   --color-members:   #ff7a00;
   --color-search:    #d97706;
   --color-clan:      #ea580c;
-  --color-map:       #10b981;
 
   --transition-smooth: 0.35s cubic-bezier(0.25, 1, 0.5, 1);
 }
@@ -333,7 +325,6 @@ export default {
 .item-members .nav-dot, .item-members .nav-link.active { --c-active: var(--color-members); }
 .item-search .nav-dot, .item-search .nav-link.active { --c-active: var(--color-search); }
 .item-clan .nav-dot, .item-clan .nav-link.active { --c-active: var(--color-clan); }
-.item-map .nav-dot, .item-map .nav-link.active { --c-active: var(--color-map); }
 
 .nav-link.active {
   color: var(--text-main) !important; background: var(--neo-bg) !important;

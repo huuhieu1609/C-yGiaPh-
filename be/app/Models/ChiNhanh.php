@@ -13,7 +13,7 @@ class ChiNhanh extends Model
 
     // Cần đảm bảo database bảng chi_nhanhs có cột 'id_nguoi_dung' để kiểm tra quyền sở hữu
     protected $fillable = [
-        'ten_chi', 'mo_ta', 'id_nguoi_dung'
+        'ten_chi', 'mo_ta', 'id_nguoi_dung',
     ];
 
     // Một chi nhánh có nhiều thành viên

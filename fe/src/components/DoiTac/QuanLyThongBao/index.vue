@@ -1,140 +1,124 @@
 <template>
-  <div class="card shadow-sm border-0 radius-10">
-    <div class="card-header bg-white py-3 border-0 d-flex align-items-center justify-content-between">
-      <h5 class="mb-0 fw-bold text-dark">
-        <i class="bx bx-bell text-info me-2 fs-4"></i>Quản Lý Thông Báo Dòng Họ
-      </h5>
-      <span class="badge bg-light-info text-info px-3 py-2 radius-30">Phát tin tức gia tộc</span>
-    </div>
-    <div class="card-body">
-      <!-- Search and Add Banner -->
-      <div class="row mb-4 g-3 align-items-center">
-        <div class="col-md-6 col-lg-4">
-          <div class="position-relative">
-            <input 
-              type="text" 
-              class="form-control ps-5 radius-10 border-2 shadow-none border-light" 
-              v-model="searchQuery" 
-              placeholder="Tìm kiếm thông báo theo tiêu đề..."
-            >
-            <span class="position-absolute top-50 translate-middle-y start-0 ms-3 text-secondary">
-              <i class="bx bx-search fs-5"></i>
-            </span>
+  <div class="container-fluid px-0">
+    <div class="card genealogy-main-card border-0 shadow-sm radius-16">
+      <div class="card-header bg-transparent border-0 py-4 px-4 d-flex align-items-center justify-content-between flex-wrap gap-3">
+        <h5 class="mb-0 fw-bold theme-text-main">
+          <i class="bx bx-bell text-warning me-2 fs-4 animate-bell"></i>Quản Lý Thông Báo Dòng Họ
+        </h5>
+        <span class="badge bg-orange-light-premium text-orange-premium">Phát tin tức gia tộc</span>
+      </div>
+      <div class="card-body px-4 pb-4">
+        <div class="row mb-4 g-3 align-items-center">
+          <div class="col-md-6 col-lg-4">
+            <div class="position-relative">
+              <input 
+                type="text" 
+                class="form-control premium-input ps-5" 
+                v-model="searchQuery" 
+                placeholder="Tìm kiếm thông báo theo tiêu đề..."
+              >
+              <span class="position-absolute top-50 translate-middle-y start-0 ms-3 text-secondary">
+                <i class="bx bx-search fs-5"></i>
+              </span>
+            </div>
+          </div>
+          <div class="col-md-6 col-lg-8 text-md-end">
+            <button class="btn btn-sm btn-gradient-orange text-white radius-30 fw-bold px-4 shadow-sm" @click="openAddModal">
+              <i class="bx bx-plus-circle me-1 fs-5"></i> Viết Thông Báo Mới
+            </button>
           </div>
         </div>
-        <div class="col-md-6 col-lg-8 text-md-end">
-          <button class="btn btn-info text-white radius-10 fw-bold px-4 shadow-sm hover-elevate" @click="openAddModal">
-            <i class="bx bx-plus-circle me-1 fs-5"></i> Viết Thông Báo Mới
+
+        <div v-if="loading" class="text-center py-5 bg-transparent">
+          <div class="spinner-border text-warning" role="status">
+            <span class="visually-hidden">Đang tải...</span>
+          </div>
+          <p class="text-secondary mt-2 small fw-medium">Đang tải danh sách thông báo...</p>
+        </div>
+
+        <div v-else-if="filteredAnnouncements.length === 0" class="text-center py-5 bg-transparent">
+          <div class="mb-3">
+            <i class="bx bx-bell-off text-warning opacity-25" style="font-size: 70px;"></i>
+          </div>
+          <h5 class="fw-bold theme-text-main">Không Tìm Thấy Thông Báo Nào</h5>
+          <p class="text-secondary mx-auto small mb-3" style="max-width: 400px;">
+            Chưa có thông báo nào được đăng hoặc không có kết quả nào khớp với tìm kiếm của bạn.
+          </p>
+          <button v-if="searchQuery === ''" class="btn btn-sm btn-action-edit px-4" @click="openAddModal">
+            <i class="bx bx-plus"></i> Tạo Thông Báo Đầu Tiên
           </button>
         </div>
-      </div>
 
-      <!-- Loading State -->
-      <div v-if="loading" class="text-center py-5">
-        <div class="spinner-border text-info" role="status">
-          <span class="visually-hidden">Đang tải...</span>
+        <div v-else class="table-responsive table-container-premium">
+          <table class="table align-middle mb-0 text-nowrap table-hover">
+            <thead>
+              <tr class="text-secondary text-uppercase small">
+                <th style="width: 70px;" class="text-center">STT</th>
+                <th style="min-width: 220px;" class="text-start ps-3">Tiêu Đề</th>
+                <th style="min-width: 320px;" class="text-start">Nội Dung Chi Tiết</th>
+                <th style="width: 180px;" class="text-center">Ngày Đăng</th>
+                <th style="width: 140px;" class="text-center">Hành Động</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(item, index) in filteredAnnouncements" :key="item.id" class="table-row-premium">
+                <td class="text-center fw-bold text-secondary bg-transparent">{{ index + 1 }}</td>
+                <td class="bg-transparent text-start ps-3">
+                  <div class="fw-bold row-member-name text-truncate-1">
+                    {{ item.tieu_de }}
+                  </div>
+                </td>
+                <td class="bg-transparent text-start">
+                  <p class="text-secondary mb-0 text-truncate-2 text-wrap line-clamp-desc">
+                    {{ item.noi_dung || 'Không có mô tả chi tiết' }}
+                  </p>
+                </td>
+                <td class="text-center text-secondary bg-transparent small font-medium">
+                  <i class="bx bx-calendar-event me-1 text-warning"></i>{{ formatDate(item.created_at) }}
+                </td>
+                <td class="text-center bg-transparent">
+                  <div class="d-flex justify-content-center gap-2">
+                    <button class="btn btn-sm btn-action-edit" title="Chỉnh sửa" @click="onEdit(item)">
+                      <i class="bx bx-edit-alt"></i>
+                    </button>
+                    <button class="btn btn-sm btn-action-delete" title="Xóa thông báo" @click="handleDelete(item.id)">
+                      <i class="bx bx-trash"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
-        <p class="text-muted mt-2">Đang tải danh sách thông báo...</p>
-      </div>
-
-      <!-- Empty State -->
-      <div v-else-if="filteredAnnouncements.length === 0" class="text-center py-5">
-        <div class="mb-4">
-          <i class="bx bx-bell-off text-muted opacity-25" style="font-size: 80px;"></i>
-        </div>
-        <h4 class="fw-bold text-dark">Không Tìm Thấy Thông Báo Nào</h4>
-        <p class="text-muted mx-auto" style="max-width: 400px;">
-          Chưa có thông báo nào được đăng hoặc không có kết quả nào khớp với tìm kiếm của bạn. Hãy tạo thông báo đầu tiên ngay!
-        </p>
-        <button v-if="searchQuery === ''" class="btn btn-outline-info radius-10 px-4 mt-2" @click="openAddModal">
-          <i class="bx bx-plus"></i> Tạo Thông Báo
-        </button>
-      </div>
-
-      <!-- Table Content -->
-      <div v-else class="table-responsive">
-        <table class="table table-hover align-middle border border-light-subtle rounded-3 overflow-hidden">
-          <thead class="table-light text-uppercase small fw-bold text-secondary">
-            <tr>
-              <th style="width: 60px;" class="text-center">STT</th>
-              <th style="min-width: 200px;">Tiêu Đề</th>
-              <th style="min-width: 300px;">Nội Dung Chi Tiết</th>
-              <th style="width: 160px;" class="text-center">Ngày Đăng</th>
-              <th style="width: 140px;" class="text-center">Hành Động</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="(item, index) in filteredAnnouncements" :key="item.id" class="transition-row">
-              <td class="text-center fw-semibold text-secondary">{{ index + 1 }}</td>
-              <td>
-                <div class="fw-bold text-dark text-truncate-1" style="font-size: 15px;">
-                  {{ item.tieu_de }}
-                </div>
-              </td>
-              <td>
-                <p class="text-muted mb-0 text-truncate-2" style="font-size: 13.5px; max-width: 500px; line-height: 1.5;">
-                  {{ item.noi_dung || 'Không có mô tả chi tiết' }}
-                </p>
-              </td>
-              <td class="text-center text-secondary" style="font-size: 13.5px;">
-                <i class="bx bx-calendar-event me-1"></i>{{ formatDate(item.created_at) }}
-              </td>
-              <td class="text-center">
-                <div class="d-flex justify-content-center gap-2">
-                  <button 
-                    class="btn btn-sm btn-outline-warning btn-icon-action" 
-                    title="Chỉnh sửa" 
-                    @click="onEdit(item)"
-                  >
-                    <i class="bx bx-edit-alt"></i>
-                  </button>
-                  <button 
-                    class="btn btn-sm btn-outline-danger btn-icon-action" 
-                    title="Xóa thông báo" 
-                    @click="handleDelete(item.id)"
-                  >
-                    <i class="bx bx-trash"></i>
-                  </button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
       </div>
     </div>
 
-    <!-- Modal Thêm/Sửa Thông Báo -->
     <div class="modal fade" id="announcementModal" tabindex="-1" aria-hidden="true">
       <div class="modal-dialog modal-md modal-dialog-centered">
-        <div class="modal-content radius-15 shadow-lg border-0">
-          <div class="modal-header border-0 text-white radius-top-15" :class="isEditing ? 'bg-warning text-dark' : 'bg-info'">
-            <h5 class="modal-title fw-bold">
-              <i class="bx bx-paper-plane me-1"></i>
+        <div class="modal-content radius-24 shadow-lg border-0 bg-adaptive-card overflow-hidden">
+          <div class="modal-header border-0 bg-dark-premium text-white p-4">
+            <h5 class="modal-title fw-bold text-warning">
+              <i class="bx bx-paper-plane me-2"></i>
               {{ isEditing ? 'Chỉnh Sửa Thông Báo' : 'Đăng Thông Báo Dòng Họ Mới' }}
             </h5>
-            <button 
-              type="button" 
-              class="btn-close" 
-              :class="!isEditing ? 'btn-close-white' : ''" 
-              data-bs-dismiss="modal"
-            ></button>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
           </div>
-          <div class="modal-body p-4">
+          <div class="modal-body p-4 text-start">
             <form @submit.prevent="saveAnnouncement">
               <div class="mb-3">
-                <label class="form-label fw-bold">Tiêu Đề Thông Báo <span class="text-danger">*</span></label>
+                <label class="form-label fw-bold text-secondary small text-uppercase font-bold">Tiêu Đề Thông Báo <span class="text-danger">*</span></label>
                 <input 
                   type="text" 
-                  class="form-control radius-8 border-2 shadow-none border-light focus-active" 
+                  class="form-control premium-input" 
                   v-model="currentAnnouncement.tieu_de" 
                   placeholder="Ví dụ: Lễ chắt tế xuân dòng họ Nguyễn Đức năm 2026"
                   required
                 >
               </div>
               <div class="mb-3">
-                <label class="form-label fw-bold">Nội Dung Chi Tiết</label>
+                <label class="form-label fw-bold text-secondary small text-uppercase font-bold">Nội Dung Chi Tiết Tin Tức</label>
                 <textarea 
-                  class="form-control radius-8 border-2 shadow-none border-light focus-active" 
+                  class="form-control premium-textarea" 
                   rows="5" 
                   v-model="currentAnnouncement.noi_dung" 
                   placeholder="Nhập thông tin chi tiết gửi tới toàn thể dòng họ..."
@@ -142,8 +126,8 @@
               </div>
               
               <div class="d-flex justify-content-end gap-2 mt-4">
-                <button type="button" class="btn btn-light px-4 radius-8" data-bs-dismiss="modal">Hủy bỏ</button>
-                <button type="submit" class="btn px-4 radius-8 fw-bold text-white shadow-sm" :class="isEditing ? 'btn-warning text-dark' : 'btn-info'">
+                <button type="button" class="btn btn-light radius-30 px-4 fw-medium" data-bs-dismiss="modal">Hủy bỏ</button>
+                <button type="submit" class="btn btn-gradient-orange radius-30 px-4 fw-bold text-white border-0 shadow-sm">
                   <i class="bx bx-check me-1"></i>{{ isEditing ? 'Cập Nhật' : 'Đăng Tin Ngay' }}
                 </button>
               </div>
@@ -152,7 +136,27 @@
         </div>
       </div>
     </div>
+
+    <!-- Delete Confirm Modal -->
+     <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content radius-16 shadow-lg border-0 bg-adaptive-card overflow-hidden">
+          <div class="modal-header border-0 bg-dark-premium text-white p-3">
+            <h6 class="modal-title fw-bold text-warning">Xác nhận xóa</h6>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body p-3 text-start">
+            <p class="mb-0 text-secondary">Bạn có chắc chắn muốn xóa thông báo này? Hành động này không thể hoàn tác.</p>
+          </div>
+          <div class="modal-footer border-0 p-3 justify-content-end">
+            <button type="button" class="btn btn-light radius-30 px-3" data-bs-dismiss="modal">Hủy</button>
+            <button type="button" class="btn btn-gradient-orange text-white radius-30 px-3" @click="confirmDelete">Xóa</button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
+ 
 </template>
 
 <script>
@@ -172,7 +176,9 @@ export default {
         id: null,
         tieu_de: '',
         noi_dung: ''
-      }
+      },
+      pendingDeleteId: null,
+      deleteModal: null
     };
   },
   computed: {
@@ -193,6 +199,10 @@ export default {
       if (window.bootstrap && modalEl) {
         this.modal = new window.bootstrap.Modal(modalEl);
       }
+        const delEl = document.getElementById('deleteConfirmModal');
+        if (window.bootstrap && delEl) {
+          this.deleteModal = new window.bootstrap.Modal(delEl);
+        }
     });
     this.loadAnnouncements();
   },
@@ -278,78 +288,158 @@ export default {
         });
     },
     handleDelete(id) {
-      if (confirm('Bạn có chắc chắn muốn xóa thông báo này? Hành động này không thể hoàn tác.')) {
-        axios.post('http://127.0.0.1:8000/api/thong-bao/delete', { id }, this.getHeaders())
-          .then(res => {
-            if (res.data.status) {
-              toastr.success(res.data.message || 'Xóa thông báo thành công.');
-              this.loadAnnouncements();
-            } else {
-              toastr.error(res.data.message || 'Không thể xóa thông báo.');
-            }
-          })
-          .catch(() => {
-            toastr.error('Lỗi kết nối máy chủ khi thực hiện xóa.');
-          });
+      this.pendingDeleteId = id;
+      if (this.deleteModal) {
+        this.deleteModal.show();
+      } else {
+        // fallback to confirm
+        if (confirm('Bạn có chắc chắn muốn xóa thông báo này? Hành động này không thể hoàn tác.')) {
+          this.confirmDelete();
+        }
       }
+    },
+    confirmDelete() {
+      const id = this.pendingDeleteId;
+      if (!id) return;
+      axios.post('http://127.0.0.1:8000/api/thong-bao/delete', { id }, this.getHeaders())
+        .then(res => {
+          if (res.data.status) {
+            toastr.success(res.data.message || 'Xóa thông báo thành công.');
+            this.loadAnnouncements();
+          } else {
+            toastr.error(res.data.message || 'Không thể xóa thông báo.');
+          }
+        })
+        .catch(() => {
+          toastr.error('Lỗi kết nối máy chủ khi thực hiện xóa.');
+        })
+        .finally(() => {
+          if (this.deleteModal) this.deleteModal.hide();
+          this.pendingDeleteId = null;
+        });
     }
   }
 };
 </script>
 
 <style scoped>
-.radius-10 { border-radius: 10px !important; }
-.radius-15 { border-radius: 15px !important; }
-.radius-30 { border-radius: 30px !important; }
-.radius-8 { border-radius: 8px !important; }
-.radius-top-15 { border-top-left-radius: 15px; border-top-right-radius: 15px; }
+/* ─── KHUNG CARD CHỦ ĐẠO THÍCH ỨNG THEME ─── */
+.genealogy-main-card {
+  background: var(--card-bg) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: 16px !important;
+}
+.theme-text-main { color: var(--text-main) !important; }
+.text-secondary { color: var(--text-sub) !important; }
+.bg-adaptive-card { background: var(--card-bg) !important; }
 
-.hover-elevate {
-  transition: all 0.25s ease;
-}
-.hover-elevate:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(13, 202, 240, 0.25) !important;
-}
-
-.focus-active:focus {
-  border-color: #0dcaf0 !important;
-  box-shadow: 0 0 0 0.25rem rgba(13, 202, 240, 0.15) !important;
-}
-
-.text-truncate-1 {
-  display: -webkit-box;
-  -webkit-line-clamp: 1;
-  -webkit-box-orient: vertical;  
-  overflow: hidden;
-}
-.text-truncate-2 {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;  
-  overflow: hidden;
-}
-
-.btn-icon-action {
-  width: 32px;
-  height: 32px;
-  padding: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 8px;
+/* Các ô nhập liệu viên thuốc đồng bộ */
+.premium-input {
+  border-radius: 12px !important;
+  border: 1px solid var(--border-color) !important;
+  padding: 10px 16px !important;
+  font-size: 14px;
+  background-color: var(--input-bg) !important;
+  color: var(--text-main) !important;
+  box-shadow: none !important;
   transition: all 0.2s ease;
 }
-
-.btn-icon-action:hover {
-  transform: scale(1.08);
+.premium-input:focus {
+  border-color: #f97316 !important;
+  background-color: var(--card-bg) !important;
 }
 
-.transition-row {
+.premium-textarea {
+  border-radius: 14px !important;
+  border: 1px solid var(--border-color) !important;
+  padding: 12px 16px !important;
+  font-size: 14px;
+  background-color: var(--input-bg) !important;
+  color: var(--text-main) !important;
+  box-shadow: none !important;
+  resize: none;
+}
+.premium-textarea:focus {
+  border-color: #f97316 !important;
+  background-color: var(--card-bg) !important;
+}
+
+/* Nút bấm Cam Đào Gradient */
+.btn-gradient-orange {
+  background: linear-gradient(135deg, #f43f5e 0%, #f97316 100%) !important;
+  border: none !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 12px rgba(244, 63, 94, 0.15) !important;
+  transition: all 0.25s ease;
+}
+.btn-gradient-orange:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(244, 63, 94, 0.25) !important;
+}
+.radius-30 { border-radius: 30px !important; }
+.radius-24 { border-radius: 24px !important; }
+
+/* ─── HỆ THỐNG BẢNG BIỂU ĐỒNG BỘ MỜ ─── */
+.table-container-premium {
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.table thead th {
+  background-color: var(--input-bg) !important;
+  color: var(--text-sub) !important;
+  font-weight: 600 !important;
+  font-size: 12.5px !important;
+  text-transform: uppercase !important;
+  border-bottom: 1px solid var(--border-color) !important;
+  padding: 15px 16px !important;
+}
+.table-row-premium {
+  border-bottom: 1px solid var(--border-color) !important;
   transition: background-color 0.2s ease;
 }
+.table-row-premium:hover { background-color: var(--input-bg) !important; }
+.row-member-name { font-size: 14.5px; color: var(--text-main); }
+.table-row-premium td { padding: 15px 16px !important; font-size: 13.5px; }
 
-.transition-row:hover {
-  background-color: rgba(13, 202, 240, 0.02) !important;
+/* Truncate ép dòng an toàn */
+.text-truncate-1 {
+  display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden;
+}
+.line-clamp-desc {
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  max-width: 480px; line-height: 1.5; font-size: 13.5px;
+}
+
+/* Nút sửa bút chì & nút xóa đồng bộ */
+.btn-action-edit, .btn-action-delete {
+  background: transparent !important;
+  border-radius: 8px !important;
+  font-size: 15px; padding: 5px 10px !important;
+  transition: all 0.2s ease;
+}
+.btn-action-edit { border: 1px solid rgba(245, 158, 11, 0.3) !important; color: #f59e0b !important; }
+.btn-action-edit:hover { background: #f59e0b !important; color: white !important; }
+
+.btn-action-delete { border: 1px solid rgba(239, 68, 68, 0.3) !important; color: #ef4444 !important; }
+.btn-action-delete:hover { background: #ef4444 !important; color: white !important; }
+
+/* Badge tin tức dòng tộc mờ pastel */
+.bg-orange-light-premium { background-color: rgba(249, 115, 22, 0.08) !important; border: 1px solid rgba(249, 115, 22, 0.15); }
+.text-orange-premium { color: #f97316 !important; font-weight: 700; }
+
+/* MODAL HEADER PREMIUM */
+.bg-dark-premium {
+  background: linear-gradient(145deg, #1a1c2e 0%, #141625 100%) !important;
+  border-bottom: 1px solid var(--border-color);
+}
+
+/* Hiệu ứng chuông rung nhẹ nhàng kỹ thuật */
+.animate-bell { animation: slowWobble 4s ease-in-out infinite; display: inline-block; }
+@keyframes slowWobble {
+  0%, 100% { transform: rotate(0deg); }
+  5%, 15% { transform: rotate(10deg); }
+  10%, 20% { transform: rotate(-10deg); }
+  25% { transform: rotate(0deg); }
 }
 </style>

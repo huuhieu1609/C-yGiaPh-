@@ -6,14 +6,14 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    public function up()
+    public function up(): void
     {
         Schema::table('chi_nhanhs', function (Blueprint $table) {
-            $table->integer('id_nguoi_dung')->nullable();
+            $table->unsignedBigInteger('id_nguoi_dung')->nullable()->after('id');
         });
     }
 
-    public function down()
+    public function down(): void
     {
         Schema::table('chi_nhanhs', function (Blueprint $table) {
             $table->dropColumn('id_nguoi_dung');

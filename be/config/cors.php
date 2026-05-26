@@ -11,7 +11,7 @@ return [
 
     'allowed_methods' => ['*'],
 
-    /* 
+    /*
      * Đã sửa thành ['*'] để cho phép tất cả các origin.
      * Rất tiện lợi khi làm việc ở môi trường local với Vite.
      */

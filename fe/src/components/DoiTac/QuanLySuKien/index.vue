@@ -572,6 +572,7 @@ export default {
 .form-section-card:hover {
   border-color: rgba(249, 115, 22, 0.25) !important;
 }
+.table-row-premium:hover { background-color: var(--input-bg) !important; }
 
 .form-label-premium {
   font-size: 12.5px;
@@ -628,4 +629,5 @@ export default {
   box-shadow: 0 8px 25px rgba(244, 63, 94, 0.45) !important;
   transform: translateY(-1.5px);
 }
+.premium-textarea:focus { border-color: #f97316 !important; background-color: var(--card-bg) !important; }
 </style>

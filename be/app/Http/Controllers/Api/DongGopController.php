@@ -30,15 +30,12 @@ class DongGopController extends Controller
     public function create(Request $request)
     {
         try {
-            $data = $request->all();
-            if ('DongGop' === 'NguoiDung' && isset($data['mat_khau'])) {
-                $data['mat_khau'] = bcrypt($data['mat_khau']);
-            }
+            $data = $request->only(['nguoi_dung_id', 'noi_dung', 'trang_thai']);
             $item = DongGop::create($data);
 
             return response()->json([
                 'status' => true,
-                'message' => 'Tạo mới thành công!',
+                'message' => 'Thêm đóng góp thành công!',
                 'data' => $item,
             ]);
         } catch (Exception $e) {
@@ -53,15 +50,12 @@ class DongGopController extends Controller
     {
         try {
             $item = DongGop::findOrFail($request->id);
-            $data = $request->all();
-            if ('DongGop' === 'NguoiDung' && isset($data['mat_khau'])) {
-                $data['mat_khau'] = bcrypt($data['mat_khau']);
-            }
+            $data = $request->only(['nguoi_dung_id', 'noi_dung', 'trang_thai']);
             $item->update($data);
 
             return response()->json([
                 'status' => true,
-                'message' => 'Cập nhật thành công!',
+                'message' => 'Cập nhật đóng góp thành công!',
                 'data' => $item,
             ]);
         } catch (Exception $e) {
@@ -80,7 +74,7 @@ class DongGopController extends Controller
 
             return response()->json([
                 'status' => true,
-                'message' => 'Xóa thành công!',
+                'message' => 'Xóa đóng góp thành công!',
             ]);
         } catch (Exception $e) {
             return response()->json([

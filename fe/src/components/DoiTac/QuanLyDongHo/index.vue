@@ -33,7 +33,6 @@
                 </div>
             </div>
         </div>
-
         <div class="col-lg-8 col-md-12 mb-4">
             <div class="card genealogy-main-card shadow-sm border-0 radius-10 h-100">
                 <div class="card-header py-3 border-0 mt-2 px-4">
@@ -88,99 +87,109 @@
 </template>
 
 <script>
-import axios from 'axios'; // Chỉ giữ lại dòng này
-import toastr from 'toastr';
-
+import axios from "axios";
+import toastr from "toastr";
 export default {
-    name: 'PartnerBranchManagement',
-    data() {
-        return {
-            listData: [],
-            formData: {
-                id: null,
-                ten_chi: '',
-                mo_ta: ''
-            },
-            isEditing: false,
-            isLoading: false
-        }
+  name: "PartnerBranchManagement",
+  data() {
+    return {
+      listData: [],
+      formData: {
+        id: null,
+        ten_chi: "",
+        mo_ta: "",
+      },
+      isEditing: false,
+      isLoading: false,
+    };
+  },
+  mounted() {
+    this.loadData();
+  },
+  methods: {
+    getHeaders() {
+      return {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+        },
+      };
     },
-    mounted() {
-        this.loadData();
+    loadData() {
+      this.isLoading = true;
+      axios
+        .get("http://127.0.0.1:8000/api/chi-nhanh/get-data", this.getHeaders())
+        .then((res) => {
+          if (res.data.status) {
+            this.listData = res.data.data;
+          }
+        })
+        .finally(() => {
+          this.isLoading = false;
+        });
     },
-    methods: {
-        getHeaders() {
-            return { headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` } };
-        },
-        loadData() {
-            this.isLoading = true;
-            axios.get('http://127.0.0.1:8000/api/chi-nhanh/get-data', this.getHeaders())
-                .then(res => {
-                    if (res.data.status) {
-                        this.listData = res.data.data;
-                    }
-                })
-                .finally(() => { this.isLoading = false; });
-        },
-        saveData() {
-            const url = this.isEditing 
-                ? 'http://127.0.0.1:8000/api/chi-nhanh/update'
-                : 'http://127.0.0.1:8000/api/chi-nhanh/create';
-            
-            axios.post(url, this.formData, this.getHeaders())
-                .then(res => {
-                    if (res.data.status) {
-                        toastr.success(res.data.message);
-                        this.loadData();
-                        this.resetForm();
-                    } else {
-                        toastr.error(res.data.message);
-                    }
-                })
-                .catch(err => {
-                    toastr.error(err.response?.data?.message || 'Có lỗi xảy ra!');
-                });
-        },
-        editItem(item) {
-            this.isEditing = true;
-            this.formData = { ...item };
-        },
-        resetForm() {
-            this.isEditing = false;
-            this.formData = { id: null, ten_chi: '', mo_ta: '' };
-        }
-    }
-}
+    saveData() {
+      const wasEditing = this.isEditing;
+      const url = this.isEditing
+        ? "http://127.0.0.1:8000/api/chi-nhanh/update"
+        : "http://127.0.0.1:8000/api/chi-nhanh/create";
+
+      axios
+        .post(url, this.formData, this.getHeaders())
+        .then((res) => {
+          if (res.data.status) {
+            toastr.success(res.data.message);
+            this.loadData();
+            this.resetForm();
+            if (!wasEditing) {
+              this.$router.push("/doi-tac/thanh-vien");
+            }
+          } else {
+            toastr.error(res.data.message);
+          }
+        })
+        .catch((err) => {
+          toastr.error(err.response?.data?.message || "Có lỗi xảy ra!");
+        });
+    },
+    editItem(item) {
+      this.isEditing = true;
+      this.formData = { ...item };
+    },
+    resetForm() {
+      this.isEditing = false;
+      this.formData = { id: null, ten_chi: "", mo_ta: "" };
+    },
+  },
+};
 </script>
 
 <style scoped>
-/* ─── CẤU TRÚC CARD VÀ CHỮ THÍCH ỨNG THEME ─── */
+/* ─── KHUNG CARD CHỦ ĐẠO THÍCH ỨNG THEME ─── */
 .genealogy-main-card {
-  background: var(--card-bg) !important;
-  border: 1px solid var(--border-color) !important;
+  background: var(--card-bg, #fff) !important;
+  border: 1px solid var(--border-color, #eaeaea) !important;
   border-radius: 16px !important;
 }
-.theme-text-main { color: var(--text-main) !important; }
-.font-medium { font-weight: 500; }
+.theme-text-main { color: var(--text-main, #333) !important; }
+.text-secondary { color: var(--text-sub, #6c757d) !important; }
 
 /* Các ô nhập liệu viên thuốc đồng bộ */
 .premium-input {
   border-radius: 12px !important;
-  border: 1px solid var(--border-color) !important;
-  padding: 10px 14px !important;
+  border: 1px solid var(--border-color, #eaeaea) !important;
+  padding: 10px 16px !important;
   font-size: 14px;
-  background-color: var(--input-bg) !important;
-  color: var(--text-main) !important;
-  box-sizing: border-box;
+  background-color: var(--input-bg, #f8f9fa) !important;
+  color: var(--text-main, #333) !important;
   box-shadow: none !important;
   transition: all 0.2s ease;
 }
 .premium-input:focus {
   border-color: #f97316 !important;
-  background-color: var(--card-bg) !important;
+  background-color: var(--card-bg, #fff) !important;
 }
 
-/* Nút bấm Cam Đào Gradient cao cấp */
+/* Nút bấm Cam Đào Gradient */
 .btn-gradient-orange {
   background: linear-gradient(135deg, #f43f5e 0%, #f97316 100%) !important;
   border: none !important;
@@ -191,41 +200,35 @@ export default {
 .btn-gradient-orange:hover {
   transform: translateY(-1px);
   box-shadow: 0 6px 16px rgba(244, 63, 94, 0.25) !important;
+  color: #ffffff !important;
 }
 .radius-30 { border-radius: 30px !important; }
+.radius-10 { border-radius: 10px !important; }
 
-/* Khung thông báo tài khoản giới hạn */
-.alert-premium-info {
-  background-color: var(--input-bg) !important;
-  border: 1px solid var(--border-color) !important;
-  border-radius: 12px !important;
-}
-
-/* ─── HỆ THỐNG BẢNG BIỂU ĐỒNG BỘ ─── */
+/* ─── HỆ THỐNG BẢNG BIỂU ĐỒNG BỘ MỜ ─── */
 .table-container-premium {
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border-color, #eaeaea);
   border-radius: 12px;
   overflow: hidden;
 }
 .table thead th {
-  background-color: var(--input-bg) !important;
-  color: var(--text-sub) !important;
+  background-color: var(--input-bg, #f8f9fa) !important;
+  color: var(--text-sub, #6c757d) !important;
   font-weight: 600 !important;
   font-size: 12.5px !important;
   text-transform: uppercase !important;
-  letter-spacing: 0.5px;
-  border-bottom: 1px solid var(--border-color) !important;
-  padding: 14px 10px !important;
+  border-bottom: 1px solid var(--border-color, #eaeaea) !important;
+  padding: 15px 16px !important;
 }
 .table-row-premium {
-  border-bottom: 1px solid var(--border-color) !important;
+  border-bottom: 1px solid var(--border-color, #eaeaea) !important;
   transition: background-color 0.2s ease;
 }
-.table-row-premium:hover { background-color: var(--input-bg) !important; }
-.row-member-name { font-size: 14.5px; color: var(--text-main); }
-.table-row-premium td { padding: 14px 10px !important; font-size: 13.5px; }
+.table-row-premium:hover { background-color: var(--input-bg, #f8f9fa) !important; }
+.row-member-name { font-size: 14.5px; color: var(--text-main, #333); }
+.table-row-premium td { padding: 15px 16px !important; font-size: 13.5px; }
 
-/* Nút sửa bút chì viền mờ cao cấp */
+/* Nút sửa bút chì */
 .btn-action-edit {
   background: transparent !important;
   border-radius: 8px !important;
@@ -235,4 +238,17 @@ export default {
   color: #f59e0b !important;
 }
 .btn-action-edit:hover { background: #f59e0b !important; color: white !important; }
+
+/* Alert premium info */
+.alert-premium-info { 
+  background-color: rgba(245, 158, 11, 0.08) !important; 
+  border: 1px solid rgba(245, 158, 11, 0.15) !important; 
+}
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .5; }
+}
 </style>

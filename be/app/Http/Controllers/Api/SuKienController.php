@@ -50,6 +50,8 @@ class SuKienController extends Controller
                 }
             }
 
+            $data = $query->get();
+
             return response()->json([
                 'status'  => true,
                 'message' => 'Lấy danh sách sự kiện thành công!',
@@ -71,9 +73,28 @@ class SuKienController extends Controller
                 'noi_dung' => 'nullable|string',
                 'ngay_to_chuc' => 'required|date',
                 'dia_diem' => 'nullable|string|max:255',
+                'chi_nhanh_id' => 'nullable|exists:chi_nhanhs,id',
                 'loai' => 'required|in:Giỗ tổ,Họp họ,Cưới hỏi,Tang lễ',
                 'chi_nhanh_id' => 'nullable|integer|exists:chi_nhanhs,id',
             ]);
+
+            $user = auth('sanctum')->user();
+
+            // If partner provided chi_nhanh_id ensure they own it; or auto-assign their branch if omitted
+            if ($data['chi_nhanh_id'] ?? null) {
+                if ($user && $user->is_doi_tac == 1) {
+                    $owns = \App\Models\ChiNhanh::where('id', $data['chi_nhanh_id'])->where('id_nguoi_dung', $user->id)->exists();
+                    if (! $owns) {
+                        return response()->json(['status' => false, 'message' => 'Bạn không có quyền gán sự kiện cho chi nhánh này.'], 403);
+                    }
+                }
+            } else {
+                // if partner and no chi_nhanh_id provided, set to first branch they own
+                if ($user && $user->is_doi_tac == 1) {
+                    $branchId = \App\Models\ChiNhanh::where('id_nguoi_dung', $user->id)->value('id');
+                    if ($branchId) $data['chi_nhanh_id'] = $branchId;
+                }
+            }
 
             $item = SuKien::create($data);
             return response()->json([
@@ -98,9 +119,25 @@ class SuKienController extends Controller
                 'noi_dung' => 'nullable|string',
                 'ngay_to_chuc' => 'required|date',
                 'dia_diem' => 'nullable|string|max:255',
+                'chi_nhanh_id' => 'nullable|exists:chi_nhanhs,id',
                 'loai' => 'required|in:Giỗ tổ,Họp họ,Cưới hỏi,Tang lễ',
                 'chi_nhanh_id' => 'nullable|integer|exists:chi_nhanhs,id',
             ]);
+
+            $user = auth('sanctum')->user();
+            if (isset($data['chi_nhanh_id']) && $data['chi_nhanh_id']) {
+                if ($user && $user->is_doi_tac == 1) {
+                    $owns = \App\Models\ChiNhanh::where('id', $data['chi_nhanh_id'])->where('id_nguoi_dung', $user->id)->exists();
+                    if (! $owns) {
+                        return response()->json(['status' => false, 'message' => 'Bạn không có quyền gán sự kiện cho chi nhánh này.'], 403);
+                    }
+                }
+            } else {
+                if ($user && $user->is_doi_tac == 1) {
+                    $branchId = \App\Models\ChiNhanh::where('id_nguoi_dung', $user->id)->value('id');
+                    if ($branchId) $data['chi_nhanh_id'] = $branchId;
+                }
+            }
 
             $item->update($data);
             return response()->json([

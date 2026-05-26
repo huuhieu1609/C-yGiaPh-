@@ -92,7 +92,6 @@
                                         </td>
                                         <td class="text-center bg-transparent pe-4">
                                             <div class="d-flex justify-content-center gap-2">
-                                                <button class="btn btn-sm btn-action-qr" @click="showQRCard(item)" title="Mã QR"><i class="bx bx-qr"></i></button>
                                                 <button class="btn btn-sm btn-action-edit" @click="onEdit(item)" title="Chỉnh sửa"><i class="bx bx-edit-alt"></i></button>
                                                 <button class="btn btn-sm btn-action-delete" @click="handleDelete(item.id)" title="Xóa bỏ"><i class="bx bx-trash"></i></button>
                                             </div>
@@ -165,38 +164,6 @@
                             <div class="col-md-6" v-if="currentMember.trang_thai === 'Đã mất'">
                                 <label class="form-label fw-bold text-danger">Ngày mất</label>
                                 <input type="date" class="form-control premium-input border-danger border-opacity-50" v-model="currentMember.ngay_mat">
-                            </div>
-
-                            <div class="col-md-12" v-if="currentMember.trang_thai === 'Đã mất'">
-                                <div class="p-3 rounded-3 mt-2" style="background-color: rgba(249, 115, 22, 0.05); border: 1px dashed rgba(249, 115, 22, 0.25) !important;">
-                                    <h6 class="fw-bold mb-3" style="color: #b45309;"><i class="bx bx-calendar-star me-1"></i> Ngày Giỗ Âm Lịch</h6>
-                                    <div class="row g-2">
-                                        <div class="col-md-3">
-                                            <label class="form-label font-12 fw-bold text-secondary">Ngày âm lịch</label>
-                                            <select class="form-select premium-input" v-model="currentMember.ngay_mat_al_ngay">
-                                                <option :value="null">-- Chọn --</option>
-                                                <option v-for="d in 30" :key="d" :value="d">Ngày {{ d }}</option>
-                                            </select>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <label class="form-label font-12 fw-bold text-secondary">Tháng âm lịch</label>
-                                            <select class="form-select premium-input" v-model="currentMember.ngay_mat_al_thang">
-                                                <option :value="null">-- Chọn --</option>
-                                                <option v-for="m in 12" :key="m" :value="m">Tháng {{ m }}</option>
-                                            </select>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <label class="form-label font-12 fw-bold text-secondary">Năm âm lịch (Tùy chọn)</label>
-                                            <input type="number" class="form-control premium-input" v-model="currentMember.ngay_mat_al_nam" placeholder="Ví dụ: 2026">
-                                        </div>
-                                        <div class="col-md-3 d-flex align-items-end pb-2">
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" id="lunarNhuan" v-model="currentMember.ngay_mat_al_nhuan" :true-value="1" :false-value="0">
-                                                <label class="form-check-label font-12 fw-bold text-secondary" for="lunarNhuan">Tháng nhuận</label>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-bold text-secondary">Quan hệ với dòng họ</label>
@@ -646,9 +613,6 @@ export default {
 .btn-action-edit { border: 1px solid rgba(245, 158, 11, 0.3) !important; color: #f59e0b !important; }
 .btn-action-edit:hover { background: #f59e0b !important; color: white !important; }
 
-.btn-action-qr { border: 1px solid rgba(59, 130, 246, 0.25) !important; color: #3b82f6 !important; }
-.btn-action-qr:hover { background: #3b82f6 !important; color: #fff !important; }
-
 .btn-action-delete { border: 1px solid rgba(239, 68, 68, 0.3) !important; color: #ef4444 !important; }
 .btn-action-delete:hover { background: #ef4444 !important; color: white !important; }
 
@@ -660,36 +624,4 @@ export default {
 .custom-radio .form-check-input:checked { background-color: #f97316 !important; border-color: #f97316 !important; }
 .btn-orange-premium { background: linear-gradient(135deg, #f43f5e 0%, #f97316 100%) !important; color: white !important; border: none; }
 .btn-warning-premium { background: #f59e0b !important; color: #111827 !important; border: none; }
-
-/* Custom Vue Modal Styling for QR Card */
-.custom-modal-backdrop {
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background-color: rgba(15, 23, 42, 0.6);
-    backdrop-filter: blur(8px);
-    z-index: 1050;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-}
-.custom-modal-content {
-    width: 100%;
-    max-width: 480px;
-    background: #ffffff;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 15px;
-}
-.btn-close-custom { transition: all 0.2s ease; }
-.btn-close-custom:hover { transform: rotate(90deg); }
-.border-gold { border-color: #d4af37 !important; }
-.bg-royal { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important; }
-.qr-card-container { color: white !important; border-color: #d4af37 !important; background-size: cover; position: relative; }
-.card-header-royal { border-bottom: 1px solid rgba(212, 175, 55, 0.3) !important; }
-.badge-gold-soft { background: rgba(212, 175, 55, 0.15) !important; color: #ffd891 !important; border: 1px solid rgba(212, 175, 55, 0.25) !important; }
-.qr-frame-royal { background: white; }
-.btn-gold { background: #d4af37; color: #3b2c0c; border: none; transition: all 0.3s ease; }
-.btn-gold:hover { background: #e5c055; transform: translateY(-2px); }
-.card-watermark { position: absolute; top: -40px; right: -40px; width: 140px; height: 140px; background: radial-gradient(circle, rgba(212, 175, 55, 0.08) 0%, transparent 70%); pointer-events: none; }
-.drop-shadow { text-shadow: 0 1px 2px rgba(0,0,0,0.5); }
 </style>
