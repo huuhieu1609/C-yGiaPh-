@@ -28,7 +28,7 @@
 
         <div class="row g-3 mb-4">
             <div class="col-12 col-md-4">
-                <div class="card widget-kpi-card border-start-orange shadow-sm border-0">
+                <div class="card widget-kpi-card shadow-sm border-0">
                     <div class="card-body p-4">
                         <div class="d-flex align-items-center">
                             <div>
@@ -44,7 +44,7 @@
                 </div>
             </div>
             <div class="col-12 col-md-4">
-                <div class="card widget-kpi-card border-start-pink shadow-sm border-0">
+                <div class="card widget-kpi-card shadow-sm border-0">
                     <div class="card-body p-4">
                         <div class="d-flex align-items-center">
                             <div>
@@ -60,7 +60,7 @@
                 </div>
             </div>
             <div class="col-12 col-md-4">
-                <div class="card widget-kpi-card border-start-amber shadow-sm border-0">
+                <div class="card widget-kpi-card shadow-sm border-0">
                     <div class="card-body p-4">
                         <div class="d-flex align-items-center">
                             <div>
@@ -77,9 +77,28 @@
             </div>
         </div>
 
-        <div class="row">
-            <div class="col-12">
-                <div class="card genealogy-main-card border-0 shadow-sm overflow-hidden">
+        <div class="row g-3">
+            <div class="col-12 col-lg-7">
+                <div class="card genealogy-main-card border-0 shadow-sm overflow-hidden h-100">
+                    <div class="card-header py-3 px-4 border-0 mt-2 bg-transparent">
+                        <div class="d-flex align-items-center">
+                            <div>
+                                <h5 class="mb-0 fw-bold d-flex align-items-center gap-2 theme-text-main">
+                                    <i class="bx bx-line-chart text-orange fs-4"></i> Thống Kê Tăng Trưởng
+                                </h5>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body px-4 pb-4">
+                        <div class="chart-container" style="position: relative; height: 320px;">
+                            <LineChart :data="chartData" :options="chartOptions" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-lg-5">
+                <div class="card genealogy-main-card border-0 shadow-sm overflow-hidden h-100">
                     <div class="card-header py-3 px-4 border-0 mt-2">
                         <div class="d-flex align-items-center">
                             <div>
@@ -128,11 +147,18 @@
 </template>
 
 <script>
+import { Line } from 'vue-chartjs';
+import { Chart as ChartJS, Title, Tooltip, Legend, LineElement, PointElement, CategoryScale, LinearScale, Filler } from 'chart.js';
 import axios from 'axios';
 import toastr from 'toastr';
 
+ChartJS.register(Title, Tooltip, Legend, LineElement, PointElement, CategoryScale, LinearScale, Filler);
+
 export default {
     name: 'PartnerDashboard',
+    components: {
+        LineChart: Line
+    },
     data() {
         return {
             partnerProfile: null,
@@ -143,7 +169,34 @@ export default {
                 recent_members: []
             },
             newTenGoi: '',
-            isLoading: false
+            isLoading: false,
+            chartData: {
+                labels: ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6'],
+                datasets: [
+                    {
+                        label: 'Thành viên mới',
+                        backgroundColor: 'rgba(249, 115, 22, 0.15)',
+                        borderColor: '#f97316',
+                        data: [5, 12, 8, 25, 16, 22],
+                        tension: 0.4,
+                        fill: true,
+                    }
+                ]
+            },
+            chartOptions: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { color: '#6b7280' }
+                    }
+                },
+                scales: {
+                    y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { color: '#6b7280' } },
+                    x: { grid: { display: false }, ticks: { color: '#6b7280' } }
+                }
+            }
         }
     },
     mounted() {
@@ -240,9 +293,7 @@ export default {
   box-shadow: 0 10px 24px rgba(249, 115, 22, 0.05) !important;
 }
 
-.border-start-orange { border-left: 4px solid #f97316 !important; }
-.border-start-pink { border-left: 4px solid #db2777 !important; }
-.border-start-amber { border-left: 4px solid #f59e0b !important; }
+
 .kpi-label { font-size: 13px; color: var(--text-sub) !important; }
 .kpi-sub { font-size: 11.5px; color: var(--text-sub) !important; opacity: 0.8; }
 
