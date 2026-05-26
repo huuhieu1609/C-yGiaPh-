@@ -77,7 +77,7 @@
         <li class="nav-item item-partner">
           <router-link to="/admin/doi-tac" class="nav-link" active-class="active" title="Quản Lý Đối Tác">
             <span class="nav-icon"><i class="bx bx-briefcase"></i></span>
-            <span class="hide-on-collapse nav-label">Đối Tác & Gói</span>
+            <span class="hide-on-collapse nav-label">Quản Lý Đối Tác</span>
             <span class="nav-dot hide-on-collapse"></span>
           </router-link>
         </li>

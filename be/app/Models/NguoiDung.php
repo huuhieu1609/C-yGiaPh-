@@ -12,12 +12,13 @@ class NguoiDung extends Authenticatable
     use HasApiTokens, HasFactory;
 
     protected $table = "nguoi_dungs";
-    protected $fillable = ["ho_ten", "email", "mat_khau", "so_dien_thoai", "avatar", "vai_tro", "id_chuc_vu", "trang_thai", "hash_reset", "is_doi_tac"];
+    protected $fillable = ["ho_ten", "email", "mat_khau", "so_dien_thoai", "avatar", "vai_tro", "id_chuc_vu", "trang_thai", "hash_reset", "is_doi_tac", "chi_nhanh_id"];
     protected $hidden = ["mat_khau", "remember_token"];
     public function getAuthPassword() { return $this->mat_khau; }
     
     public function nhatKyHoatDongs() { return $this->hasMany(NhatKyHoatDong::class); }
     public function dongGops() { return $this->hasMany(DongGop::class); }
     public function doiTac() { return $this->hasOne(DoiTac::class, 'id_nguoi_dung'); }
+    public function chiNhanh() { return $this->belongsTo(ChiNhanh::class, 'chi_nhanh_id'); }
 
 }

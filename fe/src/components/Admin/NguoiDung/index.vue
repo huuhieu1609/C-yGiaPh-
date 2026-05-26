@@ -32,6 +32,13 @@
                                 <option v-for="cv in listChucVu" :key="cv.id" :value="cv.id">{{ cv.ten_chuc_vu }}</option>
                             </select>
                         </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Chi Nhánh</label>
+                            <select class="form-select radius-8 border-2 shadow-none" v-model="formData.chi_nhanh_id">
+                                <option :value="null">-- Không liên kết --</option>
+                                <option v-for="cn in listChiNhanh" :key="cn.id" :value="cn.id">{{ cn.ten_chi }}</option>
+                            </select>
+                        </div>
                         <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
                             <button type="button" class="btn btn-light radius-8 px-4" v-if="isEditing" @click="resetForm">Hủy</button>
                             <button type="submit" class="btn text-white radius-8 px-4 fw-bold shadow-sm" style="background-color: #008bf8; border-color: #008bf8;">
@@ -56,11 +63,12 @@
                             <thead class="text-center text-white" style="background-color: #008bf8;">
                                 <tr>
                                     <th width="5%" class="py-3">#</th>
-                                    <th width="25%" class="py-3">Họ Tên</th>
-                                    <th width="25%" class="py-3">Email</th>
-                                    <th width="20%" class="py-3">Chức Vụ</th>
+                                    <th width="20%" class="py-3">Họ Tên</th>
+                                    <th width="20%" class="py-3">Email</th>
+                                    <th width="15%" class="py-3">Chức Vụ</th>
+                                    <th width="20%" class="py-3">Chi Nhánh</th>
                                     <th width="10%" class="py-3">Trạng Thái</th>
-                                    <th width="15%" class="py-3">Hành Động</th>
+                                    <th width="10%" class="py-3">Hành Động</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -70,6 +78,9 @@
                                     <td>{{ item.email }}</td>
                                     <td class="text-center">
                                         <span class="badge bg-info text-white radius-10 px-3">{{ getTenChucVu(item.id_chuc_vu) }}</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-secondary text-white radius-10 px-3">{{ getTenChiNhanh(item.chi_nhanh_id) }}</span>
                                     </td>
                                     <td class="text-center">
                                         <button @click="changeStatus(item.id)" :class="item.trang_thai == 'Hoạt động' ? 'btn-success' : 'btn-danger'" class="btn btn-sm radius-8 w-100">
@@ -106,6 +117,7 @@ export default {
         return {
             listData: [],
             listChucVu: [],
+            listChiNhanh: [],
             formData: {
                 id: null,
                 ho_ten: '',
@@ -113,6 +125,7 @@ export default {
                 mat_khau: '',
                 so_dien_thoai: '',
                 id_chuc_vu: null,
+                chi_nhanh_id: null,
                 trang_thai: 'Hoạt động'
             },
             isEditing: false
@@ -121,6 +134,7 @@ export default {
     mounted() {
         this.loadData();
         this.loadChucVu();
+        this.loadChiNhanh();
     },
     methods: {
         loadData() {
@@ -139,9 +153,21 @@ export default {
                     }
                 });
         },
+        loadChiNhanh() {
+            axios.get('http://127.0.0.1:8000/api/chi-nhanh/get-data')
+                .then(res => {
+                    if (res.data.status) {
+                        this.listChiNhanh = res.data.data;
+                    }
+                });
+        },
         getTenChucVu(id) {
             const cv = this.listChucVu.find(c => c.id === id);
             return cv ? cv.ten_chuc_vu : 'Chưa gán';
+        },
+        getTenChiNhanh(id) {
+            const cn = this.listChiNhanh.find(c => c.id === id);
+            return cn ? cn.ten_chi : 'Không liên kết';
         },
         saveData() {
             const url = this.isEditing 
@@ -163,6 +189,9 @@ export default {
             this.isEditing = true;
             this.formData = { ...item };
             this.formData.mat_khau = ''; // Don't show password
+            if (!this.formData.hasOwnProperty('chi_nhanh_id')) {
+                this.formData.chi_nhanh_id = null;
+            }
         },
         deleteItem(id) {
             if (confirm('Bạn có chắc chắn muốn xóa?')) {
@@ -193,6 +222,7 @@ export default {
                 mat_khau: '',
                 so_dien_thoai: '',
                 id_chuc_vu: null,
+                chi_nhanh_id: null,
                 trang_thai: 'Hoạt động'
             };
         }
