@@ -3,12 +3,13 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Mail\ResetPasswordMail;
+use App\Models\ChiTietPhanQuyen;
 use App\Models\NguoiDung;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
-use App\Mail\ResetPasswordMail;
 
 class AuthController extends Controller
 {
@@ -16,22 +17,22 @@ class AuthController extends Controller
     {
         try {
             $user = NguoiDung::create([
-                'ho_ten'        => $request->ho_ten,
-                'email'         => $request->email,
-                'mat_khau'      => Hash::make($request->mat_khau),
+                'ho_ten' => $request->ho_ten,
+                'email' => $request->email,
+                'mat_khau' => Hash::make($request->mat_khau),
                 'so_dien_thoai' => $request->so_dien_thoai,
-                'trang_thai'    => 'Hoạt động', // Giá trị Enum
-                'vai_tro'       => 'Thành viên', // Giá trị Enum
+                'trang_thai' => 'Hoạt động', // Giá trị Enum
+                'vai_tro' => 'Thành viên', // Giá trị Enum
             ]);
 
             return response()->json([
-                'status'  => true,
-                'message' => 'Đăng ký tài khoản thành công!'
+                'status' => true,
+                'message' => 'Đăng ký tài khoản thành công!',
             ]);
         } catch (\Exception $e) {
             return response()->json([
-                'status'  => false,
-                'message' => 'Đăng ký thất bại: ' . $e->getMessage()
+                'status' => false,
+                'message' => 'Đăng ký thất bại: '.$e->getMessage(),
             ], 400);
         }
     }
@@ -40,18 +41,18 @@ class AuthController extends Controller
     {
         $user = NguoiDung::where('email', $request->email)->first();
 
-        if (!$user || !Hash::check($request->mat_khau, $user->mat_khau)) {
+        if (! $user || ! Hash::check($request->mat_khau, $user->mat_khau)) {
             return response()->json([
-                'status'  => false,
-                'message' => 'Email hoặc mật khẩu không chính xác!'
+                'status' => false,
+                'message' => 'Email hoặc mật khẩu không chính xác!',
             ], 401);
         }
 
         $token = $user->createToken('auth_token')->plainTextToken;
-        
+
         $permissions = [];
         if ($user->id_chuc_vu) {
-            $permissions = \App\Models\ChiTietPhanQuyen::join('chuc_nangs', 'chi_tiet_phan_quyens.chuc_nang_id', '=', 'chuc_nangs.id')
+            $permissions = ChiTietPhanQuyen::join('chuc_nangs', 'chi_tiet_phan_quyens.chuc_nang_id', '=', 'chuc_nangs.id')
                 ->where('chi_tiet_phan_quyens.chuc_vu_id', $user->id_chuc_vu)
                 ->where('chuc_nangs.trang_thai', 'Hoạt động')
                 ->pluck('chuc_nangs.ten_chuc_nang')
@@ -60,23 +61,23 @@ class AuthController extends Controller
 
         // Mặc định: Tài khoản người dùng thì vào trang người dùng
         $redirect_url = '/nguoi-dung';
-        
+
         // Tài khoản Admin thì đăng nhập vào trang admin
         if (strtolower(trim($user->vai_tro)) === 'admin' || $user->email === 'admin@master.com') {
             $redirect_url = '/admin/dashboard';
-        } 
+        }
         // Tài khoản người dùng sau khi mua gói (is_doi_tac = 1) thì vào trang đã mua gói
         elseif ($user->is_doi_tac == 1) {
             $redirect_url = '/doi-tac';
         }
 
         return response()->json([
-            'status'       => true,
-            'message'      => 'Đăng nhập thành công!',
+            'status' => true,
+            'message' => 'Đăng nhập thành công!',
             'access_token' => $token,
-            'user'         => $user,
-            'permissions'  => $permissions,
-            'redirect_url' => $redirect_url
+            'user' => $user,
+            'permissions' => $permissions,
+            'redirect_url' => $redirect_url,
         ]);
     }
 
@@ -84,10 +85,10 @@ class AuthController extends Controller
     {
         $user = NguoiDung::where('email', $request->email)->first();
 
-        if (!$user) {
+        if (! $user) {
             return response()->json([
-                'status'  => false,
-                'message' => 'Email không tồn tại trong hệ thống!'
+                'status' => false,
+                'message' => 'Email không tồn tại trong hệ thống!',
             ], 404);
         }
 
@@ -97,14 +98,15 @@ class AuthController extends Controller
 
         try {
             Mail::to($user->email)->send(new ResetPasswordMail($user, $code));
+
             return response()->json([
-                'status'  => true,
-                'message' => 'Mã xác nhận đã được gửi vào Gmail của bạn!'
+                'status' => true,
+                'message' => 'Mã xác nhận đã được gửi vào Gmail của bạn!',
             ]);
         } catch (\Exception $e) {
             return response()->json([
-                'status'  => false,
-                'message' => 'Không thể gửi mail: ' . $e->getMessage()
+                'status' => false,
+                'message' => 'Không thể gửi mail: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -112,13 +114,13 @@ class AuthController extends Controller
     public function resetPassword(Request $request)
     {
         $user = NguoiDung::where('email', $request->email)
-                         ->where('hash_reset', $request->code)
-                         ->first();
+            ->where('hash_reset', $request->code)
+            ->first();
 
-        if (!$user) {
+        if (! $user) {
             return response()->json([
-                'status'  => false,
-                'message' => 'Mã xác nhận không chính xác!'
+                'status' => false,
+                'message' => 'Mã xác nhận không chính xác!',
             ], 400);
         }
 
@@ -127,14 +129,15 @@ class AuthController extends Controller
         $user->save();
 
         return response()->json([
-            'status'  => true,
-            'message' => 'Đổi mật khẩu thành công!'
+            'status' => true,
+            'message' => 'Đổi mật khẩu thành công!',
         ]);
     }
 
     public function logout(Request $request)
     {
         $request->user()->currentAccessToken()->delete();
+
         return response()->json(['message' => 'Đã đăng xuất']);
     }
 
@@ -143,27 +146,27 @@ class AuthController extends Controller
         $user = $request->user();
         $permissions = [];
         if ($user->id_chuc_vu) {
-            $permissions = \App\Models\ChiTietPhanQuyen::join('chuc_nangs', 'chi_tiet_phan_quyens.chuc_nang_id', '=', 'chuc_nangs.id')
+            $permissions = ChiTietPhanQuyen::join('chuc_nangs', 'chi_tiet_phan_quyens.chuc_nang_id', '=', 'chuc_nangs.id')
                 ->where('chi_tiet_phan_quyens.chuc_vu_id', $user->id_chuc_vu)
                 ->where('chuc_nangs.trang_thai', 'Hoạt động')
                 ->pluck('chuc_nangs.ten_chuc_nang')
                 ->toArray();
         }
-        
+
         return response()->json([
             'user' => $user,
-            'permissions' => $permissions
+            'permissions' => $permissions,
         ]);
     }
 
     public function updateProfile(Request $request)
     {
         $user = $request->user();
-        
+
         $request->validate([
             'ho_ten' => 'required|string|max:255',
             'so_dien_thoai' => 'nullable|string|max:20',
-            'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
+            'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
         $user->ho_ten = $request->ho_ten;
@@ -171,9 +174,9 @@ class AuthController extends Controller
 
         if ($request->hasFile('avatar')) {
             $image = $request->file('avatar');
-            $imageName = time() . '.' . $image->getClientOriginalExtension();
+            $imageName = time().'.'.$image->getClientOriginalExtension();
             $image->move(public_path('uploads/avatars'), $imageName);
-            $user->avatar = asset('uploads/avatars/' . $imageName);
+            $user->avatar = asset('uploads/avatars/'.$imageName);
         }
 
         $user->save();
@@ -181,7 +184,7 @@ class AuthController extends Controller
         return response()->json([
             'status' => true,
             'message' => 'Cập nhật thông tin thành công!',
-            'user' => $user
+            'user' => $user,
         ]);
     }
 
@@ -194,10 +197,10 @@ class AuthController extends Controller
             'new_password' => 'required|min:6|confirmed',
         ]);
 
-        if (!Hash::check($request->current_password, $user->mat_khau)) {
+        if (! Hash::check($request->current_password, $user->mat_khau)) {
             return response()->json([
                 'status' => false,
-                'message' => 'Mật khẩu hiện tại không đúng!'
+                'message' => 'Mật khẩu hiện tại không đúng!',
             ], 400);
         }
 
@@ -206,7 +209,7 @@ class AuthController extends Controller
 
         return response()->json([
             'status' => true,
-            'message' => 'Đổi mật khẩu thành công!'
+            'message' => 'Đổi mật khẩu thành công!',
         ]);
     }
 }

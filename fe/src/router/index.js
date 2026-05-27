@@ -158,6 +158,16 @@ const routes = [
                 component: () => import('../components/Admin/NguoiDung/index.vue')
             },
             {
+                path: 'doi-tac',
+                name: 'admin-doi-tac',
+                component: () => import('../components/Admin/DoiTac/index.vue')
+            },
+            {
+                path: 'goi-dich-vu',
+                name: 'admin-goi-dich-vu',
+                component: () => import('../components/Admin/GoiDichVu/index.vue')
+            },
+            {
                 path: 'chi-nhanh',
                 name: 'admin-chi-nhanh',
                 component: () => import('../components/Admin/ChiNhanh/index.vue')

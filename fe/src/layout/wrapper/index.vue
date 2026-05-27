@@ -1,17 +1,20 @@
 <template>
   <div class="admin-layout" :class="{ 'sidebar-collapsed': isCollapsed }">
     <AdminNavbar :is-collapsed="isCollapsed" @toggle-sidebar="isCollapsed = !isCollapsed" />
+    
     <main class="admin-content">
-      <router-view></router-view>
+      <div class="main-workspace-wrapper">
+        <router-view></router-view>
+      </div>
     </main>
   </div>
 </template>
 
 <script>
-import AdminNavbar from '../components/admin/AdminNavbar.vue';
+import AdminNavbar from '../../layout/components/admin/AdminNavbar.vue';
 
 export default {
-  name: 'DefaultLayout',
+  name: 'AdminLayout',
   components: {
     AdminNavbar
   },
@@ -24,13 +27,11 @@ export default {
 </script>
 
 <style>
-
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-
 @import url('https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css');
-
 @import "../../assets/css/bootstrap.min.css";
 @import "../../assets/css/bootstrap-extended.css";
+
 *,
 *::before,
 *::after {
@@ -41,151 +42,138 @@ export default {
 
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  background: #f0f2f5;
-  color: #333;
+  background-color: var(--app-bg) !important;
+  color: var(--text-main) !important;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Layout */
+/* Layout Container */
 .admin-layout {
   display: flex;
   min-height: 100vh;
+  width: 100%;
+  overflow-x: hidden;
 }
 
+/* Khung bọc lớn bên phải */
 .admin-content {
   flex: 1;
-  padding: 24px;
-  margin-left: 280px; /* Offset for vertical sidebar */
-  width: calc(100% - 280px);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex !important;
+  flex-direction: column !important;
+  margin-left: 275px; 
+  width: calc(100% - 275px);
+  transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+  height: 100vh;
+  box-sizing: border-box;
+  position: relative;
 }
 
+/* Khi Sidebar co lại về 80px */
 .sidebar-collapsed .admin-content {
-  margin-left: 80px;
-  width: calc(100% - 80px);
+  margin-left: 105px;
+  width: calc(100% - 105px);
+}
+
+/* ─── 🌟 TỐI ƯU LẠI KHUNG NEO: ĐẨY LÊN TRÊN VÀ PHẲNG TUYỆT ĐỐI ─── */
+.main-workspace-wrapper {
+  width: 100% !important;
+  height: 100% !important;
+  /* Giảm padding-top từ 30px xuống 15px để nội dung dịch sát lên trên */
+  padding: 19px 30px 20px 15px !important; 
+  box-sizing: border-box;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  overflow-y: auto; /* Cuộn nội dung lọt lòng độc lập */
+}
+
+/* Triệt tiêu tận gốc mọi cấu trúc margin đè của Bootstrap ở phần tử đầu tiên */
+.main-workspace-wrapper > div,
+.main-workspace-wrapper > .row,
+.main-workspace-wrapper > .card,
+.main-workspace-wrapper > div > .row,
+.main-workspace-wrapper > div > .card {
+  margin-top: 0 !important;
+  top: 0 !important;
+  padding-top: 0 !important;
+}
+
+/* Loại bỏ lề âm của hàng đầu tiên tránh đẩy lệch khung */
+.main-workspace-wrapper > .row:first-child,
+.main-workspace-wrapper > div > .row:first-child {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+
+/* ─── HỆ THỐNG BIẾN MÀU THEO CHẾ ĐỘ MÔI TRƯỜNG ─── */
+:root, [data-theme="light"] {
+  --app-bg:        #f0f2f5;
+  --card-bg:       #ffffff;
+  --text-main:     #1f2937;
+  --text-sub:      #6b7280;
+  --border-color:  rgba(0, 0, 0, 0.05);
+  --input-bg:      rgba(0, 0, 0, 0.015);
+}
+
+[data-theme="dark"] {
+  --app-bg:        #121320; 
+  --card-bg:       #1a1c2e; 
+  --text-main:     #f3f4f6;
+  --text-sub:      #9ca3af;
+  --border-color:  rgba(255, 255, 255, 0.08);
+  --input-bg:      rgba(255, 255, 255, 0.03);
+}
+
+/* FORCE OVERRIDE: Chống tràn sáng cho Dark Mode */
+[data-theme="dark"] .card, 
+[data-theme="dark"] .card-header,
+[data-theme="dark"] .bg-white,
+[data-theme="dark"] .table-light {
+  background-color: var(--card-bg) !important;
+  color: var(--text-main) !important;
+  border-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] .table thead th {
+  background-color: var(--app-bg) !important;
+  color: var(--text-sub) !important;
+  border-bottom: 1px solid var(--border-color) !important;
+}
+
+[data-theme="dark"] input, 
+[data-theme="dark"] select, 
+[data-theme="dark"] textarea {
+  background-color: var(--input-bg) !important;
+  color: var(--text-main) !important;
+  border-color: var(--border-color) !important;
 }
 
 /* ========================================
-   Bootstrap Overrides for Child Pages
+   Bootstrap Overrides For Adaptive Theme
    ======================================== */
 .card {
-  border: none;
+  border: none !important;
   border-radius: 14px;
-  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.04);
-  transition: box-shadow 0.2s ease;
-  background: #fff;
+  background-color: var(--card-bg) !important;
+  border: 1px solid var(--border-color) !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.01) !important;
+  transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.2s ease;
 }
-
-.card:hover {
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
-}
-
-.card-header {
-  background: transparent;
-  border-bottom: 1px solid #f0f0f0;
-  padding: 18px 20px;
-}
-
-.card-body {
-  padding: 20px;
-}
-
-.radius-10 {
-  border-radius: 14px !important;
-}
-
-.table {
-  font-size: 14px;
-}
+.card:hover { box-shadow: 0 10px 25px var(--border-color) !important; }
+.card-header { background: transparent !important; border-bottom: 1px solid var(--border-color) !important; padding: 18px 20px; }
+.card-body { padding: 20px; }
+.radius-10 { border-radius: 14px !important; }
+.table { font-size: 14px; color: var(--text-main) !important; }
 
 .table thead th {
-  font-weight: 600;
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: #666;
-  border-bottom-width: 1px;
+  font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;
+  color: var(--text-sub) !important; border-bottom: 1px solid var(--border-color) !important;
 }
 
-/* Badge gradient overrides */
-.bg-gradient-quepal {
-  background: linear-gradient(135deg, #43cea2, #185a9d) !important;
-}
-.bg-gradient-bloody {
-  background: linear-gradient(135deg, #f5515f, #a1051d) !important;
-}
-.bg-gradient-ohhappiness {
-  background: linear-gradient(135deg, #00b09b, #96c93d) !important;
-}
-.bg-gradient-blooker {
-  background: linear-gradient(135deg, #e65100, #ff6d00) !important;
-}
-.bg-gradient-scooter {
-  background: linear-gradient(135deg, #36d1dc, #5b86e5) !important;
-}
-
-/* Widget icons */
-.widgets-icons-2 {
-  width: 48px;
-  height: 48px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 24px;
-  border-radius: 12px;
-  flex-shrink: 0;
-}
-
-.bg-light-primary { background: rgba(66, 133, 244, 0.1) !important; }
-.bg-light-success { background: rgba(52, 168, 83, 0.1) !important; }
-.bg-light-warning { background: rgba(251, 188, 4, 0.1) !important; }
-.bg-light-danger  { background: rgba(234, 67, 53, 0.1) !important; }
-.bg-light-info    { background: rgba(66, 133, 244, 0.1) !important; }
-
-/* Order actions */
-.order-actions a {
-  width: 32px;
-  height: 32px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 8px;
-  background: #f0f2f5;
-  color: #666;
-  transition: all 0.2s;
-}
-
-.order-actions a:hover {
-  background: #e0e2e5;
-  color: #333;
-}
-
-/* Scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #d0d0d0;
-  border-radius: 6px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #b0b0b0;
-}
-
-/* ========================================
-   Responsive
-   ======================================== */
-@media (max-width: 767.98px) {
-  .admin-content {
-    padding: 16px;
-  }
-}
+/* Thanh cuộn scroll mượt */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--text-sub); opacity: 0.3; border-radius: 6px; }
 </style>

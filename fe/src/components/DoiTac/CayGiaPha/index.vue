@@ -68,6 +68,8 @@
                                         :searchQuery="searchQuery"
                                         @edit="onEdit"
                                         @show-qr="showQRCard"
+                                        @add-child="onAddChild"
+                                        @add-spouse="onAddSpouse"
                                     />
                                 </ul>
                             </div>
@@ -249,6 +251,24 @@
                 </div>
             </div>
         </div>
+        <!-- Delete Confirm Modal -->
+        <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-hidden="true" style="z-index: 1060;">
+            <div class="modal-dialog modal-sm modal-dialog-centered">
+                <div class="modal-content radius-15 shadow-lg border-0">
+                    <div class="modal-header border-0 bg-danger text-white radius-top-15 p-3">
+                        <h6 class="modal-title fw-bold"><i class="bx bx-trash me-1"></i> Xác nhận xóa</h6>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body p-3 text-start">
+                        <p class="mb-0 text-dark">Bạn có chắc chắn muốn xóa thành viên này? Hành động này không thể hoàn tác.</p>
+                    </div>
+                    <div class="modal-footer border-0 p-3 justify-content-end">
+                        <button type="button" class="btn btn-light radius-8 px-3" data-bs-dismiss="modal">Hủy</button>
+                        <button type="button" class="btn btn-danger radius-8 px-3 fw-bold" @click="confirmDelete">Xác Nhận Xóa</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </template>
 
@@ -260,7 +280,7 @@ import toastr from 'toastr';
 const TreeItem = defineComponent({
     name: 'TreeItem',
     props: ['member', 'listDoiTocHo', 'searchQuery'],
-    emits: ['edit', 'show-qr'],
+    emits: ['edit', 'show-qr', 'add-child', 'add-spouse'],
     data() {
         return {
             clickTimeout: null,
@@ -297,7 +317,9 @@ const TreeItem = defineComponent({
                     listDoiTocHo: this.listDoiTocHo, 
                     searchQuery: this.searchQuery,
                     onEdit: (m) => this.$emit('edit', m),
-                    onShowQr: (m) => this.$emit('show-qr', m)
+                    onShowQr: (m) => this.$emit('show-qr', m),
+                    onAddChild: (m) => this.$emit('add-child', m),
+                    onAddSpouse: (m) => this.$emit('add-spouse', m)
                 }))
             ) : null;
             return h('li', [nodeGroup, children]);
@@ -340,12 +362,26 @@ const TreeItem = defineComponent({
                 ]),
                 h('div', { class: 'node-edit-btn' }, [
                     h('i', { class: 'bx bx-pencil' })
+                ]),
+                h('div', { class: 'quick-actions' }, [
+                    h('button', { 
+                        class: 'btn-action add-child',
+                        title: 'Thêm con',
+                        onClick: (e) => { e.stopPropagation(); this.$emit('add-child', this.member); }
+                    }, [ h('i', { class: 'bx bx-plus' }) ]),
+                    h('button', { 
+                        class: 'btn-action add-spouse',
+                        title: 'Thêm vợ/chồng',
+                        onClick: (e) => { e.stopPropagation(); this.$emit('add-spouse', this.member); }
+                    }, [ h('i', { class: 'bx bxs-heart' }) ])
                 ])
             ]),
             this.member.spouses && this.member.spouses.length ? this.member.spouses.map(spouse => {
                 const isSpouseHighlighted = this.searchQuery && spouse.ho_ten.toLowerCase().includes(this.searchQuery.toLowerCase());
                 return [
-                    h('div', { class: 'tree-connector-h' }),
+                    h('div', { class: 'tree-connector-h' }, [
+                        h('i', { class: 'bx bxs-heart connector-heart' })
+                    ]),
                     h('div', { 
                         class: ['tree-node-card spouse', { 
                             'is-dead': spouse.trang_thai === 'Đã mất',
@@ -376,10 +412,22 @@ const TreeItem = defineComponent({
                         ]),
                         h('div', { class: 'node-content' }, [
                             h('div', { class: 'node-name' }, spouse.ho_ten),
-                            h('div', { class: 'node-tag spouse-tag' }, 'Vợ/Chồng')
+                            h('div', { class: 'node-tag spouse-tag' }, spouse.gioi_tinh === 'Nữ' ? 'Vợ' : (spouse.gioi_tinh === 'Nam' ? 'Chồng' : 'Vợ/Chồng'))
                         ]),
                         h('div', { class: 'node-edit-btn' }, [
                             h('i', { class: 'bx bx-pencil' })
+                        ]),
+                        h('div', { class: 'quick-actions' }, [
+                            h('button', { 
+                                class: 'btn-action add-child',
+                                title: 'Thêm con',
+                                onClick: (e) => { e.stopPropagation(); this.$emit('add-child', this.member); }
+                            }, [ h('i', { class: 'bx bx-plus' }) ]),
+                            h('button', { 
+                                class: 'btn-action add-spouse',
+                                title: 'Thêm vợ/chồng',
+                                onClick: (e) => { e.stopPropagation(); this.$emit('add-spouse', this.member); }
+                            }, [ h('i', { class: 'bx bxs-heart' }) ])
                         ])
                     ])
                 ];
@@ -391,7 +439,9 @@ const TreeItem = defineComponent({
                 listDoiTocHo: this.listDoiTocHo, 
                 searchQuery: this.searchQuery,
                 onEdit: (m) => this.$emit('edit', m),
-                onShowQr: (m) => this.$emit('show-qr', m)
+                onShowQr: (m) => this.$emit('show-qr', m),
+                onAddChild: (m) => this.$emit('add-child', m),
+                onAddSpouse: (m) => this.$emit('add-spouse', m)
             }))
         ) : null;
         
@@ -425,7 +475,8 @@ export default {
             posY: 0,
             isPanning: false,
             lastMouseX: 0,
-            lastMouseY: 0
+            lastMouseY: 0,
+            deleteModal: null
         }
     },
     computed: {
@@ -488,6 +539,8 @@ export default {
     mounted() {
         if (window.bootstrap) {
             this.modal = new window.bootstrap.Modal(document.getElementById('memberModal'));
+            const delEl = document.getElementById('deleteConfirmModal');
+            if (delEl) this.deleteModal = new window.bootstrap.Modal(delEl);
         }
         this.loadDoiTocHo();
         this.loadChiNhanh();
@@ -558,14 +611,41 @@ export default {
 
         // Modal Methods
         openAddModal() {
+            if (!this.selectedChiNhanhId) {
+                toastr.warning('Vui lòng chọn hoặc khởi tạo dòng họ trước khi thêm thành viên.');
+                return;
+            }
             this.isEditing = false;
             this.currentMember = {
                 id: null, ho_ten: '', doi_thu: 1, cha_id: null, gioi_tinh: 'Nam',
-                loai_quan_he: 'Chính', spouse_of_id: null, trang_thai: 'Còn sống', ngay_mat: null, ngay_sinh: null, ghi_chu: '', avatar: null
+                loai_quan_he: 'Chính', spouse_of_id: null, trang_thai: 'Còn sống', ngay_mat: null, ngay_sinh: null, ghi_chu: '', avatar: null,
+                chi_nhanh_id: this.selectedChiNhanhId
             };
             this.avatarFile = null;
             this.avatarPreview = null;
-            this.modal.show();
+            if (this.modal) this.modal.show();
+        },
+        onAddChild(parentMember) {
+            this.isEditing = false;
+            this.currentMember = {
+                id: null, ho_ten: '', doi_thu: parentMember.doi_thu + 1, cha_id: parentMember.id, gioi_tinh: 'Nam',
+                loai_quan_he: 'Chính', spouse_of_id: null, trang_thai: 'Còn sống', ngay_mat: null, ngay_sinh: null, ghi_chu: '', avatar: null,
+                chi_nhanh_id: this.selectedChiNhanhId
+            };
+            this.avatarFile = null;
+            this.avatarPreview = null;
+            if (this.modal) this.modal.show();
+        },
+        onAddSpouse(mainMember) {
+            this.isEditing = false;
+            this.currentMember = {
+                id: null, ho_ten: '', doi_thu: mainMember.doi_thu, cha_id: null, gioi_tinh: mainMember.gioi_tinh === 'Nam' ? 'Nữ' : 'Nam',
+                loai_quan_he: 'Vợ/Chồng', spouse_of_id: mainMember.id, trang_thai: 'Còn sống', ngay_mat: null, ngay_sinh: null, ghi_chu: '', avatar: null,
+                chi_nhanh_id: this.selectedChiNhanhId
+            };
+            this.avatarFile = null;
+            this.avatarPreview = null;
+            if (this.modal) this.modal.show();
         },
         onEdit(member) {
             this.isEditing = true;
@@ -613,16 +693,26 @@ export default {
             });
         },
         handleDelete() {
-            if (confirm('Xóa thành viên này?')) {
-                axios.post('http://127.0.0.1:8000/api/thanh-vien/delete', { id: this.currentMember.id }, this.getHeaders())
-                    .then(res => {
-                        if (res.data.status) {
-                            toastr.success(res.data.message);
-                            this.loadData();
-                            this.modal.hide();
-                        }
-                    });
+            if (this.deleteModal) {
+                this.deleteModal.show();
+            } else {
+                if (confirm('Xóa thành viên này?')) {
+                    this.confirmDelete();
+                }
             }
+        },
+        confirmDelete() {
+            axios.post('http://127.0.0.1:8000/api/thanh-vien/delete', { id: this.currentMember.id }, this.getHeaders())
+                .then(res => {
+                    if (res.data.status) {
+                        toastr.success(res.data.message);
+                        this.loadData();
+                        if (this.deleteModal) this.deleteModal.hide();
+                        if (this.modal) this.modal.hide();
+                    } else {
+                        toastr.error(res.data.message);
+                    }
+                });
         },
         showQRCardFromModal() {
             if (this.modal) this.modal.hide();
@@ -804,25 +894,81 @@ export default {
 .tree ul ul::before { content: ''; position: absolute; top: 0; left: 50%; border-left: 2px solid #ddd; width: 0; height: 50px; }
 
 /* Node Styling */
-.tree-node-group { display: inline-flex; align-items: center; justify-content: center; position: relative; z-index: 10; }
-.tree-connector-h { width: 30px; height: 2px; background: #ddd; }
+.tree-node-group { 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    position: relative; 
+    z-index: 10; 
+    margin: 0 auto;
+    width: max-content;
+}
+.tree-connector-h { width: 30px; height: 2px; background: #f43f5e; position: relative; }
+.connector-heart {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #f43f5e;
+    background: #fff;
+    padding: 2px;
+    border-radius: 50%;
+    font-size: 14px;
+}
 
 .tree-node-card {
-    background: #fff;
+    background: rgba(255, 255, 255, 0.9);
     border: 2px solid #ddd;
     padding: 10px;
     border-radius: 15px;
-    min-width: 200px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-    cursor: pointer;
     position: relative;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    width: 200px;
+    min-width: 200px;
+    cursor: pointer;
     display: flex;
     align-items: center;
     gap: 12px;
     transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    background: rgba(255, 255, 255, 0.9);
     backdrop-filter: blur(5px);
 }
+
+.quick-actions {
+    position: absolute;
+    bottom: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 8px;
+    opacity: 0;
+    transition: opacity 0.2s;
+    z-index: 20;
+    pointer-events: none;
+}
+.tree-node-card:hover .quick-actions {
+    opacity: 1;
+    pointer-events: auto;
+}
+.btn-action {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    color: #fff;
+    font-size: 16px;
+    padding: 0;
+    transition: transform 0.2s;
+}
+.btn-action:hover {
+    transform: scale(1.1);
+}
+.btn-action.add-child { background: #10b981; }
+.btn-action.add-spouse { background: #f43f5e; }
 
 .tree-node-card:hover {
     transform: translateY(-8px) scale(1.05);
@@ -895,7 +1041,8 @@ export default {
 .tree-node-card.spouse {
     border-style: dashed;
     border-left-width: 2px;
-    min-width: 180px;
+    width: 200px;
+    min-width: 200px;
 }
 
 .node-edit-btn {

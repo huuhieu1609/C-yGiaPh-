@@ -136,7 +136,27 @@
         </div>
       </div>
     </div>
+
+    <!-- Delete Confirm Modal -->
+     <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content radius-16 shadow-lg border-0 bg-adaptive-card overflow-hidden">
+          <div class="modal-header border-0 bg-dark-premium text-white p-3">
+            <h6 class="modal-title fw-bold text-warning">Xác nhận xóa</h6>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body p-3 text-start">
+            <p class="mb-0 text-secondary">Bạn có chắc chắn muốn xóa thông báo này? Hành động này không thể hoàn tác.</p>
+          </div>
+          <div class="modal-footer border-0 p-3 justify-content-end">
+            <button type="button" class="btn btn-light radius-30 px-3" data-bs-dismiss="modal">Hủy</button>
+            <button type="button" class="btn btn-gradient-orange text-white radius-30 px-3" @click="confirmDelete">Xóa</button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
+ 
 </template>
 
 <script>
@@ -156,7 +176,9 @@ export default {
         id: null,
         tieu_de: '',
         noi_dung: ''
-      }
+      },
+      pendingDeleteId: null,
+      deleteModal: null
     };
   },
   computed: {
@@ -177,6 +199,10 @@ export default {
       if (window.bootstrap && modalEl) {
         this.modal = new window.bootstrap.Modal(modalEl);
       }
+        const delEl = document.getElementById('deleteConfirmModal');
+        if (window.bootstrap && delEl) {
+          this.deleteModal = new window.bootstrap.Modal(delEl);
+        }
     });
     this.loadAnnouncements();
   },
@@ -262,20 +288,35 @@ export default {
         });
     },
     handleDelete(id) {
-      if (confirm('Bạn có chắc chắn muốn xóa thông báo này? Hành động này không thể hoàn tác.')) {
-        axios.post('http://127.0.0.1:8000/api/thong-bao/delete', { id }, this.getHeaders())
-          .then(res => {
-            if (res.data.status) {
-              toastr.success(res.data.message || 'Xóa thông báo thành công.');
-              this.loadAnnouncements();
-            } else {
-              toastr.error(res.data.message || 'Không thể xóa thông báo.');
-            }
-          })
-          .catch(() => {
-            toastr.error('Lỗi kết nối máy chủ khi thực hiện xóa.');
-          });
+      this.pendingDeleteId = id;
+      if (this.deleteModal) {
+        this.deleteModal.show();
+      } else {
+        // fallback to confirm
+        if (confirm('Bạn có chắc chắn muốn xóa thông báo này? Hành động này không thể hoàn tác.')) {
+          this.confirmDelete();
+        }
       }
+    },
+    confirmDelete() {
+      const id = this.pendingDeleteId;
+      if (!id) return;
+      axios.post('http://127.0.0.1:8000/api/thong-bao/delete', { id }, this.getHeaders())
+        .then(res => {
+          if (res.data.status) {
+            toastr.success(res.data.message || 'Xóa thông báo thành công.');
+            this.loadAnnouncements();
+          } else {
+            toastr.error(res.data.message || 'Không thể xóa thông báo.');
+          }
+        })
+        .catch(() => {
+          toastr.error('Lỗi kết nối máy chủ khi thực hiện xóa.');
+        })
+        .finally(() => {
+          if (this.deleteModal) this.deleteModal.hide();
+          this.pendingDeleteId = null;
+        });
     }
   }
 };

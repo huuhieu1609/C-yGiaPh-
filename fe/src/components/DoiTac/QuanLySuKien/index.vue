@@ -122,50 +122,124 @@
       </div>
     </div>
 
+    <!-- MODAL KHỞI TẠO / CẬP NHẬT SỰ KIỆN PREMIUM -->
     <div class="modal fade" id="eventCrudModal" tabindex="-1" aria-hidden="true">
-      <div class="modal-dialog modal-md modal-dialog-centered">
-        <div class="modal-content radius-24 shadow-lg border-0 bg-adaptive-card overflow-hidden">
-          <div class="modal-header border-0 bg-dark-premium text-white p-4">
-            <h5 class="modal-title fw-bold text-warning">
-              <i class="bx bx-calendar-event me-2"></i>{{ isEditing ? 'Cập Nhật Thiết Lập Sự Kiện' : 'Khởi Tạo Sự Kiện Dòng Họ Mới' }}
-            </h5>
-            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-          </div>
-          <div class="modal-body p-4 text-start">
-            <div class="row g-3">
-              <div class="col-12">
-                <label class="form-label fw-bold text-secondary small text-uppercase font-bold">Tiêu đề sự kiện</label>
-                <input type="text" class="form-control premium-input" v-model="form.tieu_de" placeholder="Ví dụ: Lễ Tế Tổ Mùa Xuân 2026">
+      <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content premium-modal border-0 shadow-lg bg-adaptive-card overflow-hidden">
+          
+          <!-- Header Modal cực đỉnh với dải màu Gradient chuyển động -->
+          <div class="modal-header border-0 premium-modal-header text-white p-4 position-relative">
+            <div class="header-overlay"></div>
+            <div class="position-relative z-index-2 d-flex align-items-center gap-3 w-100">
+              <div class="header-icon-box shadow-sm">
+                <i class="bx bx-calendar-event fs-3 text-warning"></i>
               </div>
-              <div class="col-md-6">
-                <label class="form-label fw-bold text-secondary small text-uppercase font-bold">Phân loại danh mục</label>
-                <select class="form-select premium-select" v-model="form.loai">
-                  <option value="Giỗ tổ">Giỗ tổ</option>
-                  <option value="Họp họ">Họp họ</option>
-                  <option value="Cưới hỏi">Cưới hỏi</option>
-                  <option value="Tang lễ">Tang lễ</option>
-                </select>
+              <div class="flex-grow-1">
+                <h5 class="modal-title fw-bold text-white mb-1">
+                  {{ isEditing ? 'Cập Nhật Thiết Lập Sự Kiện' : 'Khởi Tạo Sự Kiện Dòng Họ Mới' }}
+                </h5>
+                <p class="text-white-50 small mb-0">Quản lý hoạt động cúng tế, họp mặt và ngày kỷ niệm dòng họ.</p>
               </div>
-              <div class="col-md-6">
-                <label class="form-label fw-bold text-secondary small text-uppercase font-bold">Thời gian tổ chức</label>
-                <input type="datetime-local" class="form-control premium-input" v-model="form.ngay_to_chuc">
-              </div>
-              <div class="col-12">
-                <label class="form-label fw-bold text-secondary small text-uppercase font-bold">Địa điểm diễn ra</label>
-                <input type="text" class="form-control premium-input" v-model="form.dia_diem" placeholder="Ví dụ: Nhà thờ tổ hoặc Khách sạn A">
-              </div>
-              <div class="col-12">
-                <label class="form-label fw-bold text-secondary small text-uppercase font-bold">Nội dung chi tiết / Thông báo</label>
-                <textarea class="form-control premium-textarea" rows="4" v-model="form.noi_dung" placeholder="Mô tả kế hoạch, đóng góp công đức lễ lạt, chương trình nghị sự..."></textarea>
-              </div>
+              <button type="button" class="btn-close btn-close-white ms-auto" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
           </div>
-          <div class="modal-footer border-0 p-4 justify-content-end gap-2">
-            <button class="btn btn-light radius-30 px-4 fw-medium" data-bs-dismiss="modal">Hủy</button>
-            <button class="btn btn-gradient-orange text-white px-4 radius-30 fw-bold border-0 shadow-sm" @click="saveEvent">
-              {{ isEditing ? 'Cập Nhật' : 'Tạo Sự Kiện' }}
+
+          <!-- Body Modal với bố cục 2 cột (hoặc grouped) -->
+          <div class="modal-body p-4 text-start bg-adaptive-card">
+            <div class="row g-4">
+              
+              <!-- Cột trái: Thông tin cơ bản -->
+              <div class="col-lg-6">
+                <div class="form-section-card p-3 rounded-4 border-adaptive mb-3">
+                  <h6 class="fw-bold mb-3 theme-text-main d-flex align-items-center">
+                    <i class="bx bx-info-circle text-orange-premium me-2"></i>Thông Tin Cơ Bản
+                  </h6>
+                  
+                  <div class="mb-3">
+                    <label class="form-label-premium">
+                      <i class="bx bx-edit-alt me-1"></i>Tiêu đề sự kiện <span class="text-danger">*</span>
+                    </label>
+                    <input type="text" class="form-control premium-input-glow" v-model="form.tieu_de" placeholder="Ví dụ: Giỗ Tổ Cuối Năm 2026">
+                  </div>
+                  
+                  <div class="row g-2">
+                    <div class="col-md-6">
+                      <label class="form-label-premium">
+                        <i class="bx bx-grid-alt me-1"></i>Phân loại danh mục
+                      </label>
+                      <select class="form-select premium-select-glow" v-model="form.loai">
+                        <option value="Giỗ tổ">Giỗ tổ</option>
+                        <option value="Họp họ">Họp họ</option>
+                        <option value="Cưới hỏi">Cưới hỏi</option>
+                        <option value="Tang lễ">Tang lễ</option>
+                      </select>
+                    </div>
+                    
+                    <div class="col-md-6">
+                      <label class="form-label-premium">
+                        <i class="bx bx-time me-1"></i>Thời gian tổ chức <span class="text-danger">*</span>
+                      </label>
+                      <input type="datetime-local" class="form-control premium-input-glow" v-model="form.ngay_to_chuc">
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-section-card p-3 rounded-4 border-adaptive">
+                  <h6 class="fw-bold mb-3 theme-text-main d-flex align-items-center">
+                    <i class="bx bx-globe text-orange-premium me-2"></i>Phạm Vi & Liên Kết
+                  </h6>
+                  
+                  <div>
+                    <label class="form-label-premium">
+                      <i class="bx bx-git-branch me-1"></i>Liên kết Chi Nhánh
+                    </label>
+                    <select class="form-select premium-select-glow" v-model="form.chi_nhanh_id">
+                      <option :value="null">-- Sự kiện công cộng (Toàn hệ) --</option>
+                      <option v-for="cn in listChiNhanh" :key="cn.id" :value="cn.id">{{ cn.ten_chi }}</option>
+                    </select>
+                    <small class="text-muted d-block mt-2">
+                      <i class="bx bx-info-circle me-1"></i>Liên kết chi nhánh giúp lọc thành viên đăng ký và gửi thông báo chuẩn xác.
+                    </small>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Cột phải: Chi tiết và địa điểm -->
+              <div class="col-lg-6">
+                <div class="form-section-card p-3 rounded-4 border-adaptive h-100 d-flex flex-column">
+                  <h6 class="fw-bold mb-3 theme-text-main d-flex align-items-center">
+                    <i class="bx bx-detail text-orange-premium me-2"></i>Chi Tiết Sự Kiện
+                  </h6>
+                  
+                  <div class="mb-3">
+                    <label class="form-label-premium">
+                      <i class="bx bx-map-pin me-1"></i>Địa điểm diễn ra
+                    </label>
+                    <input type="text" class="form-control premium-input-glow" v-model="form.dia_diem" placeholder="Ví dụ: Nhà thờ tổ hoặc Khách sạn Hoa Sen">
+                  </div>
+                  
+                  <div class="mb-0 flex-grow-1 d-flex flex-column">
+                    <label class="form-label-premium">
+                      <i class="bx bx-message-detail me-1"></i>Nội dung chi tiết / Thông báo
+                    </label>
+                    <textarea class="form-control premium-textarea-glow flex-grow-1" rows="6" v-model="form.noi_dung" placeholder="Kế hoạch chi tiết, thời gian biểu, phân công công đức lộc lá..."></textarea>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Footer Modal với phím bóng bẩy -->
+          <div class="modal-footer border-0 p-4 bg-adaptive-card d-flex justify-content-end gap-3 position-relative z-index-2">
+            <button class="btn btn-premium-cancel px-4 radius-30 fw-semibold" data-bs-dismiss="modal">
+              <i class="bx bx-x me-1"></i> Hủy Bỏ
+            </button>
+            <button class="btn btn-gradient-orange text-white px-5 radius-30 fw-bold border-0 shadow-premium" @click="saveEvent">
+              <i class="bx bx-check-double me-1 fs-5"></i> {{ isEditing ? 'Cập Nhật Ngay' : 'Tạo Sự Kiện' }}
             </button>
           </div>
+
         </div>
       </div>
     </div>
@@ -192,6 +266,7 @@ export default {
         dia_diem: '',
         loai: 'Giỗ tổ'
       },
+      listChiNhanh: [],
       searchQuery: '',
       filterDoi: '',
       isEditing: false,
@@ -218,6 +293,7 @@ export default {
   },
   mounted() {
     this.loadEvents();
+    this.loadChiNhanh();
     if (window.bootstrap) {
       this.modal = new window.bootstrap.Modal(document.getElementById('eventCrudModal'));
     }
@@ -232,6 +308,7 @@ export default {
       .then(res => {
         if (res.data.status) {
           this.events = res.data.data;
+          toastr.info('Đã tải thành công ' + this.events.length + ' sự kiện.');
           if (this.events.length > 0 && !this.selectedEventId) {
             this.selectEvent(this.events[0]);
           }
@@ -244,6 +321,22 @@ export default {
       })
       .finally(() => {
         this.isLoading = false;
+      });
+    },
+    loadChiNhanh() {
+      axios.get('http://127.0.0.1:8000/api/chi-nhanh/get-data', this.getHeaders())
+      .then(res => {
+        if (res.data.status) {
+          this.listChiNhanh = res.data.data;
+          if (!this.form.chi_nhanh_id && this.listChiNhanh.length) {
+            this.form.chi_nhanh_id = this.listChiNhanh[0].id;
+          }
+        } else {
+          toastr.error(res.data.message || 'Không thể tải danh sách chi nhánh.');
+        }
+      })
+      .catch(err => {
+        toastr.error(err.response?.data?.message || 'Lỗi kết nối khi tải danh sách chi nhánh.');
       });
     },
     selectEvent(ev) {
@@ -262,7 +355,7 @@ export default {
     openAddModal() {
       this.isEditing = false;
       this.form = {
-        id: null, tieu_de: '', noi_dung: '', ngay_to_chuc: '', dia_diem: '', loai: 'Giỗ tổ'
+        id: null, tieu_de: '', noi_dung: '', ngay_to_chuc: '', dia_diem: '', loai: 'Giỗ tổ', chi_nhanh_id: (this.listChiNhanh[0] && this.listChiNhanh[0].id) || null
       };
       this.modal.show();
     },
@@ -274,7 +367,8 @@ export default {
         noi_dung: ev.noi_dung || '',
         ngay_to_chuc: ev.ngay_to_chuc ? ev.ngay_to_chuc.substring(0, 16) : '',
         dia_diem: ev.dia_diem || '',
-        loai: ev.loai
+        loai: ev.loai,
+        chi_nhanh_id: ev.chi_nhanh_id || null
       };
       this.modal.show();
     },
@@ -326,6 +420,11 @@ export default {
       if (loai === 'Họp họ') return 'badge-hopho';
       if (loai === 'Cưới hỏi') return 'badge-cuoihoi';
       return 'badge-tangle';
+    },
+    fmtDateTime(d) {
+      if (!d) return '';
+      const dt = new Date(d);
+      return dt.toLocaleDateString('vi-VN') + ' ' + dt.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
     }
   }
 };
@@ -427,6 +526,108 @@ export default {
 .premium-textarea {
   border-radius: 14px !important; border: 1px solid var(--border-color) !important;
   padding: 12px 14px !important; font-size: 14px; background-color: var(--input-bg) !important; color: var(--text-main) !important; box-shadow: none !important;
+}
+.premium-textarea:focus { border-color: #f97316 !important; background-color: var(--card-bg) !important; }
+
+/* ─── PREMIUM MODAL STYLING SYSTEM ─── */
+.premium-modal {
+  border-radius: 24px !important;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15) !important;
+  border: 1px solid var(--border-color) !important;
+}
+
+.premium-modal-header {
+  background: linear-gradient(135deg, #111827 0%, #1e293b 100%) !important;
+  padding: 24px 28px !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+[data-theme="dark"] .premium-modal-header {
+  background: linear-gradient(135deg, #090d16 0%, #111827 100%) !important;
+}
+
+.header-overlay {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 80% 20%, rgba(249, 115, 22, 0.08) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.header-icon-box {
+  width: 50px;
+  height: 50px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.form-section-card {
+  background: var(--input-bg) !important;
+  border: 1px solid var(--border-color) !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.01) !important;
+  transition: border-color 0.3s;
+}
+.form-section-card:hover {
+  border-color: rgba(249, 115, 22, 0.25) !important;
+}
+.table-row-premium:hover { background-color: var(--input-bg) !important; }
+
+.form-label-premium {
+  font-size: 12.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-sub) !important;
+  margin-bottom: 8px;
+  display: block;
+}
+
+/* INPUT GLOW STYLINGS */
+.premium-input-glow, .premium-select-glow, .premium-textarea-glow {
+  border-radius: 12px !important;
+  border: 1px solid var(--border-color) !important;
+  padding: 10px 16px !important;
+  font-size: 14px;
+  background-color: var(--card-bg) !important;
+  color: var(--text-main) !important;
+  box-shadow: none !important;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+.premium-input-glow:focus, .premium-select-glow:focus, .premium-textarea-glow:focus {
+  border-color: #f97316 !important;
+  box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.12) !important;
+  transform: translateY(-1px);
+  background-color: var(--card-bg) !important;
+}
+
+.text-orange-premium {
+  color: #f97316 !important;
+}
+
+/* CANCEL BUTTON GLASS */
+.btn-premium-cancel {
+  background: transparent !important;
+  border: 1px solid var(--border-color) !important;
+  color: var(--text-sub) !important;
+  border-radius: 30px !important;
+  transition: all 0.25s ease;
+}
+.btn-premium-cancel:hover {
+  background: var(--input-bg) !important;
+  color: var(--text-main) !important;
+  border-color: var(--text-sub) !important;
+}
+
+/* SHADOW GLOW ON PRIMARY */
+.shadow-premium {
+  box-shadow: 0 6px 20px rgba(244, 63, 94, 0.3) !important;
+  transition: all 0.3s ease;
+}
+.shadow-premium:hover {
+  box-shadow: 0 8px 25px rgba(244, 63, 94, 0.45) !important;
+  transform: translateY(-1.5px);
 }
 .premium-textarea:focus { border-color: #f97316 !important; background-color: var(--card-bg) !important; }
 </style>

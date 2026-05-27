@@ -232,23 +232,25 @@ export default {
         resetSelection() { this.idA = null; this.idB = null; this.result = null; },
         calculateRelationship() {
             if (this.idA === this.idB) { toastr.warning('Vui lòng chọn hai thành viên khác nhau!'); return; }
-            const a = this.personA, b = this.personB;
-            const diff = a.doi_thu - b.doi_thu;
-            let term = "Họ hàng", description = "Cùng nằm trong hệ thống huyết thống của dòng tộc.";
-            if (diff === 0) {
-                if (a.cha_id === b.cha_id && a.cha_id !== null) { term = a.gioi_tinh === 'Nam' ? "Anh / Em" : "Chị / Em"; description = "Là anh chị em ruột, cùng chung huyết thống trực hệ."; }
-                else { term = "Anh / Chị / Em họ"; description = "Cùng một thế hệ nhưng khác nhánh phụ hoặc đời cha mẹ khác nhau."; }
-            } else if (diff === 1) {
-                if (a.cha_id === b.id) { term = b.gioi_tinh === 'Nam' ? "Bố / Cha" : "Mẹ"; description = "Quan hệ cha con/mẹ con trực hệ, một bậc sinh thành."; }
-                else { term = b.gioi_tinh === 'Nam' ? "Chú / Bác" : "Cô / Dì"; description = b.ho_ten + " là hàng bề trên (cùng thế hệ với cha/mẹ)."; }
-            } else if (diff === -1) {
-                if (b.cha_id === a.id) { term = "Con cái"; description = b.ho_ten + " là hậu duệ trực hệ (đời con)."; }
-                else { term = "Cháu"; description = b.ho_ten + " là hàng cháu, vai dưới một bậc."; }
-            } else if (diff === 2) { term = b.gioi_tinh === 'Nam' ? "Ông" : "Bà"; description = b.ho_ten + " là bậc tiền bối đời thứ hai (ông bà)."; }
-            else if (diff === -2) { term = "Cháu Nội / Ngoại"; description = b.ho_ten + " là hậu duệ đời thứ hai (cháu)."; }
-            else if (diff >= 3) { term = "Cụ / Cố"; description = b.ho_ten + " là bậc đại tiền bối khởi nguồn lâu đời."; }
-            else if (diff <= -3) { term = "Chắt / Chít"; description = b.ho_ten + " là hậu duệ các đời tiếp theo."; }
-            this.result = { term, description };
+
+            axios.post('http://127.0.0.1:8000/api/thanh-vien/xac-dinh-quan-he', {
+                id_a: this.idA,
+                id_b: this.idB
+            }, this.getHeaders())
+            .then(res => {
+                if (res.data.status) {
+                    this.result = {
+                        term: res.data.term,
+                        description: res.data.description,
+                        path: res.data.path || []
+                    };
+                } else {
+                    toastr.error(res.data.message || 'Lỗi xác định mối quan hệ!');
+                }
+            })
+            .catch(err => {
+                toastr.error(err.response?.data?.message || 'Có lỗi xảy ra khi kết nối máy chủ!');
+            });
         }
     }
 }

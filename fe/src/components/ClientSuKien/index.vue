@@ -180,9 +180,13 @@ export default {
     }
   },
   methods: {
+    getHeaders() {
+      const token = localStorage.getItem('access_token');
+      return token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+    },
     loadData() {
       this.isLoading = true;
-      axios.get('http://127.0.0.1:8000/api/su-kien/get-data')
+      axios.get('http://127.0.0.1:8000/api/su-kien/get-data', this.getHeaders())
       .then(res => {
         if (res.data.status) {
           this.events = res.data.data;
@@ -201,7 +205,7 @@ export default {
       });
     },
     loadMembers() {
-      axios.get('http://127.0.0.1:8000/api/thanh-vien/get-data')
+      axios.get('http://127.0.0.1:8000/api/thanh-vien/get-data', this.getHeaders())
       .then(res => {
         if (res.data.status) {
           this.allMembers = res.data.data;
@@ -209,7 +213,7 @@ export default {
       });
     },
     loadParticipants(suKienId) {
-      axios.get(`http://127.0.0.1:8000/api/su-kien/get-participants/${suKienId}`)
+      axios.get(`http://127.0.0.1:8000/api/su-kien/get-participants/${suKienId}`, this.getHeaders())
       .then(res => {
         if (res.data.status) {
           this.participantsMap[suKienId] = res.data.data;

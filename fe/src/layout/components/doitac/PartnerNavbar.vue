@@ -84,6 +84,13 @@
             <span class="nav-dot hide-on-collapse"></span>
           </router-link>
         </li>
+        <li class="nav-item item-map">
+          <router-link to="/doi-tac/ban-do" class="nav-link" active-class="active" title="Bản Đồ Số">
+            <span class="nav-icon"><i class="bx bx-map-alt"></i></span>
+            <span class="hide-on-collapse nav-label">Bản Đồ Số</span>
+            <span class="nav-dot hide-on-collapse"></span>
+          </router-link>
+        </li>
         
         <li class="section-heading hide-on-collapse">Công Cụ & Hoạt Động</li>
         
