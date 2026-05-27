@@ -292,6 +292,11 @@ const routes = [
                 path: 'su-kien',
                 name: 'partner-su-kien',
                 component: () => import('../components/DoiTac/QuanLySuKien/index.vue')
+            },
+            {
+                path: 'ban-do',
+                name: 'partner-ban-do',
+                component: () => import('../components/DoiTac/QuanLyBanDo/index.vue')
             }
         ]
     }
