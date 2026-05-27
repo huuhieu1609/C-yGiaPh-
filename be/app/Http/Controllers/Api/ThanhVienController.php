@@ -271,14 +271,15 @@ class ThanhVienController extends Controller
             $nguoi2 = ThanhVien::findOrFail($request->nguoi_2);
 
             $result = $relationshipService->resolveDetailed($nguoi1, $nguoi2);
+            $term = $relationshipService->resolve($nguoi1, $nguoi2) ?? 'quan hệ';
 
             // Bổ sung đầy đủ các bộ key để tương thích đồng thời cả Web và Mobile
             return response()->json([
                 'status' => true,
                 'success' => true,
-                'term' => $result['relationship'], // Cho Web
-                'relationship' => $result['relationship'], // Cho Mobile/API
-                'description' => "{$nguoi1->ho_ten} là {$result['relationship']} của {$nguoi2->ho_ten}.", // Cho Web
+                'term' => $term, // Cho Web hiển thị trên Badge (Ví dụ: "cụ họ")
+                'relationship' => $result['relationship'], // Cho Mobile/API (Ví dụ: "Nguyễn Đức Cường là cụ họ của...")
+                'description' => $result['relationship'], // Cho Web hiển thị ở Footer (Ví dụ: "Nguyễn Đức Cường là cụ họ của...")
                 'path' => $result['path'],
                 'members' => $result['members']
             ]);
