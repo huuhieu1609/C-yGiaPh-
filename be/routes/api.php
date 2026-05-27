@@ -79,6 +79,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/status', [ThanhVienController::class, 'status']);
         Route::post('/search', [ThanhVienController::class, 'search']);
         Route::post('/xac-dinh-quan-he', [ThanhVienController::class, 'xacDinhQuanHe']);
+        Route::post('/tra-cuu-quan-he', [ThanhVienController::class, 'traCuuQuanHe']);
     });
 
     Route::prefix('/nguoi-dung')->group(function () {
@@ -142,10 +143,12 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::prefix('/mo-phan')->group(function () {
         Route::get('/get-data', [MoPhanController::class, 'getData']);
+        Route::get('/get-detail/{id}', [MoPhanController::class, 'getDetail']);
+        Route::get('/nearby', [MoPhanController::class, 'getNearby']);
         Route::post('/create', [MoPhanController::class, 'create']);
         Route::post('/update', [MoPhanController::class, 'update']);
         Route::post('/delete', [MoPhanController::class, 'delete']);
-        Route::post('/status', [MoPhanController::class, 'status']);
+        Route::post('/search', [MoPhanController::class, 'search']);
     });
 
     Route::prefix('/nha-tho-ho')->group(function () {

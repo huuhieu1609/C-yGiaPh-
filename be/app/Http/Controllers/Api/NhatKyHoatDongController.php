@@ -30,6 +30,12 @@ class NhatKyHoatDongController extends Controller
     {
         try {
             $data = $request->all();
+            if (!isset($data['nguoi_dung_id']) || empty($data['nguoi_dung_id'])) {
+                $user = auth('sanctum')->user();
+                if ($user) {
+                    $data['nguoi_dung_id'] = $user->id;
+                }
+            }
             if ('NhatKyHoatDong' === 'NguoiDung' && isset($data['mat_khau'])) {
                 $data['mat_khau'] = bcrypt($data['mat_khau']);
             }
