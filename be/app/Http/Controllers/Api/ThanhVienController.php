@@ -235,6 +235,16 @@ class ThanhVienController extends Controller
     public function traCuuQuanHe(Request $request, RelationshipService $relationshipService)
     {
         try {
+            // Chuẩn hóa tham số để tương thích cả Web (id_a, id_b) và các API clients khác (nguoi_1, nguoi_2)
+            $n1 = $request->input('nguoi_1') ?? $request->input('id_a') ?? $request->input('id_1');
+            $n2 = $request->input('nguoi_2') ?? $request->input('id_b') ?? $request->input('id_2');
+
+            // Merge để chạy validate
+            $request->merge([
+                'nguoi_1' => $n1,
+                'nguoi_2' => $n2,
+            ]);
+
             $validator = Validator::make($request->all(), [
                 'nguoi_1' => 'required|integer|exists:thanh_viens,id',
                 'nguoi_2' => 'required|integer|exists:thanh_viens,id',
@@ -243,6 +253,7 @@ class ThanhVienController extends Controller
             if ($validator->fails()) {
                 return response()->json([
                     'status' => false,
+                    'success' => false,
                     'message' => 'Dữ liệu không hợp lệ!',
                     'errors' => $validator->errors()
                 ], 400);
@@ -251,6 +262,7 @@ class ThanhVienController extends Controller
             if ($request->nguoi_1 == $request->nguoi_2) {
                 return response()->json([
                     'status' => false,
+                    'success' => false,
                     'message' => 'Hai người cần tra cứu phải khác nhau!'
                 ], 400);
             }
@@ -260,15 +272,20 @@ class ThanhVienController extends Controller
 
             $result = $relationshipService->resolveDetailed($nguoi1, $nguoi2);
 
+            // Bổ sung đầy đủ các bộ key để tương thích đồng thời cả Web và Mobile
             return response()->json([
+                'status' => true,
                 'success' => true,
-                'relationship' => $result['relationship'],
+                'term' => $result['relationship'], // Cho Web
+                'relationship' => $result['relationship'], // Cho Mobile/API
+                'description' => "{$nguoi1->ho_ten} là {$result['relationship']} của {$nguoi2->ho_ten}.", // Cho Web
                 'path' => $result['path'],
                 'members' => $result['members']
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
+                'success' => false,
                 'message' => $e->getMessage()
             ], 500);
         }
