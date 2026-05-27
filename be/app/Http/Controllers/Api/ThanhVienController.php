@@ -226,10 +226,10 @@ class ThanhVienController extends Controller
      * Phương thức này chỉ giữ lại để tương thích ngược với route cũ.
      * Toàn bộ logic đã được chuyển sang traCuuQuanHe và RelationshipService.
      */
-    public function xacDinhQuanHe(Request $request)
+    public function xacDinhQuanHe(Request $request, RelationshipService $relationshipService)
     {
         // Chuyển tiếp request sang phương thức tra cứu chính đã được tối ưu
-        return $this->traCuuQuanHe($request, new RelationshipService());
+        return $this->traCuuQuanHe($request, $relationshipService);
     }
 
     public function traCuuQuanHe(Request $request, RelationshipService $relationshipService)
