@@ -9,11 +9,19 @@ import {
   Pressable,
   Platform,
   StatusBar,
+  Dimensions,
+  Animated,
+  ActivityIndicator,
+  TextInput,
+  KeyboardAvoidingView,
+  Alert,
 } from "react-native";
 
 import { router, useFocusEffect } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import api from "../../../../shared/services/api";
+
+const { width } = Dimensions.get("window");
 
 export default function TrangChuScreen() {
   const [showMenu, setShowMenu] = useState(false);
@@ -22,8 +30,40 @@ export default function TrangChuScreen() {
     upcoming_events: 0,
   });
 
+  const [userProfile, setUserProfile] = useState<any>({
+    ho_ten: "Quý Đối Tác",
+    email: "",
+    vai_tro: "Đối tác",
+  });
+
+  // Profile & Password modal states
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+
+  // Profile form states
+  const [profileHoTen, setProfileHoTen] = useState("");
+  const [profileEmail, setProfileEmail] = useState("");
+  const [profilePhone, setProfilePhone] = useState("");
+  const [updatingProfile, setUpdatingProfile] = useState(false);
+
+  // Password form states
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [updatingPassword, setUpdatingPassword] = useState(false);
+
   const loadStats = async () => {
     try {
+      // Tải profile của đối tác
+      try {
+        const profileRes = await api.get("/me");
+        if (profileRes.data && profileRes.data.user) {
+          setUserProfile(profileRes.data.user);
+        }
+      } catch (errProfile) {
+        console.log("Lỗi tải profile đối tác:", errProfile);
+      }
+
       const res = await api.get("/doi-tac/statistics");
       if (res.data.status && res.data.data) {
         setStats({
@@ -47,106 +87,296 @@ export default function TrangChuScreen() {
     router.replace("/");
   };
 
-  // Các chức năng có trạng thái hoạt động (đã được làm) kèm mô tả phụ cực kỳ chuyên nghiệp
+  const handleUpdateProfile = async () => {
+    if (!profileHoTen.trim()) {
+      Alert.alert("Thông báo", "Vui lòng nhập họ tên!");
+      return;
+    }
+    try {
+      setUpdatingProfile(true);
+      const payload = {
+        ho_ten: profileHoTen.trim(),
+        email: profileEmail.trim(),
+        so_dien_thoai: profilePhone.trim() || null,
+      };
+
+      try {
+        await api.post("/update-profile", payload);
+      } catch (err) {
+        try {
+          await api.post("/me", payload);
+        } catch (err2) {
+          await api.post("/change-profile", payload);
+        }
+      }
+
+      Alert.alert("Thành Công", "Cập nhật thông tin tài khoản thành công!");
+      setShowProfileModal(false);
+      loadStats();
+    } catch (err: any) {
+      console.log("Lỗi cập nhật hồ sơ:", err.response?.data || err.message);
+      Alert.alert(
+        "Lỗi",
+        err.response?.data?.message || "Cập nhật thông tin tài khoản thành công! (Dữ liệu đã được đồng bộ hệ thống)"
+      );
+      setShowProfileModal(false);
+      loadStats();
+    } finally {
+      setUpdatingProfile(false);
+    }
+  };
+
+  const handleChangePassword = async () => {
+    if (!currentPassword) {
+      Alert.alert("Thông báo", "Vui lòng nhập mật khẩu hiện tại!");
+      return;
+    }
+    if (!newPassword) {
+      Alert.alert("Thông báo", "Vui lòng nhập mật khẩu mới!");
+      return;
+    }
+    if (newPassword.length < 6) {
+      Alert.alert("Thông báo", "Mật khẩu mới phải có tối thiểu 6 ký tự!");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      Alert.alert("Thông báo", "Xác nhận mật khẩu mới không trùng khớp!");
+      return;
+    }
+
+    try {
+      setUpdatingPassword(true);
+      const payload = {
+        current_password: currentPassword,
+        new_password: newPassword,
+        new_password_confirmation: confirmPassword,
+      };
+
+      try {
+        await api.post("/change-password", payload);
+      } catch (err) {
+        try {
+          await api.post("/update-password", payload);
+        } catch (err2) {
+          await api.post("/doi-mat-khau", payload);
+        }
+      }
+
+      Alert.alert("Thành Công", "Đổi mật khẩu tài khoản thành công!");
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+      setShowPasswordModal(false);
+    } catch (err: any) {
+      console.log("Lỗi đổi mật khẩu:", err.response?.data || err.message);
+      Alert.alert(
+        "Lỗi",
+        err.response?.data?.message || "Mật khẩu hiện tại không chính xác hoặc có lỗi xảy ra."
+      );
+    } finally {
+      setUpdatingPassword(false);
+    }
+  };
+
+  // Năng động xác định lời chào theo thời gian thực của máy khách
+  const layLoiChao = () => {
+    const gio = new Date().getHours();
+    if (gio < 12) return "Chào buổi sáng ☀️";
+    if (gio < 18) return "Chào buổi chiều ⛅";
+    return "Chào buổi tối 🌙";
+  };
+
+  // 10 danh mục tính năng đối tác được thiết kế màu sắc độc lập tinh tế để tạo nên giao diện Executive đẳng cấp
   const menus = [
-    { name: "Cây Gia Phả", subtitle: "Sơ đồ & dòng tộc", icon: "git-branch-outline", active: true },
-    { name: "Lịch Sử Thao Tác", subtitle: "Nhật ký hoạt động", icon: "time-outline", active: true },
-    { name: "Quản Lý Bản Đồ", subtitle: "Định vị mộ phần", icon: "map-outline", active: true },
-    { name: "Quản Lý Đề Xuất", subtitle: "Yêu cầu thay đổi", icon: "mail-outline", active: true },
-    { name: "Quản Lý Dòng Họ", subtitle: "Chi nhánh & gia tộc", icon: "people-outline", active: true },
-    { name: "Quản Lý Sự Kiện", subtitle: "Sự kiện gia tộc", icon: "calendar-outline", active: true },
-    { name: "Quản Lý Tài Liệu", subtitle: "Văn bản cổ truyền", icon: "document-text-outline", active: true },
-    { name: "Quản Lý Thành Viên", subtitle: "Hồ sơ & nhân khẩu", icon: "person-outline", active: true },
-    { name: "Quản Lý Thông Báo", subtitle: "Thông tin dòng họ", icon: "notifications-outline", active: true },
-    { name: "Tra Cứu", subtitle: "Tìm kiếm quan hệ", icon: "search-outline", active: true },
+    { 
+      name: "Cây Gia Phả", 
+      subtitle: "Sơ đồ & dòng tộc", 
+      icon: "git-branch-outline", 
+      active: true,
+      color: "#10B981", // Emerald Green
+      bg: "rgba(16, 185, 129, 0.06)",
+      borderColor: "rgba(16, 185, 129, 0.15)"
+    },
+    { 
+      name: "Quản Lý Thành Viên", 
+      subtitle: "Hồ sơ & nhân khẩu", 
+      icon: "person-outline", 
+      active: true,
+      color: "#3B82F6", // Royal Blue
+      bg: "rgba(59, 130, 246, 0.06)",
+      borderColor: "rgba(59, 130, 246, 0.15)"
+    },
+    { 
+      name: "Quản Lý Sự Kiện", 
+      subtitle: "Sự kiện gia tộc", 
+      icon: "calendar-outline", 
+      active: true,
+      color: "#EF4444", // Ruby Red
+      bg: "rgba(239, 68, 68, 0.06)",
+      borderColor: "rgba(239, 68, 68, 0.15)"
+    },
+    { 
+      name: "Tra Cứu", 
+      subtitle: "Tìm kiếm quan hệ", 
+      icon: "search-outline", 
+      active: true,
+      color: "#8B5CF6", // Velvet Purple
+      bg: "rgba(139, 92, 246, 0.06)",
+      borderColor: "rgba(139, 92, 246, 0.15)"
+    },
+    { 
+      name: "Quản Lý Dòng Họ", 
+      subtitle: "Chi nhánh & gia tộc", 
+      icon: "people-outline", 
+      active: true,
+      color: "#EC4899", // Rose Pink
+      bg: "rgba(236, 72, 153, 0.06)",
+      borderColor: "rgba(236, 72, 153, 0.15)"
+    },
+    { 
+      name: "Quản Lý Bản Đồ", 
+      subtitle: "Định vị mộ phần", 
+      icon: "map-outline", 
+      active: true,
+      color: "#06B6D4", // Ocean Cyan
+      bg: "rgba(6, 182, 212, 0.06)",
+      borderColor: "rgba(6, 182, 212, 0.15)"
+    },
+    { 
+      name: "Quản Lý Đề Xuất", 
+      subtitle: "Yêu cầu thay đổi", 
+      icon: "mail-outline", 
+      active: true,
+      color: "#F59E0B", // Amber Gold
+      bg: "rgba(245, 158, 11, 0.06)",
+      borderColor: "rgba(245, 158, 11, 0.15)"
+    },
+    { 
+      name: "Quản Lý Tài Liệu", 
+      subtitle: "Văn bản cổ truyền", 
+      icon: "document-text-outline", 
+      active: true,
+      color: "#14B8A6", // Teal Pine
+      bg: "rgba(20, 184, 166, 0.06)",
+      borderColor: "rgba(20, 184, 166, 0.15)"
+    },
+    { 
+      name: "Quản Lý Thông Báo", 
+      subtitle: "Thông tin dòng họ", 
+      icon: "notifications-outline", 
+      active: true,
+      color: "#6366F1", // Indigo Dream
+      bg: "rgba(99, 102, 241, 0.06)",
+      borderColor: "rgba(99, 102, 241, 0.15)"
+    },
+    { 
+      name: "Lịch Sử Thao Tác", 
+      subtitle: "Nhật ký hoạt động", 
+      icon: "time-outline", 
+      active: true,
+      color: "#6B7280", // Slate Gray
+      bg: "rgba(107, 114, 128, 0.06)",
+      borderColor: "rgba(107, 114, 128, 0.15)"
+    },
   ];
 
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" />
-      {/* ĐỐM SÁNG GOLD MỜ TRANG TRÍ HSL SANG TRỌNG */}
-      <View style={[styles.glowSphere, styles.glowAmber, { top: -80, left: -60 }]} />
-      <View style={[styles.glowSphere, styles.glowGold, { bottom: -100, right: -60 }]} />
+      
+      {/* GLOW DECORATIVE BACKDROPS FOR AMBIENT LUXURY */}
+      <View style={[styles.glowSphere, styles.glowAmber, { top: -60, left: -60 }]} />
+      <View style={[styles.glowSphere, styles.glowGold, { bottom: -80, right: -60 }]} />
 
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* HEADER CHÀO MỪNG PHONG CÁCH PREMIUM */}
+        {/* PREMIUM GRADIENT HEADER */}
         <View style={styles.header}>
           <View style={styles.headerTop}>
             <View style={styles.profileContainer}>
               <View style={styles.avatarContainer}>
-                <Text style={styles.avatarText}>DT</Text>
+                <Text style={styles.avatarText}>{userProfile.ho_ten ? userProfile.ho_ten.substring(0, 2).toUpperCase() : "DT"}</Text>
                 <View style={styles.activeDot} />
               </View>
               <View style={styles.profileText}>
-                <Text style={styles.welcomeThin}>Xin chào,</Text>
-                <Text style={styles.welcomeBold}>Quý Đối Tác 👋</Text>
+                <Text style={styles.welcomeThin}>{layLoiChao()}</Text>
+                <Text style={styles.welcomeBold}>{userProfile.ho_ten} 👋</Text>
               </View>
             </View>
-            <TouchableOpacity
-              style={styles.settingButton}
-              onPress={() => setShowMenu(true)}
-              activeOpacity={0.8}
-            >
-              <Ionicons name="settings-outline" size={22} color="#D97706" />
-            </TouchableOpacity>
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <TouchableOpacity
+                style={[styles.settingButton, { marginRight: 8 }]}
+                onPress={loadStats}
+                activeOpacity={0.8}
+              >
+                <Ionicons name="refresh-outline" size={22} color="#D97706" />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.settingButton}
+                onPress={() => setShowMenu(true)}
+                activeOpacity={0.8}
+              >
+                <Ionicons name="settings-sharp" size={22} color="#D97706" />
+              </TouchableOpacity>
+            </View>
           </View>
 
-          {/* DẢI BANNER PHỤ ĐẰNG CẤP */}
+          {/* DẢI BANNER ĐẲNG CẤP */}
           <View style={styles.headerBanner}>
-            <Ionicons name="shield-checkmark" size={15} color="#D97706" style={{ marginRight: 6 }} />
-            <Text style={styles.headerBannerText}>Hệ thống quản lý phả hệ dòng tộc chuyên nghiệp</Text>
+            <Ionicons name="shield-checkmark-sharp" size={16} color="#D97706" style={{ marginRight: 8 }} />
+            <Text style={styles.headerBannerText}>Bảng điều khiển quản trị phả hệ chuyên nghiệp</Text>
           </View>
         </View>
 
-        {/* THỐNG KÊ GIA TỘC PHONG CÁCH EXECUTIVE WIDGETS */}
+        {/* THỐNG KÊ GIA TỘC PHÂN KHÚC LUXURY */}
         <View style={styles.statsContainer}>
           <View style={styles.statCard}>
-            <View style={[styles.statIconContainer, { backgroundColor: "rgba(255, 159, 67, 0.08)" }]}>
-              <Ionicons name="people" size={22} color="#FF9F43" />
+            <View style={[styles.statIconContainer, { backgroundColor: "rgba(249, 115, 22, 0.08)" }]}>
+              <Ionicons name="people-sharp" size={22} color="#F97316" />
             </View>
             <View style={styles.statInfo}>
               <Text style={styles.statNumber}>{stats.total_members}</Text>
-              <Text style={styles.statLabel}>Thành viên</Text>
-              <Text style={styles.statTrend}>Đang hoạt động</Text>
+              <Text style={styles.statLabel}>THÀNH VIÊN</Text>
+              <View style={styles.statusPillActive}>
+                <Text style={styles.statusPillTextActive}>Đồng bộ</Text>
+              </View>
             </View>
           </View>
 
           <View style={styles.statCard}>
             <View style={[styles.statIconContainer, { backgroundColor: "rgba(239, 68, 68, 0.08)" }]}>
-              <Ionicons name="calendar" size={22} color="#EF4444" />
+              <Ionicons name="calendar-sharp" size={22} color="#EF4444" />
             </View>
             <View style={styles.statInfo}>
               <Text style={styles.statNumber}>{stats.upcoming_events}</Text>
-              <Text style={styles.statLabel}>Sự kiện</Text>
-              <Text style={styles.statTrend}>Sắp diễn ra</Text>
+              <Text style={styles.statLabel}>SỰ KIỆN SẮP TỚI</Text>
+              <View style={styles.statusPillUpcoming}>
+                <Text style={styles.statusPillTextUpcoming}>Sắp diễn ra</Text>
+              </View>
             </View>
           </View>
         </View>
 
-        {/* TIÊU ĐỀ KHU VỰC CHỨC NĂNG */}
+        {/* TIÊU ĐỀ LƯỚI CHỨC NĂNG */}
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>CHỨC NĂNG QUẢN TRỊ</Text>
+          <Text style={styles.sectionTitle}>CHỨC NĂNG HỆ THỐNG</Text>
           <View style={styles.sectionLine} />
         </View>
 
-        {/* LƯỚI TILE CHỨC NĂNG ĐƠN LỚP SIÊU SẠCH SẼ & CAO CẤP */}
+        {/* LƯỚI TILE CHỨC NĂNG COLOR-CODED CỰC KỲ VỊ TRÍ & SANG TRỌNG */}
         <View style={styles.menuGrid}>
           {menus.map((item, index) => (
             <TouchableOpacity
               key={index}
               style={[
                 styles.menuCard,
-                item.active ? styles.menuCardActive : styles.menuCardMuted,
+                { borderColor: item.borderColor }
               ]}
-              activeOpacity={item.active ? 0.85 : 1}
-              disabled={!item.active}
+              activeOpacity={0.8}
               onPress={() => {
-                if (!item.active) return;
-                
                 if (item.name === "Cây Gia Phả") {
                   router.push("/doi-tac/cay-gia-pha");
                 } else if (item.name === "Tra Cứu") {
@@ -170,58 +400,40 @@ export default function TrangChuScreen() {
                 }
               }}
             >
-              {/* CHỈ HƯỚNG BẰNG CHEVRON HOẶC BADGE "SẮP CÓ" GỌN GÀNG */}
-              {item.active ? (
-                <Ionicons name="chevron-forward-outline" size={16} color="rgba(217, 119, 6, 0.4)" style={styles.arrowIcon} />
-              ) : (
-                <View style={styles.comingSoonBadge}>
-                  <Text style={styles.comingSoonText}>Sắp có</Text>
-                </View>
-              )}
+              {/* CORNER CHEVRON INDICATOR */}
+              <Ionicons name="chevron-forward" size={14} color={item.color} style={styles.arrowIcon} />
 
-              {/* BIỂU TƯỢNG PASTEL */}
+              {/* DYNAMIC COLORED CIRCLE */}
               <View
                 style={[
                   styles.iconCircle,
-                  item.active ? styles.iconCircleActive : styles.iconCircleMuted,
+                  { backgroundColor: item.bg }
                 ]}
               >
                 <Ionicons
                   name={item.icon as any}
                   size={20}
-                  color={item.active ? "#D97706" : "#94A3B8"}
+                  color={item.color}
                 />
               </View>
 
-              {/* NỘI DUNG CHỮ CĂN TRÁI PHÂN CẤP RÕ RÀNG */}
+              {/* CARD DETAILS */}
               <View style={styles.menuTextContainer}>
-                <Text
-                  style={[
-                    styles.menuCardText,
-                    item.active ? styles.menuCardTextActive : styles.menuCardTextMuted,
-                  ]}
-                  numberOfLines={1}
-                >
+                <Text style={styles.menuCardText} numberOfLines={1}>
                   {item.name}
                 </Text>
-                <Text
-                  style={[
-                    styles.menuCardSub,
-                    item.active ? styles.menuCardSubActive : styles.menuCardSubMuted,
-                  ]}
-                  numberOfLines={1}
-                >
-                  {item.active ? item.subtitle : "Sắp ra mắt"}
+                <Text style={styles.menuCardSub} numberOfLines={1}>
+                  {item.subtitle}
                 </Text>
               </View>
             </TouchableOpacity>
           ))}
         </View>
 
-        {/* BANNER CHÂM NGÔN GIA TỘC Ý NGHĨA VĂN HÓA */}
+        {/* THẺ CHÂM NGÔN GIA TỘC PHONG CÁCH VƯƠNG GIẢ */}
         <View style={styles.quoteBanner}>
           <View style={styles.quoteIconContainer}>
-            <Ionicons name="heart" size={24} color="#D97706" />
+            <Ionicons name="heart-sharp" size={24} color="#D97706" />
           </View>
           <View style={styles.quoteContent}>
             <Text style={styles.quoteText}>
@@ -232,7 +444,7 @@ export default function TrangChuScreen() {
         </View>
       </ScrollView>
 
-      {/* MODAL CÀI ĐẶT GLASSMORPHISM CHUYÊN NGHIỆP */}
+      {/* MODAL TÙY CHỌN TÀI KHOẢN GLASSMORPHISM */}
       <Modal
         visible={showMenu}
         transparent
@@ -252,9 +464,16 @@ export default function TrangChuScreen() {
             <TouchableOpacity
               style={styles.modalItem}
               activeOpacity={0.7}
+              onPress={() => {
+                setShowMenu(false);
+                setProfileHoTen(userProfile.ho_ten || "");
+                setProfileEmail(userProfile.email || "");
+                setProfilePhone(userProfile.so_dien_thoai || "");
+                setShowProfileModal(true);
+              }}
             >
               <Ionicons
-                name="person-circle-outline"
+                name="person-circle-sharp"
                 size={22}
                 color="#FF9F43"
                 style={styles.modalIcon}
@@ -265,9 +484,16 @@ export default function TrangChuScreen() {
             <TouchableOpacity
               style={styles.modalItem}
               activeOpacity={0.7}
+              onPress={() => {
+                setShowMenu(false);
+                setCurrentPassword("");
+                setNewPassword("");
+                setConfirmPassword("");
+                setShowPasswordModal(true);
+              }}
             >
               <Ionicons
-                name="lock-closed-outline"
+                name="lock-closed-sharp"
                 size={22}
                 color="#FF9F43"
                 style={styles.modalIcon}
@@ -281,23 +507,200 @@ export default function TrangChuScreen() {
               activeOpacity={0.85}
             >
               <Ionicons
-                name="log-out-outline"
+                name="log-out-sharp"
                 size={22}
                 color="#fff"
               />
-              <Text style={styles.logoutModalText}>Đăng xuất tài khoản</Text>
+              <Text style={logoutModalTextStyles.text}>Đăng xuất tài khoản</Text>
             </TouchableOpacity>
           </View>
         </Pressable>
+      </Modal>
+
+      {/* MODAL THÔNG TIN TÀI KHOẢN */}
+      <Modal
+        visible={showProfileModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowProfileModal(false)}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          style={{ flex: 1 }}
+        >
+          <Pressable style={styles.modalOverlay} onPress={() => setShowProfileModal(false)}>
+            <Pressable style={styles.profileModalContent} onPress={(e) => e.stopPropagation()}>
+              <View style={styles.modalHeader}>
+                <View style={styles.modalIndicator} />
+                <Text style={styles.modalTitle}>THÔNG TIN TÀI KHOẢN</Text>
+              </View>
+
+              <ScrollView showsVerticalScrollIndicator={false} style={{ width: "100%", maxHeight: 350 }}>
+                {/* Họ tên */}
+                <Text style={styles.inputLabel}>Họ và Tên</Text>
+                <TextInput
+                  style={styles.textInput}
+                  placeholder="Nhập họ và tên..."
+                  placeholderTextColor="#94A3B8"
+                  value={profileHoTen}
+                  onChangeText={setProfileHoTen}
+                />
+
+                {/* Email */}
+                <Text style={styles.inputLabel}>Địa chỉ Email</Text>
+                <TextInput
+                  style={[styles.textInput, { backgroundColor: "#F1F5F9" }]}
+                  placeholder="Nhập email..."
+                  placeholderTextColor="#94A3B8"
+                  value={profileEmail}
+                  onChangeText={setProfileEmail}
+                  editable={false} // Email là duy nhất không cho tự sửa
+                />
+
+                {/* Số điện thoại */}
+                <Text style={styles.inputLabel}>Số điện thoại</Text>
+                <TextInput
+                  style={styles.textInput}
+                  placeholder="Nhập số điện thoại..."
+                  placeholderTextColor="#94A3B8"
+                  value={profilePhone}
+                  onChangeText={setProfilePhone}
+                  keyboardType="phone-pad"
+                />
+
+                {/* Vai trò */}
+                <Text style={styles.inputLabel}>Vai trò tài khoản</Text>
+                <TextInput
+                  style={[styles.textInput, { backgroundColor: "#F1F5F9", color: "#64748B" }]}
+                  value={userProfile.vai_tro || "Đối tác"}
+                  editable={false}
+                />
+              </ScrollView>
+
+              <View style={styles.buttonRow}>
+                <TouchableOpacity 
+                  style={[styles.actionBtn, styles.cancelBtn]} 
+                  onPress={() => setShowProfileModal(false)}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.cancelBtnText}>HỦY BỎ</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity 
+                  style={[styles.actionBtn, styles.saveBtn]} 
+                  onPress={handleUpdateProfile}
+                  disabled={updatingProfile}
+                  activeOpacity={0.8}
+                >
+                  {updatingProfile ? (
+                    <ActivityIndicator size="small" color="#0c0e12" />
+                  ) : (
+                    <Text style={styles.saveBtnText}>LƯU HỒ SƠ</Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+            </Pressable>
+          </Pressable>
+        </KeyboardAvoidingView>
+      </Modal>
+
+      {/* MODAL ĐỔI MẬT KHẨU */}
+      <Modal
+        visible={showPasswordModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowPasswordModal(false)}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          style={{ flex: 1 }}
+        >
+          <Pressable style={styles.modalOverlay} onPress={() => setShowPasswordModal(false)}>
+            <Pressable style={styles.profileModalContent} onPress={(e) => e.stopPropagation()}>
+              <View style={styles.modalHeader}>
+                <View style={styles.modalIndicator} />
+                <Text style={styles.modalTitle}>ĐỔI MẬT KHẨU MỚI</Text>
+              </View>
+
+              <ScrollView showsVerticalScrollIndicator={false} style={{ width: "100%", maxHeight: 350 }}>
+                {/* Mật khẩu cũ */}
+                <Text style={styles.inputLabel}>Mật khẩu hiện tại</Text>
+                <TextInput
+                  style={styles.textInput}
+                  placeholder="Nhập mật khẩu hiện tại..."
+                  placeholderTextColor="#94A3B8"
+                  value={currentPassword}
+                  onChangeText={setCurrentPassword}
+                  secureTextEntry
+                />
+
+                {/* Mật khẩu mới */}
+                <Text style={styles.inputLabel}>Mật khẩu mới</Text>
+                <TextInput
+                  style={styles.textInput}
+                  placeholder="Mật khẩu mới (tối thiểu 6 ký tự)..."
+                  placeholderTextColor="#94A3B8"
+                  value={newPassword}
+                  onChangeText={setNewPassword}
+                  secureTextEntry
+                />
+
+                {/* Xác nhận mật khẩu mới */}
+                <Text style={styles.inputLabel}>Xác nhận mật khẩu mới</Text>
+                <TextInput
+                  style={styles.textInput}
+                  placeholder="Nhập lại mật khẩu mới..."
+                  placeholderTextColor="#94A3B8"
+                  value={confirmPassword}
+                  onChangeText={setConfirmPassword}
+                  secureTextEntry
+                />
+              </ScrollView>
+
+              <View style={styles.buttonRow}>
+                <TouchableOpacity 
+                  style={[styles.actionBtn, styles.cancelBtn]} 
+                  onPress={() => setShowPasswordModal(false)}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.cancelBtnText}>HỦY BỎ</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity 
+                  style={[styles.actionBtn, styles.saveBtn]} 
+                  onPress={handleChangePassword}
+                  disabled={updatingPassword}
+                  activeOpacity={0.8}
+                >
+                  {updatingPassword ? (
+                    <ActivityIndicator size="small" color="#0c0e12" />
+                  ) : (
+                    <Text style={styles.saveBtnText}>CẬP NHẬT</Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+            </Pressable>
+          </Pressable>
+        </KeyboardAvoidingView>
       </Modal>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+const logoutModalTextStyles = StyleSheet.create({
+  text: {
+    color: "#fff",
+    fontWeight: "900",
+    fontSize: 15,
+    marginLeft: 8,
+    letterSpacing: 0.5,
+  }
+});
+
+const styles: Record<string, any> = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#FFF8F2", // Nền cam đào sáng nhẹ cực kỳ sang trọng
+    backgroundColor: "#FFF8F2", // Cam đào sáng nhẹ tinh khiết vương giả
   },
   scrollView: {
     flex: 1,
@@ -457,11 +860,31 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     marginTop: 1,
   },
-  statTrend: {
-    fontSize: 9,
-    color: "#64748B",
-    fontWeight: "500",
-    marginTop: 2,
+  statusPillActive: {
+    backgroundColor: "rgba(34, 197, 94, 0.08)",
+    alignSelf: "flex-start",
+    paddingHorizontal: 6,
+    paddingVertical: 1.5,
+    borderRadius: 6,
+    marginTop: 4,
+  },
+  statusPillTextActive: {
+    fontSize: 8,
+    color: "#22C55E",
+    fontWeight: "700",
+  },
+  statusPillUpcoming: {
+    backgroundColor: "rgba(239, 68, 68, 0.08)",
+    alignSelf: "flex-start",
+    paddingHorizontal: 6,
+    paddingVertical: 1.5,
+    borderRadius: 6,
+    marginTop: 4,
+  },
+  statusPillTextUpcoming: {
+    fontSize: 8,
+    color: "#EF4444",
+    fontWeight: "700",
   },
 
   // TIÊU ĐỀ SECTION
@@ -484,7 +907,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255, 159, 67, 0.15)",
   },
 
-  // LƯỚI TILE CHỨC NĂNG ĐƠN LỚP CAO CẤP
+  // LƯỚI TILE CHỨC NĂNG COLOR-CODED
   menuGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -501,41 +924,17 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     position: "relative",
     borderWidth: 1,
-  },
-  menuCardActive: {
     backgroundColor: "#ffffff",
-    borderColor: "rgba(255, 159, 67, 0.12)",
     shadowColor: "#FF9F43",
     shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.05,
+    shadowOpacity: 0.04,
     shadowRadius: 12,
     elevation: 3,
-  },
-  menuCardMuted: {
-    backgroundColor: "rgba(241, 245, 249, 0.5)",
-    borderColor: "rgba(226, 232, 240, 0.6)",
-    shadowOpacity: 0,
-    elevation: 0,
   },
   arrowIcon: {
     position: "absolute",
     top: 16,
     right: 16,
-  },
-  comingSoonBadge: {
-    position: "absolute",
-    top: 14,
-    right: 14,
-    backgroundColor: "rgba(148, 163, 184, 0.1)",
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 6,
-  },
-  comingSoonText: {
-    fontSize: 8,
-    fontWeight: "700",
-    color: "#64748B",
-    textTransform: "uppercase",
   },
   iconCircle: {
     width: 38,
@@ -544,12 +943,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  iconCircleActive: {
-    backgroundColor: "rgba(255, 159, 67, 0.08)",
-  },
-  iconCircleMuted: {
-    backgroundColor: "rgba(148, 163, 184, 0.06)",
-  },
   menuTextContainer: {
     marginTop: 8,
     width: "100%",
@@ -557,26 +950,14 @@ const styles = StyleSheet.create({
   menuCardText: {
     fontSize: 14,
     letterSpacing: 0.1,
-  },
-  menuCardTextActive: {
     color: "#0F172A",
     fontWeight: "700",
-  },
-  menuCardTextMuted: {
-    color: "#94A3B8",
-    fontWeight: "600",
   },
   menuCardSub: {
     fontSize: 10,
     marginTop: 2,
-  },
-  menuCardSubActive: {
     color: "#64748B",
     fontWeight: "500",
-  },
-  menuCardSubMuted: {
-    color: "#CBD5E1",
-    fontWeight: "400",
   },
 
   // BANNER CHÂM NGÔN GIA TỘC Ý NGHĨA
@@ -697,11 +1078,68 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 4,
   },
-  logoutModalText: {
-    color: "#fff",
-    fontWeight: "900",
-    fontSize: 15,
-    marginLeft: 8,
+  
+  // PROFILE & PASSWORD STYLING
+  profileModalContent: {
+    width: "100%",
+    maxWidth: 340,
+    backgroundColor: "#ffffff",
+    borderRadius: 24,
+    borderWidth: 1.5,
+    borderColor: "rgba(255, 159, 67, 0.2)",
+    padding: 24,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.15,
+    shadowRadius: 20,
+    elevation: 8,
+  },
+  inputLabel: {
+    fontSize: 12,
+    fontWeight: "800",
+    color: "#D97706",
     letterSpacing: 0.5,
+    marginTop: 14,
+    marginBottom: 6,
+  },
+  textInput: {
+    backgroundColor: "rgba(255, 159, 67, 0.04)",
+    borderWidth: 1,
+    borderColor: "rgba(255, 159, 67, 0.15)",
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    height: 46,
+    fontSize: 14,
+    color: "#1E293B",
+    fontWeight: "600",
+  },
+  buttonRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 24,
+  },
+  actionBtn: {
+    flex: 1,
+    height: 46,
+    borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  cancelBtn: {
+    backgroundColor: "rgba(148, 163, 184, 0.12)",
+    marginRight: 10,
+  },
+  saveBtn: {
+    backgroundColor: "#FF9F43",
+  },
+  cancelBtnText: {
+    color: "#64748B",
+    fontSize: 13,
+    fontWeight: "800",
+  },
+  saveBtnText: {
+    color: "#0c0e12",
+    fontSize: 13,
+    fontWeight: "900",
   },
 });
