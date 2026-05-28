@@ -71,6 +71,15 @@ class AuthController extends Controller
             $redirect_url = '/doi-tac';
         }
 
+        try {
+            \App\Models\NhatKyHoatDong::create([
+                'nguoi_dung_id' => $user->id,
+                'hanh_dong'     => 'Đăng nhập vào hệ thống',
+            ]);
+        } catch (\Throwable $e) {
+            logger()->error('Login log error: ' . $e->getMessage());
+        }
+
         return response()->json([
             'status' => true,
             'message' => 'Đăng nhập thành công!',
