@@ -10,14 +10,14 @@
           <h2 class="text-gradient fw-bold mb-2">Thăng Cấp Tài Khoản Đối Tác</h2>
           <p class="text-white-50">Mở khóa quyền Trưởng tộc/Trưởng chi để khởi tạo, xây dựng cây gia phả trực tuyến và dẫn dắt dòng tộc.</p>
         </div>
-        
+
         <div class="card-body p-4 p-md-5 pt-0">
           <div class="row g-5">
             <!-- Left Column: Package Details -->
             <div class="col-lg-6">
               <div class="package-info-section h-100">
                 <h4 class="text-gold mb-4 fw-bold"><i class="bx bx-package me-2"></i>Thông tin gói dịch vụ</h4>
-                
+
                 <div class="glass-info p-4 rounded-2xl border border-white/10 mb-4">
                   <div class="info-row">
                     <span>Gói đăng ký:</span>
@@ -30,6 +30,15 @@
                   <div class="info-row border-0">
                     <span>Số tiền thanh toán:</span>
                     <strong class="text-gold fs-4">{{ form.so_tien ? form.so_tien.toLocaleString() : '100,000' }} VNĐ</strong>
+                  </div>
+                </div>
+
+                <!-- Auto-approve notice -->
+                <div class="auto-approve-notice p-3 rounded-2xl mb-4 d-flex align-items-start gap-3">
+                  <i class="bx bx-bolt-circle text-success fs-4 mt-1 flex-shrink-0"></i>
+                  <div>
+                    <strong class="text-white d-block mb-1">Kích hoạt tức thì!</strong>
+                    <span class="text-white-50 small">Tài khoản đối tác được kích hoạt <strong class="text-success">ngay lập tức</strong> sau khi chuyển khoản đúng số tiền — không cần chờ phê duyệt thủ công.</span>
                   </div>
                 </div>
 
@@ -67,51 +76,79 @@
               </div>
             </div>
 
-            <!-- Right Column: Pending state OR Donation QR -->
+            <!-- Right Column: Success State OR QR Payment -->
             <div class="col-lg-6">
-              <!-- Pending request luxury view -->
-              <div class="payment-section h-100 d-flex flex-column justify-content-center align-items-stretch" v-if="hasPending">
-                <div class="glass-card-pending text-center p-5 rounded-3xl border border-warning/30 shadow-2xl position-relative overflow-hidden">
-                  <div class="ambient-glow"></div>
-                  <div class="pending-icon-wrap mb-4 mx-auto d-flex align-items-center justify-content-center">
-                    <div class="pending-icon-circle d-flex align-items-center justify-content-center">
-                      <i class="bx bx-time-five text-warning fs-1"></i>
+
+              <!-- ✅ SUCCESS: Tài khoản đã được kích hoạt -->
+              <div class="payment-section h-100 d-flex flex-column justify-content-center align-items-stretch" v-if="isActivated">
+                <div class="glass-card-success text-center p-5 rounded-3xl position-relative overflow-hidden">
+                  <div class="success-glow"></div>
+                  <div class="success-icon-wrap mb-4 mx-auto d-flex align-items-center justify-content-center">
+                    <div class="success-icon-circle d-flex align-items-center justify-content-center">
+                      <i class="bx bx-check-circle text-success fs-1"></i>
                     </div>
-                    <div class="pending-pulse-circle"></div>
+                    <div class="success-pulse-circle"></div>
                   </div>
-                  
-                  <h4 class="text-gradient-gold fw-bold mb-3">Yêu Cầu Đang Chờ Phê Duyệt</h4>
-                  <p class="text-white-50 px-3 small">
-                    Hệ thống đã ghi nhận thông tin chuyển khoản nâng cấp tài khoản đối tác của bạn.
+
+                  <h4 class="text-gradient-green fw-bold mb-3">Kích Hoạt Thành Công!</h4>
+                  <p class="text-white-50 px-3 small mb-4">
+                    Tài khoản Đối Tác của bạn đã được kích hoạt tức thì. Bạn đang được chuyển đến trang quản lý...
                   </p>
-                  
+
                   <div class="glass-info p-4 rounded-2xl border border-white/10 text-start my-4">
                     <div class="info-row">
-                      <span>Gói đăng ký:</span>
-                      <strong class="text-white">{{ ten_goi }}</strong>
-                    </div>
-                    <div class="info-row">
-                      <span>Trạng thái:</span>
-                      <strong class="text-warning d-flex align-items-center gap-1">
-                        <span class="status-pulse-dot"></span>Chờ Admin phê duyệt
-                      </strong>
+                      <span>Gói kích hoạt:</span>
+                      <strong class="text-white">{{ activatedPackage }}</strong>
                     </div>
                     <div class="info-row border-0">
-                      <span>Thời gian gửi:</span>
-                      <strong class="text-white-50">Hôm nay</strong>
+                      <span>Hiệu lực đến:</span>
+                      <strong class="text-success">{{ activatedExpiry }}</strong>
                     </div>
                   </div>
 
-                  <p class="small text-white-50 mt-3 mb-0">
-                    <i class="bx bx-shield-quarter me-1 text-warning"></i> Quyền lợi đối tác sẽ tự động được kích hoạt ngay sau khi Admin xác nhận giao dịch. Vui lòng không thực hiện thanh toán lại!
+                  <div class="countdown-bar-wrap mt-3">
+                    <div class="countdown-bar" :style="{ width: countdownPct + '%' }"></div>
+                  </div>
+                  <p class="text-white-50 small mt-2">Chuyển hướng sau {{ countdownSec }} giây...</p>
+
+                  <button class="btn-gradient-success w-100 mt-3" @click="goToDashboard">
+                    <i class="bx bx-rocket me-2"></i> Vào Trang Quản Lý Ngay
+                  </button>
+                </div>
+              </div>
+
+              <!-- ⚠️ INSUFFICIENT: Thiếu tiền -->
+              <div class="payment-section h-100 d-flex flex-column justify-content-center align-items-stretch" v-else-if="insufficientError">
+                <div class="glass-card-error text-center p-5 rounded-3xl position-relative overflow-hidden">
+                  <div class="error-glow"></div>
+                  <i class="bx bx-error-circle text-danger fs-1 mb-3 d-block"></i>
+                  <h4 class="text-danger fw-bold mb-3">Số Tiền Chưa Đủ</h4>
+                  <p class="text-white-50 px-3 small mb-4">{{ insufficientError }}</p>
+
+                  <div class="glass-info p-3 rounded-2xl border border-danger/20 text-start mb-4">
+                    <div class="info-row">
+                      <span>Số tiền gói:</span>
+                      <strong class="text-white">{{ form.so_tien ? form.so_tien.toLocaleString() : '' }} VNĐ</strong>
+                    </div>
+                    <div class="info-row border-0">
+                      <span>Nội dung CK:</span>
+                      <strong class="text-warning">{{ transferContent }}</strong>
+                    </div>
+                  </div>
+
+                  <button class="btn-gradient-submit w-100" @click="insufficientError = null; submitPayment()">
+                    <i class="bx bx-refresh me-2"></i> Kiểm Tra Lại Giao Dịch
+                  </button>
+                  <p class="text-white-50 small mt-3">
+                    <i class="bx bx-info-circle me-1"></i>Vui lòng chuyển thêm số tiền còn thiếu với <strong class="text-warning">đúng nội dung chuyển khoản</strong> rồi bấm kiểm tra lại.
                   </p>
                 </div>
               </div>
 
-              <!-- Standard QR payment form -->
+              <!-- 📱 QR Payment Form (mặc định) -->
               <div class="payment-section" v-else>
                 <h4 class="text-gold mb-4 fw-bold"><i class="bx bx-qr-scan me-2"></i>Thanh toán nhanh qua mã QR</h4>
-                
+
                 <div class="qr-payment-section text-center p-4 rounded-3xl mb-4">
                   <div class="qr-image-wrapper mx-auto mb-4">
                     <img :src="qrUrl" alt="QR Code" class="img-fluid rounded-2xl border-2 border-white/10 p-2 bg-white shadow-glow" v-if="form.so_tien">
@@ -119,7 +156,7 @@
                       <span class="text-white-50">Đang tải mã QR thanh toán...</span>
                     </div>
                   </div>
-                  
+
                   <div class="bank-details text-start glass-info p-4 rounded-2xl border border-white/10">
                     <div class="info-row"><span>Ngân hàng thụ hưởng:</span><strong>MB Bank (Quân Đội)</strong></div>
                     <div class="info-row"><span>Số tài khoản:</span><strong class="text-gold">0342211914</strong></div>
@@ -137,13 +174,14 @@
                 <form @submit.prevent="submitPayment">
                   <button type="submit" class="btn-gradient-submit w-100" :disabled="isSubmitting || !form.so_tien">
                     <span v-if="!isSubmitting"><i class="bx bx-check-circle me-2"></i> XÁC NHẬN ĐÃ CHUYỂN KHOẢN THANH TOÁN</span>
-                    <span v-else><i class="bx bx-loader-alt bx-spin me-2"></i> ĐANG GHI NHẬN GIAO DỊCH...</span>
+                    <span v-else><i class="bx bx-loader-alt bx-spin me-2"></i> ĐANG KIỂM TRA GIAO DỊCH...</span>
                   </button>
                 </form>
-                
-                <p class="text-center text-white-50 small mt-3">
-                  <i class="bx bx-info-circle me-1"></i> Hệ thống sẽ ghi nhận giao dịch và gửi yêu cầu phê duyệt đến Admin.
-                </p>
+
+                <div class="auto-verify-note text-center mt-3 p-3 rounded-2xl">
+                  <i class="bx bx-bolt-circle text-success me-1"></i>
+                  <span class="text-white-50 small">Hệ thống sẽ <strong class="text-success">tự động kiểm tra</strong> và kích hoạt tài khoản ngay sau khi xác nhận giao dịch đủ tiền.</span>
+                </div>
               </div>
             </div>
           </div>
@@ -153,8 +191,8 @@
       <div class="security-note text-center mt-5">
         <div class="d-inline-flex align-items-center gap-5">
           <span class="note-item"><i class="bx bx-lock-alt"></i> Bảo mật tư liệu</span>
-          <span class="note-item"><i class="bx bx-support"></i> Hỗ trợ dòng tộc 24/7</span>
-          <span class="note-item"><i class="bx bx-shield-quarter"></i> Kiểm duyệt an toàn</span>
+          <span class="note-item"><i class="bx bx-bolt-circle"></i> Kích hoạt tức thì</span>
+          <span class="note-item"><i class="bx bx-shield-quarter"></i> Thanh toán an toàn</span>
         </div>
       </div>
     </div>
@@ -170,16 +208,24 @@ export default {
   data() {
     return {
       userName: '',
-      form: { 
-        so_tien: 100000, // Standard Upgrade Price
-        phuong_thuc: 'bank' 
+      form: {
+        so_tien: 100000,
+        phuong_thuc: 'bank'
       },
       ten_goi: 'Gói Đối Tác Quản Trị Gia Phả',
       isSubmitting: false,
       checkInterval: null,
       paymentCode: null,
-      hasPending: false
-    }
+      // Trạng thái mới
+      isActivated: false,
+      activatedPackage: '',
+      activatedExpiry: '',
+      insufficientError: null,
+      // Countdown sau khi kích hoạt
+      countdownSec: 5,
+      countdownPct: 100,
+      countdownTimer: null,
+    };
   },
   computed: {
     cleanAmount() {
@@ -216,7 +262,7 @@ export default {
       }
       this.paymentCode = savedCode;
     }
-    
+
     if (this.$route.query.so_tien) {
       this.form.so_tien = Number(this.$route.query.so_tien);
     }
@@ -224,33 +270,30 @@ export default {
       this.ten_goi = this.$route.query.ten_goi;
     }
 
-    // Check pending status on mount
-    this.checkPendingStatus();
+    // Kiểm tra nếu đã là đối tác rồi thì redirect luôn
+    if (userData && (parseInt(userData.is_doi_tac) === 1)) {
+      this.$router.replace('/doi-tac/dashboard');
+      return;
+    }
+
+    // Bắt đầu auto-check mỗi 8 giây (kiểm tra silent)
     this.startAutoCheck();
   },
   beforeUnmount() {
     this.stopAutoCheck();
+    this.stopCountdown();
   },
   methods: {
     getHeaders() {
       return { headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` } };
     },
-    checkPendingStatus() {
-      axios.get('http://127.0.0.1:8000/api/doi-tac/check-pending', this.getHeaders())
-        .then(res => {
-          if (res.data.status && res.data.has_pending) {
-            this.hasPending = true;
-            this.stopAutoCheck();
-          }
-        })
-        .catch(() => {});
-    },
+
     startAutoCheck() {
       this.checkInterval = setInterval(() => {
-        if (this.cleanAmount > 0 && !this.isSubmitting && !this.hasPending) {
+        if (this.cleanAmount > 0 && !this.isSubmitting && !this.isActivated) {
           this.checkPaymentSilent();
         }
-      }, 5000);
+      }, 8000);
     },
     stopAutoCheck() {
       if (this.checkInterval) {
@@ -258,50 +301,32 @@ export default {
         this.checkInterval = null;
       }
     },
-    checkPaymentSilent() {
-      const token = localStorage.getItem('access_token');
-      if (!token) return;
 
+    checkPaymentSilent() {
       const userStr = localStorage.getItem('user');
       const user = userStr ? JSON.parse(userStr) : null;
       const userId = user ? (user.user || user).id : null;
+      if (!userId) return;
 
       axios.post('http://127.0.0.1:8000/api/thanh-toan/xac-nhan-thanh-toan', {
         nguoi_dung_id: userId,
         noi_dung: this.transferContent + ' | Mua gói dịch vụ: ' + this.form.so_tien + ' VNĐ | QR Đối Tác',
-        trang_thai: 'Chờ duyệt',
         so_tien: this.form.so_tien
       }, this.getHeaders())
       .then(res => {
-        if (res.data.success) {
+        if (res.data.success && res.data.is_partner) {
           this.stopAutoCheck();
-          
-          if (res.data.is_partner) {
-            // Cập nhật localStorage
-            if (user) {
-              if (user.user) user.user.is_doi_tac = 1;
-              else user.is_doi_tac = 1;
-              localStorage.setItem('user', JSON.stringify(user));
-            }
-            toastr.success('Chúc mừng! Tài khoản của bạn đã được nâng cấp lên Đối Tác thành công!');
-            window.dispatchEvent(new Event('storage'));
-            
-            setTimeout(() => {
-              window.location.href = '/doi-tac/dashboard';
-            }, 1500);
-            return;
-          }
-
-          this.hasPending = true;
-          toastr.success('Hệ thống đã nhận được thanh toán chuyển khoản! Yêu cầu đang ở trạng thái chờ duyệt.');
+          this.handleActivationSuccess(res.data, user);
         }
       })
       .catch(() => {});
     },
+
     copyContent() {
       navigator.clipboard.writeText(this.transferContent);
       toastr.success('Đã sao chép nội dung thanh toán gói!');
     },
+
     submitPayment() {
       if (!this.cleanAmount) {
         toastr.warning('Vui lòng nhập số tiền hợp lệ!');
@@ -316,6 +341,8 @@ export default {
       }
 
       this.isSubmitting = true;
+      this.insufficientError = null;
+
       const userStr = localStorage.getItem('user');
       const user = userStr ? JSON.parse(userStr) : null;
       const userId = user ? (user.user || user).id : null;
@@ -323,43 +350,71 @@ export default {
       axios.post('http://127.0.0.1:8000/api/thanh-toan/xac-nhan-thanh-toan', {
         nguoi_dung_id: userId,
         noi_dung: this.transferContent + ' | Mua gói dịch vụ: ' + this.form.so_tien + ' VNĐ | QR Đối Tác',
-        trang_thai: 'Chờ duyệt',
         so_tien: this.form.so_tien
       }, this.getHeaders())
       .then(res => {
-        if (res.data.success) {
+        if (res.data.success && res.data.is_partner) {
           this.stopAutoCheck();
-
-          if (res.data.is_partner) {
-            // Cập nhật localStorage
-            if (user) {
-              if (user.user) user.user.is_doi_tac = 1;
-              else user.is_doi_tac = 1;
-              localStorage.setItem('user', JSON.stringify(user));
-            }
-            toastr.success('Chúc mừng! Tài khoản của bạn đã được nâng cấp lên Đối Tác thành công!');
-            window.dispatchEvent(new Event('storage'));
-            
-            setTimeout(() => {
-              window.location.href = '/doi-tac/dashboard';
-            }, 1500);
-            return;
-          }
-
-          toastr.success('Ghi nhận giao dịch thành công! Yêu cầu mua gói của bạn đang chờ Admin phê duyệt.');
-          this.hasPending = true;
-        } else {
-          toastr.error(res.data.message || 'Hệ thống chưa nhận được giao dịch chuyển khoản mua gói.');
+          this.handleActivationSuccess(res.data, user);
+        } else if (!res.data.success) {
+          toastr.error(res.data.message || 'Chưa tìm thấy giao dịch. Vui lòng kiểm tra lại.');
         }
       })
-      .catch((err) => { 
-        toastr.error(err.response?.data?.message || 'Có lỗi xảy ra trong quá trình kích hoạt tài khoản!'); 
-        console.error(err);
+      .catch(err => {
+        const msg = err.response?.data?.message || '';
+        // Kiểm tra lỗi thiếu tiền (status 400)
+        if (err.response?.status === 400 && msg) {
+          this.insufficientError = msg;
+        } else {
+          toastr.error(msg || 'Có lỗi xảy ra trong quá trình kiểm tra giao dịch!');
+        }
       })
       .finally(() => { this.isSubmitting = false; });
+    },
+
+    handleActivationSuccess(data, user) {
+      // Cập nhật localStorage
+      if (user) {
+        if (user.user) user.user.is_doi_tac = 1;
+        else user.is_doi_tac = 1;
+        localStorage.setItem('user', JSON.stringify(user));
+      }
+      window.dispatchEvent(new Event('storage'));
+
+      this.activatedPackage = data.ten_goi || this.ten_goi;
+      this.activatedExpiry  = data.ngay_ket_thuc
+        ? new Date(data.ngay_ket_thuc).toLocaleDateString('vi-VN')
+        : '';
+      this.isActivated = true;
+
+      toastr.success('🎉 Tài khoản Đối Tác đã được kích hoạt thành công!');
+      this.startCountdown();
+    },
+
+    startCountdown() {
+      this.countdownSec = 5;
+      this.countdownPct = 100;
+      this.countdownTimer = setInterval(() => {
+        this.countdownSec--;
+        this.countdownPct = (this.countdownSec / 5) * 100;
+        if (this.countdownSec <= 0) {
+          this.stopCountdown();
+          this.goToDashboard();
+        }
+      }, 1000);
+    },
+    stopCountdown() {
+      if (this.countdownTimer) {
+        clearInterval(this.countdownTimer);
+        this.countdownTimer = null;
+      }
+    },
+    goToDashboard() {
+      this.stopCountdown();
+      window.location.href = '/doi-tac/dashboard';
     }
   }
-}
+};
 </script>
 
 <style scoped>
@@ -424,7 +479,20 @@ export default {
     color: transparent;
 }
 
+.text-gradient-green {
+    background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
 .text-gold { color: #ffd700; }
+
+/* Auto-approve Notice */
+.auto-approve-notice {
+    background: rgba(16, 185, 129, 0.06);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+}
 
 /* QR Section */
 .qr-payment-section {
@@ -437,9 +505,7 @@ export default {
 .qr-placeholder { height: 240px; }
 
 /* Bank Details */
-.glass-info {
-    background: rgba(0, 0, 0, 0.2);
-}
+.glass-info { background: rgba(0, 0, 0, 0.2); }
 
 .info-row {
     display: flex; justify-content: space-between; align-items: center;
@@ -457,13 +523,9 @@ export default {
     padding: 4px 8px; border-radius: 6px;
     cursor: pointer; transition: 0.2s;
 }
-
 .btn-copy:hover { background: #ffd700; color: #000; }
 
-.benefit-item {
-    font-size: 0.9rem;
-    color: #cbd5e1;
-}
+.benefit-item { font-size: 0.9rem; color: #cbd5e1; }
 
 /* Submit Button */
 .btn-gradient-submit {
@@ -477,13 +539,11 @@ export default {
     transition: all 0.3s;
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
 }
-
 .btn-gradient-submit:hover:not(:disabled) {
     transform: translateY(-2px);
     box-shadow: 0 12px 25px rgba(102, 16, 242, 0.4);
     opacity: 0.9;
 }
-
 .btn-gradient-submit:disabled {
     background: #1e293b;
     color: #475569;
@@ -491,95 +551,105 @@ export default {
     box-shadow: none;
 }
 
+/* Success Button */
+.btn-gradient-success {
+    padding: 14px;
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    border: none; border-radius: 14px;
+    font-weight: 700; font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+}
+.btn-gradient-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 25px rgba(16, 185, 129, 0.5);
+}
+
+/* Auto-verify note */
+.auto-verify-note {
+    background: rgba(16, 185, 129, 0.04);
+    border: 1px solid rgba(16, 185, 129, 0.15);
+}
+
+/* Security Note */
 .note-item {
     color: #64748b;
     font-size: 0.9rem;
     display: flex; align-items: center; gap: 8px;
 }
-
 .note-item i { font-size: 1.2rem; color: #ffd700; }
 
-/* GLASS CARD PENDING */
-.glass-card-pending {
-    background: rgba(243, 156, 18, 0.04);
+/* ── SUCCESS STATE ─────────────────────────────────────────── */
+.glass-card-success {
+    background: rgba(16, 185, 129, 0.04);
     backdrop-filter: blur(12px);
-    border: 1px solid rgba(243, 156, 18, 0.15) !important;
+    border: 1px solid rgba(16, 185, 129, 0.2) !important;
 }
 
-.ambient-glow {
+.success-glow {
     position: absolute;
-    top: -50px; left: -50px; width: 150px; height: 150px;
-    background: radial-gradient(circle, rgba(243, 156, 18, 0.1) 0%, transparent 70%);
+    top: -60px; right: -60px; width: 200px; height: 200px;
+    background: radial-gradient(circle, rgba(16, 185, 129, 0.15) 0%, transparent 70%);
     z-index: 0;
     pointer-events: none;
 }
 
-.pending-icon-wrap {
+.success-icon-wrap {
     position: relative;
-    width: 80px;
-    height: 80px;
+    width: 80px; height: 80px;
 }
 
-.pending-icon-circle {
-    position: relative;
-    z-index: 2;
-    width: 80px;
-    height: 80px;
-    background: rgba(243, 156, 18, 0.1);
-    border: 2px solid rgba(243, 156, 18, 0.25);
+.success-icon-circle {
+    position: relative; z-index: 2;
+    width: 80px; height: 80px;
+    background: rgba(16, 185, 129, 0.1);
+    border: 2px solid rgba(16, 185, 129, 0.3);
     border-radius: 50%;
 }
 
-.pending-pulse-circle {
+.success-pulse-circle {
     position: absolute;
     inset: -4px;
     border-radius: 50%;
-    border: 2px solid rgba(243, 156, 18, 0.4);
-    animation: pendingPulse 2s infinite;
+    border: 2px solid rgba(16, 185, 129, 0.4);
+    animation: successPulse 2s infinite;
     z-index: 1;
 }
 
-@keyframes pendingPulse {
-    0% {
-        transform: scale(0.95);
-        opacity: 0.8;
-        box-shadow: 0 0 0 0 rgba(243, 156, 18, 0.4);
-    }
-    70% {
-        transform: scale(1.15);
-        opacity: 0;
-        box-shadow: 0 0 0 15px rgba(243, 156, 18, 0);
-    }
-    100% {
-        transform: scale(0.95);
-        opacity: 0;
-        box-shadow: 0 0 0 0 rgba(243, 156, 18, 0);
-    }
+@keyframes successPulse {
+    0%   { transform: scale(0.95); opacity: 0.8; box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+    70%  { transform: scale(1.15); opacity: 0;   box-shadow: 0 0 0 15px rgba(16, 185, 129, 0); }
+    100% { transform: scale(0.95); opacity: 0;   box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
 }
 
-.status-pulse-dot {
-    display: inline-block;
-    width: 8px;
-    height: 8px;
-    background: #d97706;
-    border-radius: 50%;
-    box-shadow: 0 0 0 0 rgba(217, 119, 6, 0.7);
-    animation: statusDotPulse 1.6s infinite;
+.countdown-bar-wrap {
+    background: rgba(255,255,255,0.06);
+    border-radius: 10px;
+    height: 4px;
+    overflow: hidden;
+}
+.countdown-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #10b981, #34d399);
+    border-radius: 10px;
+    transition: width 1s linear;
 }
 
-@keyframes statusDotPulse {
-    0% {
-        transform: scale(0.95);
-        box-shadow: 0 0 0 0 rgba(217, 119, 6, 0.5);
-    }
-    70% {
-        transform: scale(1.1);
-        box-shadow: 0 0 0 5px rgba(217, 119, 6, 0);
-    }
-    100% {
-        transform: scale(0.95);
-        box-shadow: 0 0 0 0 rgba(217, 119, 6, 0);
-    }
+/* ── ERROR STATE ───────────────────────────────────────────── */
+.glass-card-error {
+    background: rgba(239, 68, 68, 0.04);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(239, 68, 68, 0.2) !important;
+}
+
+.error-glow {
+    position: absolute;
+    top: -60px; left: -60px; width: 180px; height: 180px;
+    background: radial-gradient(circle, rgba(239, 68, 68, 0.1) 0%, transparent 70%);
+    z-index: 0;
+    pointer-events: none;
 }
 
 @media (max-width: 992px) {
