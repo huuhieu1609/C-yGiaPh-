@@ -3,26 +3,31 @@
 namespace App\Http\Controllers;
 
 use App\Models\DoiTac;
-use App\Models\DongGop;
+use App\Models\GoiDichVu;
+use App\Models\NguoiDung;
+use App\Models\NhatKyHoatDong;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class ThanhToanController extends Controller
 {
+    // ── Liệt kê giao dịch SePay ───────────────────────────────────────────────
+
     public function index()
     {
         try {
             $apiToken = env('SEPAY_API_TOKEN');
             $response = Http::withHeaders([
-                'Authorization' => 'Bearer '.$apiToken,
+                'Authorization' => 'Bearer ' . $apiToken,
             ])->get('https://my.sepay.vn/userapi/transactions/list');
 
             if ($response->successful()) {
                 return response()->json([
                     'status' => true,
-                    'data' => $response->json('transactions'),
+                    'data'   => $response->json('transactions'),
                 ]);
             }
 
@@ -32,138 +37,251 @@ class ThanhToanController extends Controller
         }
     }
 
+    // ── Xác nhận thanh toán — tự động duyệt nếu đủ tiền ─────────────────────
+
     public function paymentVerify(Request $request)
     {
         try {
             $nguoiDungId = $request->input('nguoi_dung_id');
-            $noiDung = $request->input('noi_dung'); // VD: "MUAGOI HIEU | Số tiền: ..."
+            $noiDung     = $request->input('noi_dung');
 
-            if (! $nguoiDungId || ! $noiDung) {
-                return response()->json(['success' => false, 'message' => 'Thiếu thông tin người dùng hoặc nội dung']);
+            if (!$nguoiDungId || !$noiDung) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Thiếu thông tin người dùng hoặc nội dung',
+                ]);
             }
 
-            // Lấy mã tìm kiếm, ví dụ "MUAGOI HIEU"
-            $parts = explode('|', $noiDung);
+            // Trích xuất phần nội dung tìm kiếm, ví dụ: "MUAGOI HIEU97995"
+            $parts           = explode('|', $noiDung);
             $expectedContent = trim($parts[0]);
 
             $apiToken = env('SEPAY_API_TOKEN');
 
-            // Gọi API SePay để quét 20 giao dịch gần nhất
+            // Quét 20 giao dịch gần nhất từ SePay
             $response = Http::withHeaders([
-                'Authorization' => 'Bearer '.$apiToken,
-            ])->get('https://my.sepay.vn/userapi/transactions/list', [
-                'limit' => 20,
-            ]);
+                'Authorization' => 'Bearer ' . $apiToken,
+            ])->get('https://my.sepay.vn/userapi/transactions/list', ['limit' => 20]);
 
-            if ($response->successful()) {
-                $transactions = $response->json('transactions') ?? [];
-                $matchedTx = null;
-
-                foreach ($transactions as $tx) {
-                    $amountIn = (float) ($tx['amount_in'] ?? $tx['amount'] ?? 0);
-                    $isIn = (isset($tx['transaction_type']) && $tx['transaction_type'] === 'in') 
-                            || ($amountIn > 0);
-                    
-                    if (!$isIn || $amountIn <= 0) continue;
-
-                    $bankContent = strtoupper($tx['transaction_content'] ?? '');
-
-                    // CHỈ khớp khi nội dung chứa CHÍNH XÁC chuỗi expectedContent (gồm tên + mã số 5 chữ số)
-                    // Ví dụ: "MUAGOI HIEU97995" phải xuất hiện trong nội dung chuyển khoản
-                    if (stripos($bankContent, strtoupper($expectedContent)) === false) continue;
-
-                    // Giao dịch phải trong vòng 24 giờ gần nhất (tránh khớp giao dịch cũ)
-                    $txTime = $tx['transaction_date'] ?? $tx['when'] ?? null;
-                    if ($txTime) {
-                        try {
-                            $txCarbon = \Carbon\Carbon::parse($txTime);
-                            if ($txCarbon->diffInHours(now()) > 24) continue;
-                        } catch (\Exception $e) {
-                            // Nếu không parse được thời gian, bỏ qua kiểm tra
-                        }
-                    }
-
-                    $matchedTx = $tx;
-                    $matchedTx['amount_in'] = $amountIn;
-                    break;
-                }
-
-                if ($matchedTx) {
-                    $amountIn = $matchedTx['amount_in'];
-
-                    // CHỐNG DUPLICATE: Nếu tài khoản đã là đối tác rồi thì trả về thông báo thành công và dừng
-                    $user = \App\Models\NguoiDung::find($nguoiDungId);
-                    if ($user && (int)$user->is_doi_tac === 1) {
-                        return response()->json([
-                            'success' => true,
-                            'is_partner' => true,
-                            'message' => 'Tài khoản của bạn đã được kích hoạt Đối Tác thành công!',
-                            'redirect_url' => '/doi-tac/dashboard'
-                        ]);
-                    }
-
-                    // 1. Trích xuất giá gói cần mua
-                    $goiAmount = (float) $request->input('so_tien', 0);
-                    if ($goiAmount <= 0) {
-                        if (preg_match('/Mua gói dịch vụ:\s*([\d\.,]+)/i', $noiDung, $matches)) {
-                            $goiAmount = (float) str_replace([',', '.'], '', $matches[1]);
-                        }
-                    }
-
-                    // 2. Kiểm tra nếu khách chuyển thiếu tiền (Chuyển khoản thật < Giá gói)
-                    if ($goiAmount > 0 && $amountIn < $goiAmount) {
-                        return response()->json([
-                            'success' => false,
-                            'message' => 'Hệ thống ghi nhận bạn đã chuyển khoản số tiền ' . number_format($amountIn) . ' VNĐ. Tuy nhiên, giá trị gói đăng ký là ' . number_format($goiAmount) . ' VNĐ. Vui lòng thực hiện chuyển khoản thêm phần còn thiếu để xác nhận!'
-                        ], 400);
-                    }
-
-                    $dongGop = DongGop::firstOrCreate(
-                        ['nguoi_dung_id' => $nguoiDungId, 'noi_dung' => $noiDung],
-                        ['trang_thai' => 'Chờ duyệt']
-                    );
-                    $dongGop->update(['trang_thai' => 'Chờ duyệt']);
-
-                    // 3. Ghi nhận yêu cầu nâng cấp gói đối tác ở trạng thái PENDING
-                    $isMuaGoi = (stripos($expectedContent, 'MUAGOI') !== false) || 
-                                 (stripos($matchedTx['transaction_content'] ?? '', 'MUAGOI') !== false);
-                    
-                    if ($isMuaGoi) {
-                        // Xác thực gói cước theo giá gói ban đầu
-                        $goi = \App\Models\GoiDichVu::where('gia_ca', $goiAmount)->first();
-                        $tenGoi = $goi ? $goi->ten_goi : 'Gói Đối Tác Quản Trị Gia Phả';
-
-                        // Chống duplicate: Kiểm tra xem đã có yêu cầu PENDING tương tự cho user chưa
-                        $pendingRequest = DoiTac::where('id_nguoi_dung', $nguoiDungId)
-                            ->where('trang_thai', 'PENDING')
-                            ->first();
-
-                        if (!$pendingRequest) {
-                            DoiTac::create([
-                                'id_nguoi_dung' => $nguoiDungId,
-                                'ten_goi' => $tenGoi,
-                                'so_tien' => $amountIn, // Lưu số tiền thực nhận
-                                'ngay_bat_dau' => null,
-                                'ngay_ket_thuc' => null,
-                                'trang_thai' => 'PENDING',
-                            ]);
-                        }
-                    }
-
-                    return response()->json([
-                        'success' => true, 
-                        'message' => 'Ghi nhận giao dịch chuyển khoản thành công! Yêu cầu mua gói của bạn đang ở trạng thái CHỜ DUYỆT. Admin sẽ sớm xác thực và kích hoạt tài khoản.',
-                        'redirect_url' => '/thanh-toan'
-                    ]);
-                }
+            if (!$response->successful()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Lỗi kết nối cổng thanh toán SePay.',
+                ]);
             }
 
-            return response()->json(['success' => false, 'message' => 'Chưa tìm thấy giao dịch chuyển khoản. Vui lòng kiểm tra lại.']);
+            $transactions = $response->json('transactions') ?? [];
+            $matchedTx    = null;
+
+            foreach ($transactions as $tx) {
+                $amountIn = (float) ($tx['amount_in'] ?? $tx['amount'] ?? 0);
+                $isIn     = (isset($tx['transaction_type']) && $tx['transaction_type'] === 'in')
+                            || ($amountIn > 0);
+
+                if (!$isIn || $amountIn <= 0) continue;
+
+                $bankContent = strtoupper($tx['transaction_content'] ?? '');
+                if (stripos($bankContent, strtoupper($expectedContent)) === false) continue;
+
+                // Chỉ nhận giao dịch trong vòng 24 giờ gần nhất
+                $txTime = $tx['transaction_date'] ?? $tx['when'] ?? null;
+                if ($txTime) {
+                    try {
+                        if (Carbon::parse($txTime)->diffInHours(now()) > 24) continue;
+                    } catch (\Exception $e) {
+                        // không parse được → bỏ qua kiểm tra thời gian
+                    }
+                }
+
+                $matchedTx             = $tx;
+                $matchedTx['amount_in'] = $amountIn;
+                break;
+            }
+
+            if (!$matchedTx) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Chưa tìm thấy giao dịch chuyển khoản. Vui lòng đảm bảo đúng nội dung và thử lại sau.',
+                ]);
+            }
+
+            // Giao dịch khớp — xử lý bên trong transaction DB
+            return DB::transaction(function () use ($matchedTx, $nguoiDungId, $noiDung, $expectedContent, $request) {
+                $amountIn = $matchedTx['amount_in'];
+
+                $user = NguoiDung::find($nguoiDungId);
+                if (!$user) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Không tìm thấy tài khoản người dùng.',
+                    ]);
+                }
+
+                // ── Xác định gói dịch vụ theo số tiền ──────────────────────────
+                $goiAmount = (float) $request->input('so_tien', 0);
+                if ($goiAmount <= 0) {
+                    if (preg_match('/Mua gói dịch vụ:\s*([\d\.,]+)/i', $noiDung, $matches)) {
+                        $goiAmount = (float) str_replace([',', '.'], '', $matches[1]);
+                    }
+                }
+
+                // ── Kiểm tra thiếu tiền ─────────────────────────────────────────
+                if ($goiAmount > 0 && $amountIn < $goiAmount) {
+                    $thieu = $goiAmount - $amountIn;
+                    return response()->json([
+                        'success' => false,
+                        'message' => sprintf(
+                            'Hệ thống ghi nhận bạn đã chuyển %s VNĐ, nhưng giá gói là %s VNĐ. Vui lòng chuyển thêm %s VNĐ để hoàn tất kích hoạt!',
+                            number_format($amountIn, 0, ',', '.'),
+                            number_format($goiAmount, 0, ',', '.'),
+                            number_format($thieu, 0, ',', '.')
+                        ),
+                    ], 400);
+                }
+
+                // ── Kiểm tra là lệnh mua gói ────────────────────────────────────
+                $isMuaGoi = stripos($expectedContent, 'MUAGOI') !== false
+                            || stripos($matchedTx['transaction_content'] ?? '', 'MUAGOI') !== false;
+
+                if (!$isMuaGoi) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Giao dịch không phải lệnh mua gói đối tác.',
+                    ]);
+                }
+
+                // ── Tra cứu gói dịch vụ gốc ─────────────────────────────────────
+                $goi = GoiDichVu::where('gia_ca', $goiAmount)->first();
+
+                $tenGoi         = $goi ? $goi->ten_goi         : 'Gói Đối Tác Quản Trị Gia Phả';
+                $thoiHan        = $goi ? (int) $goi->thoi_han  : 12;
+                $featuresOfGoi  = $goi ? $goi->features        : '';
+                $maxDoi         = $goi ? (int) $goi->max_doi        : 5;
+                $maxThanhVien   = $goi ? (int) $goi->max_thanh_vien : 100;
+                $goiId          = $goi ? $goi->id              : null;
+
+                $ngayBatDau  = now()->toDateString();
+                $ngayKetThuc = now()->addMonths($thoiHan)->toDateString();
+
+                // ── Logic mua nhiều gói: cho phép mua thêm gói KHÁC ────────────
+                // Nếu cùng gói đã mua và còn hiệu lực → cộng dồn thời gian
+                $existingSamePackage = null;
+                if ($goiId) {
+                    $existingSamePackage = DoiTac::where('id_nguoi_dung', $nguoiDungId)
+                        ->where('trang_thai', 'APPROVED')
+                        ->where('id_goi_dich_vu', $goiId)
+                        ->where('ngay_ket_thuc', '>=', now()->toDateString())
+                        ->first();
+                }
+
+                if ($existingSamePackage) {
+                    // Cộng dồn tháng vào gói cũ
+                    $newExpiry = Carbon::parse($existingSamePackage->ngay_ket_thuc)
+                        ->addMonths($thoiHan)
+                        ->toDateString();
+
+                    $existingSamePackage->update([
+                        'ngay_ket_thuc' => $newExpiry,
+                        'so_tien'       => $existingSamePackage->so_tien + $amountIn,
+                        // Cập nhật features nếu gói gốc có thay đổi
+                        'features'      => $featuresOfGoi,
+                        'max_doi'       => $maxDoi,
+                        'max_thanh_vien'=> $maxThanhVien,
+                    ]);
+
+                    $targetRecord   = $existingSamePackage;
+                    $actionMessage  = "Gia hạn gói cùng loại — cộng thêm {$thoiHan} tháng";
+
+                } else {
+                    // Kiểm tra có bản ghi PENDING nào cho cùng gói không → nâng cấp
+                    $pendingRecord = DoiTac::where('id_nguoi_dung', $nguoiDungId)
+                        ->where('trang_thai', 'PENDING')
+                        ->where(function ($q) use ($goiId) {
+                            if ($goiId) $q->where('id_goi_dich_vu', $goiId);
+                            else $q->whereNull('id_goi_dich_vu');
+                        })
+                        ->first();
+
+                    if ($pendingRecord) {
+                        $pendingRecord->update([
+                            'trang_thai'     => 'APPROVED',
+                            'so_tien'        => $amountIn,
+                            'ten_goi'        => $tenGoi,
+                            'id_goi_dich_vu' => $goiId,
+                            'features'       => $featuresOfGoi,
+                            'max_doi'        => $maxDoi,
+                            'max_thanh_vien' => $maxThanhVien,
+                            'ngay_bat_dau'   => $ngayBatDau,
+                            'ngay_ket_thuc'  => $ngayKetThuc,
+                        ]);
+                        $targetRecord   = $pendingRecord;
+                        $actionMessage  = "Tự động duyệt gói từ PENDING";
+                    } else {
+                        // Tạo mới bản ghi APPROVED — cho phép user có nhiều gói
+                        $targetRecord = DoiTac::create([
+                            'id_nguoi_dung'  => $nguoiDungId,
+                            'id_goi_dich_vu' => $goiId,
+                            'ten_goi'        => $tenGoi,
+                            'features'       => $featuresOfGoi,
+                            'max_doi'        => $maxDoi,
+                            'max_thanh_vien' => $maxThanhVien,
+                            'so_tien'        => $amountIn,
+                            'ngay_bat_dau'   => $ngayBatDau,
+                            'ngay_ket_thuc'  => $ngayKetThuc,
+                            'trang_thai'     => 'APPROVED',
+                        ]);
+                        $actionMessage = "Kích hoạt gói mới";
+                    }
+                }
+
+                // ── Model booted() đã tự sync is_doi_tac = 1 ──────────────────
+
+                // ── Ghi nhật ký ───────────────────────────────────────────────
+                NhatKyHoatDong::ghiLog(
+                    sprintf(
+                        '%s cho người dùng #%d (%s) — Gói: %s — Số tiền: %s VNĐ — HH: %s',
+                        $actionMessage,
+                        $nguoiDungId,
+                        $user->ho_ten,
+                        $tenGoi,
+                        number_format($amountIn, 0, ',', '.'),
+                        $targetRecord->ngay_ket_thuc
+                    ),
+                    [
+                        'id_nguoi_dung'  => $nguoiDungId,
+                        'id_doi_tac'     => $targetRecord->id,
+                        'ten_goi'        => $tenGoi,
+                        'so_tien'        => $amountIn,
+                        'ngay_bat_dau'   => $ngayBatDau,
+                        'ngay_ket_thuc'  => $targetRecord->ngay_ket_thuc,
+                        'auto_approved'  => true,
+                        'transaction_id' => $matchedTx['id'] ?? null,
+                    ],
+                    'Thành công',
+                    null
+                );
+
+                return response()->json([
+                    'success'       => true,
+                    'is_partner'    => true,
+                    'auto_approved' => true,
+                    'message'       => sprintf(
+                        'Chúc mừng! Thanh toán %s VNĐ đã được xác nhận. %s thành công!',
+                        number_format($amountIn, 0, ',', '.'),
+                        $existingSamePackage ? 'Gia hạn gói' : 'Kích hoạt tài khoản đối tác'
+                    ),
+                    'ten_goi'       => $tenGoi,
+                    'ngay_ket_thuc' => $targetRecord->ngay_ket_thuc,
+                    'redirect_url'  => '/doi-tac/dashboard',
+                ]);
+            });
 
         } catch (\Exception $e) {
-            Log::error('Lỗi paymentVerify: '.$e->getMessage());
-
-            return response()->json(['success' => false, 'message' => 'Lỗi máy chủ: '.$e->getMessage()]);
+            Log::error('Lỗi paymentVerify: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Lỗi máy chủ: ' . $e->getMessage(),
+            ]);
         }
     }
 }

@@ -312,6 +312,11 @@ const routes = [
                 name: 'partner-ban-do',
                 component: () => import('../components/DoiTac/QuanLyBanDo/index.vue'),
                 meta: { permission: 'Quản Lý Mộ Phần' }
+            },
+            {
+                path: 'quan-ly-goi',
+                name: 'partner-quan-ly-goi',
+                component: () => import('../components/DoiTac/QuanLyGoi/index.vue')
             }
         ]
     }
@@ -356,29 +361,29 @@ router.beforeEach(async (to, from, next) => {
 
     // ── 3. Chặn truy cập trang đối tác ──
     if (to.path.startsWith('/doi-tac')) {
-        if (user?.is_doi_tac != 1 && user?.vai_tro?.toLowerCase() !== 'admin') {
-            // localStorage cũ báo thiếu quyền -> Gọi đồng bộ API /me để xem Admin có vừa nâng cấp không
-            let updatedUser = user;
-            try {
-                const response = await axios.get('http://127.0.0.1:8000/api/me', {
-                    headers: { Authorization: 'Bearer ' + token }
-                });
-                if (response.data && response.data.user) {
-                    updatedUser = response.data.user;
-                    localStorage.setItem('user', JSON.stringify(updatedUser));
-                    if (response.data.permissions) {
-                        localStorage.setItem('permissions', JSON.stringify(response.data.permissions));
-                    }
+        // LUÔN gọi API để đồng bộ is_doi_tac mới nhất (tránh dùng cache localStorage cũ)
+        let updatedUser = user;
+        try {
+            const response = await axios.get('http://127.0.0.1:8000/api/me', {
+                headers: { Authorization: 'Bearer ' + token }
+            });
+            if (response.data && response.data.user) {
+                updatedUser = response.data.user;
+                localStorage.setItem('user', JSON.stringify(updatedUser));
+                if (response.data.permissions) {
+                    localStorage.setItem('permissions', JSON.stringify(response.data.permissions));
                 }
-            } catch (error) {
-                console.error('Realtime user check failed:', error);
             }
+        } catch (error) {
+            console.error('Realtime user check failed:', error);
+            // Nếu không gọi được API, dùng dữ liệu localStorage tạm thời
+            updatedUser = user;
+        }
 
-            // Kiểm tra lại sau khi đã sync
-            if (updatedUser?.is_doi_tac != 1 && updatedUser?.vai_tro?.toLowerCase() !== 'admin') {
-                alert('Bạn cần nâng cấp gói đối tác!');
-                return next('/dich-vu-goi');
-            }
+        // Kiểm tra sau khi sync từ server
+        if (updatedUser?.is_doi_tac != 1 && updatedUser?.vai_tro?.toLowerCase() !== 'admin') {
+            toastr.error('Bạn cần nâng cấp gói đối tác để truy cập khu vực này!');
+            return next('/dich-vu-goi');
         }
     }
 

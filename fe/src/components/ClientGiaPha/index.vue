@@ -620,42 +620,20 @@ const TreeItem = defineComponent({
       ]);
     };
 
-    // Arrange couple cards. If exactly two spouses, place the main person in the middle.
+    // Arrange couple cards. Lay out spouses sequentially (husband - wife 1 - wife 2)
     const coupleChildren = [];
     const hasMultipleSpouses = m.spouses && m.spouses.length === 2;
 
-    let children = null;
-    const kids0 = [];
-    const kids1 = [];
-
     if (hasMultipleSpouses) {
-      if (m.children && m.children.length) {
-        m.children.forEach(c => {
-          if (c.me_id == m.spouses[1].id || c.cha_id == m.spouses[1].id) {
-            kids1.push(c);
-          } else {
-            kids0.push(c);
-          }
-        });
-      }
-
       // spouse - connector - main - connector - spouse
       coupleChildren.push(makeCard(m.spouses[0], true, 'spouse-left', 1));
       coupleChildren.push(h('div', { 
-        class: [
-          'tree-connector-h', 
-          'spouse-connector-0',
-          kids0.length > 0 ? 'spouse-connector' : ''
-        ], 
+        class: ['tree-connector-h', 'spouse-connector-0'], 
         style: { order: 2 } 
       }, [ h('i', { class: 'bx bxs-heart connector-heart' }) ]));
       coupleChildren.push(makeCard(m, false, 'main-centered', 3));
       coupleChildren.push(h('div', { 
-        class: [
-          'tree-connector-h', 
-          'spouse-connector-1',
-          kids1.length > 0 ? 'spouse-connector' : ''
-        ], 
+        class: ['tree-connector-h', 'spouse-connector-1'], 
         style: { order: 4 } 
       }, [ h('i', { class: 'bx bxs-heart connector-heart' }) ]));
       coupleChildren.push(makeCard(m.spouses[1], true, 'spouse-right', 5));
@@ -682,10 +660,11 @@ const TreeItem = defineComponent({
           coupleChildren.push(makeCard(s, true));
         });
       }
-      children = hasChildren
-        ? h('ul', { class: 'tree-ul' }, m.children.map(c => h(TreeItem, { key: c.id, member: c, listDoiTocHo: this.listDoiTocHo, onView: x => this.$emit('view', x), onShowQr: x => this.$emit('show-qr', x) })))
-        : null;
     }
+
+    const children = hasChildren
+      ? h('ul', { class: 'tree-ul' }, m.children.map(c => h(TreeItem, { key: c.id, member: c, listDoiTocHo: this.listDoiTocHo, onView: x => this.$emit('view', x), onShowQr: x => this.$emit('show-qr', x) })))
+      : null;
 
     const nodeGroup = h('div', { class: 'tree-node-group' }, [
       h('div', { class: 'couple-wrapper' }, coupleChildren)
@@ -1981,7 +1960,7 @@ export default {
   background: #d4af37;
   z-index: 1;
 }
-.has-multiple-spouses-li > .tree-ul::before {
+/* .has-multiple-spouses-li > .tree-ul::before {
   display: none !important;
 }
 .union-column > .tree-ul::before {
