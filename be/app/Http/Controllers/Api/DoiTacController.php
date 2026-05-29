@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\ChiNhanh;
 use App\Models\DoiTac;
+use App\Models\GoiDichVu;
 use App\Models\SuKien;
 use App\Models\ThanhVien;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -14,11 +16,26 @@ class DoiTacController extends Controller
 {
     public function getProfile(Request $request): JsonResponse
     {
+        $userId  = $request->user()->id;
         $profile = $this->partnerProfile($request);
+
+        // Tổng hợp features & limits từ TẤT CẢ gói còn hiệu lực
+        $effectiveFeatures = DoiTac::getEffectiveFeatures($userId);
+        $effectiveLimits   = DoiTac::getEffectiveLimits($userId);
+        $activeCount       = DoiTac::activePackagesOf($userId)->count();
+        $latestExpiry      = DoiTac::getLatestExpiry($userId);
+        $earliestExpiry    = DoiTac::getEarliestExpiry($userId);
 
         return response()->json([
             'status' => true,
-            'data' => $profile,
+            'data'   => array_merge($profile->toArray(), [
+                'effective_features'   => $effectiveFeatures,
+                'effective_max_doi'    => $effectiveLimits['max_doi'],
+                'effective_max_thanh_vien' => $effectiveLimits['max_thanh_vien'],
+                'active_packages_count'=> $activeCount,
+                'latest_expiry'        => $latestExpiry,
+                'earliest_expiry'      => $earliestExpiry,
+            ]),
         ]);
     }
 
@@ -156,15 +173,75 @@ class DoiTacController extends Controller
 
     public function checkPending(Request $request): JsonResponse
     {
-        $user = $request->user();
+        $user    = $request->user();
         $pending = DoiTac::where('id_nguoi_dung', $user->id)
             ->where('trang_thai', 'PENDING')
             ->first();
 
         return response()->json([
-            'status' => true,
-            'has_pending' => $pending ? true : false,
-            'data' => $pending
+            'status'      => true,
+            'has_pending' => (bool) $pending,
+            'data'        => $pending,
+        ]);
+    }
+
+    /**
+     * Trả về danh sách TẤT CẢ gói đã mua của user (kể cả hết hạn),
+     * kèm thông tin countdown và features.
+     */
+    public function getMyPackages(Request $request): JsonResponse
+    {
+        $userId = $request->user()->id;
+
+        // Tất cả gói đã mua, sắp xếp: còn hạn trước, mới mua sau
+        $packages = DoiTac::where('id_nguoi_dung', $userId)
+            ->where('trang_thai', 'APPROVED')
+            ->orderByRaw("CASE WHEN ngay_ket_thuc IS NULL OR ngay_ket_thuc >= CURDATE() THEN 0 ELSE 1 END")
+            ->orderBy('ngay_ket_thuc', 'desc')
+            ->get();
+
+        $today = now()->startOfDay();
+
+        $packageList = $packages->map(function ($pkg) use ($today) {
+            $daysRemaining = $pkg->getDaysRemaining();
+            $progressPct   = $pkg->getProgressPercent();
+            $isActive      = $pkg->ngay_ket_thuc === null
+                || Carbon::parse($pkg->ngay_ket_thuc)->gte($today);
+            $isExpiringSoon = $isActive && $daysRemaining !== null && $daysRemaining <= 30;
+
+            return [
+                'id'              => $pkg->id,
+                'ten_goi'         => $pkg->ten_goi,
+                'so_tien'         => $pkg->so_tien,
+                'features'        => DoiTac::parseFeatures($pkg->features),
+                'max_doi'         => $pkg->max_doi,
+                'max_thanh_vien'  => $pkg->max_thanh_vien,
+                'ngay_bat_dau'    => $pkg->ngay_bat_dau ? $pkg->ngay_bat_dau->toDateString() : null,
+                'ngay_ket_thuc'   => $pkg->ngay_ket_thuc ? $pkg->ngay_ket_thuc->toDateString() : null,
+                'days_remaining'  => $daysRemaining,
+                'progress_pct'    => $progressPct,
+                'is_active'       => $isActive,
+                'is_expiring_soon'=> $isExpiringSoon,
+                'trang_thai'      => $pkg->trang_thai,
+                'created_at'      => $pkg->created_at,
+            ];
+        });
+
+        // Effective (union) data từ các gói còn hiệu lực
+        $effectiveFeatures = DoiTac::getEffectiveFeatures($userId);
+        $effectiveLimits   = DoiTac::getEffectiveLimits($userId);
+
+        return response()->json([
+            'status'  => true,
+            'data'    => [
+                'packages'              => $packageList,
+                'effective_features'    => $effectiveFeatures,
+                'effective_max_doi'     => $effectiveLimits['max_doi'],
+                'effective_max_thanh_vien' => $effectiveLimits['max_thanh_vien'],
+                'active_count'          => $packages->where('is_active', true)->count(),
+                'latest_expiry'         => DoiTac::getLatestExpiry($userId),
+                'earliest_expiry'       => DoiTac::getEarliestExpiry($userId),
+            ],
         ]);
     }
 
@@ -187,14 +264,26 @@ class DoiTacController extends Controller
 
     private function partnerProfile(Request $request): \App\Models\DoiTac
     {
+        $userId = $request->user()->id;
+
+        // Lấy gói APPROVED mới nhất còn hiệu lực của user
+        $latestActive = \App\Models\DoiTac::activePackagesOf($userId)
+            ->orderBy('ngay_ket_thuc', 'desc')
+            ->first();
+
+        if ($latestActive) {
+            return $latestActive;
+        }
+
+        // Fallback: tạo bản ghi placeholder nếu chưa có gói nào
         return \App\Models\DoiTac::firstOrCreate(
-            ['id_nguoi_dung' => $request->user()->id],
+            ['id_nguoi_dung' => $userId, 'trang_thai' => 'APPROVED'],
             [
-                'ten_goi' => 'Gói Đối Tác',
-                'so_tien' => 0,
-                'ngay_bat_dau' => now(),
+                'ten_goi'       => 'Gói Đối Tác',
+                'so_tien'       => 0,
+                'ngay_bat_dau'  => now(),
                 'ngay_ket_thuc' => now()->addYear(),
-                'trang_thai' => 1,
+                'trang_thai'    => 'APPROVED',
             ],
         );
     }

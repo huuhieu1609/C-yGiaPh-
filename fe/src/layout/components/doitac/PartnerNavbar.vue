@@ -129,6 +129,17 @@
             <span class="nav-dot hide-on-collapse"></span>
           </router-link>
         </li>
+
+        <li class="section-heading hide-on-collapse">Gói &amp; Thanh Toán</li>
+
+        <li class="nav-item">
+          <router-link to="/doi-tac/quan-ly-goi" class="nav-link" active-class="active" title="Quản Lý Gói">
+            <span class="nav-icon"><i class="bx bx-package"></i></span>
+            <span class="hide-on-collapse nav-label">Quản Lý Gói</span>
+            <span class="nav-dot hide-on-collapse"></span>
+          </router-link>
+        </li>
+
         <li class="nav-item item-events" v-for="menu in comingSoonMenus" :key="'cs'+menu.id">
           <router-link :to="'/coming-soon?name=' + encodeURIComponent(menu.ten_chuc_nang)" class="nav-link" active-class="active" :title="menu.ten_chuc_nang">
             <span class="nav-icon"><i class="bx bx-crown text-warning"></i></span>

@@ -312,6 +312,11 @@ const routes = [
                 name: 'partner-ban-do',
                 component: () => import('../components/DoiTac/QuanLyBanDo/index.vue'),
                 meta: { permission: 'Quản Lý Mộ Phần' }
+            },
+            {
+                path: 'quan-ly-goi',
+                name: 'partner-quan-ly-goi',
+                component: () => import('../components/DoiTac/QuanLyGoi/index.vue')
             }
         ]
     }

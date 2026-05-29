@@ -65,6 +65,7 @@ Route::middleware(['auth:sanctum', 'activity'])->group(function () {
         Route::post('/tao-chi-nhanh', [DoiTacController::class, 'taoChiNhanh']);
         Route::get('/lay-chi-nhanh', [DoiTacController::class, 'layChiNhanhCuaDoiTac']);
         Route::get('/check-pending', [DoiTacController::class, 'checkPending']);
+        Route::get('/my-packages', [DoiTacController::class, 'getMyPackages']);
     });
 
     Route::prefix('/admin/doi-tac')->middleware('phan_quyen:Quản Lý Đối Tác')->group(function () {
