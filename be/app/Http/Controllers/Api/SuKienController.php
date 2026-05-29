@@ -14,37 +14,42 @@ class SuKienController extends Controller
     {
         try {
             $user = auth('sanctum')->user();
-            // Events with chi_nhanh_id == null are global/public events.
-            // If user is admin return all events. If partner return events for their branches + global events.
-            // If regular user, attempt to find their member record to determine their chi_nhanh and return global + branch-specific events.
-            $query = SuKien::orderBy('ngay_to_chuc', 'desc');
-
             if (!$user) {
-                // not authenticated: return only public events
-                $query->whereNull('chi_nhanh_id');
-            } elseif ($user->vai_tro === 'Admin') {
-                // admin: no further filter
+                return response()->json([
+                    'status'  => false,
+                    'message' => 'Bạn cần đăng nhập!',
+                ], 401);
+            }
+
+            if ($user->vai_tro === 'Admin') {
+                $data = SuKien::orderBy('ngay_to_chuc', 'desc')->get();
             } elseif ($user->is_doi_tac == 1) {
-                // partner: return global + events for branches owned by this partner
-                $chiNhanhIds = \App\Models\ChiNhanh::where('id_nguoi_dung', $user->id)->pluck('id')->toArray();
-                $query->where(function($q) use ($chiNhanhIds) {
-                    $q->whereNull('chi_nhanh_id')->orWhereIn('chi_nhanh_id', $chiNhanhIds);
-                });
+                $chiNhanhIds = \App\Models\ChiNhanh::where('id_nguoi_dung', $user->id)->pluck('id');
+                $data = SuKien::whereIn('chi_nhanh_id', $chiNhanhIds)
+                    ->orWhereNull('chi_nhanh_id')
+                    ->orderBy('ngay_to_chuc', 'desc')
+                    ->get();
             } else {
-                // regular member: try to locate their ThanhVien to get chi_nhanh_id
-                $myMember = \App\Models\ThanhVien::where('email', $user->email)->whereNotNull('email')->first();
-                if ($myMember) {
-                    $cnId = $myMember->chi_nhanh_id;
-                    $query->where(function($q) use ($cnId) {
-                        $q->whereNull('chi_nhanh_id')->orWhere('chi_nhanh_id', $cnId);
-                    });
+                $cnId = $user->chi_nhanh_id;
+                if (!$cnId) {
+                    $myMember = \App\Models\ThanhVien::where('email', $user->email)->whereNotNull('email')->first();
+                    if ($myMember) {
+                        $cnId = $myMember->chi_nhanh_id;
+                    }
+                }
+
+                if ($cnId) {
+                    $data = SuKien::where('chi_nhanh_id', $cnId)
+                        ->orWhereNull('chi_nhanh_id')
+                        ->orderBy('ngay_to_chuc', 'desc')
+                        ->get();
                 } else {
-                    // not associated with a branch: only show public events
-                    $query->whereNull('chi_nhanh_id');
+                    $data = SuKien::whereNull('chi_nhanh_id')
+                        ->orderBy('ngay_to_chuc', 'desc')
+                        ->get();
                 }
             }
 
-            $data = $query->get();
 
             return response()->json([
                 'status'  => true,
@@ -69,6 +74,7 @@ class SuKienController extends Controller
                 'dia_diem' => 'nullable|string|max:255',
                 'chi_nhanh_id' => 'nullable|exists:chi_nhanhs,id',
                 'loai' => 'required|in:Giỗ tổ,Họp họ,Cưới hỏi,Tang lễ',
+                'chi_nhanh_id' => 'nullable|integer|exists:chi_nhanhs,id',
             ]);
 
             $user = auth('sanctum')->user();
@@ -114,6 +120,7 @@ class SuKienController extends Controller
                 'dia_diem' => 'nullable|string|max:255',
                 'chi_nhanh_id' => 'nullable|exists:chi_nhanhs,id',
                 'loai' => 'required|in:Giỗ tổ,Họp họ,Cưới hỏi,Tang lễ',
+                'chi_nhanh_id' => 'nullable|integer|exists:chi_nhanhs,id',
             ]);
 
             $user = auth('sanctum')->user();

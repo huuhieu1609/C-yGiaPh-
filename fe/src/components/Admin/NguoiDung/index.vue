@@ -194,7 +194,7 @@ export default {
         editItem(item) {
             this.isEditing = true;
             this.formData = { ...item };
-            this.formData.mat_khau = '';
+            this.formData.mat_khau = ''; // Don't show password
         },
         deleteItem(id) {
             if (confirm('Bạn có chắc chắn muốn xóa?')) {
