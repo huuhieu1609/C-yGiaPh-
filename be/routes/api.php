@@ -88,6 +88,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/search', [ThanhVienController::class, 'search']);
         Route::post('/xac-dinh-quan-he', [ThanhVienController::class, 'xacDinhQuanHe']);
         Route::post('/tra-cuu-quan-he', [ThanhVienController::class, 'traCuuQuanHe']);
+        Route::post('/upload-avatar', [ThanhVienController::class, 'uploadAvatar']);
     });
 
     Route::prefix('/nguoi-dung')->group(function () {

@@ -33,6 +33,7 @@ class DatabaseSeeder extends Seeder
             DoiTacSeeder::class,
             DeXuatChinhSuaSeeder::class,
             TuongNiemSeeder::class,
+            GoiDichVuSeeder::class,
         ]);
     }
 }

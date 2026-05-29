@@ -113,20 +113,46 @@
             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
           </div>
           <div class="modal-body p-4">
+            <!-- Proposal Type Banner -->
+            <div class="alert border-0 radius-12 p-3 text-start mb-4 d-flex align-items-center gap-2" style="background: rgba(249, 115, 22, 0.08); border: 1px solid rgba(249, 115, 22, 0.15) !important;">
+              <i class="bx bx-info-circle fs-4 text-warning"></i>
+              <div>
+                <span class="fw-bold text-dark theme-text-main">Mục tiêu đề xuất:</span>
+                <span class="text-secondary ms-1">
+                  <template v-if="currentProposal.type === 'edit'">Chỉnh sửa thông tin thành viên <strong>{{ currentProposal.thanh_vien ? currentProposal.thanh_vien.ho_ten : '' }}</strong></template>
+                  <template v-else-if="currentProposal.type === 'add_child'">Thêm con mới cho cha/mẹ là <strong>{{ currentProposal.thanh_vien ? currentProposal.thanh_vien.ho_ten : '' }}</strong></template>
+                  <template v-else-if="currentProposal.type === 'add_spouse'">Thêm phối ngẫu mới cho <strong>{{ currentProposal.thanh_vien ? currentProposal.thanh_vien.ho_ten : '' }}</strong></template>
+                  <template v-else-if="currentProposal.type === 'delete'">Yêu cầu xóa thành viên <strong>{{ currentProposal.thanh_vien ? currentProposal.thanh_vien.ho_ten : '' }}</strong> khỏi phả hệ</template>
+                  <template v-else>Thêm phối ngẫu mới cho <strong>{{ currentProposal.thanh_vien ? currentProposal.thanh_vien.ho_ten : '' }}</strong></template>
+                </span>
+              </div>
+            </div>
+
             <div class="row g-4 mb-4">
-              <div class="col-md-6 border-adaptive-end">
-                <h6 class="fw-bold mb-3 text-secondary text-uppercase small font-bold"><i class="bx bx-history me-1"></i>Thông Information Hiện Tại</h6>
+              <div class="col-md-6 border-adaptive-end text-start">
+                <h6 class="fw-bold mb-3 text-secondary text-uppercase small font-bold">
+                  <i class="bx bx-history me-1"></i>
+                  <template v-if="currentProposal.type === 'edit'">Thông Tin Thành Viên (Hiện Tại)</template>
+                  <template v-else-if="currentProposal.type === 'delete'">Thông Tin Thành Viên Muốn Xóa</template>
+                  <template v-else-if="currentProposal.type === 'add_child'">Thông Tin Cha/Mẹ Liên Kết</template>
+                  <template v-else-if="currentProposal.type === 'add_spouse'">Thông Tin Bạn Đời Liên Kết</template>
+                  <template v-else>Thông Tin Bạn Đời Liên Kết</template>
+                </h6>
                 
-                <div v-if="!currentProposal.thanh_vien || currentProposal.type !== 'edit'" class="alert alert-premium-info p-4 text-center text-muted radius-12">
-                  <i class="bx bx-plus-circle d-block display-5 opacity-25 mb-2 text-warning"></i>
-                  {{ currentProposal.type === 'add_child' ? 'Đề xuất thêm con mới (chưa tồn tại dữ liệu)' : 'Đề xuất thêm phối ngẫu mới (chưa tồn tại dữ liệu)' }}
+                <div v-if="!currentProposal.thanh_vien" class="alert alert-premium-info p-4 text-center text-muted radius-12">
+                  <i class="bx bx-error-circle d-block display-5 opacity-25 mb-2 text-warning"></i>
+                  Không có dữ liệu gốc liên kết.
                 </div>
                 <div v-else class="current-info-card p-4 rounded-4 bg-adaptive-input text-start">
                   <div class="d-flex align-items-center gap-3 mb-4">
                     <img :src="currentProposal.thanh_vien.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentProposal.thanh_vien.ho_ten)}&background=6b7280&color=fff&size=80`" class="rounded-circle border border-3 border-white shadow-sm" width="60" height="60" style="object-fit:cover" />
                     <div>
                       <h5 class="fw-bold theme-text-main mb-1">{{ currentProposal.thanh_vien.ho_ten }}</h5>
-                      <span class="badge bg-secondary-premium">Đời thứ {{ currentProposal.thanh_vien.doi_thu }}</span>
+                      <span class="badge bg-secondary-premium">
+                        <template v-if="currentProposal.type === 'edit'">Đời thứ {{ currentProposal.thanh_vien.doi_thu }}</template>
+                        <template v-else-if="currentProposal.type === 'add_child'">Cha/Mẹ (Đời {{ currentProposal.thanh_vien.doi_thu }})</template>
+                        <template v-else>Bạn Đời (Đời {{ currentProposal.thanh_vien.doi_thu }})</template>
+                      </span>
                     </div>
                   </div>
                   <div class="row g-3">
@@ -142,19 +168,36 @@
               <div class="col-md-6">
                 <h6 class="fw-bold mb-3 text-warning text-uppercase small font-bold"><i class="bx bx-message-square-edit me-1"></i>Dữ Liệu Đề Xuất Thay Đổi</h6>
                 <div class="proposed-info-card p-4 rounded-4 bg-adaptive-input text-start" v-if="currentProposal.data">
-                  <div class="d-flex align-items-center gap-3 mb-4">
-                    <img :src="`https://ui-avatars.com/api/?name=${encodeURIComponent(currentProposal.data.ho_ten)}&background=f97316&color=fff&size=80`" class="rounded-circle border border-3 border-white shadow-sm" width="60" height="60" style="object-fit:cover" />
-                    <div>
-                      <h5 class="fw-bold mb-1 theme-text-main" :class="isDiff('ho_ten')">{{ currentProposal.data.ho_ten }}</h5>
-                      <span class="badge bg-orange-premium" :class="isDiff('doi_thu')">Đời thứ {{ currentProposal.data.doi_thu }}</span>
+                  <!-- Case 1: Member Delete Proposal -->
+                  <div v-if="currentProposal.type === 'delete'" class="delete-request-widget text-center py-2">
+                    <div class="text-danger mb-3">
+                      <i class="bx bx-trash display-4" style="color: #dc3545 !important;"></i>
+                    </div>
+                    <h5 class="fw-bold mb-2 text-danger">Đề xuất gỡ bỏ</h5>
+                    <span class="badge bg-danger mb-3 px-3 py-1.5 radius-8" style="background-color: #dc3545 !important;">HÀNH ĐỘNG: XÓA CỨNG</span>
+                    
+                    <div class="p-3 rounded-3 text-start mt-2 border border-danger border-opacity-20" style="background: rgba(239, 68, 68, 0.05); border-color: rgba(220, 53, 69, 0.2) !important;">
+                      <span class="text-danger d-block small mb-1 fw-bold"><i class="bx bx-info-circle me-1"></i>Lý do đề xuất:</span>
+                      <p class="mb-0 theme-text-main fw-medium text-danger small">{{ currentProposal.data.ly_do_xoa }}</p>
                     </div>
                   </div>
-                  <div class="row g-3">
-                    <div class="col-6"><span class="text-secondary d-block small mb-1">Giới tính:</span><strong class="theme-text-main" :class="isDiff('gioi_tinh')">{{ currentProposal.data.gioi_tinh }}</strong></div>
-                    <div class="col-6"><span class="text-secondary d-block small mb-1">Trạng thái:</span><strong class="theme-text-main" :class="isDiff('trang_thai')">{{ currentProposal.data.trang_thai }}</strong></div>
-                    <div class="col-6"><span class="text-secondary d-block small mb-1">Ngày sinh:</span><strong class="theme-text-main" :class="isDiff('ngay_sinh')">{{ formatDate(currentProposal.data.ngay_sinh) }}</strong></div>
-                    <div class="col-6" v-if="currentProposal.data.trang_thai === 'Đã mất'"><span class="text-secondary d-block small mb-1">Ngày mất:</span><strong class="theme-text-main" :class="isDiff('ngay_mat')">{{ formatDate(currentProposal.data.ngay_mat) }}</strong></div>
-                    <div class="col-12 pt-2 border-top border-opacity-10" v-if="currentProposal.data.ghi_chu"><span class="text-secondary d-block small mb-1">Ghi chú đề xuất:</span><p class="mb-0 text-secondary small" :class="isDiff('ghi_chu')">{{ currentProposal.data.ghi_chu }}</p></div>
+
+                  <!-- Case 2: Other Proposals (edit, add_child, add_spouse) -->
+                  <div v-else>
+                    <div class="d-flex align-items-center gap-3 mb-4">
+                      <img :src="currentProposal.data.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentProposal.data.ho_ten)}&background=f97316&color=fff&size=80`" class="rounded-circle border border-3 border-white shadow-sm" width="60" height="60" style="object-fit:cover" />
+                      <div>
+                        <h5 class="fw-bold mb-1 theme-text-main" :class="isDiff('ho_ten')">{{ currentProposal.data.ho_ten }}</h5>
+                        <span class="badge bg-orange-premium" :class="isDiff('doi_thu')">Đời thứ {{ currentProposal.data.doi_thu }}</span>
+                      </div>
+                    </div>
+                    <div class="row g-3">
+                      <div class="col-6"><span class="text-secondary d-block small mb-1">Giới tính:</span><strong class="theme-text-main" :class="isDiff('gioi_tinh')">{{ currentProposal.data.gioi_tinh }}</strong></div>
+                      <div class="col-6"><span class="text-secondary d-block small mb-1">Trạng thái:</span><strong class="theme-text-main" :class="isDiff('trang_thai')">{{ currentProposal.data.trang_thai }}</strong></div>
+                      <div class="col-6"><span class="text-secondary d-block small mb-1">Ngày sinh:</span><strong class="theme-text-main" :class="isDiff('ngay_sinh')">{{ formatDate(currentProposal.data.ngay_sinh) }}</strong></div>
+                      <div class="col-6" v-if="currentProposal.data.trang_thai === 'Đã mất'"><span class="text-secondary d-block small mb-1">Ngày mất:</span><strong class="theme-text-main" :class="isDiff('ngay_mat')">{{ formatDate(currentProposal.data.ngay_mat) }}</strong></div>
+                      <div class="col-12 pt-2 border-top border-opacity-10" v-if="currentProposal.data.ghi_chu"><span class="text-secondary d-block small mb-1">Ghi chú đề xuất:</span><p class="mb-0 text-secondary small" :class="isDiff('ghi_chu')">{{ currentProposal.data.ghi_chu }}</p></div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -332,11 +375,14 @@ export default {
     typeLabel(t) {
       if (t === 'edit') return 'Chỉnh sửa';
       if (t === 'add_child') return 'Thêm con';
-      return 'Thêm vợ/chồng';
+      if (t === 'add_spouse') return 'Thêm vợ/chồng';
+      if (t === 'delete') return 'Yêu cầu Xóa';
+      return t;
     },
     typeBadgeClass(t) {
       if (t === 'edit') return 'badge-edit-type';
       if (t === 'add_child') return 'badge-child-type';
+      if (t === 'delete') return 'badge-delete-type';
       return 'badge-spouse-type';
     },
     statusLabel(s) {
@@ -429,6 +475,7 @@ export default {
 .badge-edit-type { background-color: rgba(59, 130, 246, 0.08) !important; color: #3b82f6 !important; border: 1px solid rgba(59, 130, 246, 0.15); }
 .badge-child-type { background-color: rgba(249, 115, 22, 0.08) !important; color: #f97316 !important; border: 1px solid rgba(249, 115, 22, 0.15); }
 .badge-spouse-type { background-color: rgba(219, 39, 119, 0.08) !important; color: #db2777 !important; border: 1px solid rgba(219, 39, 119, 0.15); }
+.badge-delete-type { background-color: rgba(239, 68, 68, 0.08) !important; color: #ef4444 !important; border: 1px solid rgba(239, 68, 68, 0.15); }
 
 /* NÚT TƯƠNG TÁC CHỨC NĂNG */
 .btn-action-edit, .btn-action-delete {

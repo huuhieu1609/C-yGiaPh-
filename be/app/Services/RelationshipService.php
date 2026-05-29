@@ -125,6 +125,7 @@ class RelationshipService
                     'gioi_tinh' => $personsMap[$memberId]->gioi_tinh,
                     'avatar' => $personsMap[$memberId]->avatar,
                     'nghe_nghiep' => $personsMap[$memberId]->nghe_nghiep,
+                    'doi_thu' => $personsMap[$memberId]->doi_thu,
                 ];
             }
         }

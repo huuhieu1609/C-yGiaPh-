@@ -151,6 +151,16 @@
                                 <label class="form-label fw-bold">Ngày mất</label>
                                 <input type="date" class="form-control radius-8 border-2 shadow-none" v-model="currentMember.ngay_mat">
                             </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Tình trạng hôn nhân</label>
+                                <select class="form-select radius-8 border-2 shadow-none" v-model="currentMember.tinh_trang_hon_nhan">
+                                    <option value="">-- Chưa rõ --</option>
+                                    <option value="Độc thân">Độc thân</option>
+                                    <option value="Đã kết hôn">Đã kết hôn</option>
+                                    <option value="Ly hôn">Ly hôn</option>
+                                    <option value="Góa">Góa</option>
+                                </select>
+                            </div>
 
                             <div class="col-md-6">
                                 <label class="form-label fw-bold">Quan hệ với dòng họ</label>
@@ -409,7 +419,7 @@ export default {
             selectedChiNhanh: null,
             currentMember: {
                 id: null, ho_ten: '', doi_thu: 1, cha_id: null, gioi_tinh: 'Nam', chi_nhanh_id: null,
-                loai_quan_he: 'Chính', spouse_of_id: null, trang_thai: 'Còn sống', ngay_mat: null, ngay_sinh: null, ghi_chu: '', avatar: null
+                loai_quan_he: 'Chính', spouse_of_id: null, trang_thai: 'Còn sống', ngay_mat: null, ngay_sinh: null, tinh_trang_hon_nhan: '', ghi_chu: '', avatar: null
             },
             avatarPreview: null,
             isEditing: false,
@@ -540,7 +550,7 @@ export default {
             this.isEditing = false;
             this.currentMember = {
                 id: null, ho_ten: '', doi_thu: 1, cha_id: null, gioi_tinh: 'Nam', chi_nhanh_id: this.selectedChiNhanh,
-                loai_quan_he: 'Chính', spouse_of_id: null, trang_thai: 'Còn sống', ngay_mat: null, ngay_sinh: null, ghi_chu: '', avatar: null
+                loai_quan_he: 'Chính', spouse_of_id: null, trang_thai: 'Còn sống', ngay_mat: null, ngay_sinh: null, tinh_trang_hon_nhan: '', ghi_chu: '', avatar: null
             };
             this.avatarFile = null;
             this.avatarPreview = null;
