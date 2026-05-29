@@ -241,13 +241,29 @@
                                                               {{ member.tinh_trang_hon_nhan || 'Chưa rõ' }}
                                                             </span>
                                                         </div>
-                                                        <div class="info-row-premium d-flex justify-content-between py-2">
+                                                        <div class="info-row-premium d-flex justify-content-between py-2 border-bottom border-light">
                                                             <span class="label text-muted font-13">Hệ Phả Hệ</span>
                                                             <span class="value">
                                                                 <span class="badge" :class="member.loai_quan_he === 'Chính' ? 'bg-light-primary text-primary' : 'bg-light-warning text-warning'">
                                                                     {{ member.loai_quan_he === 'Chính' ? 'Huyết thống chính' : 'Người phối ngẫu (Dâu/Rể)' }}
                                                                 </span>
                                                             </span>
+                                                        </div>
+                                                        <div class="info-row-premium d-flex justify-content-between py-2 border-bottom border-light">
+                                                            <span class="label text-muted font-13">Email</span>
+                                                            <span class="value fw-bold text-dark font-13">{{ member.email || 'Chưa cập nhật' }}</span>
+                                                        </div>
+                                                        <div class="info-row-premium d-flex justify-content-between py-2 border-bottom border-light">
+                                                            <span class="label text-muted font-13">Số điện thoại</span>
+                                                            <span class="value fw-bold text-dark font-13">{{ member.so_dien_thoai || 'Chưa cập nhật' }}</span>
+                                                        </div>
+                                                        <div class="info-row-premium d-flex justify-content-between py-2 border-bottom border-light">
+                                                            <span class="label text-muted font-13">Nghề nghiệp</span>
+                                                            <span class="value fw-bold text-dark font-13">{{ member.nghe_nghiep || 'Chưa cập nhật' }}</span>
+                                                        </div>
+                                                        <div class="info-row-premium d-flex justify-content-between py-2">
+                                                            <span class="label text-muted font-13">Địa chỉ</span>
+                                                            <span class="value fw-bold text-dark font-13">{{ member.dia_chi || 'Chưa cập nhật' }}</span>
                                                         </div>
                                                     </div>
                                                 </div>

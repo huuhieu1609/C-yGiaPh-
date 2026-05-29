@@ -1,3 +1,32 @@
+// Phân tách phiên làm việc theo từng tab trình duyệt (Admin, Đối tác, Client mở đồng thời không bị đá nhau)
+(function() {
+    const keysToRedirect = ['access_token', 'user', 'permissions'];
+    const originalGet = localStorage.getItem.bind(localStorage);
+    const originalSet = localStorage.setItem.bind(localStorage);
+    const originalRemove = localStorage.removeItem.bind(localStorage);
+
+    localStorage.getItem = function(key) {
+        if (keysToRedirect.includes(key)) {
+            return sessionStorage.getItem(key);
+        }
+        return originalGet(key);
+    };
+
+    localStorage.setItem = function(key, value) {
+        if (keysToRedirect.includes(key)) {
+            return sessionStorage.setItem(key, value);
+        }
+        return originalSet(key, value);
+    };
+
+    localStorage.removeItem = function(key) {
+        if (keysToRedirect.includes(key)) {
+            return sessionStorage.removeItem(key);
+        }
+        return originalRemove(key);
+    };
+})();
+
 import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'

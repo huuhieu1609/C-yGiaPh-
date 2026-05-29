@@ -136,36 +136,32 @@
             <div class="row g-4 mb-4">
               <div class="col-md-6 border-adaptive-end text-start">
                 <h6 class="fw-bold mb-3 text-secondary text-uppercase small font-bold">
-                  <i class="bx bx-history me-1"></i>
-                  <template v-if="currentProposal.type === 'edit'">Thông Tin Thành Viên (Hiện Tại)</template>
-                  <template v-else-if="currentProposal.type === 'delete'">Thông Tin Thành Viên Muốn Xóa</template>
-                  <template v-else-if="currentProposal.type === 'add_child'">Thông Tin Cha/Mẹ Liên Kết</template>
-                  <template v-else-if="currentProposal.type === 'add_spouse'">Thông Tin Bạn Đời Liên Kết</template>
-                  <template v-else>Thông Tin Bạn Đời Liên Kết</template>
+                  <i class="bx bx-user-voice me-1 text-warning"></i>
+                  Thông Tin Người Đề Xuất
                 </h6>
                 
-                <div v-if="!currentProposal.thanh_vien" class="alert alert-premium-info p-4 text-center text-muted radius-12">
-                  <i class="bx bx-error-circle d-block display-5 opacity-25 mb-2 text-warning"></i>
-                  Không có dữ liệu gốc liên kết.
+                <div v-if="!currentProposal.proposed_by" class="alert alert-premium-info p-4 text-center text-muted radius-12">
+                  <i class="bx bx-user d-block display-5 opacity-25 mb-2 text-warning"></i>
+                  Khách vãng lai gửi đề xuất.
                 </div>
                 <div v-else class="current-info-card p-4 rounded-4 bg-adaptive-input text-start">
                   <div class="d-flex align-items-center gap-3 mb-4">
-                    <img :src="currentProposal.thanh_vien.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentProposal.thanh_vien.ho_ten)}&background=6b7280&color=fff&size=80`" class="rounded-circle border border-3 border-white shadow-sm" width="60" height="60" style="object-fit:cover" />
+                    <img :src="currentProposal.proposed_by.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentProposal.proposed_by.ho_ten)}&background=6b7280&color=fff&size=80`" class="rounded-circle border border-3 border-white shadow-sm" width="60" height="60" style="object-fit:cover" />
                     <div>
-                      <h5 class="fw-bold theme-text-main mb-1">{{ currentProposal.thanh_vien.ho_ten }}</h5>
+                      <h5 class="fw-bold theme-text-main mb-1">{{ currentProposal.proposed_by.ho_ten }}</h5>
                       <span class="badge bg-secondary-premium">
-                        <template v-if="currentProposal.type === 'edit'">Đời thứ {{ currentProposal.thanh_vien.doi_thu }}</template>
-                        <template v-else-if="currentProposal.type === 'add_child'">Cha/Mẹ (Đời {{ currentProposal.thanh_vien.doi_thu }})</template>
-                        <template v-else>Bạn Đời (Đời {{ currentProposal.thanh_vien.doi_thu }})</template>
+                        {{ currentProposal.proposed_by.vai_tro || 'Thành viên' }}
                       </span>
                     </div>
                   </div>
                   <div class="row g-3">
-                    <div class="col-6"><span class="text-secondary d-block small mb-1">Giới tính:</span><strong class="theme-text-main">{{ currentProposal.thanh_vien.gioi_tinh }}</strong></div>
-                    <div class="col-6"><span class="text-secondary d-block small mb-1">Trạng thái:</span><strong class="theme-text-main">{{ currentProposal.thanh_vien.trang_thai }}</strong></div>
-                    <div class="col-6"><span class="text-secondary d-block small mb-1">Ngày sinh:</span><strong class="theme-text-main">{{ formatDate(currentProposal.thanh_vien.ngay_sinh) }}</strong></div>
-                    <div class="col-6" v-if="currentProposal.thanh_vien.trang_thai === 'Đã mất'"><span class="text-secondary d-block small mb-1">Ngày mất:</span><strong class="theme-text-main">{{ formatDate(currentProposal.thanh_vien.ngay_mat) }}</strong></div>
-                    <div class="col-12 pt-2 border-top border-opacity-10" v-if="currentProposal.thanh_vien.ghi_chu"><span class="text-secondary d-block small mb-1">Ghi chú gốc:</span><p class="mb-0 text-secondary small">{{ currentProposal.thanh_vien.ghi_chu }}</p></div>
+                    <div class="col-12"><span class="text-secondary d-block small mb-1">Email liên hệ:</span><strong class="theme-text-main font-13">{{ currentProposal.proposed_by.email }}</strong></div>
+                    <div class="col-6"><span class="text-secondary d-block small mb-1">Số điện thoại:</span><strong class="theme-text-main">{{ currentProposal.proposed_by.so_dien_thoai || 'Chưa cập nhật' }}</strong></div>
+                    <div class="col-6"><span class="text-secondary d-block small mb-1">Trạng thái tài khoản:</span><strong class="theme-text-main text-success">Hoạt động</strong></div>
+                    <div class="col-12 pt-2 border-top border-opacity-10" v-if="currentProposal.proposed_by.chi_nhanh">
+                      <span class="text-secondary d-block small mb-1">Chi nhánh quản lý:</span>
+                      <strong class="theme-text-main small">{{ currentProposal.proposed_by.chi_nhanh.ten_chi }}</strong>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -192,16 +188,87 @@
                     <div class="d-flex align-items-center gap-3 mb-4">
                       <img :src="currentProposal.data.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentProposal.data.ho_ten)}&background=f97316&color=fff&size=80`" class="rounded-circle border border-3 border-white shadow-sm" width="60" height="60" style="object-fit:cover" />
                       <div>
-                        <h5 class="fw-bold mb-1 theme-text-main" :class="isDiff('ho_ten')">{{ currentProposal.data.ho_ten }}</h5>
-                        <span class="badge bg-orange-premium" :class="isDiff('doi_thu')">Đời thứ {{ currentProposal.data.doi_thu }}</span>
+                        <h5 class="fw-bold mb-1 theme-text-main" :class="isDiff('ho_ten')">
+                          {{ currentProposal.data.ho_ten }}
+                          <span v-if="hasDiff('ho_ten')" class="text-muted font-11 fw-normal d-block mt-0.5">(Cũ: {{ getOldValue('ho_ten') }})</span>
+                        </h5>
+                        <span class="badge bg-orange-premium" :class="isDiff('doi_thu')">
+                          Đời thứ {{ currentProposal.data.doi_thu }}
+                          <span v-if="hasDiff('doi_thu')" class="font-normal ms-1">(Cũ: {{ getOldValue('doi_thu') }})</span>
+                        </span>
                       </div>
                     </div>
                     <div class="row g-3">
-                      <div class="col-6"><span class="text-secondary d-block small mb-1">Giới tính:</span><strong class="theme-text-main" :class="isDiff('gioi_tinh')">{{ currentProposal.data.gioi_tinh }}</strong></div>
-                      <div class="col-6"><span class="text-secondary d-block small mb-1">Trạng thái:</span><strong class="theme-text-main" :class="isDiff('trang_thai')">{{ currentProposal.data.trang_thai }}</strong></div>
-                      <div class="col-6"><span class="text-secondary d-block small mb-1">Ngày sinh:</span><strong class="theme-text-main" :class="isDiff('ngay_sinh')">{{ formatDate(currentProposal.data.ngay_sinh) }}</strong></div>
-                      <div class="col-6" v-if="currentProposal.data.trang_thai === 'Đã mất'"><span class="text-secondary d-block small mb-1">Ngày mất:</span><strong class="theme-text-main" :class="isDiff('ngay_mat')">{{ formatDate(currentProposal.data.ngay_mat) }}</strong></div>
-                      <div class="col-12 pt-2 border-top border-opacity-10" v-if="currentProposal.data.ghi_chu"><span class="text-secondary d-block small mb-1">Ghi chú đề xuất:</span><p class="mb-0 text-secondary small" :class="isDiff('ghi_chu')">{{ currentProposal.data.ghi_chu }}</p></div>
+                      <div class="col-6">
+                        <span class="text-secondary d-block small mb-1">Giới tính:</span>
+                        <strong class="theme-text-main" :class="isDiff('gioi_tinh')">
+                          {{ currentProposal.data.gioi_tinh }}
+                          <span v-if="hasDiff('gioi_tinh')" class="text-muted font-11 fw-normal d-block">(Cũ: {{ getOldValue('gioi_tinh') }})</span>
+                        </strong>
+                      </div>
+                      <div class="col-6">
+                        <span class="text-secondary d-block small mb-1">Trạng thái:</span>
+                        <strong class="theme-text-main" :class="isDiff('trang_thai')">
+                          {{ currentProposal.data.trang_thai }}
+                          <span v-if="hasDiff('trang_thai')" class="text-muted font-11 fw-normal d-block">(Cũ: {{ getOldValue('trang_thai') }})</span>
+                        </strong>
+                      </div>
+                      <div class="col-6">
+                        <span class="text-secondary d-block small mb-1">Ngày sinh:</span>
+                        <strong class="theme-text-main" :class="isDiff('ngay_sinh')">
+                          {{ formatDate(currentProposal.data.ngay_sinh) }}
+                          <span v-if="hasDiff('ngay_sinh')" class="text-muted font-11 fw-normal d-block">(Cũ: {{ getOldValue('ngay_sinh') }})</span>
+                        </strong>
+                      </div>
+                      <div class="col-6" v-if="currentProposal.data.trang_thai === 'Đã mất' || hasDiff('ngay_mat')">
+                        <span class="text-secondary d-block small mb-1">Ngày mất:</span>
+                        <strong class="theme-text-main" :class="isDiff('ngay_mat')">
+                          {{ formatDate(currentProposal.data.ngay_mat) }}
+                          <span v-if="hasDiff('ngay_mat')" class="text-muted font-11 fw-normal d-block">(Cũ: {{ getOldValue('ngay_mat') }})</span>
+                        </strong>
+                      </div>
+                      <div class="col-6">
+                        <span class="text-secondary d-block small mb-1">Hôn nhân:</span>
+                        <strong class="theme-text-main" :class="isDiff('tinh_trang_hon_nhan')">
+                          {{ currentProposal.data.tinh_trang_hon_nhan || 'Chưa rõ' }}
+                          <span v-if="hasDiff('tinh_trang_hon_nhan')" class="text-muted font-11 fw-normal d-block">(Cũ: {{ getOldValue('tinh_trang_hon_nhan') || 'Chưa rõ' }})</span>
+                        </strong>
+                      </div>
+                      <div class="col-6">
+                        <span class="text-secondary d-block small mb-1">Số điện thoại:</span>
+                        <strong class="theme-text-main" :class="isDiff('so_dien_thoai')">
+                          {{ currentProposal.data.so_dien_thoai || 'Chưa có' }}
+                          <span v-if="hasDiff('so_dien_thoai')" class="text-muted font-11 fw-normal d-block">(Cũ: {{ getOldValue('so_dien_thoai') || 'Chưa có' }})</span>
+                        </strong>
+                      </div>
+                      <div class="col-6">
+                        <span class="text-secondary d-block small mb-1">Email:</span>
+                        <strong class="theme-text-main" :class="isDiff('email')">
+                          {{ currentProposal.data.email || 'Chưa có' }}
+                          <span v-if="hasDiff('email')" class="text-muted font-11 fw-normal d-block">(Cũ: {{ getOldValue('email') || 'Chưa có' }})</span>
+                        </strong>
+                      </div>
+                      <div class="col-6">
+                        <span class="text-secondary d-block small mb-1">Nghề nghiệp:</span>
+                        <strong class="theme-text-main" :class="isDiff('nghe_nghiep')">
+                          {{ currentProposal.data.nghe_nghiep || 'Chưa có' }}
+                          <span v-if="hasDiff('nghe_nghiep')" class="text-muted font-11 fw-normal d-block">(Cũ: {{ getOldValue('nghe_nghiep') || 'Chưa có' }})</span>
+                        </strong>
+                      </div>
+                      <div class="col-12">
+                        <span class="text-secondary d-block small mb-1">Địa chỉ:</span>
+                        <strong class="theme-text-main" :class="isDiff('dia_chi')">
+                          {{ currentProposal.data.dia_chi || 'Chưa có' }}
+                          <span v-if="hasDiff('dia_chi')" class="text-muted font-11 fw-normal d-block">(Cũ: {{ getOldValue('dia_chi') || 'Chưa có' }})</span>
+                        </strong>
+                      </div>
+                      <div class="col-12 pt-2 border-top border-opacity-10" v-if="currentProposal.data.ghi_chu">
+                        <span class="text-secondary d-block small mb-1">Ghi chú đề xuất:</span>
+                        <p class="mb-0 text-secondary small" :class="isDiff('ghi_chu')">
+                          {{ currentProposal.data.ghi_chu }}
+                          <span v-if="hasDiff('ghi_chu')" class="text-muted font-11 fw-normal d-block mt-1">(Cũ: {{ getOldValue('ghi_chu') || 'Không có' }})</span>
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -342,6 +409,26 @@ export default {
         valNew = valNew ? valNew.substring(0, 10) : null;
       }
       return valOld != valNew ? 'diff-highlight-danger font-bold' : '';
+    },
+    hasDiff(field) {
+      if (this.currentProposal.type !== 'edit' || !this.currentProposal.thanh_vien || !this.currentProposal.data) {
+        return false;
+      }
+      let valOld = this.currentProposal.thanh_vien[field];
+      let valNew = this.currentProposal.data[field];
+      if (field === 'ngay_sinh' || field === 'ngay_mat') {
+        valOld = valOld ? valOld.substring(0, 10) : null;
+        valNew = valNew ? valNew.substring(0, 10) : null;
+      }
+      return valOld != valNew;
+    },
+    getOldValue(field) {
+      if (!this.currentProposal.thanh_vien) return null;
+      let val = this.currentProposal.thanh_vien[field];
+      if (field === 'ngay_sinh' || field === 'ngay_mat') {
+        return this.formatDate(val);
+      }
+      return val;
     },
     approveProposal() {
       axios.post('http://127.0.0.1:8000/api/de-xuat/approve', {
