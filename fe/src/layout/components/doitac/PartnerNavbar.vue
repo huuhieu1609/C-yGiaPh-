@@ -78,9 +78,9 @@
           </router-link>
         </li>
         <li class="nav-item item-clan">
-          <router-link to="/doi-tac/dong-ho" class="nav-link" active-class="active" title="Dòng Họ">
-            <span class="nav-icon"><i class="bx bx-folder"></i></span>
-            <span class="hide-on-collapse nav-label">Dòng Họ</span>
+          <router-link to="/doi-tac/dong-ho" class="nav-link" active-class="active" title="Phân Quyền">
+            <span class="nav-icon"><i class="bx bx-shield-quarter"></i></span>
+            <span class="hide-on-collapse nav-label">Phân Quyền</span>
             <span class="nav-dot hide-on-collapse"></span>
           </router-link>
         </li>

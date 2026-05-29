@@ -202,17 +202,25 @@ class DoiTacController extends Controller
     public function adminGetData(): \Illuminate\Http\JsonResponse
     {
         try {
-            $data = \App\Models\DoiTac::with(['nguoiDung.chiNhanh'])->get();
+            $data = \App\Models\DoiTac::where('trang_thai', 'APPROVED')
+                ->whereHas('nguoiDung', function ($query) {
+                    $query->where('is_doi_tac', 1);
+                })
+                ->with(['nguoiDung.chiNhanh'])
+                ->get();
             
             // Map each partner to resolve which branch/lineage they manage
             $data->each(function ($item) {
                 $ownedBranch = ChiNhanh::where('id_nguoi_dung', $item->id_nguoi_dung)->first();
                 if ($ownedBranch) {
                     $item->dong_ho = $ownedBranch->ten_chi;
+                    $item->id_chi_nhanh = $ownedBranch->id;
                 } elseif ($item->nguoiDung && $item->nguoiDung->chiNhanh) {
                     $item->dong_ho = $item->nguoiDung->chiNhanh->ten_chi;
+                    $item->id_chi_nhanh = $item->nguoiDung->chiNhanh->id;
                 } else {
                     $item->dong_ho = 'Chưa liên kết dòng họ';
+                    $item->id_chi_nhanh = null;
                 }
             });
 

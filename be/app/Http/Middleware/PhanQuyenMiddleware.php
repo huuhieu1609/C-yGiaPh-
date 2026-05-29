@@ -61,10 +61,9 @@ class PhanQuyenMiddleware
             return $next($request);
         }
 
-        // Kiểm tra chức vụ của user (hoặc vai trò mặc định "Thành Viên") có được gán quyền này không
-        $hasPermission = ChiTietPhanQuyen::where('chuc_vu_id', $idChucVu)
-            ->where('chuc_nang_id', $chucNangRecord->id)
-            ->exists();
+        // Kiểm tra quyền hoạt động thực tế sau khi giao thoa
+        $active_permissions = \App\Models\ThanhVienChucNang::getMemberActivePermissions($user);
+        $hasPermission = in_array($chucNangRecord->ten_chuc_nang, $active_permissions);
 
         if (!$hasPermission) {
             return response()->json([

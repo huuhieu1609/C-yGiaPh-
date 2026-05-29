@@ -437,7 +437,7 @@ const TreeItem = defineComponent({
             }, [ h('i', { class: 'bx bxs-heart connector-heart' }) ]));
             coupleChildren.push(makeSpouseChunk(this.member.spouses[1], 5));
 
-            const col0 = h('div', { class: 'union-column union-column-0' }, [
+            const col0 = h('div', { class: ['union-column', 'union-column-0', kids0.length === 0 ? 'union-column-empty' : ''] }, [
                 kids0.length > 0
                     ? h('ul', kids0.map(child => h(TreeItem, { 
                         key: child.id,
@@ -452,7 +452,7 @@ const TreeItem = defineComponent({
                     : h('div', { class: 'union-empty-placeholder' })
             ]);
 
-            const col1 = h('div', { class: 'union-column union-column-1' }, [
+            const col1 = h('div', { class: ['union-column', 'union-column-1', kids1.length === 0 ? 'union-column-empty' : ''] }, [
                 kids1.length > 0
                     ? h('ul', kids1.map(child => h(TreeItem, { 
                         key: child.id,
@@ -1100,7 +1100,7 @@ export default {
 .tree-node-card.spouse-left { order: 1; }
 .tree-node-card.spouse-right { order: 3; }
 .tree-connector-h { 
-    width: 30px; 
+    width: 40px; 
     height: 2px; 
     background: #d4af37; 
     position: relative; 
@@ -1119,6 +1119,7 @@ export default {
     border-radius: 50%;
     font-size: 14px;
     box-shadow: 0 2px 5px rgba(212, 175, 55, 0.4);
+    z-index: 10;
 }
 
 .tree-node-card {
@@ -1137,7 +1138,7 @@ export default {
     align-items: center;
     gap: 12px;
     transition: 0.3s ease;
-    overflow: hidden;
+    overflow: visible;
 }
 
 .quick-actions {
@@ -1399,19 +1400,36 @@ export default {
   align-items: center;
   position: relative;
 }
-.union-column-0 > ul {
-  transform: translateX(55px);
+.union-column-0::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 130px;
+  left: 50%;
+  height: 2px;
+  background: #d4af37;
+  z-index: 1;
 }
-.union-column-1 > ul {
-  transform: translateX(-55px);
+.union-column-1::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 130px;
+  right: 50%;
+  height: 2px;
+  background: #d4af37;
+  z-index: 1;
+}
+.union-column-empty::after {
+  display: none !important;
 }
 .tree-connector-h.spouse-connector::after {
   content: '';
   position: absolute;
-  top: 50%;
+  top: -10px;
   left: 50%;
   width: 2px;
-  height: 95px;
+  height: 105px;
   background: #d4af37;
   z-index: 1;
 }
@@ -1419,7 +1437,14 @@ export default {
   display: none !important;
 }
 .union-column > ul::before {
-  display: none !important;
+  display: block !important;
+  content: '';
+  position: absolute;
+  top: 0 !important;
+  left: 50% !important;
+  border-left: 2px solid #d4af37 !important;
+  width: 0 !important;
+  height: 50px !important;
 }
 .union-empty-placeholder {
   width: 220px;

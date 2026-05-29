@@ -19,8 +19,6 @@ class NhaThoHoController extends Controller
 
             if ($user->vai_tro === 'Admin') {
                 $data = NhaThoHo::with('chiNhanh')->get();
-                $chiNhanhIds = \App\Models\ChiNhanh::getManagedBranchIds($user);
-                $data = NhaThoHo::whereIn('chi_nhanh_id', $chiNhanhIds)->with('chiNhanh')->get();
             } else {
                 $cnId = $user->chi_nhanh_id;
                 if (!$cnId) {

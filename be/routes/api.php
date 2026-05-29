@@ -122,6 +122,10 @@ Route::middleware(['auth:sanctum', 'activity'])->group(function () {
     Route::prefix('/phan-quyen')->group(function () {
         Route::post('/get-chuc-nang', [PhanQuyenController::class, 'getChucNang']);
         Route::post('/update', [PhanQuyenController::class, 'updatePhanQuyen']);
+        Route::post('/get-member-chuc-nang', [PhanQuyenController::class, 'getMemberChucNang']);
+        Route::post('/update-member', [PhanQuyenController::class, 'updateMemberPhanQuyen']);
+        Route::post('/link-member', [PhanQuyenController::class, 'linkMemberAccount']);
+        Route::post('/unlink-member', [PhanQuyenController::class, 'unlinkMemberAccount']);
     });
 
     // New roles & member role management
