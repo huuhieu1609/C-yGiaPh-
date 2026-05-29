@@ -20,9 +20,16 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::table('thanh_viens', function (Blueprint $table) {
-            $table->dropColumnIfExists('email');
-            $table->dropColumnIfExists('thong_tin_them');
-        });
+        if (Schema::hasColumn('thanh_viens', 'email')) {
+            Schema::table('thanh_viens', function (Blueprint $table) {
+                $table->dropColumn('email');
+            });
+        }
+
+        if (Schema::hasColumn('thanh_viens', 'thong_tin_them')) {
+            Schema::table('thanh_viens', function (Blueprint $table) {
+                $table->dropColumn('thong_tin_them');
+            });
+        }
     }
 };

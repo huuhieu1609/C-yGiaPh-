@@ -62,7 +62,7 @@
                       @click="readSingleNotification(noti)"
                     >
                       <div class="noti-icon-box" :class="noti.type">
-                        <i class="bx" :class="noti.type === 'su-kien' ? 'bx-calendar' : 'bx-bell'"></i>
+                        <i class="bx" :class="noti.type === 'su-kien' ? 'bx-calendar' : (noti.type === 'he-thong' ? 'bx-shield' : 'bx-bell')"></i>
                       </div>
                       <div class="noti-content">
                         <span class="noti-badge-type">{{ noti.typeLabel }}</span>
@@ -91,6 +91,9 @@
                 </router-link>
                 <router-link to="/profile" @click="isDropdownOpen = false">
                   <i class="bx bx-user"></i> Hồ sơ cá nhân
+                </router-link>
+                <router-link to="/profile?tab=quan-ly" @click="isDropdownOpen = false">
+                  <i class="bx bx-cog text-gold"></i> Quản lý dòng họ
                 </router-link>
                 <router-link to="/su-kien" @click="isDropdownOpen = false">
                   <i class="bx bx-calendar"></i> Sự kiện dòng họ
@@ -144,6 +147,7 @@
 
 <script>
 import axios from 'axios';
+import toastr from 'toastr';
 
 export default {
   name: 'Topclient',
@@ -206,6 +210,53 @@ export default {
     handleScroll() {
       this.isScrolled = window.scrollY > 50;
     },
+    getHeaders() {
+      const token = localStorage.getItem('access_token');
+      return {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      };
+    },
+    fetchNotifications() {
+      if (!this.isLoggedIn) return;
+      axios.get('http://127.0.0.1:8000/api/me/notifications', this.getHeaders())
+        .then(res => {
+          if (res.data && res.data.status) {
+            this.notifications = res.data.data;
+          }
+        })
+        .catch(err => {
+          console.error('Lỗi lấy thông báo:', err);
+        });
+    },
+    toggleNotifDropdown() {
+      this.isNotifDropdownOpen = !this.isNotifDropdownOpen;
+      if (this.isNotifDropdownOpen) {
+        this.isDropdownOpen = false;
+        this.fetchNotifications();
+      }
+    },
+    closeNotifDropdown() {
+      this.isNotifDropdownOpen = false;
+    },
+    markAllAsRead() {
+      axios.post('http://127.0.0.1:8000/api/me/notifications/read-all', {}, this.getHeaders())
+        .then(res => {
+          if (res.data && res.data.status) {
+            this.fetchNotifications();
+            toastr.success('Đã đánh dấu đã đọc tất cả');
+          }
+        })
+        .catch(err => {
+          console.error(err);
+        });
+    },
+    formatTime(dateStr) {
+      if (!dateStr) return '';
+      const dt = new Date(dateStr);
+      return dt.toLocaleDateString('vi-VN') + ' ' + dt.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+    },
     checkLogin() {
       const token = localStorage.getItem('access_token');
       const userData = JSON.parse(localStorage.getItem('user'));
@@ -227,6 +278,7 @@ export default {
         this.isLoggedIn = false;
         this.isAdmin = false;
         this.isDoiTac = false;
+        this.notifications = [];
       }
     },
     closeDropdown() {
@@ -239,6 +291,7 @@ export default {
       this.isAdmin = false;
       this.isDoiTac = false;
       this.isDropdownOpen = false;
+      this.notifications = [];
       this.$router.push('/login');
     },
     loadReadNotificationIds() {
@@ -273,9 +326,10 @@ export default {
       Promise.all([
         axios.get('http://127.0.0.1:8000/api/su-kien/get-data', headers).catch(() => ({ data: { status: false } })),
         axios.get('http://127.0.0.1:8000/api/thong-bao/get-data', headers).catch(() => ({ data: { status: false } })),
-        axios.get('http://127.0.0.1:8000/api/de-xuat/my-proposals', headers).catch(() => ({ data: { status: false } }))
+        axios.get('http://127.0.0.1:8000/api/de-xuat/my-proposals', headers).catch(() => ({ data: { status: false } })),
+        axios.get('http://127.0.0.1:8000/api/me/notifications', headers).catch(() => ({ data: { status: false } }))
       ])
-      .then(([resEvents, resNotis, resProposals]) => {
+      .then(([resEvents, resNotis, resProposals, resCustomNotis]) => {
         let list = [];
 
         if (resEvents.data && resEvents.data.status) {
@@ -338,6 +392,23 @@ export default {
           list.push(...proposals);
         }
 
+        if (resCustomNotis.data && resCustomNotis.data.status) {
+          const customNotis = resCustomNotis.data.data.map(item => {
+            return {
+              uniqueId: `custom_${item.id}`,
+              id: item.id,
+              type: 'he-thong',
+              typeLabel: 'Thông báo',
+              title: `🛡️ ${item.title || 'Thông báo hệ thống'}`,
+              message: item.body || '',
+              createdAt: new Date(item.created_at),
+              timeAgo: this.getTimeAgo(item.created_at),
+              isRead: !!item.read_at || this.readNotificationIds.includes(`custom_${item.id}`)
+            };
+          });
+          list.push(...customNotis);
+        }
+
         list.sort((a, b) => b.createdAt - a.createdAt);
 
         this.notifications = list;
@@ -359,6 +430,12 @@ export default {
       });
       this.saveReadNotificationIds();
       this.updateUnreadCount();
+
+      const token = localStorage.getItem('access_token');
+      if (token) {
+        axios.post('http://127.0.0.1:8000/api/me/notifications/read-all', {}, this.getHeaders())
+          .catch(err => console.error('Lỗi đọc tất cả:', err));
+      }
     },
     readSingleNotification(noti) {
       if (!this.readNotificationIds.includes(noti.uniqueId)) {
@@ -430,10 +507,10 @@ export default {
 }
 
 .navbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  display: flex !important;
   flex-wrap: nowrap !important;
+  justify-content: space-between !important;
+  align-items: center !important;
 }
 
 .logo {
@@ -462,7 +539,7 @@ export default {
 .nav-links {
   display: flex;
   list-style: none;
-  gap: 20px;
+  gap: 25px;
   margin: 0;
   padding: 0;
   flex-shrink: 0;
@@ -869,6 +946,10 @@ export default {
   background: rgba(239, 68, 68, 0.08);
   color: #ef4444;
 }
+.noti-icon-box.he-thong {
+  background: rgba(139, 92, 246, 0.08);
+  color: #8b5cf6;
+}
 .noti-content {
   flex-grow: 1;
 }
@@ -898,6 +979,10 @@ export default {
   background: rgba(239, 68, 68, 0.08);
   color: #ef4444;
 }
+.noti-item .he-thong + .noti-content .noti-badge-type {
+  background: rgba(139, 92, 246, 0.08);
+  color: #8b5cf6;
+}
 .noti-title {
   color: #111827;
   font-size: 13px;
@@ -916,5 +1001,11 @@ export default {
   display: flex;
   align-items: center;
   margin-top: 4px;
+}
+.text-truncate-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 </style>

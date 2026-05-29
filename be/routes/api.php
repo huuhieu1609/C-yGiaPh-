@@ -27,6 +27,8 @@ use App\Http\Controllers\Api\VoChongController;
 use App\Http\Controllers\Api\YeuCauMuaGoiController;
 use App\Http\Controllers\Api\QuanLyTaiKhoanController;
 use App\Http\Controllers\ThanhToanController;
+use App\Http\Controllers\Api\RoleController;
+use App\Http\Controllers\Api\MemberRoleController;
 use Illuminate\Support\Facades\Route;
 
 // ... (vẫn giữ các use khác)
@@ -40,6 +42,10 @@ Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 Route::middleware(['auth:sanctum', 'activity'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);
+    Route::get('/me/roles-permissions', [MemberRoleController::class, 'myRolesAndPermissions']);
+    Route::get('/me/notifications', [MemberRoleController::class, 'getNotifications']);
+    Route::post('/me/notifications/read-all', [MemberRoleController::class, 'readAllNotifications']);
+    Route::post('/thanh-vien/{id}/update-life-status', [ThanhVienController::class, 'updateLifeStatus']);
     Route::post('/update-profile', [AuthController::class, 'updateProfile']);
     Route::post('/change-password', [AuthController::class, 'changePassword']);
 
@@ -117,6 +123,13 @@ Route::middleware(['auth:sanctum', 'activity'])->group(function () {
         Route::post('/get-chuc-nang', [PhanQuyenController::class, 'getChucNang']);
         Route::post('/update', [PhanQuyenController::class, 'updatePhanQuyen']);
     });
+
+    // New roles & member role management
+    Route::get('/roles/list', [RoleController::class, 'index']);
+    Route::get('/permissions/list', [RoleController::class, 'permissions']);
+    Route::post('/member/{id}/assign-role', [MemberRoleController::class, 'assign']);
+    Route::post('/member/{id}/revoke-role', [MemberRoleController::class, 'revoke']);
+    Route::get('/member/{id}/roles', [MemberRoleController::class, 'list']);
 
     Route::prefix('/goi-dich-vu')->group(function () {
         Route::get('/get-data', [GoiDichVuController::class, 'getData']);

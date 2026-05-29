@@ -392,4 +392,147 @@ class ThanhVienController extends Controller
             ], 500);
         }
     }
+
+    public function updateLifeStatus(Request $request, $id)
+    {
+        try {
+            $user = auth('sanctum')->user();
+            if (!$user) {
+                return response()->json(['status' => false, 'message' => 'Bạn cần đăng nhập!'], 401);
+            }
+
+            $target = ThanhVien::findOrFail($id);
+            $newStatus = $request->input('trang_thai'); // "Còn sống" hoặc "Đã mất"
+            $dateOfDeath = $request->input('ngay_mat'); // yyyy-mm-dd (nếu là Đã mất)
+
+            if (!in_array($newStatus, ['Còn sống', 'Đã mất'])) {
+                return response()->json(['status' => false, 'message' => 'Trạng thái không hợp lệ!'], 400);
+            }
+
+            // Kiểm tra quan hệ thân nhân hoặc là Admin / Đối tác
+            $isAllowed = false;
+            if ($user->vai_tro === 'Admin' || $user->is_doi_tac == 1) {
+                $isAllowed = true;
+            } else {
+                $me = ThanhVien::where('email', $user->email)->whereNotNull('email')->first();
+                if ($me) {
+                    // Check con cái: cha_id hoặc me_id của me trùng với target->id
+                    $isChild = ($me->cha_id == $target->id || $me->me_id == $target->id);
+                    // Check cha mẹ: cha_id hoặc me_id của target trùng với me->id
+                    $isParent = ($target->cha_id == $me->id || $target->me_id == $me->id);
+                    // Check vợ chồng: spouse_of_id trùng nhau
+                    $isSpouse = ($me->spouse_of_id == $target->id || $target->spouse_of_id == $me->id);
+
+                    if ($isChild || $isParent || $isSpouse) {
+                        $isAllowed = true;
+                    }
+                }
+            }
+
+            if (!$isAllowed) {
+                return response()->json(['status' => false, 'message' => 'Bạn không có quyền cập nhật trạng thái cho thành viên này!'], 403);
+            }
+
+            $oldStatus = $target->trang_thai;
+            $target->trang_thai = $newStatus;
+            if ($newStatus === 'Đã mất') {
+                $target->ngay_mat = $dateOfDeath ?: date('Y-m-d');
+            } else {
+                $target->ngay_mat = null;
+            }
+            $target->save();
+
+            $successionMessage = '';
+
+            // Nếu người này mất và trước đó "Còn sống", kiểm tra tự động chuyển giao quyền Trưởng Nhánh
+            if ($newStatus === 'Đã mất' && $oldStatus !== 'Đã mất') {
+                // Tìm xem người này có đang là Trưởng Nhánh chi nhánh nào không
+                $leaderRoles = \App\Models\MemberRole::where('member_id', $target->id)
+                    ->whereHas('role', function($q) {
+                        $q->where('name', 'branch_leader');
+                    })->get();
+
+                foreach ($leaderRoles as $lr) {
+                    $branchId = $lr->chi_nhanh_id;
+                    $roleId = $lr->role_id;
+
+                    // 1. Tìm con trưởng còn sống (quan hệ "Chính", ngày sinh nhỏ nhất)
+                    $successor = ThanhVien::where(function($q) use ($target) {
+                            $q->where('cha_id', $target->id)
+                              ->orWhere('me_id', $target->id);
+                        })
+                        ->where('loai_quan_he', 'Chính')
+                        ->where('trang_thai', '!=', 'Đã mất')
+                        ->orderByRaw('ngay_sinh IS NULL, ngay_sinh ASC')
+                        ->orderBy('id', 'ASC')
+                        ->first();
+
+                    // 2. Nếu không có con trưởng, tìm vợ/chồng còn sống
+                    if (!$successor) {
+                        $successor = ThanhVien::where(function($q) use ($target) {
+                                $q->where('id', $target->spouse_of_id)
+                                  ->orWhere('spouse_of_id', $target->id);
+                            })
+                            ->where('trang_thai', '!=', 'Đã mất')
+                            ->first();
+                    }
+
+                    if ($successor) {
+                        // Thu hồi quyền Trưởng Nhánh của người đã mất
+                        $lr->delete();
+
+                        // Cấp quyền Trưởng Nhánh cho người kế thừa
+                        \App\Models\MemberRole::updateOrCreate(
+                            ['member_id' => $successor->id, 'role_id' => $roleId, 'chi_nhanh_id' => $branchId],
+                            ['assigned_by' => $user->id]
+                        );
+
+                        // Lấy thông tin chi nhánh
+                        $branch = \App\Models\ChiNhanh::find($branchId);
+                        $branchName = $branch ? $branch->ten_chi : 'Chi nhánh';
+
+                        // Tạo thông báo cho người kế thừa
+                        \App\Models\NotificationCustom::create([
+                            'user_id' => null,
+                            'target_member_id' => $successor->id,
+                            'title' => 'Kế thừa vai trò Trưởng Nhánh',
+                            'body' => "Thành viên {$target->ho_ten} đã qua đời. Bạn đã được tự động kế thừa vai trò Trưởng Nhánh cho chi nhánh: {$branchName}.",
+                            'meta' => ['role_id' => $roleId, 'chi_nhanh_id' => $branchId, 'succession_from' => $target->id]
+                        ]);
+
+                        // Tạo thông báo cho các thành viên khác trong chi nhánh
+                        $branchMembers = ThanhVien::where('chi_nhanh_id', $branchId)
+                            ->where('id', '!=', $successor->id)
+                            ->get();
+
+                        foreach ($branchMembers as $bm) {
+                            \App\Models\NotificationCustom::create([
+                                'user_id' => null,
+                                'target_member_id' => $bm->id,
+                                'title' => 'Chuyển giao quyền Trưởng Nhánh',
+                                'body' => "Trưởng Nhánh {$target->ho_ten} đã qua đời. Quyền quản lý chi nhánh {$branchName} đã được chuyển giao tự động cho {$successor->ho_ten}.",
+                                'meta' => ['role_id' => $roleId, 'chi_nhanh_id' => $branchId]
+                            ]);
+                        }
+
+                        $successionMessage = " Quyền lực Trưởng Nhánh đã được tự động chuyển giao cho {$successor->ho_ten}.";
+                    } else {
+                        $successionMessage = " Không tìm thấy người kế thừa (con trưởng hoặc vợ/chồng còn sống). Quyền Trưởng Nhánh tạm thời để trống.";
+                    }
+                }
+            }
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Cập nhật trạng thái thành công!' . $successionMessage,
+                'data' => $target
+            ]);
+
+        } catch (Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Lỗi cập nhật trạng thái: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }
