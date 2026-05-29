@@ -337,6 +337,34 @@
         </div>
       </div>
     </div>
+
+    <!-- Life Status Update Modal -->
+    <div class="modal fade" id="lifeStatusUpdateModal" tabindex="-1" aria-hidden="true" ref="lifeStatusUpdateModal">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 radius-12 shadow-lg">
+          <div class="modal-header bg-dark text-white border-0 py-3" style="border-radius:12px 12px 0 0">
+            <h5 class="modal-title fw-bold" style="color:#d4af37;"><i class="bx bx-sync me-1"></i>Cập nhật trạng thái sống/mất</h5>
+            <button type="button" class="btn-close btn-close-white" @click="closeLifeStatusUpdateModal"></button>
+          </div>
+          <div class="modal-body p-4" v-if="lifeStatusTarget">
+            <p class="fs-6 text-dark">
+              Bạn có chắc chắn muốn đổi trạng thái của <strong class="text-primary">{{ lifeStatusTarget.ho_ten }}</strong> thành 
+              <span class="badge shadow-sm" :class="lifeStatusTarget.nextStatus === 'Đã mất' ? 'bg-danger' : 'bg-success'">{{ lifeStatusTarget.nextStatus }}</span>?
+            </p>
+            
+            <div class="mt-3" v-if="lifeStatusTarget.nextStatus === 'Đã mất'">
+              <label class="form-label fw-bold text-dark">Ngày mất (Dương lịch)</label>
+              <input type="date" class="form-control" v-model="lifeStatusTarget.ngay_mat">
+              <small class="text-muted mt-1 d-block">Để trống nếu không rõ hoặc muốn mặc định là ngày hôm nay.</small>
+            </div>
+          </div>
+          <div class="modal-footer border-0">
+            <button type="button" class="btn btn-light radius-8" @click="closeLifeStatusUpdateModal">Hủy</button>
+            <button type="button" class="btn btn-warning text-dark fw-bold radius-8" @click="submitLifeStatusUpdate" style="background:#d4af37; border-color:#d4af37;">Cập nhật</button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -379,7 +407,9 @@ export default {
       listData: [],
       myBranchId: null,
       editingMemberObj: null,
-      quickEditModalObj: null
+      quickEditModalObj: null,
+      lifeStatusTarget: null,
+      lifeStatusUpdateModalObj: null
     }
   },
   computed: {
@@ -576,29 +606,49 @@ export default {
       this.activeTool = toolName;
     },
     toggleLifeStatus(member) {
-      const newStatus = member.trang_thai === 'Còn sống' ? 'Đã mất' : 'Còn sống';
-      const promptText = `Bạn có chắc chắn muốn đổi trạng thái của ${member.ho_ten} thành "${newStatus}"?`;
-      if (confirm(promptText)) {
-        let dateMat = null;
-        if (newStatus === 'Đã mất') {
-          dateMat = prompt('Nhập ngày mất (yyyy-mm-dd) hoặc để trống để chọn hôm nay:', '');
+      const nextStatus = member.trang_thai === 'Còn sống' ? 'Đã mất' : 'Còn sống';
+      this.lifeStatusTarget = {
+        id: member.id,
+        ho_ten: member.ho_ten,
+        currentStatus: member.trang_thai,
+        nextStatus: nextStatus,
+        ngay_mat: new Date().toISOString().substring(0, 10)
+      };
+      this.$nextTick(() => {
+        if (!this.lifeStatusUpdateModalObj && window.bootstrap) {
+          this.lifeStatusUpdateModalObj = new window.bootstrap.Modal(document.getElementById('lifeStatusUpdateModal'));
         }
-        axios.post(`http://127.0.0.1:8000/api/thanh-vien/${member.id}/update-life-status`, {
-          trang_thai: newStatus,
-          ngay_mat: dateMat
-        }, this.getHeaders())
-        .then(res => {
-          if (res.data && res.data.status) {
-            toastr.success(res.data.message);
-            this.loadClanData();
-          } else {
-            toastr.error(res.data.message);
-          }
-        })
-        .catch(err => {
-          toastr.error(err.response?.data?.message || 'Lỗi khi cập nhật trạng thái.');
-        });
+        if (this.lifeStatusUpdateModalObj) {
+          this.lifeStatusUpdateModalObj.show();
+        }
+      });
+    },
+    closeLifeStatusUpdateModal() {
+      if (this.lifeStatusUpdateModalObj) {
+        this.lifeStatusUpdateModalObj.hide();
       }
+      this.lifeStatusTarget = null;
+    },
+    submitLifeStatusUpdate() {
+      if (!this.lifeStatusTarget) return;
+      const target = this.lifeStatusTarget;
+      
+      axios.post(`http://127.0.0.1:8000/api/thanh-vien/${target.id}/update-life-status`, {
+        trang_thai: target.nextStatus,
+        ngay_mat: target.nextStatus === 'Đã mất' ? target.ngay_mat : null
+      }, this.getHeaders())
+      .then(res => {
+        if (res.data && res.data.status) {
+          toastr.success(res.data.message);
+          this.closeLifeStatusUpdateModal();
+          this.loadClanData();
+        } else {
+          toastr.error(res.data.message || 'Lỗi khi cập nhật trạng thái.');
+        }
+      })
+      .catch(err => {
+        toastr.error(err.response?.data?.message || 'Lỗi khi cập nhật trạng thái.');
+      });
     },
     editMember(member) {
       this.editingMemberObj = {
