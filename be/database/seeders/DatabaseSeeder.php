@@ -32,10 +32,12 @@ class DatabaseSeeder extends Seeder
             NhatKyHoatDongSeeder::class,
             VoChongSeeder::class,
             DoiTacSeeder::class,
+            OtherPartnersSeeder::class,
             DeXuatChinhSuaSeeder::class,
             TuongNiemSeeder::class,
             GoiDichVuSeeder::class,
         ]);
     }
 }
+
 
