@@ -323,15 +323,20 @@ class ThanhVienController extends Controller
                 ->get();
 
             // Sửa lỗi: Dùng RelationshipService để tra cứu, không gọi lại controller khác
-            $relationshipMessage = null;
+            $relationshipData = null;
             $user = auth('sanctum')->user();
             if ($user) {
                 $me = ThanhVien::where('email', $user->email)->whereNotNull('email')->first();
                 if ($me && $me->id != $id) {
-                    $relation = $relationshipService->resolve($me, $member);
-                    if ($relation) {
-                        // Format lại câu cho thân thiện với người dùng
-                        $relationshipMessage = "Bạn là {$relation} của {$member->ho_ten}";
+                    $term = $relationshipService->resolve($member, $me);
+                    if ($term) {
+                        $detailed = $relationshipService->resolveDetailed($member, $me);
+                        $relationshipData = [
+                            'term' => $term,
+                            'description' => $detailed['relationship'] ?? "{$member->ho_ten} là {$term} của bạn.",
+                            'path' => $detailed['path'] ?? [],
+                            'members' => $detailed['members'] ?? []
+                        ];
                     }
                 }
             }
@@ -345,7 +350,7 @@ class ThanhVienController extends Controller
                     'mother' => $mother,
                     'spouses' => $spouses,
                     'children' => $children,
-                    'relationship' => $relationshipMessage
+                    'relationship' => $relationshipData
                 ]
             ]);
         } catch (Exception $e) {
