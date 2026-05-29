@@ -452,32 +452,11 @@ const TreeItem = defineComponent({
     const coupleChildren = [];
     const hasMultipleSpouses = m.spouses && m.spouses.length === 2;
 
-    if (hasMultipleSpouses) {
-      // spouse - connector - main - connector - spouse
-      coupleChildren.push(makeCard(m.spouses[0], true, 'spouse-left', 1));
-      coupleChildren.push(h('div', { class: 'tree-connector-h spouse-connector spouse-connector-0', style: { order: 2 } }, [ h('i', { class: 'bx bxs-heart connector-heart' }) ]));
-      coupleChildren.push(makeCard(m, false, 'main-centered', 3));
-      coupleChildren.push(h('div', { class: 'tree-connector-h spouse-connector spouse-connector-1', style: { order: 4 } }, [ h('i', { class: 'bx bxs-heart connector-heart' }) ]));
-      coupleChildren.push(makeCard(m.spouses[1], true, 'spouse-right', 5));
-    } else {
-      // default: main then spouses in sequence
-      coupleChildren.push(makeCard(m, false));
-      if (m.spouses && m.spouses.length) {
-        m.spouses.forEach(s => {
-          coupleChildren.push(h('div', { class: 'tree-connector-h' }, [ h('i', { class: 'bx bxs-heart connector-heart' }) ]));
-          coupleChildren.push(makeCard(s, true));
-        });
-      }
-    }
-
-    const nodeGroup = h('div', { class: 'tree-node-group' }, [
-      h('div', { class: 'couple-wrapper' }, coupleChildren)
-    ]);
-
     let children = null;
+    const kids0 = [];
+    const kids1 = [];
+
     if (hasMultipleSpouses) {
-      const kids0 = [];
-      const kids1 = [];
       if (m.children && m.children.length) {
         m.children.forEach(c => {
           if (c.me_id == m.spouses[1].id || c.cha_id == m.spouses[1].id) {
@@ -487,6 +466,27 @@ const TreeItem = defineComponent({
           }
         });
       }
+
+      // spouse - connector - main - connector - spouse
+      coupleChildren.push(makeCard(m.spouses[0], true, 'spouse-left', 1));
+      coupleChildren.push(h('div', { 
+        class: [
+          'tree-connector-h', 
+          'spouse-connector-0',
+          kids0.length > 0 ? 'spouse-connector' : ''
+        ], 
+        style: { order: 2 } 
+      }, [ h('i', { class: 'bx bxs-heart connector-heart' }) ]));
+      coupleChildren.push(makeCard(m, false, 'main-centered', 3));
+      coupleChildren.push(h('div', { 
+        class: [
+          'tree-connector-h', 
+          'spouse-connector-1',
+          kids1.length > 0 ? 'spouse-connector' : ''
+        ], 
+        style: { order: 4 } 
+      }, [ h('i', { class: 'bx bxs-heart connector-heart' }) ]));
+      coupleChildren.push(makeCard(m.spouses[1], true, 'spouse-right', 5));
 
       const col0 = h('div', { class: 'union-column union-column-0' }, [
         kids0.length > 0
@@ -502,10 +502,22 @@ const TreeItem = defineComponent({
 
       children = h('div', { class: 'unions-wrapper' }, [col0, col1]);
     } else {
+      // default: main then spouses in sequence
+      coupleChildren.push(makeCard(m, false));
+      if (m.spouses && m.spouses.length) {
+        m.spouses.forEach(s => {
+          coupleChildren.push(h('div', { class: 'tree-connector-h' }, [ h('i', { class: 'bx bxs-heart connector-heart' }) ]));
+          coupleChildren.push(makeCard(s, true));
+        });
+      }
       children = hasChildren
         ? h('ul', { class: 'tree-ul' }, m.children.map(c => h(TreeItem, { key: c.id, member: c, listDoiTocHo: this.listDoiTocHo, onView: x => this.$emit('view', x), onShowQr: x => this.$emit('show-qr', x) })))
         : null;
     }
+
+    const nodeGroup = h('div', { class: 'tree-node-group' }, [
+      h('div', { class: 'couple-wrapper' }, coupleChildren)
+    ]);
 
     return h('li', { class: ['tree-li', { 'has-multiple-spouses-li': hasMultipleSpouses }] }, [nodeGroup, children]);
   }
@@ -568,6 +580,7 @@ export default {
       list.forEach(i => {
         if (i.loai_quan_he === 'Vợ/Chồng' && i.spouse_of_id && map[i.spouse_of_id]) {
           map[i.spouse_of_id].spouses.push(i);
+          map[i.spouse_of_id].spouses.sort((a, b) => a.id - b.id);
         } else if (i.cha_id && map[i.cha_id]) {
           let parent = map[i.cha_id];
           if (i.doi_thu > parent.doi_thu + 1) {
