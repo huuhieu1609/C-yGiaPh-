@@ -402,72 +402,18 @@ const TreeItem = defineComponent({
         const coupleChildren = [];
         const hasMultipleSpouses = this.member.spouses && this.member.spouses.length === 2;
 
-        let children = null;
-        const kids0 = [];
-        const kids1 = [];
-
         if (hasMultipleSpouses) {
-            if (this.member.children && this.member.children.length) {
-                this.member.children.forEach(c => {
-                    if (c.me_id == this.member.spouses[1].id || c.cha_id == this.member.spouses[1].id) {
-                        kids1.push(c);
-                    } else {
-                        kids0.push(c);
-                    }
-                });
-            }
-
             coupleChildren.push(makeSpouseChunk(this.member.spouses[0], 1));
             coupleChildren.push(h('div', { 
-                class: [
-                    'tree-connector-h', 
-                    'spouse-connector-0',
-                    kids0.length > 0 ? 'spouse-connector' : ''
-                ], 
+                class: ['tree-connector-h', 'spouse-connector-0'], 
                 style: { order: 2 } 
             }, [ h('i', { class: 'bx bxs-heart connector-heart' }) ]));
             coupleChildren.push(makeMainCard(3, 'main-centered'));
             coupleChildren.push(h('div', { 
-                class: [
-                    'tree-connector-h', 
-                    'spouse-connector-1',
-                    kids1.length > 0 ? 'spouse-connector' : ''
-                ], 
+                class: ['tree-connector-h', 'spouse-connector-1'], 
                 style: { order: 4 } 
             }, [ h('i', { class: 'bx bxs-heart connector-heart' }) ]));
             coupleChildren.push(makeSpouseChunk(this.member.spouses[1], 5));
-
-            const col0 = h('div', { class: 'union-column union-column-0' }, [
-                kids0.length > 0
-                    ? h('ul', kids0.map(child => h(TreeItem, { 
-                        key: child.id,
-                        member: child, 
-                        listDoiTocHo: this.listDoiTocHo, 
-                        searchQuery: this.searchQuery,
-                        onEdit: (m) => this.$emit('edit', m),
-                        onShowQr: (m) => this.$emit('show-qr', m),
-                        onAddChild: (m) => this.$emit('add-child', m),
-                        onAddSpouse: (m) => this.$emit('add-spouse', m)
-                    })))
-                    : h('div', { class: 'union-empty-placeholder' })
-            ]);
-
-            const col1 = h('div', { class: 'union-column union-column-1' }, [
-                kids1.length > 0
-                    ? h('ul', kids1.map(child => h(TreeItem, { 
-                        key: child.id,
-                        member: child, 
-                        listDoiTocHo: this.listDoiTocHo, 
-                        searchQuery: this.searchQuery,
-                        onEdit: (m) => this.$emit('edit', m),
-                        onShowQr: (m) => this.$emit('show-qr', m),
-                        onAddChild: (m) => this.$emit('add-child', m),
-                        onAddSpouse: (m) => this.$emit('add-spouse', m)
-                    })))
-                    : h('div', { class: 'union-empty-placeholder' })
-            ]);
-
-            children = h('div', { class: 'unions-wrapper' }, [col0, col1]);
         } else {
             coupleChildren.push(makeMainCard());
             if (this.member.spouses && this.member.spouses.length) {
@@ -476,19 +422,19 @@ const TreeItem = defineComponent({
                     coupleChildren.push(makeSpouseChunk(sp));
                 });
             }
-            children = hasChildren ? h('ul', 
-                this.member.children.map(child => h(TreeItem, { 
-                    key: child.id,
-                    member: child, 
-                    listDoiTocHo: this.listDoiTocHo, 
-                    searchQuery: this.searchQuery,
-                    onEdit: (m) => this.$emit('edit', m),
-                    onShowQr: (m) => this.$emit('show-qr', m),
-                    onAddChild: (m) => this.$emit('add-child', m),
-                    onAddSpouse: (m) => this.$emit('add-spouse', m)
-                }))
-            ) : null;
         }
+        const children = hasChildren ? h('ul', 
+            this.member.children.map(child => h(TreeItem, { 
+                key: child.id,
+                member: child, 
+                listDoiTocHo: this.listDoiTocHo, 
+                searchQuery: this.searchQuery,
+                onEdit: (m) => this.$emit('edit', m),
+                onShowQr: (m) => this.$emit('show-qr', m),
+                onAddChild: (m) => this.$emit('add-child', m),
+                onAddSpouse: (m) => this.$emit('add-spouse', m)
+            }))
+        ) : null;
 
         const nodeGroup = h('div', { class: 'tree-node-group' }, [ h('div', { class: 'couple-wrapper' }, coupleChildren) ]);
         
@@ -1415,12 +1361,12 @@ export default {
   background: #d4af37;
   z-index: 1;
 }
-.has-multiple-spouses-li > ul::before {
+/* .has-multiple-spouses-li > ul::before {
   display: none !important;
 }
 .union-column > ul::before {
   display: none !important;
-}
+} */
 .union-empty-placeholder {
   width: 220px;
   height: 90px;
