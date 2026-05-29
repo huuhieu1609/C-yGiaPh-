@@ -275,23 +275,28 @@ class DoiTacController extends Controller
             return $latestActive;
         }
 
-        // Fallback: tạo bản ghi placeholder nếu chưa có gói nào
-        return \App\Models\DoiTac::firstOrCreate(
-            ['id_nguoi_dung' => $userId, 'trang_thai' => 'APPROVED'],
-            [
-                'ten_goi'       => 'Gói Đối Tác',
-                'so_tien'       => 0,
-                'ngay_bat_dau'  => now(),
-                'ngay_ket_thuc' => now()->addYear(),
-                'trang_thai'    => 'APPROVED',
-            ],
-        );
+        // Không tìm thấy gói nào — trả về một đối tượng rỗng an toàn (không tự tạo)
+        // Dùng null object pattern để tránh "auto-promote" user thành đối tác khi chưa mua gói
+        return new \App\Models\DoiTac([
+            'id_nguoi_dung' => $userId,
+            'ten_goi'       => 'Chưa có gói',
+            'so_tien'       => 0,
+            'features'      => '',
+            'max_doi'       => 0,
+            'max_thanh_vien'=> 0,
+            'trang_thai'    => 'APPROVED',
+        ]);
     }
 
     public function adminGetData(): \Illuminate\Http\JsonResponse
     {
         try {
-            $data = \App\Models\DoiTac::where('trang_thai', 'APPROVED')
+            $data = \App\Models\DoiTac::where(function($q) {
+                    // Handle cả trang_thai string lẫn integer cũ
+                    $q->where('trang_thai', 'APPROVED')
+                      ->orWhere('trang_thai', 1)
+                      ->orWhere('trang_thai', '1');
+                })
                 ->whereHas('nguoiDung', function ($query) {
                     $query->where('is_doi_tac', 1);
                 })
@@ -426,12 +431,18 @@ class DoiTacController extends Controller
     {
         try {
             $doiTac = \App\Models\DoiTac::findOrFail($request->id);
-            $doiTac->trang_thai = $doiTac->trang_thai == 1 ? 0 : 1;
+            // Toggle giữa APPROVED và REJECTED (không dùng 0/1 nữa)
+            $newStatus = ($doiTac->trang_thai === 'APPROVED' || $doiTac->trang_thai == 1)
+                ? 'REJECTED' : 'APPROVED';
+            $doiTac->trang_thai = $newStatus;
             $doiTac->save();
 
+            // Sync is_doi_tac sau khi toggle
+            \App\Models\DoiTac::syncUserPartnerStatus($doiTac->id_nguoi_dung);
+
             return response()->json([
-                'status' => true,
-                'message' => 'Cập nhật trạng thái đối tác thành công!',
+                'status'     => true,
+                'message'    => 'Cập nhật trạng thái đối tác thành công!',
                 'trang_thai' => $doiTac->trang_thai,
             ]);
         } catch (\Exception $e) {

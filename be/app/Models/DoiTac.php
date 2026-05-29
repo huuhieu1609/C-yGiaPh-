@@ -78,11 +78,16 @@ class DoiTac extends Model
 
     /**
      * Scope: lấy tất cả gói APPROVED còn hiệu lực của 1 user.
+     * Xử lý cả trang_thai = 'APPROVED' (string mới) lẫn = 1 (integer cũ từ seeder).
      */
     public static function activePackagesOf(int $userId)
     {
         return self::where('id_nguoi_dung', $userId)
-            ->where('trang_thai', 'APPROVED')
+            ->where(function ($q) {
+                $q->where('trang_thai', 'APPROVED')
+                  ->orWhere('trang_thai', '1')
+                  ->orWhere('trang_thai', 1);
+            })
             ->where(function ($q) {
                 $q->whereNull('ngay_ket_thuc')
                   ->orWhere('ngay_ket_thuc', '>=', now()->toDateString());

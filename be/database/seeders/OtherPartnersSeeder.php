@@ -47,12 +47,18 @@ class OtherPartnersSeeder extends Seeder
         ]);
 
         DB::table('doi_tacs')->insert([
-            'id_nguoi_dung' => $userId2,
-            'ten_goi' => 'Gói Đối Tác VIP 3 Năm',
-            'so_tien' => 3000000,
-            'ngay_bat_dau' => now(),
-            'ngay_ket_thuc' => now()->addYears(3),
-            'trang_thai' => 1,
+            'id_nguoi_dung'  => $userId2,
+            'ten_goi'        => 'Gói Hưng Thịnh',
+            'so_tien'        => 3000000,
+            'id_goi_dich_vu' => null,
+            'features'       => 'tao_cay_gia_pha,them_thanh_vien,sua_xoa_thanh_vien,quan_ly_vo_chong,quan_ly_con_nuoi,xuat_pdf,phe_duyet_de_xuat,tu_dong_phe_duyet,quan_ly_chi_nhanh,phan_quyen_thanh_vien,nhat_ky_hoat_dong,quan_ly_su_kien,dang_ky_su_kien,tuong_niem,nhac_gio_tu,quan_ly_tai_lieu,upload_hinh_anh,album_gia_dinh',
+            'max_doi'        => 10,
+            'max_thanh_vien' => 500,
+            'ngay_bat_dau'   => now(),
+            'ngay_ket_thuc'  => now()->addYears(3),
+            'trang_thai'     => 'APPROVED',
+            'created_at'     => now(),
+            'updated_at'     => now(),
         ]);
 
         $chiNhanh2 = ChiNhanh::create([
@@ -1023,12 +1029,18 @@ class OtherPartnersSeeder extends Seeder
         ]);
 
         DB::table('doi_tacs')->insert([
-            'id_nguoi_dung' => $userId3,
-            'ten_goi' => 'Gói Đối Tác VIP 1 Năm',
-            'so_tien' => 1200000,
-            'ngay_bat_dau' => now(),
-            'ngay_ket_thuc' => now()->addYears(1),
-            'trang_thai' => 1,
+            'id_nguoi_dung'  => $userId3,
+            'ten_goi'        => 'Gói Khởi Tạo',
+            'so_tien'        => 1200000,
+            'id_goi_dich_vu' => null,
+            'features'       => 'tao_cay_gia_pha,them_thanh_vien,sua_xoa_thanh_vien,quan_ly_vo_chong,quan_ly_con_nuoi,xuat_pdf,quan_ly_tai_lieu,upload_hinh_anh',
+            'max_doi'        => 3,
+            'max_thanh_vien' => 50,
+            'ngay_bat_dau'   => now(),
+            'ngay_ket_thuc'  => now()->addYears(1),
+            'trang_thai'     => 'APPROVED',
+            'created_at'     => now(),
+            'updated_at'     => now(),
         ]);
 
         $chiNhanh3 = ChiNhanh::create([
