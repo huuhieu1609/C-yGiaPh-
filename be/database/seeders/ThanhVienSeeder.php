@@ -4,12 +4,10 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class ThanhVienSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
         $chiNhanhId = DB::table('chi_nhanhs')->value('id') ?? DB::table('chi_nhanhs')->insertGetId([
@@ -19,12 +17,11 @@ class ThanhVienSeeder extends Seeder
             'updated_at' => now(),
         ]);
 
-        // Clear existing members (temporarily disable foreign key checks to allow truncate)
-        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        Schema::disableForeignKeyConstraints();
         DB::table('thanh_viens')->truncate();
-        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+        Schema::enableForeignKeyConstraints();
 
-        // 1. Generation 0 (Grandparents)
+        // 1. Thế hệ 0 (Cụ Tổ)
         $ongTanId = DB::table('thanh_viens')->insertGetId([
             'ho_ten' => 'Nguyễn Tân',
             'ten_goi' => 'NT',
@@ -56,10 +53,8 @@ class ThanhVienSeeder extends Seeder
             'updated_at' => now(),
         ]);
 
-        // Connect Husband to Wife
         DB::table('thanh_viens')->where('id', $ongTanId)->update(['spouse_of_id' => $baTiId]);
 
-        // 2. Generation 1 (Children of G0)
         $thangId = DB::table('thanh_viens')->insertGetId([
             'ho_ten' => 'Nguyễn Đức Thắng',
             'ten_goi' => 'NĐT',
@@ -111,7 +106,6 @@ class ThanhVienSeeder extends Seeder
             'updated_at' => now(),
         ]);
 
-        // 3. Spouses of G1
         $maiId = DB::table('thanh_viens')->insertGetId([
             'ho_ten' => 'Phạm Thị Mai',
             'ten_goi' => 'PTM',
@@ -163,8 +157,8 @@ class ThanhVienSeeder extends Seeder
         ]);
         DB::table('thanh_viens')->where('id', $huongId)->update(['spouse_of_id' => $tuanId]);
 
-        // 4. Generation 2 (Grandchildren of G0)
-        $namId = DB::table('thanh_viens')->insertGetId([
+        // 4. Thế hệ 2 (Cháu nội / ngoại)
+        DB::table('thanh_viens')->insertGetId([
             'ho_ten' => 'Nguyễn Đức Nam',
             'ten_goi' => 'NĐN',
             'gioi_tinh' => 'Nam',
@@ -181,7 +175,7 @@ class ThanhVienSeeder extends Seeder
             'updated_at' => now(),
         ]);
 
-        $minhId = DB::table('thanh_viens')->insertGetId([
+        DB::table('thanh_viens')->insertGetId([
             'ho_ten' => 'Nguyễn Văn Minh',
             'ten_goi' => 'NVM',
             'gioi_tinh' => 'Nam',
@@ -198,7 +192,7 @@ class ThanhVienSeeder extends Seeder
             'updated_at' => now(),
         ]);
 
-        $haId = DB::table('thanh_viens')->insertGetId([
+        DB::table('thanh_viens')->insertGetId([
             'ho_ten' => 'Lê Thu Hà',
             'ten_goi' => 'LTH',
             'gioi_tinh' => 'Nữ',
@@ -215,8 +209,7 @@ class ThanhVienSeeder extends Seeder
             'updated_at' => now(),
         ]);
 
-        // 5. Adopted child member (Generation 2)
-        $hoaiNamId = DB::table('thanh_viens')->insertGetId([
+        DB::table('thanh_viens')->insertGetId([
             'ho_ten' => 'Nguyễn Hoài Nam',
             'ten_goi' => 'NHN',
             'gioi_tinh' => 'Nam',
@@ -225,6 +218,8 @@ class ThanhVienSeeder extends Seeder
             'nghe_nghiep' => 'Học sinh',
             'chi_nhanh_id' => $chiNhanhId,
             'doi_thu' => 2,
+            'cha_id' => $trungId,
+            'me_id' => $trangId,
             'trang_thai' => 'Còn sống',
             'ghi_chu' => 'Con nuôi của Nguyễn Văn Trung và Đỗ Thu Trang.',
             'created_at' => now(),

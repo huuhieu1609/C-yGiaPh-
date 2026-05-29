@@ -7,15 +7,24 @@ use Illuminate\Support\Facades\DB;
 
 class DoiTocHoSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
         $families = [
-            ['so_doi' => 1, 'ten_doi' => 'Dòng Họ Nguyễn', 'mo_ta' => 'Dòng họ Nguyễn với truyền thống văn hóa lâu đời.'],
-            ['so_doi' => 2, 'ten_doi' => 'Dòng Họ Trần', 'mo_ta' => 'Dòng họ Trần tại TP.HCM.'],
-            ['so_doi' => 3, 'ten_doi' => 'Dòng Họ Lê', 'mo_ta' => 'Dòng họ Lê giữ các giá trị truyền thống miền Trung.'],
+            [
+                'so_doi' => 12,
+                'ten_doi' => 'Dòng Họ Nguyễn Đức',
+                'mo_ta' => 'Dòng họ Nguyễn Đức khởi nguồn từ đất tổ Thạch Thất - Hà Nội, có truyền thống hiếu học và khoa bảng qua nhiều thế hệ.'
+            ],
+            [
+                'so_doi' => 9,
+                'ten_doi' => 'Dòng Họ Trần Khắc',
+                'mo_ta' => 'Chi họ Trần Khắc định cư lâu đời tại Nam Định, lưu giữ nhiều tư liệu cổ về văn hóa dòng tộc miền Bắc.'
+            ],
+            [
+                'so_doi' => 6,
+                'ten_doi' => 'Dòng Họ Lê Vũ',
+                'mo_ta' => 'Dòng họ Lê Vũ tại Quảng Nam, gìn giữ các giá trị truyền thống võ thuật và văn hóa đặc trưng miền Trung.'
+            ],
         ];
 
         foreach ($families as $family) {

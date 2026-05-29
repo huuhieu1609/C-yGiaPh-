@@ -7,13 +7,11 @@ use Illuminate\Support\Facades\DB;
 
 class ThamGiaSuKienSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        $eventId = DB::table('su_kiens')->where('tieu_de', 'Giỗ tổ dòng họ Nguyễn')->value('id');
-        $memberId = DB::table('thanh_viens')->where('ho_ten', 'Nguyen Van C')->value('id');
+        // Lấy sự kiện và thành viên thực tế đã được seed từ trước
+        $eventId = DB::table('su_kiens')->where('tieu_de', 'like', '%Đại Lễ Giỗ Tổ%')->value('id');
+        $memberId = DB::table('thanh_viens')->where('ho_ten', 'Nguyễn Đức Thắng')->value('id');
 
         if (!$eventId || !$memberId) {
             return;

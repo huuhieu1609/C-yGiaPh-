@@ -2,7 +2,7 @@ import { createRouter, createWebHistory } from "vue-router";
 
 const routes = [
     // =========================================================================
-    // CLIENT LAYOUT ROUTES
+    // CLIENT ROUTES
     // =========================================================================
     {
         path: '/',
@@ -47,10 +47,16 @@ const routes = [
         meta: { layout: 'client', requiresAuth: true }
     },
     {
-        path: '/thanh-vien/detail/:id',
-        name: 'public-member-detail',
-        component: () => import('../components/ClientTraCuu/PublicDetail.vue'),
-        meta: { layout: 'client' }
+        path: '/de-xuat',
+        name: 'client-de-xuat',
+        component: () => import('../components/ClientDeXuat/index.vue'),
+        meta: { layout: 'client', requiresAuth: true }
+    },
+    {
+        path: '/su-kien',
+        name: 'client-su-kien',
+        component: () => import('../components/ClientSuKien/index.vue'),
+        meta: { layout: 'client', requiresAuth: true }
     },
     {
         path: '/dich-vu-goi/chi-tiet',
@@ -80,9 +86,13 @@ const routes = [
         component: () => import('../components/ClientSuKien/index.vue'),
         meta: { layout: 'client', requiresAuth: true }
     },
+    {
+        path: '/nguoi-dung',
+        redirect: '/gia-pha'
+    },
 
     // =========================================================================
-    // BLANK LAYOUT ROUTES (AUTH PAGES)
+    // AUTH ROUTES
     // =========================================================================
     {
         path: '/login',
@@ -108,10 +118,10 @@ const routes = [
         component: () => import('../components/Auth/Reset.vue'),
         meta: { layout: 'blank' }
     },
-    {
-        path: '/nguoi-dung',
-        redirect: '/gia-pha'
-    },
+
+    // =========================================================================
+    // ADMIN LOGIN
+    // =========================================================================
     {
         path: '/admin/login',
         name: 'admin-login',
@@ -121,8 +131,9 @@ const routes = [
 
     {
         path: '/admin',
-        component: () => import('../layout/wrapper/index.vue'), 
+        component: () => import('../layout/wrapper/index.vue'),
         meta: { requiresAuth: true, layout: 'blank' },
+
         children: [
             {
                 path: '',
@@ -217,12 +228,13 @@ const routes = [
     },
 
     // =========================================================================
-    // PARTNER ROUTES (NESTED UNDER PARTNER-LAYOUT COMPONENT)
+    // PARTNER ROUTES
     // =========================================================================
     {
         path: '/doi-tac',
-        component: () => import('../layout/wrapper/partner.vue'), 
+        component: () => import('../layout/wrapper/partner.vue'),
         meta: { requiresAuth: true, layout: 'blank' },
+
         children: [
             {
                 path: '',
@@ -289,47 +301,69 @@ const routes = [
 
 const router = createRouter({
     history: createWebHistory(),
-    routes: routes
+    routes
 });
 
 // =========================================================================
-// NAVIGATION GUARD (AUTHENTICATION & AUTHORIZATION)
+// NAVIGATION GUARD
 // =========================================================================
 router.beforeEach((to, from, next) => {
+
     const token = localStorage.getItem('access_token');
-    const userStr = localStorage.getItem('user');
-    const user = userStr ? JSON.parse(userStr) : null;
-    const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
 
-    // 1. Nếu trang yêu cầu Auth mà chưa đăng nhập -> Đẩy về login
+    const requiresAuth = to.matched.some(
+        record => record.meta.requiresAuth
+    );
+
+    // Chưa đăng nhập
     if (requiresAuth && !token) {
-        return next({ path: '/login', query: { redirect: to.fullPath } });
+        return next({
+            path: '/login',
+            query: { redirect: to.fullPath }
+        });
     }
 
-    // 2. Bảo vệ cụm Route Admin
-    if (to.path.startsWith('/admin') && to.path !== '/admin/login') {
-        if (!user || user.vai_tro?.toLowerCase() !== 'admin') {
-            alert('Bạn không có quyền truy cập trang quản trị!');
-            return next('/'); 
+    // Admin
+    if (
+        to.path.startsWith('/admin') &&
+        to.path !== '/admin/login'
+    ) {
+        if (user?.vai_tro?.toLowerCase() !== 'admin') {
+            alert('Bạn không có quyền truy cập!');
+            return next('/');
         }
     }
 
-    // 3. Bảo vệ cụm Route Đối Tác
+    // Đối tác
     if (to.path.startsWith('/doi-tac')) {
-        if (!user || (user.is_doi_tac != 1 && user.vai_tro?.toLowerCase() !== 'admin')) {
-            alert('Vui lòng thanh toán gói dịch vụ để sử dụng chức năng quản lý gia phả!');
-            return next('/dich-vu-goi'); 
+
+        if (
+            user?.is_doi_tac != 1 &&
+            user?.vai_tro?.toLowerCase() !== 'admin'
+        ) {
+            alert('Bạn cần nâng cấp gói đối tác!');
+            return next('/dich-vu-goi');
         }
     }
 
-    // 4. Nếu đã đăng nhập thành công mà quay lại login/register -> Tự động đưa về đúng Dashboard
-    if ((to.path === '/login' || to.path === '/register') && token) {
-        if (user?.vai_tro?.toLowerCase() === 'admin') return next('/admin/dashboard');
-        if (user?.is_doi_tac == 1) return next('/doi-tac/dashboard');
+    // Đã login thì không vào login/register
+    if (
+        (to.path === '/login' || to.path === '/register')
+        && token
+    ) {
+
+        if (user?.vai_tro?.toLowerCase() === 'admin') {
+            return next('/admin/dashboard');
+        }
+
+        if (user?.is_doi_tac == 1) {
+            return next('/doi-tac/dashboard');
+        }
+
         return next('/gia-pha');
     }
 
-    // Tất cả điều kiện thỏa mãn -> Cho phép điều hướng
     next();
 });
 

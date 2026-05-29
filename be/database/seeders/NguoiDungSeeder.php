@@ -8,9 +8,6 @@ use Illuminate\Support\Facades\Hash;
 
 class NguoiDungSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
         $users = [

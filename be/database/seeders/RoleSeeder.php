@@ -3,35 +3,46 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\Role;
-use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
 class RoleSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        $adminRole = Role::firstOrCreate(['name' => 'admin'], ['description' => 'Administrator']);
-        $customerRole = Role::firstOrCreate(['name' => 'customer'], ['description' => 'Customer']);
+        $adminRoleId = DB::table('roles')->insertGetId([
+            'name' => 'admin',
+            'description' => 'Administrator',
+            'created_at' => now(),
+            'updated_at' => now()
+        ]);
 
-        User::firstOrCreate(
+        $customerRoleId = DB::table('roles')->insertGetId([
+            'name' => 'customer',
+            'description' => 'Customer',
+            'created_at' => now(),
+            'updated_at' => now()
+        ]);
+
+        DB::table('users')->insertOrInsert(
             ['email' => 'admin@gmail.com'],
             [
                 'name' => 'Admin',
                 'password' => Hash::make('123456'),
-                'role_id' => $adminRole->id,
+                'role_id' => $adminRoleId,
+                'created_at' => now(),
+                'updated_at' => now()
             ]
         );
 
-        User::firstOrCreate(
+        DB::table('users')->insertOrInsert(
             ['email' => 'customer@gmail.com'],
             [
                 'name' => 'Customer',
                 'password' => Hash::make('123456'),
-                'role_id' => $customerRole->id,
+                'role_id' => $customerRoleId,
+                'created_at' => now(),
+                'updated_at' => now()
             ]
         );
     }

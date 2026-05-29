@@ -847,9 +847,9 @@ export default {
 
 .tree-viewport {
   height: 800px;
-  background: #fdfdfd;
-  background-image: radial-gradient(#d1d5db 1px, transparent 1px);
-  background-size: 35px 35px;
+  background: #faf9f6;
+  background-image: radial-gradient(rgba(212, 175, 55, 0.15) 1px, transparent 1px);
+  background-size: 30px 30px;
   position: relative;
   overflow: hidden;
   cursor: grab;
@@ -865,56 +865,61 @@ export default {
 }
 
 /* ─── CSS TREE STRUCTURE (FORCED HORIZONTAL) ─── */
-.tree, .tree-ul {
-  display: flex !important;
-  flex-direction: row !important;
-  justify-content: center !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  list-style: none !important;
+.tree, .tree-ul, .tree-li {
   position: relative;
+  transition: all 0.3s;
 }
 
 .tree-ul {
   padding-top: 50px !important;
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  justify-content: center !important;
+  padding-left: 0 !important;
+  margin-bottom: 0 !important;
+  list-style: none !important;
 }
 
 .tree-li {
   float: none !important;
+  text-align: center;
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important;
-  position: relative;
-  padding: 50px 20px 0 20px !important;
+  padding: 50px 10px 0 10px !important;
+  flex: 0 0 auto !important;
 }
 
 /* Vertical line from parent to current horizontal bar */
 .tree-li::before, .tree-li::after {
   content: ''; position: absolute; top: 0; right: 50%;
-  border-top: 2px solid #cbd5e1; width: 50%; height: 50px;
+  border-top: 2px solid #d4af37; width: 50%; height: 50px;
 }
-.tree-li::after { right: auto; left: 50%; border-left: 2px solid #cbd5e1; }
+.tree-li::after { right: auto; left: 50%; border-left: 2px solid #d4af37; }
 
 /* Remove lines for single child or edges */
 .tree-li:only-child::after, .tree-li:only-child::before { display: none; }
 .tree-li:only-child { padding-top: 0 !important; }
 .tree-li:first-child::before, .tree-li:last-child::after { border: 0 none; }
-.tree-li:last-child::before { border-right: 2px solid #cbd5e1; border-radius: 0 10px 0 0; }
+.tree-li:last-child::before { border-right: 2px solid #d4af37; border-radius: 0 10px 0 0; }
 .tree-li:first-child::after { border-radius: 10px 0 0 0; }
 
 /* Vertical line down from current node to children ul */
 .tree-ul::before {
   content: ''; position: absolute; top: 0; left: 50%;
-  border-left: 2px solid #cbd5e1; width: 0; height: 50px;
+  border-left: 2px solid #d4af37; width: 0; height: 50px;
 }
 
 /* ─── NODE STYLING ─── */
 .tree-node-group {
-  display: inline-flex;
-  flex-direction: column;
+  display: flex;
   align-items: center;
+  justify-content: center;
   position: relative;
   z-index: 10;
+  margin: 0 auto;
+  width: max-content;
 }
 
 .couple-wrapper {
@@ -925,50 +930,68 @@ export default {
 }
 
 .tree-connector-h {
-  width: 40px;
+  width: 30px;
   height: 2px;
-  background: #cbd5e1;
+  background: #d4af37;
   position: relative;
 }
 
 /* The card itself */
 .tree-node-card {
-  background: #fff;
-  border: 2px solid #e2e8f0;
-  padding: 12px 16px;
-  border-radius: 18px;
-  min-width: 230px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.06);
+  background: #ffffff;
+  border: 2px solid #d4af37;
+  padding: 10px;
+  border-radius: 12px;
+  position: relative;
+  box-shadow: 0 4px 15px rgba(212, 175, 55, 0.1);
+  /* Fixed Uniform Dimensions */
+  width: 220px;
+  height: 90px;
+  box-sizing: border-box;
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 12px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
+  transition: 0.3s ease;
+  overflow: hidden;
 }
 
 .tree-node-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 20px 40px rgba(0,0,0,0.12);
-  border-color: #d4af37;
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(212, 175, 55, 0.25);
+  z-index: 100;
 }
 
-/* Generation Border Colors (Matches User Image) */
-.gen-1 { border-left: 6px solid #8b4513 !important; } /* Brown */
-.gen-2 { border-left: 6px solid #9333ea !important; } /* Purple */
-.gen-3 { border-left: 6px solid #3b82f6 !important; } /* Blue */
-.gen-4 { border-left: 6px solid #10b981 !important; } /* Green */
-.gen-5 { border-left: 6px solid #f59e0b !important; } /* Amber */
+/* Generation Colors - Left border gradient */
+.tree-node-card::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 6px;
+    background: linear-gradient(to bottom, #d4af37, #fdfbf3);
+    border-top-left-radius: 9px;
+    border-bottom-left-radius: 9px;
+}
+
+.gen-1::before { background: linear-gradient(to bottom, #e1b12c, #fdfbf3); }
+.gen-2::before { background: linear-gradient(to bottom, #d4af37, #fdfbf3); }
+.gen-3::before { background: linear-gradient(to bottom, #b38d21, #fdfbf3); }
+.gen-4::before { background: linear-gradient(to bottom, #957314, #fdfbf3); }
+.gen-5::before { background: linear-gradient(to bottom, #e58e26, #fdfbf3); }
+
 
 .tree-node-card.spouse {
   border-style: dashed;
-  background: #f9fafb;
-  min-width: 190px;
+  width: 220px;
+  height: 90px;
 }
 
 .tree-node-card.is-dead {
-  filter: grayscale(0.8);
-  opacity: 0.7;
+  filter: grayscale(0.6);
+  background: #f9f9f9;
+  border-color: #bdc3c7;
 }
 
 /* Avatar styling inside card */
@@ -983,7 +1006,7 @@ export default {
   height: 50px;
   border-radius: 50%;
   object-fit: cover;
-  border: 2px solid #fff;
+  border: 2px solid #d4af37;
   display: block;
 }
 
@@ -998,20 +1021,24 @@ export default {
   justify-content: center;
   font-weight: 800;
   font-size: 1.1rem;
-  border: 2px solid #fff;
+  border: 2px solid #d4af37;
 }
 
 /* Card Content Styling */
 .node-content {
   text-align: left;
   flex-grow: 1;
-  min-width: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100%;
 }
 
 .node-name {
   font-weight: 700;
   font-size: 14px;
-  color: #111827;
+  color: #2f3640;
   margin-bottom: 2px;
   white-space: nowrap;
   overflow: hidden;
@@ -1020,20 +1047,30 @@ export default {
 
 .node-date {
   font-size: 11px;
-  color: #6b7280;
+  color: #7f8c8d;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .node-tag {
-  font-size: 10px;
-  font-weight: 800;
-  color: #3b82f6;
+  font-size: 9px;
+  font-weight: 700;
+  color: #d4af37;
   text-transform: uppercase;
-  margin-top: 4px;
-  letter-spacing: 0.02em;
+  margin-top: 3px;
+  background: rgba(212, 175, 55, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+  display: inline-block;
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  width: max-content;
 }
 
 .spouse-tag {
-  color: #f59e0b;
+  color: #e67e22;
+  background: rgba(230, 126, 34, 0.1);
+  border-color: rgba(230, 126, 34, 0.3);
 }
 
 /* Dummy Node for generation jumping */
@@ -1043,7 +1080,7 @@ export default {
 .dummy-line {
   width: 2px;
   height: 60px;
-  background: #cbd5e1;
+  background: #d4af37;
 }
 
 /* ─── UI ELEMENTS ─── */

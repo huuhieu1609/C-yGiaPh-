@@ -14,12 +14,16 @@ class ThongBaoSeeder extends Seeder
     {
         $notifications = [
             [
-                'tieu_de' => 'Thông báo họp họ tháng 5',
-                'noi_dung' => 'Cuộc họp họ tháng 5 sẽ diễn ra tại nhà thờ họ Nguyễn.',
+                'tieu_de' => 'Thông báo kế hoạch Đại Lễ Giỗ Tổ năm 2026',
+                'noi_dung' => 'Ban trị sự tộc họ trân trọng thông báo lịch tổ chức Đại lễ Giỗ Tổ vào ngày mùng 10 tháng 3 Âm lịch tại Nhà Thờ Tổ. Kính mời toàn thể con cháu nội ngoại về sum họp đông đủ và đóng góp quỹ dâng hương.',
             ],
             [
-                'tieu_de' => 'Cập nhật dữ liệu gia phả',
-                'noi_dung' => 'Đã cập nhật danh sách thành viên mới trong gia phả.',
+                'tieu_de' => 'Cập nhật hoàn thiện hệ thống Gia Phả Số hóa',
+                'noi_dung' => 'Hội đồng gia tộc đã hoàn thành việc rà soát và cập nhật danh sách thành viên thế hệ thứ 5 vào cây phả hệ điện tử. Đề nghị các trưởng chi kiểm tra lại thông tin cá nhân của con cháu.',
+            ],
+            [
+                'tieu_de' => 'Kêu gọi quyên góp tu sửa khuôn viên nghĩa trang dòng họ',
+                'noi_dung' => 'Hiện tại bờ tường bao khu mộ tổ tại nghĩa trang Thạch Thất đã xuống cấp. Ban trị sự kêu gọi tấm lòng hảo tâm của các gia đình đóng góp kinh phí tôn tạo, dự kiến triển khai vào tháng 8 Âm lịch.',
             ],
         ];
 
