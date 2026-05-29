@@ -20,7 +20,7 @@ class DatabaseSeeder extends Seeder
             ThanhVienSeeder::class,
             DoiTocHoSeeder::class,
             NhaThoHoSeeder::class,
-            \Database\Seeders\RolesAndPermissionsSeeder::class,
+            RolesAndPermissionsSeeder::class,
             SuKienSeeder::class,
             TaiLieuSeeder::class,
             ThongBaoSeeder::class,
@@ -32,9 +32,9 @@ class DatabaseSeeder extends Seeder
             NhatKyHoatDongSeeder::class,
             VoChongSeeder::class,
             DoiTacSeeder::class,
+            OtherPartnersSeeder::class,
             DeXuatChinhSuaSeeder::class,
             TuongNiemSeeder::class,
         ]);
     }
 }
-
