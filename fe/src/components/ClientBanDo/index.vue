@@ -91,7 +91,7 @@
                   <span class="coords-text">
                     <i class="bx bx-target-lock"></i> {{ item.lat.toFixed(5) }}, {{ item.lng.toFixed(5) }}
                   </span>
-                  <button class="btn btn-sm btn-navigate-inline" @click.stop="navigateWithGoogleMaps(item)">
+                  <button class="btn btn-sm btn-navigate-inline" @click.stop="startInAppRouting(item)">
                     <i class="bx bx-navigation"></i> Dẫn đường
                   </button>
                 </div>
@@ -130,7 +130,8 @@ export default {
       map: null,
       markers: {}, // Keyed by uniqueId
       isLoading: true,
-      leafletLoaded: false
+      leafletLoaded: false,
+      routingControl: null
     }
   },
   computed: {
@@ -185,30 +186,46 @@ export default {
       this.initMap();
       this.loadMapData();
     });
+    window.addEventListener('trigger-route', this.handleRouteTrigger);
+  },
+  beforeUnmount() {
+    window.removeEventListener('trigger-route', this.handleRouteTrigger);
   },
   methods: {
     getHeaders() {
       return { headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` } };
     },
     loadLeafletCDN(callback) {
-      if (window.L) {
+      if (window.L && window.L.Routing) {
         callback();
         return;
       }
-      // CSS Injection
+      
+      const loadRouting = () => {
+        const link2 = document.createElement('link');
+        link2.rel = 'stylesheet';
+        link2.href = 'https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css';
+        document.head.appendChild(link2);
+        
+        const script2 = document.createElement('script');
+        script2.src = 'https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js';
+        script2.onload = callback;
+        document.head.appendChild(script2);
+      };
+
+      if (window.L) {
+        loadRouting();
+        return;
+      }
+
       const link = document.createElement('link');
       link.rel = 'stylesheet';
       link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
-      link.crossOrigin = '';
       document.head.appendChild(link);
 
-      // JS Injection
       const script = document.createElement('script');
       script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
-      script.crossOrigin = '';
-      script.onload = () => {
-        callback();
-      };
+      script.onload = loadRouting;
       document.head.appendChild(script);
     },
     initMap() {
@@ -311,10 +328,10 @@ export default {
               <hr class="my-2" />
               <div class="d-flex justify-content-between align-items-center">
                 <span class="popup-coords">${item.lat.toFixed(5)}, ${item.lng.toFixed(5)}</span>
-                <a href="https://www.google.com/maps/dir/?api=1&destination=${item.lat},${item.lng}" 
-                   target="_blank" 
+                <a href="javascript:void(0)" 
+                   onclick="window.dispatchEvent(new CustomEvent('trigger-route', {detail: {lat: ${item.lat}, lng: ${item.lng}}}))" 
                    class="btn btn-sm btn-popup-navigate">
-                  <i class="bx bx-navigation"></i> Google Maps
+                  <i class="bx bx-navigation"></i> Dẫn đường
                 </a>
               </div>
             </div>
@@ -369,10 +386,71 @@ export default {
         }, 600);
       }
     },
-    navigateWithGoogleMaps(item) {
-      if (!item.hasCoords) return;
-      const url = `https://www.google.com/maps/dir/?api=1&destination=${item.lat},${item.lng}`;
-      window.open(url, '_blank');
+    handleRouteTrigger(e) {
+      this.startInAppRouting(e.detail);
+    },
+    startInAppRouting(item) {
+      if (!item.lat || !item.lng) return;
+      if (!this.map || !window.L.Routing) {
+          toastr.error('Hệ thống chỉ đường chưa sẵn sàng.');
+          return;
+      }
+      
+      const destination = [item.lat, item.lng];
+
+      if ("geolocation" in navigator) {
+        toastr.info("Đang lấy vị trí của bạn...");
+        navigator.geolocation.getCurrentPosition((position) => {
+          const userLat = position.coords.latitude;
+          const userLng = position.coords.longitude;
+          
+          this.drawRoute([userLat, userLng], destination);
+        }, (error) => {
+          console.error("Lỗi geolocation: ", error);
+          toastr.warning("Bạn đã từ chối vị trí. Đang dùng vị trí mặc định (bạn có thể kéo điểm bắt đầu).");
+          // Fallback to map center
+          const center = this.map.getCenter();
+          this.drawRoute([center.lat, center.lng], destination, true);
+        }, { enableHighAccuracy: true });
+      } else {
+        toastr.error("Trình duyệt không hỗ trợ định vị.");
+        const center = this.map.getCenter();
+        this.drawRoute([center.lat, center.lng], destination, true);
+      }
+    },
+    drawRoute(startCoords, endCoords, isFallback = false) {
+      if (this.routingControl) {
+        this.map.removeControl(this.routingControl);
+      }
+      
+      this.routingControl = window.L.Routing.control({
+        waypoints: [
+          window.L.latLng(startCoords[0], startCoords[1]),
+          window.L.latLng(endCoords[0], endCoords[1])
+        ],
+        routeWhileDragging: isFallback,
+        addWaypoints: false,
+        showAlternatives: false,
+        show: false, // Hides the bulky text instruction panel to prevent overlap with the top navbar
+        fitSelectedRoutes: true,
+        lineOptions: {
+            styles: [{color: '#f97316', opacity: 0.8, weight: 6}]
+        },
+        createMarker: function(i, waypoint, n) {
+            if (i === 0) {
+                return window.L.marker(waypoint.latLng, {
+                    draggable: isFallback, // Allow dragging if it's a fallback location
+                    icon: window.L.divIcon({
+                        className: 'custom-div-icon',
+                        html: `<div style="background:#3b82f6; width:18px; height:18px; border-radius:50%; border:3px solid white; box-shadow:0 0 5px rgba(0,0,0,0.5);"></div>`,
+                        iconSize: [18,18],
+                        iconAnchor: [9,9]
+                    })
+                }).bindPopup(isFallback ? "Kéo chấm xanh này đến vị trí của bạn" : "Vị trí của bạn").openPopup();
+            }
+            return null;
+        }
+      }).addTo(this.map);
     }
   },
   watch: {
@@ -389,19 +467,22 @@ export default {
 
 .map-view-container {
   display: flex;
-  height: 100vh;
-  width: 100vw;
+  height: calc(100vh - 140px);
+  width: 96%;
+  max-width: 1600px;
+  margin: 100px auto 40px auto;
   position: relative;
   font-family: 'Inter', sans-serif;
   overflow: hidden;
-  margin: 0;
-  padding: 0;
+  border-radius: 24px;
+  box-shadow: 0 15px 40px rgba(212, 175, 55, 0.15), 0 0 0 2px rgba(212, 175, 55, 0.2);
+  background: #faf9f6;
 }
 
 /* SIDEBAR GLASSMORPHISM STYLES */
 .glass-sidebar {
   position: absolute;
-  top: 90px; /* Offset for Topclient header */
+  top: 20px;
   left: 20px;
   bottom: 20px;
   width: 380px;

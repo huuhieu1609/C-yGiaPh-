@@ -736,8 +736,8 @@ export default {
 <style>
 .tree-viewport {
     height: 700px;
-    background: #fdfdfd;
-    background-image: radial-gradient(#e0e0e0 1px, transparent 1px);
+    background: #faf9f6;
+    background-image: radial-gradient(rgba(212, 175, 55, 0.15) 1px, transparent 1px);
     background-size: 30px 30px;
     position: relative;
     overflow: hidden;
@@ -773,40 +773,130 @@ export default {
     flex: 0 0 auto !important;
 }
 
-/* Connecting Lines */
-.tree li::before, .tree li::after { content: ''; position: absolute; top: 0; right: 50%; border-top: 2px solid #ddd; width: 50%; height: 50px; }
-.tree li::after { right: auto; left: 50%; border-left: 2px solid #ddd; }
+/* Connecting Lines (Gold) */
+.tree li::before, .tree li::after { 
+    content: ''; 
+    position: absolute; 
+    top: 0; 
+    right: 50%; 
+    border-top: 2px solid #d4af37; 
+    width: 50%; 
+    height: 50px; 
+}
+.tree li::after { 
+    right: auto; 
+    left: 50%; 
+    border-left: 2px solid #d4af37; 
+}
 .tree li:only-child::after, .tree li:only-child::before { display: none; }
 .tree li:only-child { padding-top: 0; }
 .tree li:first-child::before, .tree li:last-child::after { border: 0 none; }
-.tree li:last-child::before { border-right: 2px solid #ddd; border-radius: 0 10px 0 0; }
-.tree li:first-child::after { border-radius: 10px 0 0 0; }
-.tree ul ul::before { content: ''; position: absolute; top: 0; left: 50%; border-left: 2px solid #ddd; width: 0; height: 50px; }
+.tree li:last-child::before { 
+    border-right: 2px solid #d4af37; 
+    border-radius: 0 10px 0 0; 
+}
+.tree li:first-child::after { 
+    border-radius: 10px 0 0 0; 
+}
+.tree ul ul::before { 
+    content: ''; 
+    position: absolute; 
+    top: 0; 
+    left: 50%; 
+    border-left: 2px solid #d4af37; 
+    width: 0; 
+    height: 50px; 
+}
 
 /* Node Styling */
-.tree-node-group { display: inline-flex; align-items: center; justify-content: center; position: relative; z-index: 10; }
-.tree-connector-h { width: 30px; height: 2px; background: #ddd; }
+.tree-node-group { 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    position: relative; 
+    z-index: 10; 
+    margin: 0 auto;
+    width: max-content;
+}
+.tree-connector-h { 
+    width: 30px; 
+    height: 2px; 
+    background: #d4af37; 
+    position: relative; 
+}
+.connector-heart {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #fff;
+    background: #d4af37;
+    padding: 3px;
+    border-radius: 50%;
+    font-size: 14px;
+    box-shadow: 0 2px 5px rgba(212, 175, 55, 0.4);
+}
 
 .tree-node-card {
-    background: #fff;
-    border: 2px solid #ddd;
+    background: #ffffff;
+    border: 2px solid #d4af37;
     padding: 10px;
-    border-radius: 15px;
-    min-width: 200px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-    cursor: pointer;
+    border-radius: 12px;
     position: relative;
+    box-shadow: 0 4px 15px rgba(212, 175, 55, 0.1);
+    /* Fixed Uniform Dimensions */
+    width: 220px;
+    height: 90px;
+    box-sizing: border-box;
+    cursor: pointer;
     display: flex;
     align-items: center;
     gap: 12px;
-    transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    background: rgba(255, 255, 255, 0.9);
-    backdrop-filter: blur(5px);
+    transition: 0.3s ease;
+    overflow: hidden;
+}
+
+.quick-actions {
+    position: absolute;
+    bottom: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 8px;
+    opacity: 0;
+    transition: all 0.3s ease;
+    z-index: 20;
+    pointer-events: none;
+}
+.tree-node-card:hover .quick-actions {
+    opacity: 1;
+    pointer-events: auto;
+    bottom: -15px;
+}
+.btn-action {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    color: #fff;
+    font-size: 16px;
+    padding: 0;
+    transition: transform 0.2s;
+    background: #d4af37;
+}
+.btn-action:hover {
+    transform: scale(1.1);
+    background: #c39b2e;
 }
 
 .tree-node-card:hover {
-    transform: translateY(-8px) scale(1.05);
-    box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(212, 175, 55, 0.25);
     z-index: 100;
 }
 
@@ -817,22 +907,34 @@ export default {
 }
 
 @keyframes pulse-border {
-    0% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.4); }
-    70% { box-shadow: 0 0 0 15px rgba(255, 193, 7, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0); }
+    0% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.4); }
+    70% { box-shadow: 0 0 0 15px rgba(212, 175, 55, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0); }
 }
 
-/* Generation Colors */
-.gen-1 { border-color: #4285f4; border-left-width: 6px; }
-.gen-2 { border-color: #34a853; border-left-width: 6px; }
-.gen-3 { border-color: #fbbc05; border-left-width: 6px; }
-.gen-4 { border-color: #ea4335; border-left-width: 6px; }
-.gen-5 { border-color: #a142f4; border-left-width: 6px; }
+/* Generation Colors - Left border gradient */
+.tree-node-card::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 6px;
+    background: linear-gradient(to bottom, #d4af37, #fdfbf3);
+    border-top-left-radius: 9px;
+    border-bottom-left-radius: 9px;
+}
+
+.gen-1::before { background: linear-gradient(to bottom, #e1b12c, #fdfbf3); }
+.gen-2::before { background: linear-gradient(to bottom, #d4af37, #fdfbf3); }
+.gen-3::before { background: linear-gradient(to bottom, #b38d21, #fdfbf3); }
+.gen-4::before { background: linear-gradient(to bottom, #957314, #fdfbf3); }
+.gen-5::before { background: linear-gradient(to bottom, #e58e26, #fdfbf3); }
 
 .tree-node-card.is-dead {
-    filter: grayscale(0.8);
-    opacity: 0.8;
-    background: #f8f9fa;
+    filter: grayscale(0.6);
+    background: #f9f9f9;
+    border-color: #bdc3c7;
 }
 
 .node-avatar {
@@ -840,51 +942,74 @@ export default {
     height: 50px;
     border-radius: 50%;
     object-fit: cover;
-    border: 2px solid #fff;
+    border: 2px solid #d4af37;
+    margin-left: 8px;
+    flex-shrink: 0;
 }
 
 .node-content {
     text-align: left;
     flex-grow: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    height: 100%;
 }
 
 .node-name {
     font-weight: 700;
     font-size: 14px;
-    color: #2c3e50;
+    color: #2f3640;
     margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .node-date {
     font-size: 11px;
     color: #7f8c8d;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .node-tag {
-    font-size: 10px;
-    font-weight: 600;
-    color: #2980b9;
+    font-size: 9px;
+    font-weight: 700;
+    color: #d4af37;
     text-transform: uppercase;
-    margin-top: 4px;
+    margin-top: 3px;
+    background: rgba(212, 175, 55, 0.1);
+    padding: 2px 6px;
+    border-radius: 4px;
+    display: inline-block;
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    width: max-content;
 }
 
 .spouse-tag {
     color: #e67e22;
+    background: rgba(230, 126, 34, 0.1);
+    border-color: rgba(230, 126, 34, 0.3);
 }
 
 .tree-node-card.spouse {
     border-style: dashed;
-    border-left-width: 2px;
-    min-width: 180px;
+    /* Fixed Uniform Dimensions for Spouse */
+    width: 220px;
+    height: 90px;
 }
 
 .node-edit-btn {
     position: absolute;
-    top: -10px;
-    right: -10px;
-    width: 28px;
-    height: 28px;
+    top: 5px;
+    right: 5px;
+    width: 24px;
+    height: 24px;
     background: #fff;
+    border: 1px solid #d4af37;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -892,7 +1017,8 @@ export default {
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     opacity: 0;
     transition: 0.2s;
-    color: #666;
+    color: #d4af37;
+    font-size: 12px;
 }
 
 .tree-node-card:hover .node-edit-btn {
@@ -900,7 +1026,7 @@ export default {
 }
 
 .node-edit-btn:hover {
-    background: #4285f4;
+    background: #d4af37;
     color: #fff;
 }
 
