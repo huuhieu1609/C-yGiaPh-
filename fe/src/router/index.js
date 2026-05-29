@@ -65,6 +65,12 @@ const routes = [
         meta: { layout: 'client', requiresAuth: true }
     },
     {
+        path: '/thanh-vien/detail/:id',
+        name: 'client-thanh-vien-detail',
+        component: () => import('../components/ClientTraCuu/PublicDetail.vue'),
+        meta: { layout: 'client' }
+    },
+    {
         path: '/de-xuat',
         name: 'client-de-xuat',
         component: () => import('../components/ClientDeXuat/index.vue'),

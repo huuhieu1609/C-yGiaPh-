@@ -91,7 +91,7 @@
                   <span class="coords-text">
                     <i class="bx bx-target-lock"></i> {{ item.lat.toFixed(5) }}, {{ item.lng.toFixed(5) }}
                   </span>
-                  <button class="btn btn-sm btn-navigate-inline" @click.stop="navigateWithGoogleMaps(item)">
+                  <button class="btn btn-sm btn-navigate-inline" @click.stop="startInAppRouting(item)">
                     <i class="bx bx-navigation"></i> Dẫn đường
                   </button>
                 </div>
@@ -111,6 +111,25 @@
 
     <!-- Map Canvas -->
     <div id="leaflet-clan-map" class="map-canvas"></div>
+
+    <!-- Floating Routing Stats Card -->
+    <div v-if="routeStats" class="routing-stats-overlay shadow-lg animate-fade-in">
+      <div class="d-flex align-items-center gap-3">
+        <div class="route-icon-box">
+          <i class="bx bx-navigation"></i>
+        </div>
+        <div class="flex-grow-1">
+          <h6 class="stats-title mb-0">Thông tin dẫn đường</h6>
+          <div class="stats-values d-flex gap-3 mt-1">
+            <span class="stat-item"><i class="bx bx-transfer-alt"></i> {{ routeStats.distance }}</span>
+            <span class="stat-item"><i class="bx bx-time"></i> {{ routeStats.duration }}</span>
+          </div>
+        </div>
+        <button class="btn btn-close-route btn-sm ms-2" @click="clearRoute" title="Xóa đường đi">
+          <i class="bx bx-x"></i>
+        </button>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -130,7 +149,9 @@ export default {
       map: null,
       markers: {}, // Keyed by uniqueId
       isLoading: true,
-      leafletLoaded: false
+      leafletLoaded: false,
+      routingControl: null,
+      routeStats: null
     }
   },
   computed: {
@@ -185,30 +206,46 @@ export default {
       this.initMap();
       this.loadMapData();
     });
+    window.addEventListener('trigger-route', this.handleRouteTrigger);
+  },
+  beforeUnmount() {
+    window.removeEventListener('trigger-route', this.handleRouteTrigger);
   },
   methods: {
     getHeaders() {
       return { headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` } };
     },
     loadLeafletCDN(callback) {
-      if (window.L) {
+      if (window.L && window.L.Routing) {
         callback();
         return;
       }
-      // CSS Injection
+      
+      const loadRouting = () => {
+        const link2 = document.createElement('link');
+        link2.rel = 'stylesheet';
+        link2.href = 'https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css';
+        document.head.appendChild(link2);
+        
+        const script2 = document.createElement('script');
+        script2.src = 'https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js';
+        script2.onload = callback;
+        document.head.appendChild(script2);
+      };
+
+      if (window.L) {
+        loadRouting();
+        return;
+      }
+
       const link = document.createElement('link');
       link.rel = 'stylesheet';
       link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
-      link.crossOrigin = '';
       document.head.appendChild(link);
 
-      // JS Injection
       const script = document.createElement('script');
       script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
-      script.crossOrigin = '';
-      script.onload = () => {
-        callback();
-      };
+      script.onload = loadRouting;
       document.head.appendChild(script);
     },
     initMap() {
@@ -311,10 +348,10 @@ export default {
               <hr class="my-2" />
               <div class="d-flex justify-content-between align-items-center">
                 <span class="popup-coords">${item.lat.toFixed(5)}, ${item.lng.toFixed(5)}</span>
-                <a href="https://www.google.com/maps/dir/?api=1&destination=${item.lat},${item.lng}" 
-                   target="_blank" 
+                <a href="javascript:void(0)" 
+                   onclick="window.dispatchEvent(new CustomEvent('trigger-route', {detail: {lat: ${item.lat}, lng: ${item.lng}}}))" 
                    class="btn btn-sm btn-popup-navigate">
-                  <i class="bx bx-navigation"></i> Google Maps
+                  <i class="bx bx-navigation"></i> Dẫn đường
                 </a>
               </div>
             </div>
@@ -343,7 +380,7 @@ export default {
 
       // Fit map view bounds if markers exist
       if (bounds.length > 0) {
-        this.map.fitBounds(bounds, { padding: [50, 50], maxZoom: 16 });
+        this.map.fitBounds(bounds, { padding: [50, 50], maxZoom: 18 });
       }
     },
     focusLocation(item) {
@@ -355,8 +392,8 @@ export default {
         return;
       }
 
-      // Center map on coordinates
-      this.map.flyTo([item.lat, item.lng], 16, {
+      // Center map on coordinates with zoom level 18 to see street/house numbers
+      this.map.flyTo([item.lat, item.lng], 18, {
         animate: true,
         duration: 1.2
       });
@@ -369,10 +406,108 @@ export default {
         }, 600);
       }
     },
-    navigateWithGoogleMaps(item) {
-      if (!item.hasCoords) return;
-      const url = `https://www.google.com/maps/dir/?api=1&destination=${item.lat},${item.lng}`;
-      window.open(url, '_blank');
+    handleRouteTrigger(e) {
+      this.startInAppRouting(e.detail);
+    },
+    startInAppRouting(item) {
+      if (!item.lat || !item.lng) return;
+      if (!this.map || !window.L.Routing) {
+          toastr.error('Hệ thống chỉ đường chưa sẵn sàng.');
+          return;
+      }
+      
+      const destination = [item.lat, item.lng];
+
+      if ("geolocation" in navigator) {
+        toastr.info("Đang lấy vị trí của bạn...");
+        navigator.geolocation.getCurrentPosition((position) => {
+          const userLat = position.coords.latitude;
+          const userLng = position.coords.longitude;
+          
+          this.drawRoute([userLat, userLng], destination);
+        }, (error) => {
+          console.error("Lỗi geolocation: ", error);
+          toastr.warning("Bạn đã từ chối vị trí. Đang dùng vị trí mặc định (bạn có thể kéo điểm bắt đầu).");
+          // Fallback to map center
+          const center = this.map.getCenter();
+          this.drawRoute([center.lat, center.lng], destination, true);
+        }, { enableHighAccuracy: true });
+      } else {
+        toastr.error("Trình duyệt không hỗ trợ định vị.");
+        const center = this.map.getCenter();
+        this.drawRoute([center.lat, center.lng], destination, true);
+      }
+    },
+    drawRoute(startCoords, endCoords, isFallback = false) {
+      if (this.routingControl) {
+        this.map.removeControl(this.routingControl);
+      }
+      this.routeStats = null;
+      
+      this.routingControl = window.L.Routing.control({
+        waypoints: [
+          window.L.latLng(startCoords[0], startCoords[1]),
+          window.L.latLng(endCoords[0], endCoords[1])
+        ],
+        routeWhileDragging: isFallback,
+        addWaypoints: false,
+        showAlternatives: false,
+        show: false, // Hides the bulky text instruction panel to prevent overlap with the top navbar
+        fitSelectedRoutes: true,
+        lineOptions: {
+            styles: [{color: '#f97316', opacity: 0.8, weight: 6}]
+        },
+        createMarker: function(i, waypoint, n) {
+            if (i === 0) {
+                return window.L.marker(waypoint.latLng, {
+                    draggable: isFallback, // Allow dragging if it's a fallback location
+                    icon: window.L.divIcon({
+                        className: 'custom-div-icon',
+                        html: `<div style="background:#3b82f6; width:18px; height:18px; border-radius:50%; border:3px solid white; box-shadow:0 0 5px rgba(0,0,0,0.5);"></div>`,
+                        iconSize: [18,18],
+                        iconAnchor: [9,9]
+                    })
+                }).bindPopup(isFallback ? "Kéo chấm xanh này đến vị trí của bạn" : "Vị trí của bạn").openPopup();
+            }
+            return null;
+        }
+      }).addTo(this.map);
+
+      // Listen for route calculation to extract distance & duration (exact numbers on the road)
+      this.routingControl.on('routesfound', (e) => {
+        const routes = e.routes;
+        if (routes && routes.length > 0) {
+          const route = routes[0];
+          const distance = route.summary.totalDistance; // meters
+          const time = route.summary.totalTime; // seconds
+          
+          const formattedDistance = distance >= 1000 
+            ? (distance / 1000).toFixed(1) + ' km' 
+            : Math.round(distance) + ' m';
+            
+          const minutes = Math.round(time / 60);
+          let formattedDuration = '';
+          if (minutes >= 60) {
+            const hours = Math.floor(minutes / 60);
+            const remainingMins = minutes % 60;
+            formattedDuration = `${hours} giờ ${remainingMins} phút`;
+          } else {
+            formattedDuration = `${minutes} phút`;
+          }
+          
+          this.routeStats = {
+            distance: formattedDistance,
+            duration: formattedDuration
+          };
+        }
+      });
+    },
+    clearRoute() {
+      if (this.routingControl) {
+        this.map.removeControl(this.routingControl);
+        this.routingControl = null;
+      }
+      this.routeStats = null;
     }
   },
   watch: {
@@ -389,19 +524,22 @@ export default {
 
 .map-view-container {
   display: flex;
-  height: 100vh;
-  width: 100vw;
+  height: calc(100vh - 140px);
+  width: 96%;
+  max-width: 1600px;
+  margin: 100px auto 40px auto;
   position: relative;
   font-family: 'Inter', sans-serif;
   overflow: hidden;
-  margin: 0;
-  padding: 0;
+  border-radius: 24px;
+  box-shadow: 0 15px 40px rgba(212, 175, 55, 0.15), 0 0 0 2px rgba(212, 175, 55, 0.2);
+  background: #faf9f6;
 }
 
 /* SIDEBAR GLASSMORPHISM STYLES */
 .glass-sidebar {
   position: absolute;
-  top: 90px; /* Offset for Topclient header */
+  top: 20px;
   left: 20px;
   bottom: 20px;
   width: 380px;
@@ -935,5 +1073,92 @@ export default {
 }
 .btn-refresh-premium:active {
   transform: scale(0.95);
+}
+
+/* Floating Routing Stats Card Styles */
+.routing-stats-overlay {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 16px;
+  padding: 14px 18px;
+  color: #1e293b;
+  width: 300px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+  transition: all 0.3s ease;
+  animation: slideInDown 0.3s ease-out;
+}
+
+[data-theme="dark"] .routing-stats-overlay {
+  background: rgba(15, 23, 42, 0.9);
+  border-color: rgba(255, 255, 255, 0.08);
+  color: #f8fafc;
+}
+
+.route-icon-box {
+  width: 38px;
+  height: 38px;
+  background: linear-gradient(135deg, #f97316 0%, #f43f5e 100%);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 20px;
+}
+
+.stats-title {
+  font-weight: 700;
+  font-size: 13.5px;
+}
+
+.stats-values {
+  font-size: 12px;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 600;
+}
+
+.btn-close-route {
+  background: rgba(0, 0, 0, 0.05);
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  transition: all 0.2s;
+}
+
+[data-theme="dark"] .btn-close-route {
+  background: rgba(255, 255, 255, 0.1);
+  color: #cbd5e1;
+}
+
+.btn-close-route:hover {
+  background: #f43f5e;
+  color: #fff;
+}
+
+@keyframes slideInDown {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 </style>

@@ -355,4 +355,36 @@ class ThanhVienController extends Controller
             ], 404);
         }
     }
+
+    public function uploadAvatar(Request $request)
+    {
+        try {
+            $request->validate([
+                'avatar' => 'required|image|mimes:jpeg,png,jpg|max:2048',
+            ]);
+
+            if ($request->hasFile('avatar')) {
+                $image = $request->file('avatar');
+                $imageName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
+                $image->move(public_path('uploads/avatars'), $imageName);
+                $url = asset('uploads/avatars/' . $imageName);
+
+                return response()->json([
+                    'status' => true,
+                    'message' => 'Tải ảnh lên thành công!',
+                    'url' => $url
+                ]);
+            }
+
+            return response()->json([
+                'status' => false,
+                'message' => 'Không tìm thấy file tải lên.'
+            ], 400);
+        } catch (Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Lỗi upload ảnh: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

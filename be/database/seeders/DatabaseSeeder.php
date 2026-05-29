@@ -20,7 +20,6 @@ class DatabaseSeeder extends Seeder
             ThanhVienSeeder::class,
             DoiTocHoSeeder::class,
             NhaThoHoSeeder::class,
-            SuKienSeeder::class,
             TaiLieuSeeder::class,
             ThongBaoSeeder::class,
             HinhAnhSeeder::class,
@@ -31,8 +30,10 @@ class DatabaseSeeder extends Seeder
             NhatKyHoatDongSeeder::class,
             VoChongSeeder::class,
             DoiTacSeeder::class,
+            SuKienSeeder::class,
             DeXuatChinhSuaSeeder::class,
             TuongNiemSeeder::class,
+            GoiDichVuSeeder::class,
         ]);
     }
 }

@@ -69,6 +69,74 @@ class RelationshipService
         return null;
     }
 
+    /**
+     * Tra cứu chi tiết quan hệ bao gồm cả lộ trình (path) và danh sách thành viên (members).
+     *
+     * @param ThanhVien $nguoi1
+     * @param ThanhVien $nguoi2
+     * @return array
+     */
+    public function resolveDetailed(ThanhVien $nguoi1, ThanhVien $nguoi2): array
+    {
+        if ($nguoi1->id === $nguoi2->id) {
+            return [
+                'relationship' => 'bản thân',
+                'path' => [],
+                'members' => [
+                    [
+                        'id' => $nguoi1->id,
+                        'ho_ten' => $nguoi1->ho_ten,
+                        'gioi_tinh' => $nguoi1->gioi_tinh,
+                    ]
+                ]
+            ];
+        }
+
+        $graphData = $this->graphService->buildGraph($nguoi1->chi_nhanh_id);
+        $graph = $graphData['graph'];
+        $personsMap = $graphData['map'];
+
+        $path = $this->graphService->findShortestPath($nguoi1->id, $nguoi2->id, $graph);
+
+        if ($path === null || empty($path)) {
+            return [
+                'relationship' => "{$nguoi1->ho_ten} và {$nguoi2->ho_ten} chưa có dữ liệu quan hệ họ hàng gần được hỗ trợ tra cứu.",
+                'path' => [],
+                'members' => []
+            ];
+        }
+
+        $relationName = $this->resolvePathToRelationship($path, $personsMap);
+        $resultMessage = "{$nguoi1->ho_ten} là {$relationName} của {$nguoi2->ho_ten}";
+
+        // Chuẩn bị danh sách path và members theo đúng yêu cầu API
+        $pathSteps = [];
+        $membersInPath = [];
+        foreach ($path as $step) {
+            // Không đẩy bước 'start' vào path nếu chỉ muốn xem các bước chuyển dịch quan hệ,
+            // hoặc đẩy tất cả bước để vẽ đường nối
+            $pathSteps[] = $step['type'];
+            
+            $memberId = $step['id'];
+            if (isset($personsMap[$memberId])) {
+                $membersInPath[] = [
+                    'id' => $memberId,
+                    'ho_ten' => $personsMap[$memberId]->ho_ten,
+                    'gioi_tinh' => $personsMap[$memberId]->gioi_tinh,
+                    'avatar' => $personsMap[$memberId]->avatar,
+                    'nghe_nghiep' => $personsMap[$memberId]->nghe_nghiep,
+                    'doi_thu' => $personsMap[$memberId]->doi_thu,
+                ];
+            }
+        }
+
+        return [
+            'relationship' => $resultMessage,
+            'path' => $pathSteps,
+            'members' => $membersInPath
+        ];
+    }
+
     private function checkVoChong(): ?string
     {
         if (
