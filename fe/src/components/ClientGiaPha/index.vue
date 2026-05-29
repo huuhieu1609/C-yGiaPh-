@@ -125,10 +125,47 @@
             <button v-if="currentMember.loai_quan_he === 'Chính'" class="btn btn-outline-info px-3 radius-10 fw-bold" @click="openProposal('add_spouse')">
               <i class="bx bx-heart"></i> Đề xuất thêm Vợ/Chồng
             </button>
+            <button v-if="isDirectRelative" class="btn btn-outline-danger px-3 radius-10 fw-bold" @click="openLifeStatusModal">
+              <i class="bx bx-heart-voice"></i> Cập nhật Sống/Mất
+            </button>
             <button class="btn btn-warning text-dark px-3 radius-10 fw-bold" style="background:#d4af37; border-color:#d4af37;" @click="showQRCardFromModal">
               <i class="bx bx-qr"></i> Xem Mã QR
             </button>
             <button class="btn btn-secondary px-4 radius-10" data-bs-dismiss="modal">Đóng</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Update Life Status Modal -->
+    <div class="modal fade" id="lifeStatusModal" tabindex="-1" aria-hidden="true" style="z-index: 2100 !important;">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content radius-15 shadow-lg border-0 bg-dark text-white">
+          <div class="modal-header border-0 bg-black/40 pb-2">
+            <h5 class="modal-title fw-bold" style="color:#d4af37">
+              <i class="bx bx-sync me-2"></i>Cập nhật trạng thái sức khỏe
+            </h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body p-4 text-center">
+            <h5 class="fw-bold mb-3" style="color: #ffd700;">{{ currentMember.ho_ten }}</h5>
+            
+            <div class="mb-3 text-start">
+              <label class="form-label fw-bold text-white-50">Tình trạng hiện tại</label>
+              <select class="form-select bg-secondary text-white border-0 radius-8" v-model="lifeStatusForm.trang_thai">
+                <option value="Còn sống">Còn sống</option>
+                <option value="Đã mất">Đã mất</option>
+              </select>
+            </div>
+            
+            <div class="mb-3 text-start" v-if="lifeStatusForm.trang_thai === 'Đã mất'">
+              <label class="form-label fw-bold text-white-50">Ngày mất (Dương lịch)</label>
+              <input type="date" class="form-control bg-secondary text-white border-0 radius-8" v-model="lifeStatusForm.ngay_mat">
+            </div>
+          </div>
+          <div class="modal-footer border-0 justify-content-center">
+            <button class="btn btn-light px-4 radius-10" data-bs-dismiss="modal">Hủy</button>
+            <button class="btn btn-warning text-dark px-4 radius-10 fw-bold" @click="submitLifeStatus">Cập nhật ngay</button>
           </div>
         </div>
       </div>
@@ -160,6 +197,13 @@
               <div class="col-md-3">
                 <label class="form-label fw-bold">Đời thứ</label>
                 <input type="number" class="form-control radius-8 border-2 shadow-none" v-model="proposalForm.doi_thu" min="1">
+              </div>
+              <div class="col-md-6" v-if="proposalType === 'add_child' && currentMember.spouses && currentMember.spouses.length > 0">
+                <label class="form-label fw-bold">Chọn cha/mẹ còn lại (Vợ/Chồng)</label>
+                <select class="form-select radius-8 border-2 shadow-none" v-model="proposalForm.other_parent_id">
+                  <option :value="null">-- Chưa xác định / Khác --</option>
+                  <option v-for="s in currentMember.spouses" :key="s.id" :value="s.id">{{ s.ho_ten }}</option>
+                </select>
               </div>
               <div class="col-md-6">
                 <label class="form-label fw-bold">Ngày sinh</label>
@@ -361,7 +405,7 @@ const TreeItem = defineComponent({
 
     const genClass = `gen-${(m.doi_thu % 5) + 1}`;
 
-    const makeCard = (person, isSpouse = false) => {
+    const makeCard = (person, isSpouse = false, extraClass = '', order = null) => {
       const dead = person.trang_thai === 'Đã mất';
       const gClass = isSpouse ? '' : `gen-${(person.doi_thu % 5) + 1}`;
       const src = person.avatar
@@ -370,7 +414,8 @@ const TreeItem = defineComponent({
       const initials = person.ho_ten.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
 
       return h('div', {
-        class: ['tree-node-card', gClass, { spouse: isSpouse, 'is-dead': dead }],
+        class: ['tree-node-card', gClass, extraClass, { spouse: isSpouse, 'is-dead': dead }],
+        style: order !== null ? { order } : undefined,
         onClick: e => {
           e.stopPropagation();
           clearTimeout(this.clickTimeout);
@@ -403,20 +448,66 @@ const TreeItem = defineComponent({
       ]);
     };
 
+    // Arrange couple cards. If exactly two spouses, place the main person in the middle.
+    const coupleChildren = [];
+    const hasMultipleSpouses = m.spouses && m.spouses.length === 2;
+
+    if (hasMultipleSpouses) {
+      // spouse - connector - main - connector - spouse
+      coupleChildren.push(makeCard(m.spouses[0], true, 'spouse-left', 1));
+      coupleChildren.push(h('div', { class: 'tree-connector-h spouse-connector spouse-connector-0', style: { order: 2 } }, [ h('i', { class: 'bx bxs-heart connector-heart' }) ]));
+      coupleChildren.push(makeCard(m, false, 'main-centered', 3));
+      coupleChildren.push(h('div', { class: 'tree-connector-h spouse-connector spouse-connector-1', style: { order: 4 } }, [ h('i', { class: 'bx bxs-heart connector-heart' }) ]));
+      coupleChildren.push(makeCard(m.spouses[1], true, 'spouse-right', 5));
+    } else {
+      // default: main then spouses in sequence
+      coupleChildren.push(makeCard(m, false));
+      if (m.spouses && m.spouses.length) {
+        m.spouses.forEach(s => {
+          coupleChildren.push(h('div', { class: 'tree-connector-h' }, [ h('i', { class: 'bx bxs-heart connector-heart' }) ]));
+          coupleChildren.push(makeCard(s, true));
+        });
+      }
+    }
+
     const nodeGroup = h('div', { class: 'tree-node-group' }, [
-      h('div', { class: 'couple-wrapper' }, [
-        makeCard(m, false),
-        ...(m.spouses && m.spouses.length
-          ? m.spouses.flatMap(s => [h('div', { class: 'tree-connector-h' }), makeCard(s, true)])
-          : [])
-      ])
+      h('div', { class: 'couple-wrapper' }, coupleChildren)
     ]);
 
-    const children = hasChildren
-      ? h('ul', { class: 'tree-ul' }, m.children.map(c => h(TreeItem, { key: c.id, member: c, listDoiTocHo: this.listDoiTocHo, onView: x => this.$emit('view', x), onShowQr: x => this.$emit('show-qr', x) })))
-      : null;
+    let children = null;
+    if (hasMultipleSpouses) {
+      const kids0 = [];
+      const kids1 = [];
+      if (m.children && m.children.length) {
+        m.children.forEach(c => {
+          if (c.me_id == m.spouses[1].id || c.cha_id == m.spouses[1].id) {
+            kids1.push(c);
+          } else {
+            kids0.push(c);
+          }
+        });
+      }
 
-    return h('li', { class: 'tree-li' }, [nodeGroup, children]);
+      const col0 = h('div', { class: 'union-column union-column-0' }, [
+        kids0.length > 0
+          ? h('ul', { class: 'tree-ul' }, kids0.map(c => h(TreeItem, { key: c.id, member: c, listDoiTocHo: this.listDoiTocHo, onView: x => this.$emit('view', x), onShowQr: x => this.$emit('show-qr', x) })))
+          : h('div', { class: 'union-empty-placeholder' })
+      ]);
+
+      const col1 = h('div', { class: 'union-column union-column-1' }, [
+        kids1.length > 0
+          ? h('ul', { class: 'tree-ul' }, kids1.map(c => h(TreeItem, { key: c.id, member: c, listDoiTocHo: this.listDoiTocHo, onView: x => this.$emit('view', x), onShowQr: x => this.$emit('show-qr', x) })))
+          : h('div', { class: 'union-empty-placeholder' })
+      ]);
+
+      children = h('div', { class: 'unions-wrapper' }, [col0, col1]);
+    } else {
+      children = hasChildren
+        ? h('ul', { class: 'tree-ul' }, m.children.map(c => h(TreeItem, { key: c.id, member: c, listDoiTocHo: this.listDoiTocHo, onView: x => this.$emit('view', x), onShowQr: x => this.$emit('show-qr', x) })))
+        : null;
+    }
+
+    return h('li', { class: ['tree-li', { 'has-multiple-spouses-li': hasMultipleSpouses }] }, [nodeGroup, children]);
   }
 });
 
@@ -450,9 +541,12 @@ export default {
         ngay_mat: '',
         ghi_chu: ''
       },
-      proposalsHistoryModal: null,
+       proposalsHistoryModal: null,
       proposalsList: [],
-      isProposalsLoading: false
+      isProposalsLoading: false,
+      currentUser: null,
+      lifeStatusForm: { trang_thai: 'Còn sống', ngay_mat: '' },
+      lifeStatusModalObj: null
     };
   },
   computed: {
@@ -494,6 +588,22 @@ export default {
         transform: `translate(${this.posX}px, ${this.posY}px) scale(${this.zoom})`,
         transformOrigin: 'top center'
       };
+    },
+    isDirectRelative() {
+      if (!this.currentUser || !this.currentUser.email) return false;
+      if (this.currentUser.vai_tro === 'Admin' || this.currentUser.is_doi_tac == 1) return true;
+
+      const me = this.allMembers.find(m => m.email === this.currentUser.email);
+      if (!me) return false;
+
+      const target = this.currentMember;
+      if (!target) return false;
+
+      const isChild = (me.cha_id == target.id || me.me_id == target.id);
+      const isParent = (target.cha_id == me.id || target.me_id == me.id);
+      const isSpouse = (me.spouse_of_id == target.id || target.spouse_of_id == me.id);
+
+      return isChild || isParent || isSpouse;
     }
   },
   mounted() {
@@ -502,6 +612,15 @@ export default {
       this.proposalModal = new window.bootstrap.Modal(document.getElementById('proposalModal'));
       if (document.getElementById('proposalsHistoryModal')) {
         this.proposalsHistoryModal = new window.bootstrap.Modal(document.getElementById('proposalsHistoryModal'));
+      }
+    }
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+      try {
+        const u = JSON.parse(userStr);
+        this.currentUser = u.user || u;
+      } catch (e) {
+        console.error(e);
       }
     }
     this.loadDoiTocHo();
@@ -561,7 +680,8 @@ export default {
           ngay_sinh: '',
           trang_thai: 'Còn sống',
           ngay_mat: '',
-          ghi_chu: ''
+          ghi_chu: '',
+          other_parent_id: null
         };
       } else if (type === 'add_spouse') {
         this.proposalTitle = `Đề Xuất Thêm Vợ/Chồng của ${this.currentMember.ho_ten}`;
@@ -599,7 +719,8 @@ export default {
           trang_thai: this.proposalForm.trang_thai,
           ngay_mat: this.proposalForm.trang_thai === 'Đã mất' ? (this.proposalForm.ngay_mat || null) : null,
           ghi_chu: this.proposalForm.ghi_chu,
-          chi_nhanh_id: this.currentMember.chi_nhanh_id
+          chi_nhanh_id: this.currentMember.chi_nhanh_id,
+          me_id: this.proposalForm.other_parent_id || null
         }
       };
 
@@ -784,7 +905,41 @@ export default {
       if (t === 'edit') return 'Đề xuất Chỉnh sửa Thành viên';
       if (t === 'add_child') return 'Đề xuất Thêm Con mới';
       return 'Đề xuất Thêm Vợ/Chồng';
-    }
+    },
+    openLifeStatusModal() {
+      this.lifeStatusForm = {
+        trang_thai: this.currentMember.trang_thai || 'Còn sống',
+        ngay_mat: this.currentMember.ngay_mat ? this.currentMember.ngay_mat.substring(0, 10) : ''
+      };
+      if (this.modal) this.modal.hide();
+      this.$nextTick(() => {
+        if (!this.lifeStatusModalObj && window.bootstrap) {
+          this.lifeStatusModalObj = new window.bootstrap.Modal(document.getElementById('lifeStatusModal'));
+        }
+        if (this.lifeStatusModalObj) this.lifeStatusModalObj.show();
+      });
+    },
+    submitLifeStatus() {
+      const token = localStorage.getItem('access_token');
+      if (!token) return;
+      axios.post(`http://127.0.0.1:8000/api/thanh-vien/${this.currentMember.id}/update-life-status`, {
+        trang_thai: this.lifeStatusForm.trang_thai,
+        ngay_mat: this.lifeStatusForm.trang_thai === 'Đã mất' ? (this.lifeStatusForm.ngay_mat || null) : null
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      .then(res => {
+        if (res.data.status) {
+          toastr.success(res.data.message);
+          if (this.lifeStatusModalObj) this.lifeStatusModalObj.hide();
+          this.loadData();
+        } else {
+          toastr.error(res.data.message);
+        }
+      })
+      .catch(err => {
+        toastr.error(err.response?.data?.message || 'Không thể cập nhật trạng thái.');
+      });    }
   }
 };
 </script>
@@ -929,11 +1084,34 @@ export default {
   gap: 0;
 }
 
+/* Ensure main card visually centered between two spouses */
+.tree-node-card.main-centered {
+  order: 2;
+}
+.tree-node-card.spouse-left { order: 1; }
+.tree-node-card.spouse-right { order: 3; }
+
 .tree-connector-h {
   width: 30px;
   height: 2px;
   background: #d4af37;
   position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.connector-heart {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #fff;
+  background: #d4af37;
+  padding: 3px;
+  border-radius: 50%;
+  font-size: 14px;
+  box-shadow: 0 2px 5px rgba(212, 175, 55, 0.4);
 }
 
 /* The card itself */
@@ -1170,5 +1348,50 @@ export default {
 }
 .drop-shadow {
     text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+
+/* ─── MULTIPLE SPOUSES CHILDREN BRANCHES ALIGNMENT ─── */
+.unions-wrapper {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  width: 100%;
+  position: relative;
+  margin-top: 50px;
+}
+.union-column {
+  width: 50%;
+  flex: 0 0 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+.union-column-0 > .tree-ul {
+  transform: translateX(55px);
+}
+.union-column-1 > .tree-ul {
+  transform: translateX(-55px);
+}
+.tree-connector-h.spouse-connector::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 2px;
+  height: 95px;
+  background: #d4af37;
+  z-index: 1;
+}
+.has-multiple-spouses-li > .tree-ul::before {
+  display: none !important;
+}
+.union-column > .tree-ul::before {
+  display: none !important;
+}
+.union-empty-placeholder {
+  width: 220px;
+  height: 90px;
+  visibility: hidden;
 }
 </style>

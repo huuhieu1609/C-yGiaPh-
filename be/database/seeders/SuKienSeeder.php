@@ -35,7 +35,7 @@ class SuKienSeeder extends Seeder
                 'ngay_to_chuc' => now()->addDays(5)->toDateString(),
                 'dia_diem' => 'Nhà Thờ Tổ Dòng Họ Nguyễn Đức, Thạch Thất, Hà Nội',
                 'chi_nhanh_id' => $cnId,
-                'loai' => 'Khuyến học',
+                'loai' => 'Họp họ',
             ],
             [
                 'tieu_de' => 'Họp Họ Tổng Kết Năm & Bàn Kế Hoạch 2027',

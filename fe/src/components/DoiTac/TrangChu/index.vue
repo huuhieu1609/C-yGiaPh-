@@ -48,13 +48,16 @@
                     <div class="card-body p-4">
                         <div class="d-flex align-items-center">
                             <div>
-                                <p class="mb-0 text-muted kpi-label fw-semibold">Số Đời Tộc Họ</p>
-                                <h3 class="my-1 fw-bold theme-text-main">{{ stats.max_generation || 0 }}</h3>
-                                <p class="mb-0 text-secondary kpi-sub">Thế hệ cao nhất ghi nhận</p>
+                                <p class="mb-0 text-muted kpi-label fw-semibold">Tính năng thông báo các vấn đề về hệ thống</p>
+                                <h3 class="my-1 fw-bold theme-text-main">{{ stats.system_alerts_count || 0 }}</h3>
+                                <p class="mb-0 text-secondary kpi-sub">Số thông báo hệ thống chưa xử lý</p>
                             </div>
                             <div class="kpi-icon-box bg-light-pink text-pink ms-auto rounded-circle d-flex align-items-center justify-content-center">
-                                <i class='bx bxs-share-alt fs-3'></i>
+                                <i class='bx bxs-bell fs-3'></i>
                             </div>
+                        </div>
+                        <div class="mt-3 text-end">
+                            <router-link to="/doi-tac/thong-bao" class="btn btn-sm btn-outline-secondary">Xem thông báo</router-link>
                         </div>
                     </div>
                 </div>
@@ -86,6 +89,7 @@
                                 <h5 class="mb-0 fw-bold d-flex align-items-center gap-2 theme-text-main">
                                     <i class="bx bx-line-chart text-orange fs-4"></i> Thống Kê Tăng Trưởng
                                 </h5>
+                                <p class="mb-0 text-secondary small mt-1">Biểu đồ thể hiện số lượng thành viên mới theo tháng — dùng để theo dõi tốc độ tăng trưởng và phát hiện biến động bất thường.</p>
                             </div>
                         </div>
                     </div>
@@ -109,7 +113,8 @@
                         </div>
                     </div>
                     <div class="card-body px-4 pb-4 pt-0">
-                        <div class="table-responsive table-container-premium">
+                        <!-- Desktop / md+ table -->
+                        <div class="table-responsive table-container-premium d-none d-md-block">
                             <table class="table align-middle mb-0 text-nowrap">
                                 <thead>
                                     <tr>
@@ -138,6 +143,35 @@
                                     </tr>
                                 </tbody>
                             </table>
+                        </div>
+
+                        <!-- Mobile / small screens: stacked cards with details -->
+                        <div class="d-md-none">
+                            <div v-if="!stats.recent_members || stats.recent_members.length === 0" class="text-center py-4 text-muted">Chưa có dữ liệu thành viên mới cập nhật.</div>
+                            <div v-for="item in stats.recent_members" :key="item.id" class="mobile-update-card p-3 mb-3 border rounded-3" style="background: var(--card-bg); border: 1px solid var(--border-color);">
+                                <div class="d-flex align-items-start">
+                                    <img :src="item.avatar || 'https://ui-avatars.com/api/?name=' + item.ho_ten + '&background=f97316&color=fff'" class="rounded-circle me-3" width="48" height="48" style="object-fit: cover;">
+                                    <div class="flex-fill">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div>
+                                                <div class="fw-bold theme-text-main">{{ item.ho_ten }}</div>
+                                                <div class="small text-secondary">{{ item.loai_quan_he }}</div>
+                                            </div>
+                                            <div class="text-end small text-muted">{{ formatDate(item.updated_at) }}</div>
+                                        </div>
+
+                                        <div class="mt-2 small text-secondary">
+                                            <div v-if="item.changes">
+                                                <div v-for="(val, key) in item.changes" :key="key" class="mb-1">
+                                                    <strong>{{ formatFieldName(key) }}:</strong> {{ val }}
+                                                </div>
+                                            </div>
+                                            <div v-else-if="item.update_summary">{{ item.update_summary }}</div>
+                                            <div v-else>Không có chi tiết cập nhật</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -221,6 +255,14 @@ export default {
                 .then(res => {
                     if (res.data.status) {
                         this.stats = res.data.data;
+                        // Update chart with monthly data if available
+                        const monthly = res.data.data.monthly_new_members;
+                        if (monthly && monthly.labels && monthly.data) {
+                            this.chartData.labels = monthly.labels;
+                            if (this.chartData.datasets && this.chartData.datasets[0]) {
+                                this.chartData.datasets[0].data = monthly.data;
+                            }
+                        }
                     }
                 });
         },
@@ -240,6 +282,11 @@ export default {
         formatDate(dateString) {
             if (!dateString) return '---';
             return new Date(dateString).toLocaleDateString('vi-VN');
+        }
+        ,
+        formatFieldName(key) {
+            if (!key) return '';
+            return String(key).replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
         }
     }
 }
@@ -336,4 +383,8 @@ export default {
   border-radius: 30px !important;
   font-size: 11px !important;
 }
+/* Mobile update card */
+.mobile-update-card .fw-bold { font-size: 14px; }
+.mobile-update-card .small { font-size: 12px; }
+.mobile-update-card strong { color: var(--text-main); }
 </style>

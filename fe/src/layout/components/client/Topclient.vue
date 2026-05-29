@@ -20,6 +20,38 @@
             <router-link to="/register" class="btn-start">KHỞI TẠO</router-link>
           </template>
           <template v-else>
+            <!-- Biểu tượng chuông thông báo -->
+            <div class="notification-dropdown me-3 position-relative" v-click-outside="closeNotifDropdown">
+              <div class="notif-icon-wrapper position-relative" @click="toggleNotifDropdown">
+                <i class="bx bx-bell fs-4 text-white cursor-pointer hover-gold" :class="{ 'scrolled-notif': isScrolled }"></i>
+                <span v-if="unreadCount > 0" class="notif-badge position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 9px; padding: 3px 6px;">{{ unreadCount }}</span>
+              </div>
+              <div class="dropdown-menu notif-menu shadow-lg" :class="{ 'show': isNotifDropdownOpen }">
+                <div class="notif-header d-flex justify-content-between align-items-center px-3 py-2 border-bottom" style="background-color: #fdf8ef;">
+                  <span class="fw-bold text-dark" style="font-size: 13.5px;">Thông báo của tôi</span>
+                  <a href="javascript:;" class="text-gold small font-semibold text-decoration-none" @click="markAllAsRead" style="font-size: 11.5px;">Đọc tất cả</a>
+                </div>
+                <div class="notif-body overflow-auto" style="max-height: 280px; width: 320px;">
+                  <div v-if="notifications.length === 0" class="text-center py-4 text-muted small">
+                    <i class="bx bx-bell-off fs-3 d-block mb-1 text-secondary opacity-50"></i>
+                    Không có thông báo mới
+                  </div>
+                  <div v-else v-for="notif in notifications" :key="notif.id" class="notif-item p-3 border-bottom" :class="{ 'unread': !notif.read_at }">
+                    <div class="d-flex align-items-start gap-2">
+                      <div class="notif-icon flex-shrink-0 bg-gold-soft rounded-circle d-flex align-items-center justify-content-center" style="width: 28px; height: 28px; background: rgba(212,175,55,0.1);">
+                        <i class="bx bx-shield text-gold" style="font-size: 16px;"></i>
+                      </div>
+                      <div class="flex-grow-1 min-w-0">
+                        <h6 class="fw-bold text-dark mb-1 text-truncate-2" style="font-size: 12.5px; line-height: 1.3;">{{ notif.title }}</h6>
+                        <p class="mb-1 text-muted small lh-sm" style="font-size: 11.5px; line-height: 1.4;">{{ notif.body }}</p>
+                        <span class="text-muted text-micro" style="font-size: 10px; opacity: 0.7;">{{ formatTime(notif.created_at) }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <div class="user-dropdown" v-click-outside="closeDropdown">
               <div class="user-info" @click="isDropdownOpen = !isDropdownOpen">
                 <img :src="userAvatar" alt="User Avatar" class="user-avatar">
@@ -35,6 +67,9 @@
                 </router-link>
                 <router-link to="/profile" @click="isDropdownOpen = false">
                   <i class="bx bx-user"></i> Hồ sơ cá nhân
+                </router-link>
+                <router-link to="/profile?tab=quan-ly" @click="isDropdownOpen = false">
+                  <i class="bx bx-cog text-gold"></i> Quản lý dòng họ
                 </router-link>
                 <router-link to="/su-kien" @click="isDropdownOpen = false">
                   <i class="bx bx-calendar"></i> Sự kiện dòng họ
@@ -87,6 +122,9 @@
 </template>
 
 <script>
+import axios from 'axios';
+import toastr from 'toastr';
+
 export default {
   name: 'Topclient',
   data() {
@@ -97,9 +135,16 @@ export default {
       isAdmin: false,
       isDoiTac: false,
       isDropdownOpen: false,
+      isNotifDropdownOpen: false,
       userName: '',
       defaultAvatar: "data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%231e293b'/%3E%3Ccircle cx='50' cy='35' r='18' fill='%23d4af37'/%3E%3Cpath d='M15 85 C15 67 30 55 50 55 C70 55 85 67 85 85 Z' fill='%23d4af37'/%3E%3C/svg%3E",
-      userAvatar: "data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%231e293b'/%3E%3Ccircle cx='50' cy='35' r='18' fill='%23d4af37'/%3E%3Cpath d='M15 85 C15 67 30 55 50 55 C70 55 85 67 85 85 Z' fill='%23d4af37'/%3E%3C/svg%3E"
+      userAvatar: "data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%231e293b'/%3E%3Ccircle cx='50' cy='35' r='18' fill='%23d4af37'/%3E%3Cpath d='M15 85 C15 67 30 55 50 55 C70 55 85 67 85 85 Z' fill='%23d4af37'/%3E%3C/svg%3E",
+      notifications: []
+    }
+  },
+  computed: {
+    unreadCount() {
+      return this.notifications.filter(n => !n.read_at).length;
     }
   },
   directives: {
@@ -130,12 +175,58 @@ export default {
     handleScroll() {
       this.isScrolled = window.scrollY > 50;
     },
+    getHeaders() {
+      const token = localStorage.getItem('access_token');
+      return {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      };
+    },
+    fetchNotifications() {
+      if (!this.isLoggedIn) return;
+      axios.get('http://127.0.0.1:8000/api/me/notifications', this.getHeaders())
+        .then(res => {
+          if (res.data && res.data.status) {
+            this.notifications = res.data.data;
+          }
+        })
+        .catch(err => {
+          console.error('Lỗi lấy thông báo:', err);
+        });
+    },
+    toggleNotifDropdown() {
+      this.isNotifDropdownOpen = !this.isNotifDropdownOpen;
+      if (this.isNotifDropdownOpen) {
+        this.isDropdownOpen = false;
+        this.fetchNotifications();
+      }
+    },
+    closeNotifDropdown() {
+      this.isNotifDropdownOpen = false;
+    },
+    markAllAsRead() {
+      axios.post('http://127.0.0.1:8000/api/me/notifications/read-all', {}, this.getHeaders())
+        .then(res => {
+          if (res.data && res.data.status) {
+            this.fetchNotifications();
+            toastr.success('Đã đánh dấu đã đọc tất cả');
+          }
+        })
+        .catch(err => {
+          console.error(err);
+        });
+    },
+    formatTime(dateStr) {
+      if (!dateStr) return '';
+      const dt = new Date(dateStr);
+      return dt.toLocaleDateString('vi-VN') + ' ' + dt.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+    },
     checkLogin() {
       const token = localStorage.getItem('access_token');
       const userData = JSON.parse(localStorage.getItem('user'));
       if (token && userData) {
         this.isLoggedIn = true;
-        // Robustness: handle both {user, permissions} and direct user object
         const user = userData.user || userData;
         this.userName = user.ho_ten;
         this.isAdmin = user.vai_tro === 'Admin';
@@ -146,10 +237,12 @@ export default {
         } else {
           this.userAvatar = this.defaultAvatar;
         }
+        this.fetchNotifications();
       } else {
         this.isLoggedIn = false;
         this.isAdmin = false;
         this.isDoiTac = false;
+        this.notifications = [];
       }
     },
     closeDropdown() {
@@ -162,6 +255,7 @@ export default {
       this.isAdmin = false;
       this.isDoiTac = false;
       this.isDropdownOpen = false;
+      this.notifications = [];
       this.$router.push('/login');
     }
   },
@@ -193,9 +287,10 @@ export default {
 }
 
 .navbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  justify-content: space-between !important;
+  align-items: center !important;
 }
 
 .logo a {
@@ -220,7 +315,7 @@ export default {
 .nav-links {
   display: flex;
   list-style: none;
-  gap: 35px;
+  gap: 25px;
   margin: 0;
   padding: 0;
 }
@@ -441,5 +536,61 @@ export default {
 }
 .partner-link:hover {
   background: #fdf8ef !important;
+}
+
+/* NOTIFICATION BELL & DROPDOWN */
+.notification-dropdown {
+  position: relative;
+}
+.notif-icon-wrapper {
+  cursor: pointer;
+  padding: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.notif-icon-wrapper i {
+  transition: color 0.3s ease;
+}
+.notif-icon-wrapper i.scrolled-notif {
+  color: #1a1a1a !important;
+}
+.notif-icon-wrapper:hover i {
+  color: #d4af37 !important;
+}
+.notif-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: #ffffff;
+  min-width: 320px;
+  max-width: 350px;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15) !important;
+  margin-top: 15px;
+  display: none;
+  border: 1px solid rgba(0,0,0,0.06);
+  z-index: 1050;
+  padding: 0;
+}
+.notif-menu.show {
+  display: block;
+  animation: fadeInDown 0.3s ease;
+}
+.notif-item {
+  transition: background-color 0.2s ease;
+  cursor: default;
+}
+.notif-item.unread {
+  background-color: rgba(212, 175, 55, 0.05);
+}
+.notif-item:hover {
+  background-color: #fdf8ef;
+}
+.text-truncate-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 </style>

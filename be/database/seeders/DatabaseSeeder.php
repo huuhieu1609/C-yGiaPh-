@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
             ThanhVienSeeder::class,
             DoiTocHoSeeder::class,
             NhaThoHoSeeder::class,
+            \Database\Seeders\RolesAndPermissionsSeeder::class,
             SuKienSeeder::class,
             TaiLieuSeeder::class,
             ThongBaoSeeder::class,

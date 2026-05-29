@@ -10,6 +10,10 @@
                 </div>
 
                 <div class="card-body p-4 pt-2">
+                  <!-- Phân Quyền UI -->
+                  <div class="mb-3">
+                    <PhanQuyen :all-members="allMembers" :chi-nhanhs="listData" :selected-chi-nhanh-id="null" />
+                  </div>
                     <div
                         v-if="!isEditing && listData.length >= 1"
                         class="alert alert-info border-0 radius-10 p-4 text-center"
@@ -141,12 +145,15 @@
 <script>
 import axios from 'axios';
 import toastr from 'toastr';
+import PhanQuyen from '../PhanQuyen/index.vue';
 
 export default {
   name: 'PartnerBranchManagement',
+  components: { PhanQuyen },
   data() {
     return {
       listData: [],
+      allMembers: [],
       formData: {
         id: null,
         ten_chi: '',
@@ -158,6 +165,7 @@ export default {
   },
   mounted() {
     this.loadData();
+    this.loadMembers();
   },
   methods: {
     getHeaders() {
@@ -178,6 +186,14 @@ export default {
         .finally(() => {
           this.isLoading = false;
         });
+    },
+    loadMembers() {
+      axios.get('http://127.0.0.1:8000/api/thanh-vien/get-data', this.getHeaders())
+        .then(res => {
+          if (res.data.status) {
+            this.allMembers = res.data.data;
+          }
+        }).catch(err => { console.error(err); });
     },
     saveData() {
       const wasEditing = this.isEditing;

@@ -53,13 +53,64 @@ class DoiTacController extends Controller
         $chiNhanhIds = ChiNhanh::where('id_nguoi_dung', $request->user()->id)->pluck('id');
         $memberQuery = ThanhVien::whereIn('chi_nhanh_id', $chiNhanhIds);
 
+        $recentMembers = (clone $memberQuery)->latest('updated_at')->limit(5)->get();
+
+        // Attach a brief changes summary for each recent member based on activity logs
+        $recentMembersData = $recentMembers->map(function ($m) {
+            // Try to find activity logs that mention the member's name
+            $logs = \App\Models\NhatKyHoatDong::where('hanh_dong', 'like', '%' . addslashes($m->ho_ten) . '%')
+                ->orderBy('thoi_gian', 'desc')
+                ->limit(3)
+                ->pluck('hanh_dong')
+                ->toArray();
+
+            $changes = null;
+            $update_summary = null;
+            if (!empty($logs)) {
+                // Provide the latest log as a summary and list others as 'changes'
+                $update_summary = $logs[0];
+                $changes = [];
+                foreach ($logs as $i => $log) {
+                    $changes['activity_' . ($i + 1)] = $log;
+                }
+            }
+
+            return [
+                'id' => $m->id,
+                'ho_ten' => $m->ho_ten,
+                'loai_quan_he' => $m->loai_quan_he,
+                'updated_at' => $m->updated_at,
+                'avatar' => $m->avatar ?? null,
+                'changes' => $changes,
+                'update_summary' => $update_summary,
+            ];
+        });
+
+        // Count recent system notifications (example: created in last 7 days)
+        $systemAlertsCount = \App\Models\ThongBao::where('created_at', '>=', now()->subDays(7))->count();
+
+        // Prepare monthly new members for last 6 months (oldest -> newest)
+        $labels = [];
+        $counts = [];
+        for ($i = 5; $i >= 0; $i--) {
+            $start = now()->subMonths($i)->startOfMonth();
+            $end = now()->subMonths($i)->endOfMonth();
+            $labels[] = 'Tháng ' . $start->format('n');
+            $counts[] = (clone $memberQuery)->whereBetween('created_at', [$start->toDateString() . ' 00:00:00', $end->toDateString() . ' 23:59:59'])->count();
+        }
+
         return response()->json([
             'status' => true,
             'data' => [
                 'total_members' => (clone $memberQuery)->count(),
                 'max_generation' => (int) (clone $memberQuery)->max('doi_thu'),
                 'upcoming_events' => SuKien::whereDate('ngay_to_chuc', '>=', now()->toDateString())->count(),
-                'recent_members' => (clone $memberQuery)->latest('updated_at')->limit(5)->get(),
+                'system_alerts_count' => $systemAlertsCount,
+                'recent_members' => $recentMembersData,
+                'monthly_new_members' => [
+                    'labels' => $labels,
+                    'data' => $counts,
+                ],
             ],
         ]);
     }
