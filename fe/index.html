@@ -8,6 +8,35 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="Hệ thống quản lý Gia Phả - Cây gia đình số hóa" />
   <title>Hệ Thống Gia Phả</title>
+  <script>
+    // Điểu hướng access_token và user từ localStorage sang sessionStorage để chạy đa tab độc lập
+    (function() {
+      const originalGet = localStorage.getItem;
+      const originalSet = localStorage.setItem;
+      const originalRemove = localStorage.removeItem;
+
+      localStorage.getItem = function(key) {
+        if (key === 'access_token' || key === 'user') {
+          return sessionStorage.getItem(key);
+        }
+        return originalGet.apply(this, arguments);
+      };
+
+      localStorage.setItem = function(key, value) {
+        if (key === 'access_token' || key === 'user') {
+          return sessionStorage.setItem(key, value);
+        }
+        return originalSet.apply(this, arguments);
+      };
+
+      localStorage.removeItem = function(key) {
+        if (key === 'access_token' || key === 'user') {
+          return sessionStorage.removeItem(key);
+        }
+        return originalRemove.apply(this, arguments);
+      };
+    })();
+  </script>
 </head>
 
 <body>

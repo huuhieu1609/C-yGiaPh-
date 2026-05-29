@@ -8,13 +8,12 @@
                             <h5 class="mb-0 fw-bold text-dark"><i class="bx bx-git-branch text-primary"></i> Quản Lý Cây Gia Phả</h5>
                         </div>
                         <div class="col-md-9 text-md-end d-flex align-items-center justify-content-end gap-3 flex-wrap">
-                            <!-- Branch Filter -->
+                            <!-- Partner Filter -->
                             <div class="d-flex align-items-center gap-2">
-                                <label class="small fw-bold text-uppercase text-secondary text-nowrap mb-0">Dòng họ:</label>
-                                <select class="form-select radius-30 border-2 shadow-none" style="width: 200px;" v-model="selectedChiNhanh" @change="filterTree">
-                                    <option :value="null">-- Tất cả --</option>
-                                    <option v-for="cn in listChiNhanh" :key="cn.id" :value="cn.id">{{ cn.ten_chi }}</option>
-                                </select>
+                                <button class="btn btn-outline-warning radius-30 px-3 fw-bold d-flex align-items-center gap-2 shadow-sm" @click="showPartnerSelectorModal = true">
+                                    <i class="bx bx-user-circle fs-5"></i>
+                                    <span>{{ selectedPartner ? (selectedPartner.nguoi_dung?.ho_ten || selectedPartner.ten_goi) + ' (' + selectedPartner.dong_ho + ')' : 'Chọn Đối Tác' }}</span>
+                                </button>
                             </div>
 
                             <!-- Search Bar -->
@@ -34,11 +33,7 @@
                             <button class="btn btn-refresh-premium rounded-circle d-flex align-items-center justify-content-center me-2 shadow-sm" @click="loadData" :disabled="isLoading" title="Làm mới phả hệ">
                                 <i class="bx bx-sync fs-5 text-warning" :class="{'bx-spin': isLoading}"></i>
                             </button>
-
-                            <button class="btn btn-primary radius-30 px-4 shadow-sm" @click="openAddModal">
-                                <i class="bx bx-plus"></i> Thêm Thành Viên
-                            </button>
-                        </div>
+                         </div>
                     </div>
                 </div>
                 <div class="card-body p-0 position-relative">
@@ -53,7 +48,22 @@
                          :style="{ cursor: isPanning ? 'grabbing' : 'grab' }">
                         
                         <div class="tree-canvas" :style="canvasStyle">
-                            <div class="tree" v-if="treeData.length">
+                            <!-- State 1: No partner chosen yet -->
+                            <div v-if="!selectedPartner" class="text-center py-5 mt-5">
+                                <div class="empty-state-icon mb-3">
+                                    <i class="bx bx-user-voice fs-1 text-warning opacity-75 animate__animated animate__pulse animate__infinite"></i>
+                                </div>
+                                <h4 class="fw-bold text-dark mb-2">Chưa Chọn Đối Tác Quản Lý</h4>
+                                <p class="text-muted small mx-auto" style="max-width: 450px;">
+                                    Vui lòng lựa chọn một tài khoản đối tác từ danh sách để tải dữ liệu cây gia phả và thực hiện quản lý thành viên dòng họ.
+                                </p>
+                                <button class="btn btn-warning radius-30 px-4 mt-3 fw-bold shadow-sm" @click="showPartnerSelectorModal = true">
+                                    <i class="bx bx-list-ul me-1"></i> Chọn Đối Tác Ngay
+                                </button>
+                            </div>
+
+                            <!-- State 2: Partner chosen and has tree data -->
+                            <div class="tree" v-else-if="treeData.length">
                                 <ul>
                                     <TreeItem 
                                         v-for="member in treeData" 
@@ -66,6 +76,8 @@
                                     />
                                 </ul>
                             </div>
+
+                            <!-- State 3: Partner chosen but no tree data found -->
                             <div v-else class="text-center py-5 mt-5">
                                 <div class="empty-state-icon mb-3">
                                     <i class="bx bx-git-repo-forked fs-1 text-muted opacity-25"></i>
@@ -155,6 +167,16 @@
                                 <label class="form-label fw-bold">Ngày mất</label>
                                 <input type="date" class="form-control radius-8 border-2 shadow-none" v-model="currentMember.ngay_mat">
                             </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Tình trạng hôn nhân</label>
+                                <select class="form-select radius-8 border-2 shadow-none" v-model="currentMember.tinh_trang_hon_nhan">
+                                    <option value="">-- Chưa rõ --</option>
+                                    <option value="Độc thân">Độc thân</option>
+                                    <option value="Đã kết hôn">Đã kết hôn</option>
+                                    <option value="Ly hôn">Ly hôn</option>
+                                    <option value="Góa">Góa</option>
+                                </select>
+                            </div>
 
                             <div class="col-md-6">
                                 <label class="form-label fw-bold">Quan hệ với dòng họ</label>
@@ -172,6 +194,14 @@
                                         v-show="m.id !== currentMember.id && m.loai_quan_he === 'Chính' && m.chi_nhanh_id === currentMember.chi_nhanh_id">
                                         {{ m.ho_ten }} (Đời {{ m.doi_thu }})
                                     </option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6" v-if="currentMember.loai_quan_he === 'Chính' && currentMember.cha_id">
+                                <label class="form-label fw-bold">Chọn mẹ còn lại (Vợ/Chồng)</label>
+                                <select class="form-select radius-8 border-2 shadow-none" v-model="currentMember.me_id">
+                                    <option :value="null">-- Chưa xác định / Khác --</option>
+                                    <option v-for="s in getSpousesOfFather(currentMember.cha_id)" :key="s.id" :value="s.id">{{ s.ho_ten }}</option>
                                 </select>
                             </div>
 
@@ -251,6 +281,92 @@
                 </div>
             </div>
         </div>
+
+        <!-- Modal Chọn Đối Tác -->
+        <div v-if="showPartnerSelectorModal" class="custom-modal-backdrop animate__animated animate__fadeIn" @click.self="showPartnerSelectorModal = false">
+            <div class="custom-modal-content animate__animated animate__zoomIn p-4 rounded-4 shadow-2xl bg-white position-relative" style="max-width: 650px; z-index: 1060;">
+                <button class="btn-close-custom position-absolute top-0 end-0 m-3 border-0 bg-transparent" @click="showPartnerSelectorModal = false">
+                    <i class="bx bx-x fs-2 text-muted"></i>
+                </button>
+                
+                <h5 class="fw-bold mb-1 text-dark d-flex align-items-center gap-2">
+                    <i class="bx bx-user-circle text-warning fs-3"></i> Danh Sách Tài Khoản Đối Tác
+                </h5>
+                <p class="text-muted small mb-4">Lựa chọn đối tác quản lý để hiển thị và biên tập cây gia phả tương ứng.</p>
+
+                <!-- Search inside modal -->
+                <div class="position-relative mb-3">
+                    <input type="text" class="form-control ps-5 radius-30 border-2 shadow-none" v-model="partnerSearchQuery" placeholder="Tìm kiếm đối tác theo tên, email hoặc dòng họ...">
+                    <span class="position-absolute top-50 translate-middle-y start-0 ms-3 text-secondary"><i class="bx bx-search"></i></span>
+                </div>
+
+                <!-- Partners List Container -->
+                <div class="partner-list-scroll overflow-auto pe-1" style="max-height: 380px;">
+                    <div class="row g-3" v-if="filteredPartners.length">
+                        <div class="col-md-6" v-for="item in filteredPartners" :key="item.id">
+                            <!-- Active Partner (Has Chi Nhanh / Clan Tree) -->
+                            <div v-if="item.id_chi_nhanh" 
+                                 class="partner-select-card p-3 rounded-3 border border-2 cursor-pointer transition-all d-flex align-items-center gap-3 animate__animated animate__fadeIn"
+                                 :class="selectedPartner && selectedPartner.id === item.id ? 'border-warning bg-light-gold' : 'border-light bg-white'"
+                                 @click="selectPartner(item)">
+                                
+                                <div class="partner-avatar-circle d-flex align-items-center justify-content-center text-white font-weight-bold"
+                                     :style="{ background: getAvatarBg(item.nguoi_dung?.ho_ten || item.ten_goi) }">
+                                    {{ getAvatarInitials(item.nguoi_dung?.ho_ten || item.ten_goi) }}
+                                </div>
+                                
+                                <div class="overflow-hidden flex-grow-1">
+                                    <div class="fw-bold text-dark text-truncate">{{ item.nguoi_dung?.ho_ten || item.ten_goi }}</div>
+                                    <div class="text-muted small text-truncate">{{ item.nguoi_dung?.email || 'Chưa liên kết email' }}</div>
+                                    <div class="mt-2">
+                                        <span class="badge badge-gold-soft font-9 px-2 py-1 text-dark animate__animated animate__fadeIn" style="background: rgba(212, 175, 55, 0.15); color: #8a6d1c !important; border: 1px solid rgba(212, 175, 55, 0.25);">
+                                            <i class="bx bx-home-alt me-1"></i>{{ item.dong_ho }}
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                <div v-if="selectedPartner && selectedPartner.id === item.id" class="text-warning">
+                                    <i class="bx bxs-check-circle fs-4 animate__animated animate__scaleIn"></i>
+                                </div>
+                            </div>
+
+                            <!-- Inactive Partner (Has NOT created Chi Nhanh / Clan Tree yet) -->
+                            <div v-else 
+                                 class="partner-select-card partner-card-disabled p-3 rounded-3 border border-2 border-dashed border-light-secondary bg-light bg-opacity-70 text-muted d-flex align-items-center gap-3 animate__animated animate__fadeIn"
+                                 style="opacity: 0.65; cursor: not-allowed;"
+                                 title="Đối tác này chưa tạo cây gia phả">
+                                
+                                <div class="partner-avatar-circle d-flex align-items-center justify-content-center text-white font-weight-bold"
+                                     style="background: #94a3b8; filter: grayscale(0.5); box-shadow: none;">
+                                    {{ getAvatarInitials(item.nguoi_dung?.ho_ten || item.ten_goi) }}
+                                </div>
+                                
+                                <div class="overflow-hidden flex-grow-1">
+                                    <div class="fw-bold text-secondary text-truncate" style="text-decoration: line-through; opacity: 0.85;">{{ item.nguoi_dung?.ho_ten || item.ten_goi }}</div>
+                                    <div class="text-muted small text-truncate" style="opacity: 0.85;">{{ item.nguoi_dung?.email || 'Chưa liên kết email' }}</div>
+                                    <div class="mt-2 text-danger small fw-bold d-flex align-items-center gap-1">
+                                        <i class="bx bx-error-circle fs-6"></i>
+                                        <span>Đối tác này chưa tạo cây gia phả</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Search Empty State -->
+                    <div v-else class="text-center py-5">
+                        <i class="bx bx-user-x fs-1 text-muted opacity-25 mb-2"></i>
+                        <h6 class="text-muted fw-bold">Không tìm thấy đối tác nào</h6>
+                        <p class="text-muted small mb-0">Vui lòng thử từ khóa tìm kiếm khác.</p>
+                    </div>
+                </div>
+                
+                <div class="modal-footer border-0 p-0 mt-4 d-flex justify-content-end gap-2">
+                    <button type="button" class="btn btn-outline-secondary radius-30 px-4" @click="showPartnerSelectorModal = false">Đóng</button>
+                    <button v-if="selectedPartner" type="button" class="btn btn-danger radius-30 px-4 text-white" @click="clearPartnerSelection">Bỏ chọn</button>
+                </div>
+            </div>
+        </div>
     </div>
 </template>
 
@@ -305,100 +421,107 @@ const TreeItem = defineComponent({
         const generationClass = `gen-${(this.member.doi_thu % 5) + 1}`;
         const isHighlighted = this.searchQuery && this.member.ho_ten.toLowerCase().includes(this.searchQuery.toLowerCase());
         
-        const nodeGroup = h('div', { class: 'tree-node-group' }, [
-            h('div', { 
-                class: ['tree-node-card', generationClass, { 
-                    'principal': !this.member.cha_id, 
-                    'is-dead': this.member.trang_thai === 'Đã mất',
-                    'highlighted': isHighlighted
-                }],
-                onClick: (e) => {
-                    e.stopPropagation();
-                    clearTimeout(this.clickTimeout);
-                    this.isDoubleClick = false;
-                    this.clickTimeout = setTimeout(() => {
-                        if (!this.isDoubleClick) {
-                            this.$emit('edit', this.member);
-                        }
-                    }, 200);
-                },
-                onDblclick: (e) => {
-                    e.stopPropagation();
-                    this.isDoubleClick = true;
-                    clearTimeout(this.clickTimeout);
-                    this.$emit('show-qr', this.member);
-                }
-            }, [
-                h('div', { class: 'node-avatar-container' }, [
-                    h('img', { 
-                        src: this.member.avatar ? this.member.avatar : ('https://ui-avatars.com/api/?name=' + this.member.ho_ten + '&background=d4af37&color=fff'), 
-                        class: 'node-avatar shadow-sm'
-                    })
-                ]),
-                h('div', { class: 'node-content' }, [
-                    h('div', { class: 'node-name' }, this.member.ho_ten),
-                    this.member.ngay_sinh ? h('div', { class: 'node-date' }, formatDate(this.member.ngay_sinh)) : null,
-                    h('div', { class: 'node-tag' }, `Đời ${this.member.doi_thu}${getTenDoi(this.member.doi_thu)}`)
-                ]),
-                h('div', { class: 'node-edit-btn' }, [
-                    h('i', { class: 'bx bx-pencil' })
-                ])
-            ]),
-            this.member.spouses && this.member.spouses.length ? this.member.spouses.map(spouse => {
-                const isSpouseHighlighted = this.searchQuery && spouse.ho_ten.toLowerCase().includes(this.searchQuery.toLowerCase());
-                return [
-                    h('div', { class: 'tree-connector-h' }),
-                    h('div', { 
-                        class: ['tree-node-card spouse', { 
-                            'is-dead': spouse.trang_thai === 'Đã mất',
-                            'highlighted': isSpouseHighlighted
-                        }],
-                        onClick: (e) => {
-                            e.stopPropagation();
-                            clearTimeout(this.clickTimeout);
-                            this.isDoubleClick = false;
-                            this.clickTimeout = setTimeout(() => {
-                                if (!this.isDoubleClick) {
-                                    this.$emit('edit', spouse);
-                                }
-                            }, 200);
-                        },
-                        onDblclick: (e) => {
-                            e.stopPropagation();
-                            this.isDoubleClick = true;
-                            clearTimeout(this.clickTimeout);
-                            this.$emit('show-qr', spouse);
-                        }
-                    }, [
-                        h('div', { class: 'node-avatar-container' }, [
-                            h('img', { 
-                                src: spouse.avatar ? spouse.avatar : ('https://ui-avatars.com/api/?name=' + spouse.ho_ten + '&background=d4af37&color=fff'), 
-                                class: 'node-avatar shadow-sm'
-                            })
-                        ]),
-                        h('div', { class: 'node-content' }, [
-                            h('div', { class: 'node-name' }, spouse.ho_ten),
-                            h('div', { class: 'node-tag spouse-tag' }, 'Vợ/Chồng')
-                        ]),
-                        h('div', { class: 'node-edit-btn' }, [
-                            h('i', { class: 'bx bx-pencil' })
-                        ])
-                    ])
-                ];
-            }) : null
-        ]);
+        // Build main card and spouse chunks; center main if exactly two spouses
+        const makeMainCard = (order = null, extraClass = '') => h('div', { 
+            class: ['tree-node-card', generationClass, extraClass, { 'principal': !this.member.cha_id, 'is-dead': this.member.trang_thai === 'Đã mất', 'highlighted': isHighlighted }],
+            style: order !== null ? { order } : undefined,
+            onClick: (e) => { e.stopPropagation(); clearTimeout(this.clickTimeout); this.isDoubleClick = false; this.clickTimeout = setTimeout(() => { if (!this.isDoubleClick) this.$emit('edit', this.member); }, 200); },
+            onDblclick: (e) => { e.stopPropagation(); this.isDoubleClick = true; clearTimeout(this.clickTimeout); this.$emit('show-qr', this.member); }
+        }, [ h('div', { class: 'node-avatar-container' }, [ h('img', { src: this.member.avatar ? this.member.avatar : ('https://ui-avatars.com/api/?name=' + this.member.ho_ten + '&background=d4af37&color=fff'), class: 'node-avatar shadow-sm' }) ]), h('div', { class: 'node-content' }, [ h('div', { class: 'node-name' }, this.member.ho_ten), this.member.ngay_sinh ? h('div', { class: 'node-date' }, formatDate(this.member.ngay_sinh)) : null, h('div', { class: 'node-tag' }, `Đời ${this.member.doi_thu}${getTenDoi(this.member.doi_thu)}`) ]), h('div', { class: 'node-edit-btn' }, [ h('i', { class: 'bx bx-pencil' }) ]) ]);
+
+        const makeSpouseChunk = (spouse, order = null) => {
+            const spouseClass = order === 1 ? 'spouse-left' : (order === 5 ? 'spouse-right' : '');
+            return h('div', { class: ['tree-node-card', 'spouse', spouseClass, { 'is-dead': spouse.trang_thai === 'Đã mất', 'highlighted': this.searchQuery && spouse.ho_ten.toLowerCase().includes(this.searchQuery.toLowerCase()) }], style: order !== null ? { order: order } : undefined, onClick: (e) => { e.stopPropagation(); clearTimeout(this.clickTimeout); this.isDoubleClick = false; this.clickTimeout = setTimeout(() => { if (!this.isDoubleClick) this.$emit('edit', spouse); }, 200); }, onDblclick: (e) => { e.stopPropagation(); this.isDoubleClick = true; clearTimeout(this.clickTimeout); this.$emit('show-qr', spouse); } }, [ h('div', { class: 'node-avatar-container' }, [ h('img', { src: spouse.avatar ? spouse.avatar : ('https://ui-avatars.com/api/?name=' + spouse.ho_ten + '&background=d4af37&color=fff'), class: 'node-avatar shadow-sm' }) ]), h('div', { class: 'node-content' }, [ h('div', { class: 'node-name' }, spouse.ho_ten), h('div', { class: 'node-tag spouse-tag' }, 'Vợ/Chồng') ]), h('div', { class: 'node-edit-btn' }, [ h('i', { class: 'bx bx-pencil' }) ]) ]);
+        };
+
+        const coupleChildren = [];
+        const hasMultipleSpouses = this.member.spouses && this.member.spouses.length === 2;
+
+        let children = null;
+        const kids0 = [];
+        const kids1 = [];
+
+        if (hasMultipleSpouses) {
+            if (this.member.children && this.member.children.length) {
+                this.member.children.forEach(c => {
+                    if (c.me_id == this.member.spouses[1].id || c.cha_id == this.member.spouses[1].id) {
+                        kids1.push(c);
+                    } else {
+                        kids0.push(c);
+                    }
+                });
+            }
+
+            coupleChildren.push(makeSpouseChunk(this.member.spouses[0], 1));
+            coupleChildren.push(h('div', { 
+                class: [
+                    'tree-connector-h', 
+                    'spouse-connector-0',
+                    kids0.length > 0 ? 'spouse-connector' : ''
+                ], 
+                style: { order: 2 } 
+            }, [ h('i', { class: 'bx bxs-heart connector-heart' }) ]));
+            coupleChildren.push(makeMainCard(3, 'main-centered'));
+            coupleChildren.push(h('div', { 
+                class: [
+                    'tree-connector-h', 
+                    'spouse-connector-1',
+                    kids1.length > 0 ? 'spouse-connector' : ''
+                ], 
+                style: { order: 4 } 
+            }, [ h('i', { class: 'bx bxs-heart connector-heart' }) ]));
+            coupleChildren.push(makeSpouseChunk(this.member.spouses[1], 5));
+
+            const col0 = h('div', { class: ['union-column', 'union-column-0', kids0.length === 0 ? 'union-column-empty' : ''] }, [
+                kids0.length > 0
+                    ? h('ul', kids0.map(child => h(TreeItem, { 
+                        key: child.id,
+                        member: child, 
+                        listDoiTocHo: this.listDoiTocHo, 
+                        searchQuery: this.searchQuery,
+                        onEdit: (m) => this.$emit('edit', m),
+                        onShowQr: (m) => this.$emit('show-qr', m)
+                    })))
+                    : h('div', { class: 'union-empty-placeholder' })
+            ]);
+
+            const col1 = h('div', { class: ['union-column', 'union-column-1', kids1.length === 0 ? 'union-column-empty' : ''] }, [
+                kids1.length > 0
+                    ? h('ul', kids1.map(child => h(TreeItem, { 
+                        key: child.id,
+                        member: child, 
+                        listDoiTocHo: this.listDoiTocHo, 
+                        searchQuery: this.searchQuery,
+                        onEdit: (m) => this.$emit('edit', m),
+                        onShowQr: (m) => this.$emit('show-qr', m)
+                    })))
+                    : h('div', { class: 'union-empty-placeholder' })
+            ]);
+
+            children = h('div', { class: 'unions-wrapper' }, [col0, col1]);
+        } else {
+            coupleChildren.push(makeMainCard());
+            if (this.member.spouses && this.member.spouses.length) {
+                this.member.spouses.forEach(sp => {
+                    coupleChildren.push(h('div', { class: 'tree-connector-h' }, [ h('i', { class: 'bx bxs-heart connector-heart' }) ]));
+                    coupleChildren.push(makeSpouseChunk(sp));
+                });
+            }
+            children = hasChildren ? h('ul', 
+                this.member.children.map(child => h(TreeItem, { 
+                    key: child.id,
+                    member: child, 
+                    listDoiTocHo: this.listDoiTocHo, 
+                    searchQuery: this.searchQuery,
+                    onEdit: (m) => this.$emit('edit', m),
+                    onShowQr: (m) => this.$emit('show-qr', m)
+                }))
+            ) : null;
+        }
+
+        const nodeGroup = h('div', { class: 'tree-node-group' }, [ h('div', { class: 'couple-wrapper' }, coupleChildren) ]);
         
-        const children = hasChildren ? h('ul', 
-            this.member.children.map(child => h(TreeItem, { 
-                member: child, 
-                listDoiTocHo: this.listDoiTocHo, 
-                searchQuery: this.searchQuery,
-                onEdit: (m) => this.$emit('edit', m),
-                onShowQr: (m) => this.$emit('show-qr', m)
-            }))
-        ) : null;
-        
-        return h('li', [nodeGroup, children]);
+        return h('li', { class: ['tree-li', { 'has-multiple-spouses-li': hasMultipleSpouses }] }, [nodeGroup, children]);
     }
 });
 
@@ -410,10 +533,14 @@ export default {
             allMembers: [],
             listChiNhanh: [],
             listDoiTocHo: [],
+            listPartners: [],
+            selectedPartner: null,
+            showPartnerSelectorModal: false,
+            partnerSearchQuery: '',
             selectedChiNhanh: null,
             currentMember: {
-                id: null, ho_ten: '', doi_thu: 1, cha_id: null, gioi_tinh: 'Nam', chi_nhanh_id: null,
-                loai_quan_he: 'Chính', spouse_of_id: null, trang_thai: 'Còn sống', ngay_mat: null, ngay_sinh: null, ghi_chu: '', avatar: null
+                id: null, ho_ten: '', doi_thu: 1, cha_id: null, me_id: null, gioi_tinh: 'Nam', chi_nhanh_id: null,
+                loai_quan_he: 'Chính', spouse_of_id: null, trang_thai: 'Còn sống', ngay_mat: null, ngay_sinh: null, tinh_trang_hon_nhan: '', ghi_chu: '', avatar: null
             },
             avatarPreview: null,
             isEditing: false,
@@ -433,16 +560,30 @@ export default {
         }
     },
     computed: {
+        filteredPartners() {
+            if (!this.partnerSearchQuery) {
+                return this.listPartners;
+            }
+            const q = this.partnerSearchQuery.toLowerCase();
+            return this.listPartners.filter(item => {
+                const partnerName = (item.nguoi_dung?.ho_ten || item.ten_goi || '').toLowerCase();
+                const partnerEmail = (item.nguoi_dung?.email || '').toLowerCase();
+                const clanName = (item.dong_ho || '').toLowerCase();
+                return partnerName.includes(q) || partnerEmail.includes(q) || clanName.includes(q);
+            });
+        },
         treeData() {
+            if (!this.selectedPartner || !this.selectedChiNhanh) {
+                return [];
+            }
+
             let list = JSON.parse(JSON.stringify(this.allMembers));
             
             // Branch filtering
-            if (this.selectedChiNhanh) {
-                list = list.filter(item => 
-                    item.chi_nhanh_id == this.selectedChiNhanh || 
-                    (item.loai_quan_he === 'Vợ/Chồng')
-                );
-            }
+            list = list.filter(item => 
+                item.chi_nhanh_id == this.selectedChiNhanh || 
+                (item.loai_quan_he === 'Vợ/Chồng')
+            );
             
             const map = {};
             const roots = [];
@@ -467,6 +608,7 @@ export default {
             list.forEach(item => {
                 if (item.loai_quan_he === 'Vợ/Chồng' && item.spouse_of_id && map[item.spouse_of_id]) {
                     map[item.spouse_of_id].spouses.push(item);
+                    map[item.spouse_of_id].spouses.sort((a, b) => a.id - b.id);
                 } else if (item.cha_id && map[item.cha_id]) {
                     let parent = map[item.cha_id];
                     // Handle generation jumps
@@ -483,7 +625,7 @@ export default {
                     roots.push(item);
                 }
             });
-            return roots;
+            return roots.filter(r => r.chi_nhanh_id == this.selectedChiNhanh);
         },
         canvasStyle() {
             return {
@@ -497,12 +639,60 @@ export default {
             this.modal = new window.bootstrap.Modal(document.getElementById('memberModal'));
         }
         this.loadChiNhanh();
+        this.loadPartners();
         this.loadDoiTocHo();
         this.loadData();
     },
     methods: {
         getHeaders() {
             return { headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` } };
+        },
+        loadPartners() {
+            axios.get('http://127.0.0.1:8000/api/admin/doi-tac/get-data', this.getHeaders())
+                .then(res => {
+                    if (res.data.status) {
+                        this.listPartners = res.data.data;
+                    }
+                });
+        },
+        selectPartner(item) {
+            this.selectedPartner = item;
+            this.selectedChiNhanh = item.id_chi_nhanh;
+            this.showPartnerSelectorModal = false;
+            this.filterTree();
+            toastr.success(`Đã chọn đối tác: ${item.nguoi_dung?.ho_ten || item.ten_goi}`);
+        },
+        clearPartnerSelection() {
+            this.selectedPartner = null;
+            this.selectedChiNhanh = null;
+            this.showPartnerSelectorModal = false;
+            this.filterTree();
+            toastr.info('Đã gỡ chọn đối tác.');
+        },
+        getAvatarInitials(name) {
+            if (!name) return 'DT';
+            const parts = name.trim().split(/\s+/);
+            if (parts.length >= 2) {
+                return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+            }
+            return name.substring(0, 2).toUpperCase();
+        },
+        getAvatarBg(name) {
+            if (!name) return '#d4af37';
+            let hash = 0;
+            for (let i = 0; i < name.length; i++) {
+                hash = name.charCodeAt(i) + ((hash << 5) - hash);
+            }
+            const colors = [
+                'linear-gradient(135deg, #d4af37 0%, #aa8c2c 100%)',
+                'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)',
+                'linear-gradient(135deg, #0f2027 0%, #203a43 100%)',
+                'linear-gradient(135deg, #56ab2f 0%, #a8e063 100%)',
+                'linear-gradient(135deg, #e65c00 0%, #f9d423 100%)',
+                'linear-gradient(135deg, #833ab4 0%, #fd1d1d 100%)'
+            ];
+            const index = Math.abs(hash) % colors.length;
+            return colors[index];
         },
         loadDoiTocHo() {
             axios.get('http://127.0.0.1:8000/api/doi-toc-ho/get-data', this.getHeaders())
@@ -548,11 +738,19 @@ export default {
         endPan() { this.isPanning = false; },
 
         // CRUD
+        getSpousesOfFather(fatherId) {
+            if (!fatherId) return [];
+            return this.allMembers.filter(m => m.loai_quan_he === 'Vợ/Chồng' && m.spouse_of_id == fatherId);
+        },
         openAddModal() {
+            if (!this.selectedPartner) {
+                toastr.warning('Vui lòng chọn đối tác quản lý trước khi thêm thành viên!');
+                return;
+            }
             this.isEditing = false;
             this.currentMember = {
-                id: null, ho_ten: '', doi_thu: 1, cha_id: null, gioi_tinh: 'Nam', chi_nhanh_id: this.selectedChiNhanh,
-                loai_quan_he: 'Chính', spouse_of_id: null, trang_thai: 'Còn sống', ngay_mat: null, ngay_sinh: null, ghi_chu: '', avatar: null
+                id: null, ho_ten: '', doi_thu: 1, cha_id: null, me_id: null, gioi_tinh: 'Nam', chi_nhanh_id: this.selectedChiNhanh,
+                loai_quan_he: 'Chính', spouse_of_id: null, trang_thai: 'Còn sống', ngay_mat: null, ngay_sinh: null, tinh_trang_hon_nhan: '', ghi_chu: '', avatar: null
             };
             this.avatarFile = null;
             this.avatarPreview = null;
@@ -808,6 +1006,8 @@ export default {
     height: 50px; 
 }
 
+/* (restored default connector behavior) */
+
 /* Node Styling */
 .tree-node-group { 
     display: flex; 
@@ -818,11 +1018,23 @@ export default {
     margin: 0 auto;
     width: max-content;
 }
+.couple-wrapper {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0;
+}
+.tree-node-card.main-centered { order: 2; }
+.tree-node-card.spouse-left { order: 1; }
+.tree-node-card.spouse-right { order: 3; }
 .tree-connector-h { 
-    width: 30px; 
+    width: 40px; 
     height: 2px; 
     background: #d4af37; 
     position: relative; 
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 .connector-heart {
     position: absolute;
@@ -835,6 +1047,7 @@ export default {
     border-radius: 50%;
     font-size: 14px;
     box-shadow: 0 2px 5px rgba(212, 175, 55, 0.4);
+    z-index: 10;
 }
 
 .tree-node-card {
@@ -853,7 +1066,7 @@ export default {
     align-items: center;
     gap: 12px;
     transition: 0.3s ease;
-    overflow: hidden;
+    overflow: visible;
 }
 
 .quick-actions {
@@ -1097,8 +1310,74 @@ export default {
     background: radial-gradient(circle, rgba(212, 175, 55, 0.08) 0%, transparent 70%);
     pointer-events: none;
 }
-.drop-shadow {
-    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+
+/* ─── MULTIPLE SPOUSES CHILDREN BRANCHES ALIGNMENT ─── */
+.unions-wrapper {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  width: 100%;
+  position: relative;
+  margin-top: 50px;
+}
+.union-column {
+  width: 50%;
+  flex: 0 0 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+.union-column-0::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 130px;
+  left: 50%;
+  height: 2px;
+  background: #d4af37;
+  z-index: 1;
+}
+.union-column-1::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 130px;
+  right: 50%;
+  height: 2px;
+  background: #d4af37;
+  z-index: 1;
+}
+.union-column-empty::after {
+  display: none !important;
+}
+.tree-connector-h.spouse-connector::after {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  width: 2px;
+  height: 105px;
+  background: #d4af37;
+  z-index: 1;
+}
+.has-multiple-spouses-li > ul::before {
+  display: none !important;
+}
+.union-column > ul::before {
+  display: block !important;
+  content: '';
+  position: absolute;
+  top: 0 !important;
+  left: 50% !important;
+  border-left: 2px solid #d4af37 !important;
+  width: 0 !important;
+  height: 50px !important;
+}
+.union-empty-placeholder {
+  width: 220px;
+  height: 90px;
+  visibility: hidden;
 }
 
 /* Circular reload button */
@@ -1118,5 +1397,41 @@ export default {
 }
 .btn-refresh-premium:active {
     transform: scale(0.95);
+}
+
+/* Partner Selector Premium Styling */
+.partner-list-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: #d4af37 transparent;
+}
+.partner-list-scroll::-webkit-scrollbar {
+    width: 6px;
+}
+.partner-list-scroll::-webkit-scrollbar-thumb {
+    background-color: #d4af37;
+    border-radius: 10px;
+}
+.partner-select-card {
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.partner-select-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(212, 175, 55, 0.15);
+    border-color: #ffd700 !important;
+}
+.partner-select-card.border-warning {
+    box-shadow: 0 4px 12px rgba(212, 175, 55, 0.25);
+}
+.bg-light-gold {
+    background-color: rgba(212, 175, 55, 0.05) !important;
+}
+.partner-avatar-circle {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    font-size: 16px;
+    font-weight: 700;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    flex-shrink: 0;
 }
 </style>

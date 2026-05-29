@@ -111,6 +111,25 @@
 
     <!-- Map Canvas -->
     <div id="leaflet-clan-map" class="map-canvas"></div>
+
+    <!-- Floating Routing Stats Card -->
+    <div v-if="routeStats" class="routing-stats-overlay shadow-lg animate-fade-in">
+      <div class="d-flex align-items-center gap-3">
+        <div class="route-icon-box">
+          <i class="bx bx-navigation"></i>
+        </div>
+        <div class="flex-grow-1">
+          <h6 class="stats-title mb-0">Thông tin dẫn đường</h6>
+          <div class="stats-values d-flex gap-3 mt-1">
+            <span class="stat-item"><i class="bx bx-transfer-alt"></i> {{ routeStats.distance }}</span>
+            <span class="stat-item"><i class="bx bx-time"></i> {{ routeStats.duration }}</span>
+          </div>
+        </div>
+        <button class="btn btn-close-route btn-sm ms-2" @click="clearRoute" title="Xóa đường đi">
+          <i class="bx bx-x"></i>
+        </button>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -131,7 +150,8 @@ export default {
       markers: {}, // Keyed by uniqueId
       isLoading: true,
       leafletLoaded: false,
-      routingControl: null
+      routingControl: null,
+      routeStats: null
     }
   },
   computed: {
@@ -360,7 +380,7 @@ export default {
 
       // Fit map view bounds if markers exist
       if (bounds.length > 0) {
-        this.map.fitBounds(bounds, { padding: [50, 50], maxZoom: 16 });
+        this.map.fitBounds(bounds, { padding: [50, 50], maxZoom: 18 });
       }
     },
     focusLocation(item) {
@@ -372,8 +392,8 @@ export default {
         return;
       }
 
-      // Center map on coordinates
-      this.map.flyTo([item.lat, item.lng], 16, {
+      // Center map on coordinates with zoom level 18 to see street/house numbers
+      this.map.flyTo([item.lat, item.lng], 18, {
         animate: true,
         duration: 1.2
       });
@@ -422,6 +442,7 @@ export default {
       if (this.routingControl) {
         this.map.removeControl(this.routingControl);
       }
+      this.routeStats = null;
       
       this.routingControl = window.L.Routing.control({
         waypoints: [
@@ -451,6 +472,42 @@ export default {
             return null;
         }
       }).addTo(this.map);
+
+      // Listen for route calculation to extract distance & duration (exact numbers on the road)
+      this.routingControl.on('routesfound', (e) => {
+        const routes = e.routes;
+        if (routes && routes.length > 0) {
+          const route = routes[0];
+          const distance = route.summary.totalDistance; // meters
+          const time = route.summary.totalTime; // seconds
+          
+          const formattedDistance = distance >= 1000 
+            ? (distance / 1000).toFixed(1) + ' km' 
+            : Math.round(distance) + ' m';
+            
+          const minutes = Math.round(time / 60);
+          let formattedDuration = '';
+          if (minutes >= 60) {
+            const hours = Math.floor(minutes / 60);
+            const remainingMins = minutes % 60;
+            formattedDuration = `${hours} giờ ${remainingMins} phút`;
+          } else {
+            formattedDuration = `${minutes} phút`;
+          }
+          
+          this.routeStats = {
+            distance: formattedDistance,
+            duration: formattedDuration
+          };
+        }
+      });
+    },
+    clearRoute() {
+      if (this.routingControl) {
+        this.map.removeControl(this.routingControl);
+        this.routingControl = null;
+      }
+      this.routeStats = null;
     }
   },
   watch: {
@@ -1016,5 +1073,92 @@ export default {
 }
 .btn-refresh-premium:active {
   transform: scale(0.95);
+}
+
+/* Floating Routing Stats Card Styles */
+.routing-stats-overlay {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 16px;
+  padding: 14px 18px;
+  color: #1e293b;
+  width: 300px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+  transition: all 0.3s ease;
+  animation: slideInDown 0.3s ease-out;
+}
+
+[data-theme="dark"] .routing-stats-overlay {
+  background: rgba(15, 23, 42, 0.9);
+  border-color: rgba(255, 255, 255, 0.08);
+  color: #f8fafc;
+}
+
+.route-icon-box {
+  width: 38px;
+  height: 38px;
+  background: linear-gradient(135deg, #f97316 0%, #f43f5e 100%);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 20px;
+}
+
+.stats-title {
+  font-weight: 700;
+  font-size: 13.5px;
+}
+
+.stats-values {
+  font-size: 12px;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 600;
+}
+
+.btn-close-route {
+  background: rgba(0, 0, 0, 0.05);
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  transition: all 0.2s;
+}
+
+[data-theme="dark"] .btn-close-route {
+  background: rgba(255, 255, 255, 0.1);
+  color: #cbd5e1;
+}
+
+.btn-close-route:hover {
+  background: #f43f5e;
+  color: #fff;
+}
+
+@keyframes slideInDown {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 </style>

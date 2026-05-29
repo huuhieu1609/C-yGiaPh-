@@ -192,6 +192,14 @@
                                 </select>
                             </div>
 
+                            <div class="col-md-6" v-if="currentMember.loai_quan_he === 'Chính' && currentMember.cha_id">
+                                <label class="form-label fw-bold">Chọn mẹ còn lại (Vợ/Chồng)</label>
+                                <select class="form-select radius-8 border-2 shadow-none" v-model="currentMember.me_id">
+                                    <option :value="null">-- Chưa xác định / Khác --</option>
+                                    <option v-for="s in getSpousesOfFather(currentMember.cha_id)" :key="s.id" :value="s.id">{{ s.ho_ten }}</option>
+                                </select>
+                            </div>
+
                             <div class="col-md-6" v-if="currentMember.loai_quan_he === 'Vợ/Chồng'">
                                 <label class="form-label fw-bold">Là Vợ/Chồng của ai?</label>
                                 <select class="form-select radius-8 border-2 shadow-none" v-model="currentMember.spouse_of_id">
@@ -206,6 +214,8 @@
                                 <label class="form-label fw-bold">Ghi chú</label>
                                 <textarea class="form-control radius-8 border-2 shadow-none" rows="2" v-model="currentMember.ghi_chu" placeholder="Thông tin thêm..."></textarea>
                             </div>
+
+                            
                         </div>
                     </div>
                     <div class="modal-footer border-0 p-4 pt-0">
@@ -344,127 +354,145 @@ const TreeItem = defineComponent({
             return h('li', [nodeGroup, children]);
         }
         
-        const nodeGroup = h('div', { class: 'tree-node-group' }, [
-            h('div', { 
-                class: ['tree-node-card', generationClass, { 
-                    'principal': !this.member.cha_id, 
-                    'is-dead': this.member.trang_thai === 'Đã mất',
-                    'highlighted': isHighlighted
-                }],
-                onClick: (e) => {
-                    e.stopPropagation();
-                    clearTimeout(this.clickTimeout);
-                    this.isDoubleClick = false;
-                    this.clickTimeout = setTimeout(() => {
-                        if (!this.isDoubleClick) {
-                            this.$emit('edit', this.member);
-                        }
-                    }, 200);
-                },
-                onDblclick: (e) => {
-                    e.stopPropagation();
-                    this.isDoubleClick = true;
-                    clearTimeout(this.clickTimeout);
-                    this.$emit('show-qr', this.member);
-                }
-            }, [
-                h('div', { class: 'node-avatar-container' }, [
-                    h('img', { 
-                        src: this.member.avatar ? this.member.avatar : ('https://ui-avatars.com/api/?name=' + this.member.ho_ten + '&background=d4af37&color=fff'), 
-                        class: 'node-avatar shadow-sm'
-                    })
-                ]),
-                h('div', { class: 'node-content' }, [
-                    h('div', { class: 'node-name' }, this.member.ho_ten),
-                    this.member.ngay_sinh ? h('div', { class: 'node-date' }, formatDate(this.member.ngay_sinh)) : null,
-                    h('div', { class: 'node-tag' }, `Đời ${this.member.doi_thu}${getTenDoi(this.member.doi_thu)}`)
-                ]),
-                h('div', { class: 'node-edit-btn' }, [
-                    h('i', { class: 'bx bx-pencil' })
-                ]),
-                h('div', { class: 'quick-actions' }, [
-                    h('button', { 
-                        class: 'btn-action add-child',
-                        title: 'Thêm con',
-                        onClick: (e) => { e.stopPropagation(); this.$emit('add-child', this.member); }
-                    }, [ h('i', { class: 'bx bx-plus' }) ]),
-                    h('button', { 
-                        class: 'btn-action add-spouse',
-                        title: 'Thêm vợ/chồng',
-                        onClick: (e) => { e.stopPropagation(); this.$emit('add-spouse', this.member); }
-                    }, [ h('i', { class: 'bx bxs-heart' }) ])
-                ])
-            ]),
-            this.member.spouses && this.member.spouses.length ? this.member.spouses.map(spouse => {
-                const isSpouseHighlighted = this.searchQuery && spouse.ho_ten.toLowerCase().includes(this.searchQuery.toLowerCase());
-                return [
-                    h('div', { class: 'tree-connector-h' }, [
-                        h('i', { class: 'bx bxs-heart connector-heart' })
-                    ]),
-                    h('div', { 
-                        class: ['tree-node-card spouse', { 
-                            'is-dead': spouse.trang_thai === 'Đã mất',
-                            'highlighted': isSpouseHighlighted
-                        }],
-                        onClick: (e) => {
-                            e.stopPropagation();
-                            clearTimeout(this.clickTimeout);
-                            this.isDoubleClick = false;
-                            this.clickTimeout = setTimeout(() => {
-                                if (!this.isDoubleClick) {
-                                    this.$emit('edit', spouse);
-                                }
-                            }, 200);
-                        },
-                        onDblclick: (e) => {
-                            e.stopPropagation();
-                            this.isDoubleClick = true;
-                            clearTimeout(this.clickTimeout);
-                            this.$emit('show-qr', spouse);
-                        }
-                    }, [
-                        h('div', { class: 'node-avatar-container' }, [
-                            h('img', { 
-                                src: spouse.avatar ? spouse.avatar : ('https://ui-avatars.com/api/?name=' + spouse.ho_ten + '&background=d4af37&color=fff'), 
-                                class: 'node-avatar shadow-sm'
-                            })
-                        ]),
-                        h('div', { class: 'node-content' }, [
-                            h('div', { class: 'node-name' }, spouse.ho_ten),
-                            h('div', { class: 'node-tag spouse-tag' }, spouse.gioi_tinh === 'Nữ' ? 'Vợ' : (spouse.gioi_tinh === 'Nam' ? 'Chồng' : 'Vợ/Chồng'))
-                        ]),
-                        h('div', { class: 'node-edit-btn' }, [
-                            h('i', { class: 'bx bx-pencil' })
-                        ]),
-                        h('div', { class: 'quick-actions' }, [
-                            h('button', { 
-                                class: 'btn-action add-child',
-                                title: 'Thêm con',
-                                onClick: (e) => { e.stopPropagation(); this.$emit('add-child', this.member); }
-                            }, [ h('i', { class: 'bx bx-plus' }) ]),
-                            h('button', { 
-                                class: 'btn-action add-spouse',
-                                title: 'Thêm vợ/chồng',
-                                onClick: (e) => { e.stopPropagation(); this.$emit('add-spouse', this.member); }
-                            }, [ h('i', { class: 'bx bxs-heart' }) ])
-                        ])
-                    ])
-                ];
-            }) : null
+        // Build main card and spouse cards; if exactly two spouses, place main between them
+        const makeMainCard = (order = null, extraClass = '') => h('div', { 
+            class: ['tree-node-card', generationClass, extraClass, { 
+                'principal': !this.member.cha_id, 
+                'is-dead': this.member.trang_thai === 'Đã mất',
+                'highlighted': isHighlighted
+            }],
+            style: order !== null ? { order } : undefined,
+            onClick: (e) => {
+                e.stopPropagation();
+                clearTimeout(this.clickTimeout);
+                this.isDoubleClick = false;
+                this.clickTimeout = setTimeout(() => {
+                    if (!this.isDoubleClick) this.$emit('edit', this.member);
+                }, 200);
+            },
+            onDblclick: (e) => { e.stopPropagation(); this.isDoubleClick = true; clearTimeout(this.clickTimeout); this.$emit('show-qr', this.member); }
+        }, [
+            h('div', { class: 'node-avatar-container' }, [ h('img', { src: this.member.avatar ? this.member.avatar : ('https://ui-avatars.com/api/?name=' + this.member.ho_ten + '&background=d4af37&color=fff'), class: 'node-avatar shadow-sm' }) ]),
+            h('div', { class: 'node-content' }, [ h('div', { class: 'node-name' }, this.member.ho_ten), this.member.ngay_sinh ? h('div', { class: 'node-date' }, formatDate(this.member.ngay_sinh)) : null, h('div', { class: 'node-tag' }, `Đời ${this.member.doi_thu}${getTenDoi(this.member.doi_thu)}`) ]),
+            h('div', { class: 'node-edit-btn' }, [ h('i', { class: 'bx bx-pencil' }) ]),
+            h('div', { class: 'quick-actions' }, [
+                h('button', { class: 'btn-action add-child', title: 'Thêm con', onClick: (e) => { e.stopPropagation(); this.$emit('add-child', this.member); } }, [ h('i', { class: 'bx bx-plus' }) ]),
+                h('button', { class: 'btn-action add-spouse', title: 'Thêm vợ/chồng', onClick: (e) => { e.stopPropagation(); this.$emit('add-spouse', this.member); } }, [ h('i', { class: 'bx bxs-heart' }) ])
+            ])
         ]);
-        const children = hasChildren ? h('ul', 
-            this.member.children.map(child => h(TreeItem, { 
-                member: child, 
-                listDoiTocHo: this.listDoiTocHo, 
-                searchQuery: this.searchQuery,
-                onEdit: (m) => this.$emit('edit', m),
-                onShowQr: (m) => this.$emit('show-qr', m),
-                onAddChild: (m) => this.$emit('add-child', m),
-                onAddSpouse: (m) => this.$emit('add-spouse', m)
-            }))
-        ) : null;
+
+        const makeSpouseChunk = (spouse, order = null) => {
+            const spouseClass = order === 1 ? 'spouse-left' : (order === 5 ? 'spouse-right' : '');
+            return h('div', { 
+                class: ['tree-node-card', 'spouse', spouseClass, { 'is-dead': spouse.trang_thai === 'Đã mất', 'highlighted': this.searchQuery && spouse.ho_ten.toLowerCase().includes(this.searchQuery.toLowerCase()) }],
+                style: order !== null ? { order: order } : undefined,
+                onClick: (e) => { e.stopPropagation(); clearTimeout(this.clickTimeout); this.isDoubleClick = false; this.clickTimeout = setTimeout(() => { if (!this.isDoubleClick) this.$emit('edit', spouse); }, 200); },
+                onDblclick: (e) => { e.stopPropagation(); this.isDoubleClick = true; clearTimeout(this.clickTimeout); this.$emit('show-qr', spouse); }
+            }, [
+                h('div', { class: 'node-avatar-container' }, [ h('img', { src: spouse.avatar ? spouse.avatar : ('https://ui-avatars.com/api/?name=' + spouse.ho_ten + '&background=d4af37&color=fff'), class: 'node-avatar shadow-sm' }) ]),
+                h('div', { class: 'node-content' }, [ h('div', { class: 'node-name' }, spouse.ho_ten), h('div', { class: 'node-tag spouse-tag' }, spouse.gioi_tinh === 'Nữ' ? 'Vợ' : (spouse.gioi_tinh === 'Nam' ? 'Chồng' : 'Vợ/Chồng')) ]),
+                h('div', { class: 'node-edit-btn' }, [ h('i', { class: 'bx bx-pencil' }) ]),
+                h('div', { class: 'quick-actions' }, [
+                    h('button', { class: 'btn-action add-child', title: 'Thêm con', onClick: (e) => { e.stopPropagation(); this.$emit('add-child', spouse); } }, [ h('i', { class: 'bx bx-plus' }) ]),
+                    h('button', { class: 'btn-action add-spouse', title: 'Thêm vợ/chồng', onClick: (e) => { e.stopPropagation(); this.$emit('add-spouse', spouse); } }, [ h('i', { class: 'bx bxs-heart' }) ])
+                ])
+            ]);
+        };
+
+        const coupleChildren = [];
+        const hasMultipleSpouses = this.member.spouses && this.member.spouses.length === 2;
+
+        let children = null;
+        const kids0 = [];
+        const kids1 = [];
+
+        if (hasMultipleSpouses) {
+            if (this.member.children && this.member.children.length) {
+                this.member.children.forEach(c => {
+                    if (c.me_id == this.member.spouses[1].id || c.cha_id == this.member.spouses[1].id) {
+                        kids1.push(c);
+                    } else {
+                        kids0.push(c);
+                    }
+                });
+            }
+
+            coupleChildren.push(makeSpouseChunk(this.member.spouses[0], 1));
+            coupleChildren.push(h('div', { 
+                class: [
+                    'tree-connector-h', 
+                    'spouse-connector-0',
+                    kids0.length > 0 ? 'spouse-connector' : ''
+                ], 
+                style: { order: 2 } 
+            }, [ h('i', { class: 'bx bxs-heart connector-heart' }) ]));
+            coupleChildren.push(makeMainCard(3, 'main-centered'));
+            coupleChildren.push(h('div', { 
+                class: [
+                    'tree-connector-h', 
+                    'spouse-connector-1',
+                    kids1.length > 0 ? 'spouse-connector' : ''
+                ], 
+                style: { order: 4 } 
+            }, [ h('i', { class: 'bx bxs-heart connector-heart' }) ]));
+            coupleChildren.push(makeSpouseChunk(this.member.spouses[1], 5));
+
+            const col0 = h('div', { class: ['union-column', 'union-column-0', kids0.length === 0 ? 'union-column-empty' : ''] }, [
+                kids0.length > 0
+                    ? h('ul', kids0.map(child => h(TreeItem, { 
+                        key: child.id,
+                        member: child, 
+                        listDoiTocHo: this.listDoiTocHo, 
+                        searchQuery: this.searchQuery,
+                        onEdit: (m) => this.$emit('edit', m),
+                        onShowQr: (m) => this.$emit('show-qr', m),
+                        onAddChild: (m) => this.$emit('add-child', m),
+                        onAddSpouse: (m) => this.$emit('add-spouse', m)
+                    })))
+                    : h('div', { class: 'union-empty-placeholder' })
+            ]);
+
+            const col1 = h('div', { class: ['union-column', 'union-column-1', kids1.length === 0 ? 'union-column-empty' : ''] }, [
+                kids1.length > 0
+                    ? h('ul', kids1.map(child => h(TreeItem, { 
+                        key: child.id,
+                        member: child, 
+                        listDoiTocHo: this.listDoiTocHo, 
+                        searchQuery: this.searchQuery,
+                        onEdit: (m) => this.$emit('edit', m),
+                        onShowQr: (m) => this.$emit('show-qr', m),
+                        onAddChild: (m) => this.$emit('add-child', m),
+                        onAddSpouse: (m) => this.$emit('add-spouse', m)
+                    })))
+                    : h('div', { class: 'union-empty-placeholder' })
+            ]);
+
+            children = h('div', { class: 'unions-wrapper' }, [col0, col1]);
+        } else {
+            coupleChildren.push(makeMainCard());
+            if (this.member.spouses && this.member.spouses.length) {
+                this.member.spouses.forEach(sp => {
+                    coupleChildren.push(h('div', { class: 'tree-connector-h' }, [ h('i', { class: 'bx bxs-heart connector-heart' }) ]));
+                    coupleChildren.push(makeSpouseChunk(sp));
+                });
+            }
+            children = hasChildren ? h('ul', 
+                this.member.children.map(child => h(TreeItem, { 
+                    key: child.id,
+                    member: child, 
+                    listDoiTocHo: this.listDoiTocHo, 
+                    searchQuery: this.searchQuery,
+                    onEdit: (m) => this.$emit('edit', m),
+                    onShowQr: (m) => this.$emit('show-qr', m),
+                    onAddChild: (m) => this.$emit('add-child', m),
+                    onAddSpouse: (m) => this.$emit('add-spouse', m)
+                }))
+            ) : null;
+        }
+
+        const nodeGroup = h('div', { class: 'tree-node-group' }, [ h('div', { class: 'couple-wrapper' }, coupleChildren) ]);
         
-        return h('li', [nodeGroup, children]);
+        return h('li', { class: ['tree-li', { 'has-multiple-spouses-li': hasMultipleSpouses }] }, [nodeGroup, children]);
     }
 });
 
@@ -478,7 +506,7 @@ export default {
             selectedChiNhanhId: null,
             listDoiTocHo: [],
             currentMember: {
-                id: null, ho_ten: '', doi_thu: 1, cha_id: null, gioi_tinh: 'Nam',
+                id: null, ho_ten: '', doi_thu: 1, cha_id: null, me_id: null, gioi_tinh: 'Nam',
                 loai_quan_he: 'Chính', spouse_of_id: null, trang_thai: 'Còn sống', ngay_mat: null, ngay_sinh: null, ghi_chu: '', avatar: null
             },
             avatarPreview: null,
@@ -487,6 +515,7 @@ export default {
             searchQuery: '',
             showQRModal: false,
             activeMember: {},
+            // permissions/roles (removed)
             
             // Zoom & Pan state
             zoom: 1,
@@ -533,6 +562,7 @@ export default {
             list.forEach(item => {
                 if (item.loai_quan_he === 'Vợ/Chồng' && item.spouse_of_id && map[item.spouse_of_id]) {
                     map[item.spouse_of_id].spouses.push(item);
+                    map[item.spouse_of_id].spouses.sort((a, b) => a.id - b.id);
                 } else if (item.cha_id && map[item.cha_id]) {
                     let parent = map[item.cha_id];
                     // Handle generation jumps
@@ -736,6 +766,10 @@ export default {
         },
 
         // Modal Methods
+        getSpousesOfFather(fatherId) {
+            if (!fatherId) return [];
+            return this.allMembers.filter(m => m.loai_quan_he === 'Vợ/Chồng' && m.spouse_of_id == fatherId);
+        },
         openAddModal() {
             if (!this.selectedChiNhanhId) {
                 toastr.warning('Vui lòng chọn hoặc khởi tạo dòng họ trước khi thêm thành viên.');
@@ -743,7 +777,7 @@ export default {
             }
             this.isEditing = false;
             this.currentMember = {
-                id: null, ho_ten: '', doi_thu: 1, cha_id: null, gioi_tinh: 'Nam',
+                id: null, ho_ten: '', doi_thu: 1, cha_id: null, me_id: null, gioi_tinh: 'Nam',
                 loai_quan_he: 'Chính', spouse_of_id: null, trang_thai: 'Còn sống', ngay_mat: null, ngay_sinh: null, ghi_chu: '', avatar: null,
                 chi_nhanh_id: this.selectedChiNhanhId
             };
@@ -754,7 +788,7 @@ export default {
         onAddChild(parentMember) {
             this.isEditing = false;
             this.currentMember = {
-                id: null, ho_ten: '', doi_thu: parentMember.doi_thu + 1, cha_id: parentMember.id, gioi_tinh: 'Nam',
+                id: null, ho_ten: '', doi_thu: parentMember.doi_thu + 1, cha_id: parentMember.id, me_id: null, gioi_tinh: 'Nam',
                 loai_quan_he: 'Chính', spouse_of_id: null, trang_thai: 'Còn sống', ngay_mat: null, ngay_sinh: null, ghi_chu: '', avatar: null,
                 chi_nhanh_id: this.selectedChiNhanhId
             };
@@ -765,7 +799,7 @@ export default {
         onAddSpouse(mainMember) {
             this.isEditing = false;
             this.currentMember = {
-                id: null, ho_ten: '', doi_thu: mainMember.doi_thu, cha_id: null, gioi_tinh: mainMember.gioi_tinh === 'Nam' ? 'Nữ' : 'Nam',
+                id: null, ho_ten: '', doi_thu: mainMember.doi_thu, cha_id: null, me_id: null, gioi_tinh: mainMember.gioi_tinh === 'Nam' ? 'Nữ' : 'Nam',
                 loai_quan_he: 'Vợ/Chồng', spouse_of_id: mainMember.id, trang_thai: 'Còn sống', ngay_mat: null, ngay_sinh: null, ghi_chu: '', avatar: null,
                 chi_nhanh_id: this.selectedChiNhanhId
             };
@@ -1044,6 +1078,8 @@ export default {
     height: 50px; 
 }
 
+/* (restored default connector behavior) */
+
 /* Node Styling */
 .tree-node-group { 
     display: flex; 
@@ -1054,11 +1090,23 @@ export default {
     margin: 0 auto;
     width: max-content;
 }
+.couple-wrapper {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0;
+}
+.tree-node-card.main-centered { order: 2; }
+.tree-node-card.spouse-left { order: 1; }
+.tree-node-card.spouse-right { order: 3; }
 .tree-connector-h { 
-    width: 30px; 
+    width: 40px; 
     height: 2px; 
     background: #d4af37; 
     position: relative; 
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 .connector-heart {
     position: absolute;
@@ -1071,6 +1119,7 @@ export default {
     border-radius: 50%;
     font-size: 14px;
     box-shadow: 0 2px 5px rgba(212, 175, 55, 0.4);
+    z-index: 10;
 }
 
 .tree-node-card {
@@ -1089,7 +1138,7 @@ export default {
     align-items: center;
     gap: 12px;
     transition: 0.3s ease;
-    overflow: hidden;
+    overflow: visible;
 }
 
 .quick-actions {
@@ -1333,7 +1382,73 @@ export default {
     background: radial-gradient(circle, rgba(212, 175, 55, 0.08) 0%, transparent 70%);
     pointer-events: none;
 }
-.drop-shadow {
-    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+
+/* ─── MULTIPLE SPOUSES CHILDREN BRANCHES ALIGNMENT ─── */
+.unions-wrapper {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  width: 100%;
+  position: relative;
+  margin-top: 50px;
+}
+.union-column {
+  width: 50%;
+  flex: 0 0 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+.union-column-0::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 130px;
+  left: 50%;
+  height: 2px;
+  background: #d4af37;
+  z-index: 1;
+}
+.union-column-1::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 130px;
+  right: 50%;
+  height: 2px;
+  background: #d4af37;
+  z-index: 1;
+}
+.union-column-empty::after {
+  display: none !important;
+}
+.tree-connector-h.spouse-connector::after {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  width: 2px;
+  height: 105px;
+  background: #d4af37;
+  z-index: 1;
+}
+.has-multiple-spouses-li > ul::before {
+  display: none !important;
+}
+.union-column > ul::before {
+  display: block !important;
+  content: '';
+  position: absolute;
+  top: 0 !important;
+  left: 50% !important;
+  border-left: 2px solid #d4af37 !important;
+  width: 0 !important;
+  height: 50px !important;
+}
+.union-empty-placeholder {
+  width: 220px;
+  height: 90px;
+  visibility: hidden;
 }
 </style>

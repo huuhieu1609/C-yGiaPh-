@@ -56,10 +56,10 @@
                             <table class="table align-middle mb-0 text-nowrap">
                                 <thead>
                                     <tr class="text-center">
-                                        <th class="text-start ps-4">Thành Viên</th>
-                                        <th>Đời Thứ</th>
+                                        <th class="text-start ps-4 cursor-pointer" @click="sortBy('ho_ten')">Thành Viên <i class="bx" :class="sortKey === 'ho_ten' ? (sortOrder === 'asc' ? 'bx-sort-up' : 'bx-sort-down') : 'bx-sort'"></i></th>
+                                        <th class="cursor-pointer" @click="sortBy('doi_thu')">Đời Thứ <i class="bx" :class="sortKey === 'doi_thu' ? (sortOrder === 'asc' ? 'bx-sort-up' : 'bx-sort-down') : 'bx-sort'"></i></th>
                                         <th>Mối Quan Hệ</th>
-                                        <th>Ngày Sinh</th>
+                                        <th class="cursor-pointer" @click="sortBy('ngay_sinh')">Ngày Sinh <i class="bx" :class="sortKey === 'ngay_sinh' ? (sortOrder === 'asc' ? 'bx-sort-up' : 'bx-sort-down') : 'bx-sort'"></i></th>
                                         <th>Trạng Thái</th>
                                         <th class="pe-4">Hành Động</th>
                                     </tr>
@@ -275,6 +275,8 @@ export default {
             listDoiTocHo: [],
             searchQuery: '',
             filterDoi: null,
+            sortKey: 'ho_ten',
+            sortOrder: 'asc',
             isEditing: false,
             modal: null,
             currentMember: {
@@ -290,11 +292,23 @@ export default {
     },
     computed: {
         filteredMembers() {
-            return this.allMembers.filter(m => {
+            let temp = this.allMembers.filter(m => {
                 const matchSearch = m.ho_ten.toLowerCase().includes(this.searchQuery.toLowerCase());
                 const matchDoi = this.filterDoi === null || m.doi_thu == this.filterDoi;
                 const matchChiNhanh = this.selectedChiNhanhId === null || m.chi_nhanh_id == this.selectedChiNhanhId;
                 return matchSearch && matchDoi && matchChiNhanh;
+            });
+
+            return temp.sort((a, b) => {
+                let valA = a[this.sortKey] || '';
+                let valB = b[this.sortKey] || '';
+                if (this.sortKey === 'doi_thu') {
+                    valA = parseInt(valA);
+                    valB = parseInt(valB);
+                }
+                if (valA < valB) return this.sortOrder === 'asc' ? -1 : 1;
+                if (valA > valB) return this.sortOrder === 'asc' ? 1 : -1;
+                return 0;
             });
         }
     },
@@ -307,6 +321,14 @@ export default {
         this.loadData();
     },
     methods: {
+        sortBy(key) {
+            if (this.sortKey === key) {
+                this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc';
+            } else {
+                this.sortKey = key;
+                this.sortOrder = 'asc';
+            }
+        },
         getHeaders() {
             return { headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` } };
         },

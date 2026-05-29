@@ -1,8 +1,8 @@
 <template>
-    <div class="public-profile-container py-5">
+    <div class="public-profile-container">
         <div class="container">
             <div class="row justify-content-center">
-                <div class="col-lg-9 col-xl-8">
+                <div class="col-xl-11">
                     <!-- Loading State -->
                     <div v-if="isLoading" class="text-center py-5">
                         <div class="spinner-border text-warning" role="status" style="width: 3rem; height: 3rem;">
@@ -25,335 +25,347 @@
 
                     <!-- Profile Content -->
                     <div v-else class="profile-card-wrapper">
-                        <!-- Parallax Gold Header -->
-                        <div class="profile-header radius-top-15 shadow-sm position-relative overflow-hidden" :class="member.trang_thai === 'Đã mất' ? 'header-memorial' : 'header-alive'">
-                            <div class="header-overlay"></div>
-                            
-                            <!-- Main Header Info -->
-                            <div class="d-flex flex-column align-items-center text-center text-white position-relative z-index-2 py-5 px-4">
-                                <div class="avatar-holder mb-3 position-relative">
-                                    <img :src="member.avatar || ('https://ui-avatars.com/api/?name=' + member.ho_ten + '&background=d4af37&color=fff&size=120')" 
-                                        class="rounded-circle border border-4 shadow-lg border-gold profile-avatar" 
-                                        alt="Avatar">
-                                    <span class="status-badge position-absolute bottom-0 end-0 px-2 py-1 radius-30 text-white font-12 fw-bold"
-                                        :class="member.trang_thai === 'Còn sống' ? 'bg-success' : 'bg-danger'">
-                                        <i class="bx" :class="member.trang_thai === 'Còn sống' ? 'bx-heart' : 'bx-bookmark-heart'"></i>
-                                        {{ member.trang_thai }}
-                                    </span>
+                        <!-- Premium Hero Header Card -->
+                        <div class="profile-hero-card" :class="member.trang_thai === 'Đã mất' ? 'hero-memorial' : 'hero-alive'">
+                            <div class="hero-bg-accent"></div>
+                            <div class="row align-items-center g-4 position-relative z-index-2">
+                                <div class="col-md-auto text-center text-md-start">
+                                    <div class="avatar-holder-premium position-relative">
+                                        <img :src="member.avatar || ('https://ui-avatars.com/api/?name=' + member.ho_ten + '&background=d4af37&color=fff&size=150')" 
+                                            class="profile-avatar-img shadow-lg" 
+                                            alt="Avatar">
+                                        <span class="status-indicator shadow-sm" :class="member.trang_thai === 'Còn sống' ? 'status-alive' : 'status-deceased'">
+                                            <i class="bx" :class="member.trang_thai === 'Còn sống' ? 'bx-heart' : 'bx-bookmark-heart'"></i>
+                                            {{ member.trang_thai }}
+                                        </span>
+                                    </div>
                                 </div>
-                                <h2 class="fw-bold text-white mb-1 drop-shadow">{{ member.ho_ten }}</h2>
-                                <p v-if="member.ten_goi && member.ten_goi !== member.ho_ten" class="fs-5 text-warning mb-2 fw-medium italic-nickname">"{{ member.ten_goi }}"</p>
-                                
-                                <div class="d-flex flex-wrap justify-content-center gap-2 mt-2">
-                                    <span class="badge badge-glass radius-30 px-3 py-2 font-13">
-                                        <i class="bx bx-git-branch text-warning me-1"></i>
-                                        Đời thứ {{ member.doi_thu }}
-                                    </span>
-                                    <span class="badge badge-glass radius-30 px-3 py-2 font-13">
-                                        <i class="bx" :class="member.gioi_tinh === 'Nam' ? 'bx-male-sign text-info' : 'bx-female-sign text-pink'"></i>
-                                        {{ member.gioi_tinh }}
-                                    </span>
-                                    <span v-if="member.chi_nhanh" class="badge badge-glass radius-30 px-3 py-2 font-13">
-                                        <i class="bx bx-home-alt text-success me-1"></i>
-                                        {{ member.chi_nhanh.ten_chi }}
-                                    </span>
+                                <div class="col-md text-center text-md-start text-white">
+                                    <div class="d-flex flex-wrap align-items-center justify-content-center justify-content-md-start gap-2 mb-2">
+                                        <span class="badge badge-generation"><i class="bx bx-git-branch"></i> Đời thứ {{ member.doi_thu }}</span>
+                                        <span class="badge badge-gender" :class="member.gioi_tinh === 'Nam' ? 'gender-male' : 'gender-female'">
+                                            <i class="bx" :class="member.gioi_tinh === 'Nam' ? 'bx-male' : 'bx-female'"></i>
+                                            {{ member.gioi_tinh }}
+                                        </span>
+                                        <span v-if="member.chi_nhanh" class="badge badge-branch">
+                                            <i class="bx bx-home-alt"></i> {{ member.chi_nhanh.ten_chi }}
+                                        </span>
+                                    </div>
+                                    <h1 class="profile-name">{{ member.ho_ten }}</h1>
+                                    <p v-if="member.ten_goi && member.ten_goi !== member.ho_ten" class="profile-nickname">
+                                        Tên thường gọi: <span class="fw-bold">"{{ member.ten_goi }}"</span>
+                                    </p>
+                                    <div v-if="member.email" class="profile-email-badge mt-2">
+                                        <i class="bx bx-envelope"></i> {{ member.email }}
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Main Details Grid -->
-                        <div class="card bg-white shadow-lg border-0 radius-bottom-15 p-4 mt-0 pt-5">
-                            
-                            <!-- UNIFIED RELATIONSHIP PANEL -->
-                            <div v-if="relationship || dynamicRelationship" class="rel-finder-card p-4 mb-4 radius-12 border border-2 border-dashed-gold position-relative overflow-hidden">
-                                <div class="rel-finder-bg-decor"></div>
-                                <div class="position-relative z-index-2">
-                                    <div class="d-flex align-items-center gap-2 mb-3">
-                                        <div class="rel-icon-box">
+                        <!-- Two-Column Grid Layout -->
+                        <div class="row g-4">
+                            <!-- Left Sidebar Column (4 Cols) -->
+                            <div class="col-lg-4">
+                                <!-- Kinship Relationship Finder Card -->
+                                <div v-if="relationship || dynamicRelationship" class="sidebar-card relationship-card-premium animate__animated animate__fadeInUp">
+                                    <div class="d-flex align-items-center gap-3 mb-4">
+                                        <div class="rel-icon-box-premium">
                                             <i class="bx bx-dna fs-4 text-warning"></i>
                                         </div>
                                         <div>
-                                            <h6 class="fw-extrabold text-dark mb-0">Mối Quan Hệ Với Bạn</h6>
-                                            <p class="text-muted font-12 mb-0">
-                                                <template v-if="isLoggedIn">Dựa trên email tài khoản của bạn trong hệ thống gia phả</template>
-                                                <template v-else>Thông tin từ hệ thống nhận diện huyết thống</template>
-                                            </p>
+                                            <h5 class="fw-bold mb-0 text-dark">Mối Quan Hệ</h5>
+                                            <p class="text-muted font-11 mb-0">Hệ thống phả hệ số hóa</p>
                                         </div>
                                     </div>
 
-                                    <!-- Loading state -->
                                     <div v-if="isLoadingRelationship" class="text-center py-4">
-                                        <div class="spinner-border spinner-border-sm text-warning me-2"></div>
-                                        <span class="text-muted font-13">Hệ thống đang xác định mối quan hệ huyết thống...</span>
+                                        <div class="spinner-border spinner-border-sm text-warning"></div>
                                     </div>
 
-                                    <!-- Display result (auto-detected for logged-in, or static for others) -->
-                                    <div v-else-if="dynamicRelationship || relationship" class="dyn-result mt-0 p-4 radius-12 animate__animated animate__fadeIn" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: white;">
-                                        <div class="row align-items-center g-3">
-                                            <div class="col-md-4 text-center">
-                                                <div class="font-11 text-warning text-uppercase fw-bold mb-1">
-                                                    <template v-if="isLoggedIn">Bạn gọi người này là</template>
-                                                    <template v-else>Mối quan hệ</template>
-                                                </div>
-                                                <div class="dyn-term-value">{{ (dynamicRelationship || relationship).term }}</div>
+                                    <div v-else class="dyn-result-premium">
+                                        <div class="text-center py-2">
+                                            <div class="relationship-title text-muted text-uppercase fw-bold font-11">
+                                                <template v-if="isLoggedIn">Bạn gọi người này là</template>
+                                                <template v-else>Mối quan hệ</template>
                                             </div>
-                                            <div class="col-md-8">
-                                                <div class="font-13 text-white-50 mb-2">{{ (dynamicRelationship || relationship).description }}</div>
-                                                <div v-if="(dynamicRelationship || relationship).path && (dynamicRelationship || relationship).path.length" class="pt-2 border-top border-secondary">
-                                                    <div class="font-11 text-warning mb-2"><i class="bx bx-git-branch me-1"></i>Đường kết nối huyết thống:</div>
-                                                    <div class="d-flex flex-wrap align-items-center gap-1">
-                                                        <div v-for="(node, idx) in (dynamicRelationship || relationship).path" :key="idx" class="d-flex align-items-center gap-1">
-                                                            <div class="dyn-path-node d-flex align-items-center gap-1 px-2 py-1 radius-8"
-                                                                 :style="idx === 0 && isLoggedIn ? 'background:rgba(212,175,55,0.25); border:1px solid #d4af37;' : idx === (dynamicRelationship || relationship).path.length - 1 && isLoggedIn ? 'background:rgba(59,130,246,0.25); border:1px solid #60a5fa;' : 'background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15);'">
-                                                                <img :src="node.avatar || 'https://ui-avatars.com/api/?name=' + node.ho_ten + '&background=d4af37&color=fff'" class="rounded-circle" width="18" height="18">
-                                                                <span class="font-11 fw-bold">{{ node.ho_ten }}</span>
-                                                                <span v-if="isLoggedIn && idx === 0" class="badge ms-1" style="font-size:8px; background:#d4af37; color:#000;">BẠN</span>
-                                                                <span v-else-if="isLoggedIn && idx === (dynamicRelationship || relationship).path.length - 1" class="badge ms-1" style="font-size:8px; background:#3b82f6;">ĐT</span>
-                                                            </div>
-                                                            <i v-if="idx < (dynamicRelationship || relationship).path.length - 1" class="bx bx-chevron-right" style="font-size:14px; opacity:0.5; color:#d4af37;"></i>
-                                                        </div>
+                                            <div class="relationship-term">
+                                                {{ (dynamicRelationship || relationship).term }}
+                                            </div>
+                                        </div>
+                                        <div class="relationship-desc p-3 rounded bg-light border-start border-3 border-warning font-13 text-secondary mt-2">
+                                            {{ (dynamicRelationship || relationship).description }}
+                                        </div>
+
+                                        <!-- Lineage Path (mini) -->
+                                        <div v-if="(dynamicRelationship || relationship).members && (dynamicRelationship || relationship).members.length" class="mt-4 pt-3 border-top border-light-grey">
+                                            <div class="path-title mb-3 font-12 text-muted fw-bold text-uppercase">
+                                                <i class="bx bx-git-branch text-warning me-1"></i> Sơ đồ kết nối huyết thống:
+                                            </div>
+                                            <div class="d-flex flex-column gap-3">
+                                                <div v-for="(node, idx) in (dynamicRelationship || relationship).members" :key="idx" class="d-flex align-items-center gap-2 position-relative path-item">
+                                                    <div class="path-node-avatar shadow-sm border border-gold">
+                                                        <img :src="node.avatar || ('https://ui-avatars.com/api/?name=' + node.ho_ten + '&background=d4af37&color=fff')" class="rounded-circle">
                                                     </div>
+                                                    <div class="flex-grow-1 overflow-hidden">
+                                                        <div class="fw-bold font-12 text-truncate text-dark">{{ node.ho_ten }}</div>
+                                                        <div class="font-10 text-muted">Đời {{ node.doi_thu }}</div>
+                                                    </div>
+                                                    <span v-if="isLoggedIn && node.id === myMemberId" class="badge bg-gold-badge text-dark font-9">BẠN</span>
+                                                    <span v-else-if="isLoggedIn && node.id === member.id" class="badge bg-primary-badge text-white font-9">ĐT</span>
+                                                    
+                                                    <!-- Connecting vertical indicator -->
+                                                    <div v-if="idx < (dynamicRelationship || relationship).members.length - 1" class="path-connector-line"></div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
+                                </div>
 
-                                    <!-- Not found in family tree (for logged-in users) -->
-                                    <div v-else-if="isLoadingRelationship === false && dynamicRelError" class="text-center py-3">
-                                        <i class="bx bx-unlink text-muted fs-2 mb-2 d-block"></i>
-                                        <p class="text-muted font-13 mb-0">{{ dynamicRelError }}</p>
+                                <!-- Login Prompt if guest -->
+                                <div v-if="!isLoggedIn && !relationship" class="sidebar-card text-center p-4 guest-prompt-card animate__animated animate__fadeInUp">
+                                    <div class="lock-icon-holder mb-3 mx-auto">
+                                        <i class="bx bx-lock-alt text-warning display-5"></i>
                                     </div>
+                                    <h6 class="fw-bold text-dark">Xem Quan Hệ Huyết Thống</h6>
+                                    <p class="text-muted font-12 mb-4">Đăng nhập tài khoản của bạn để khám phá vai vế xưng hô với thành viên này.</p>
+                                    <router-link to="/login" class="btn btn-warning btn-sm w-100 radius-30 fw-bold shadow-sm py-2">
+                                        <i class="bx bx-log-in me-1"></i> Đăng Nhập Ngay
+                                    </router-link>
                                 </div>
-                            </div>
 
-                            <!-- Gợi ý đăng nhập nếu chưa đăng nhập và không có relationship từ backend -->
-                            <div v-if="!isLoggedIn && !relationship" class="text-center py-3 mb-4 p-3 radius-12 bg-light border border-dashed">
-                                <i class="bx bx-lock-alt text-muted fs-3 mb-2 d-block"></i>
-                                <p class="text-muted font-13 mb-2">Đăng nhập để xem mối quan hệ huyết thống với thành viên này</p>
-                                <router-link to="/login" class="btn btn-sm btn-dark px-4 radius-30 fw-bold">
-                                    <i class="bx bx-log-in me-1"></i> Đăng Nhập Ngay
-                                </router-link>
-                            </div>
-
-                            <!-- Memorial Panel (Tưởng niệm người đã khuất) -->
-                            <div v-if="member.trang_thai === 'Đã mất'" class="memorial-panel p-4 mb-4 radius-12 text-center text-dark-rose border border-rose">
-                                <div class="d-flex justify-content-center gap-3 mb-2">
-                                    <i class="bx bxs-flame text-warning animate-candle fs-2"></i>
-                                    <h4 class="fw-bold tracking-wide text-rose mb-0">TƯỞNG NIỆM & GIỖ CHẠP</h4>
-                                    <i class="bx bxs-flame text-warning animate-candle fs-2"></i>
-                                </div>
-                                <p class="fst-italic opacity-75 font-14 mb-3">"Sinh ký tử quy - Nơi lưu giữ ngọn lửa tri ân tiên tổ"</p>
-                                
-                                <div class="row g-3 justify-content-center">
-                                    <div class="col-md-5">
-                                        <div class="memorial-info-box p-3 radius-10 border border-rose-light bg-glass-rose">
-                                            <div class="font-12 text-muted-rose text-uppercase fw-bold">Ngày Giỗ Âm Lịch</div>
-                                            <div class="fs-4 fw-extrabold text-rose">
-                                                {{ getLunarDateString() }}
-                                            </div>
+                                <!-- Memorial Panel (Deceased only) -->
+                                <div v-if="member.trang_thai === 'Đã mất'" class="sidebar-card memorial-card-premium animate__animated animate__fadeInUp">
+                                    <div class="text-center mb-3">
+                                        <div class="d-flex justify-content-center gap-2 align-items-center">
+                                            <i class="bx bxs-flame text-warning animate-candle fs-4"></i>
+                                            <h5 class="fw-bold text-rose mb-0">TƯỞNG NIỆM HƯƠNG HỎA</h5>
+                                            <i class="bx bxs-flame text-warning animate-candle fs-4"></i>
                                         </div>
+                                        <p class="fst-italic text-muted-rose font-11 mt-1">"Nơi lưu giữ ngọn lửa tri ân tiên tổ"</p>
                                     </div>
-                                    <div class="col-md-5" v-if="member.ngay_mat">
-                                        <div class="memorial-info-box p-3 radius-10 border border-rose-light bg-glass-rose">
-                                            <div class="font-12 text-muted-rose text-uppercase fw-bold">Ngày Mất Dương Lịch</div>
-                                            <div class="fs-4 fw-extrabold text-rose">
-                                                {{ formatDate(member.ngay_mat) }}
-                                            </div>
-                                        </div>
+                                    <div class="memorial-info-box-premium p-3 mb-3 text-center">
+                                        <div class="font-10 text-uppercase fw-bold text-muted-rose mb-1">Ngày Giỗ Âm Lịch</div>
+                                        <div class="fs-4 fw-extrabold text-rose">{{ getLunarDateString() }}</div>
+                                    </div>
+                                    <div v-if="member.ngay_mat" class="memorial-info-box-premium p-3 text-center">
+                                        <div class="font-10 text-uppercase fw-bold text-muted-rose mb-1">Ngày Mất Dương Lịch</div>
+                                        <div class="fs-4 fw-extrabold text-rose">{{ formatDate(member.ngay_mat) }}</div>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- Tabs Switcher -->
-                            <ul class="nav nav-tabs nav-tabs-custom mb-4" id="profileTabs" role="tablist">
-                                <li class="nav-item" role="presentation">
-                                    <button class="nav-link active fw-bold" id="info-tab" data-bs-toggle="tab" data-bs-target="#info-pane" type="button" role="tab">
-                                        <i class="bx bx-user me-1"></i> Thông Tin Tiểu Sử
-                                    </button>
-                                </li>
-                                <li class="nav-item" role="presentation">
-                                    <button class="nav-link fw-bold" id="family-tab" data-bs-toggle="tab" data-bs-target="#family-pane" type="button" role="tab">
-                                        <i class="bx bx-git-repo-forked me-1"></i> Mắt Xích Gia Đình
-                                    </button>
-                                </li>
-                            </ul>
+                            <!-- Right Content Column (8 Cols) -->
+                            <div class="col-lg-8">
+                                <div class="content-card-premium animate__animated animate__fadeInUp">
+                                    <!-- Custom Navigation Tabs -->
+                                    <div class="tabs-header-premium border-bottom pb-2">
+                                        <ul class="nav nav-pills custom-pills" id="profileTabs" role="tablist">
+                                            <li class="nav-item" role="presentation">
+                                                <button class="nav-link active" id="info-tab" data-bs-toggle="tab" data-bs-target="#info-pane" type="button" role="tab">
+                                                    <i class="bx bx-user me-1"></i> Tiểu Sử Cuộc Đời
+                                                </button>
+                                            </li>
+                                            <li class="nav-item" role="presentation">
+                                                <button class="nav-link" id="family-tab" data-bs-toggle="tab" data-bs-target="#family-pane" type="button" role="tab">
+                                                    <i class="bx bx-git-repo-forked me-1"></i> Mắt Xích Gia Đình
+                                                </button>
+                                            </li>
+                                        </ul>
+                                    </div>
 
-                            <div class="tab-content" id="profileTabsContent">
-                                <!-- Info Tab Pane -->
-                                <div class="tab-pane fade show active" id="info-pane" role="tabpanel" tabindex="0">
-                                    <div class="row g-4">
-                                        <!-- Biography & Story -->
-                                        <div class="col-md-12">
-                                            <div class="p-3 bg-light radius-10 border border-light-grey height-100">
-                                                <h5 class="fw-bold mb-3 text-dark text-border-bottom"><i class="bx bx-book-open text-warning me-1"></i> Cuộc Đời & Sự Nghiệp</h5>
-                                                <div v-if="member.ghi_chu" class="quote-story p-3 radius-8 mb-3 bg-white border-start border-4 border-warning italic font-15 text-dark lh-base">
-                                                    {{ member.ghi_chu }}
+                                    <div class="tab-content mt-4" id="profileTabsContent">
+                                        <!-- Biography Tab -->
+                                        <div class="tab-pane fade show active" id="info-pane" role="tabpanel" tabindex="0">
+                                            <div class="biography-section">
+                                                <h5 class="section-title mb-3"><i class="bx bx-book-open text-warning me-1"></i> Cuộc Đời & Sự Nghiệp</h5>
+                                                
+                                                <div v-if="member.ghi_chu" class="quote-story-premium p-4 radius-12 bg-light border-start border-4 border-warning mb-4">
+                                                    <i class="bx bxs-quote-left text-warning fs-3 mb-2 d-block opacity-50"></i>
+                                                    <p class="mb-0 fst-italic text-dark font-15 lh-relaxed">{{ member.ghi_chu }}</p>
                                                 </div>
-                                                <div v-if="member.thong_tin_them" class="text-secondary font-14 lh-relaxed" style="white-space: pre-line;">
+                                                
+                                                <div v-if="member.thong_tin_them" class="story-content-premium text-secondary font-14 lh-relaxed mb-4" style="white-space: pre-line;">
                                                     {{ member.thong_tin_them }}
                                                 </div>
-                                                <p v-if="!member.ghi_chu && !member.thong_tin_them" class="text-muted italic text-center py-4">Chưa có thông tin ghi chép về cuộc đời thành viên này.</p>
-                                            </div>
-                                        </div>
+                                                
+                                                <p v-if="!member.ghi_chu && !member.thong_tin_them" class="text-muted italic text-center py-5">
+                                                    Chưa có thông tin ghi chép về cuộc đời thành viên này.
+                                                </p>
 
-                                        <!-- Timeline / Vital Stats -->
-                                        <div class="col-md-6">
-                                            <div class="p-3 bg-light radius-10 border border-light-grey height-100">
-                                                <h5 class="fw-bold mb-3 text-dark text-border-bottom"><i class="bx bx-time text-primary me-1"></i> Mốc Thời Gian</h5>
-                                                <ul class="timeline-vital list-unstyled mb-0">
-                                                    <li class="d-flex align-items-center mb-3">
-                                                        <div class="timeline-icon rounded-circle bg-success text-white me-3"><i class="bx bx-plus"></i></div>
-                                                        <div>
-                                                            <div class="font-12 text-muted">Ngày Sinh</div>
-                                                            <div class="fw-bold text-dark">{{ formatDate(member.ngay_sinh) }}</div>
+                                                <!-- Timeline and Basics in Grid inside content card -->
+                                                <div class="row g-4 mt-2 pt-4 border-top border-light-grey">
+                                                    <div class="col-md-6">
+                                                        <h6 class="fw-bold mb-3 text-dark"><i class="bx bx-time text-primary me-1"></i> Mốc Thời Gian</h6>
+                                                        <div class="timeline-item-premium d-flex align-items-center mb-3">
+                                                            <div class="timeline-indicator-premium bg-success"></div>
+                                                            <div class="timeline-details ms-3">
+                                                                <span class="text-muted font-11 text-uppercase fw-bold">Ngày Sinh</span>
+                                                                <div class="fw-bold font-14 text-dark">{{ formatDate(member.ngay_sinh) }}</div>
+                                                            </div>
                                                         </div>
-                                                    </li>
-                                                    <li v-if="member.trang_thai === 'Đã mất'" class="d-flex align-items-center mb-0">
-                                                        <div class="timeline-icon rounded-circle bg-danger text-white me-3"><i class="bx bx-minus"></i></div>
-                                                        <div>
-                                                            <div class="font-12 text-muted">Ngày Mất</div>
-                                                            <div class="fw-bold text-dark">{{ formatDate(member.ngay_mat) }}</div>
+                                                        <div class="timeline-item-premium d-flex align-items-center">
+                                                            <div class="timeline-indicator-premium" :class="member.trang_thai === 'Đã mất' ? 'bg-danger' : 'bg-primary'"></div>
+                                                            <div class="timeline-details ms-3">
+                                                                <span class="text-muted font-11 text-uppercase fw-bold">Trạng Thái Sinh Mệnh</span>
+                                                                <div class="fw-bold font-14" :class="member.trang_thai === 'Đã mất' ? 'text-danger' : 'text-success'">
+                                                                    {{ member.trang_thai === 'Đã mất' ? 'Đã mất (' + formatDate(member.ngay_mat) + ')' : 'Còn sống' }}
+                                                                </div>
+                                                            </div>
                                                         </div>
-                                                    </li>
-                                                    <li v-else class="d-flex align-items-center mb-0">
-                                                        <div class="timeline-icon rounded-circle bg-primary text-white me-3"><i class="bx bx-check"></i></div>
-                                                        <div>
-                                                            <div class="font-12 text-muted">Trạng Thái Hiện Tại</div>
-                                                            <div class="fw-bold text-success">Còn sống (Hưởng dương / Thọ)</div>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <h6 class="fw-bold mb-3 text-dark"><i class="bx bx-id-card text-info me-1"></i> Thông Tin Cơ Bản</h6>
+                                                        <div class="info-row-premium d-flex justify-content-between py-2 border-bottom border-light">
+                                                            <span class="label text-muted font-13">Họ và Tên</span>
+                                                            <span class="value fw-bold text-dark font-13">{{ member.ho_ten }}</span>
                                                         </div>
-                                                    </li>
-                                                </ul>
-                                            </div>
-                                        </div>
-
-                                        <!-- Basic Attributes -->
-                                        <div class="col-md-6">
-                                            <div class="p-3 bg-light radius-10 border border-light-grey height-100">
-                                                <h5 class="fw-bold mb-3 text-dark text-border-bottom"><i class="bx bx-id-card text-info me-1"></i> Thông Tin Cơ Bản</h5>
-                                                <table class="table table-sm table-borderless mb-0 align-middle">
-                                                    <tbody>
-                                                        <tr>
-                                                            <td class="text-muted py-2" style="width: 120px;">Họ và Tên:</td>
-                                                            <td class="fw-bold text-dark py-2">{{ member.ho_ten }}</td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td class="text-muted py-2">Giới Tính:</td>
-                                                            <td class="fw-bold text-dark py-2">{{ member.gioi_tinh }}</td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td class="text-muted py-2">Mối Quan Hệ:</td>
-                                                            <td class="fw-bold text-dark py-2">
+                                                        <div class="info-row-premium d-flex justify-content-between py-2 border-bottom border-light">
+                                                            <span class="label text-muted font-13">Giới Tính</span>
+                                                            <span class="value fw-bold text-dark font-13">{{ member.gioi_tinh }}</span>
+                                                        </div>
+                                                        <div class="info-row-premium d-flex justify-content-between py-2 border-bottom border-light">
+                                                            <span class="label text-muted font-13">Hôn Nhân</span>
+                                                            <span class="value fw-bold font-13" :class="{
+                                                              'text-danger': member.tinh_trang_hon_nhan === 'Đã kết hôn',
+                                                              'text-secondary': member.tinh_trang_hon_nhan === 'Độc thân',
+                                                              'text-warning': member.tinh_trang_hon_nhan === 'Ly hôn',
+                                                              'text-muted': !member.tinh_trang_hon_nhan || member.tinh_trang_hon_nhan === 'Góa'
+                                                            }">
+                                                              <i class="bx me-1" :class="{
+                                                                'bx-heart-circle': member.tinh_trang_hon_nhan === 'Đã kết hôn',
+                                                                'bx-user': member.tinh_trang_hon_nhan === 'Độc thân',
+                                                                'bx-x-circle': member.tinh_trang_hon_nhan === 'Ly hôn',
+                                                                'bx-heart': member.tinh_trang_hon_nhan === 'Góa',
+                                                                'bx-minus-circle': !member.tinh_trang_hon_nhan
+                                                              }"></i>
+                                                              {{ member.tinh_trang_hon_nhan || 'Chưa rõ' }}
+                                                            </span>
+                                                        </div>
+                                                        <div class="info-row-premium d-flex justify-content-between py-2 border-bottom border-light">
+                                                            <span class="label text-muted font-13">Hệ Phả Hệ</span>
+                                                            <span class="value">
                                                                 <span class="badge" :class="member.loai_quan_he === 'Chính' ? 'bg-light-primary text-primary' : 'bg-light-warning text-warning'">
-                                                                    {{ member.loai_quan_he === 'Chính' ? 'Thành viên chính (Huyết thống)' : 'Người phối ngẫu (Dâu/Rể)' }}
+                                                                    {{ member.loai_quan_he === 'Chính' ? 'Huyết thống chính' : 'Người phối ngẫu (Dâu/Rể)' }}
                                                                 </span>
-                                                            </td>
-                                                        </tr>
-                                                        <tr v-if="member.email">
-                                                            <td class="text-muted py-2">Email liên hệ:</td>
-                                                            <td class="fw-bold text-dark py-2 font-13">{{ member.email }}</td>
-                                                        </tr>
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Family Tab Pane -->
-                                <div class="tab-pane fade" id="family-pane" role="tabpanel" tabindex="0">
-                                    <div class="p-3 bg-light radius-10 border border-light-grey">
-                                        <h5 class="fw-bold mb-3 text-dark text-border-bottom"><i class="bx bx-network-chart text-warning me-1"></i> Liên Kết Huyết Thống Gần Nhất</h5>
-                                        
-                                        <!-- Parents -->
-                                        <div class="mb-4">
-                                            <h6 class="fw-bold text-secondary mb-2"><i class="bx bx-chevron-right text-warning"></i> Đấng Sinh Thành (Cha & Mẹ)</h6>
-                                            <div class="row g-3">
-                                                <div class="col-md-6">
-                                                    <div class="family-relation-card p-2 bg-white radius-8 border d-flex align-items-center gap-3">
-                                                        <div class="relation-role-tag bg-primary text-white font-10 px-2 py-1 rounded">CHA</div>
-                                                        <template v-if="father">
-                                                            <img :src="father.avatar || 'https://ui-avatars.com/api/?name=' + father.ho_ten" class="rounded-circle border" width="35" height="35" style="object-fit: cover;">
-                                                            <div class="flex-grow-1 overflow-hidden">
-                                                                <router-link :to="'/thanh-vien/detail/' + father.id" class="fw-bold text-dark text-decoration-none d-block text-truncate hover-primary">{{ father.ho_ten }}</router-link>
-                                                                <span class="font-11 text-muted">Đời {{ father.doi_thu }} - {{ father.trang_thai }}</span>
-                                                            </div>
-                                                        </template>
-                                                        <div v-else class="text-muted italic font-13 py-1">Chưa cập nhật cha ruột</div>
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <div class="family-relation-card p-2 bg-white radius-8 border d-flex align-items-center gap-3">
-                                                        <div class="relation-role-tag bg-pink text-white font-10 px-2 py-1 rounded">MẸ</div>
-                                                        <template v-if="mother">
-                                                            <img :src="mother.avatar || 'https://ui-avatars.com/api/?name=' + mother.ho_ten" class="rounded-circle border" width="35" height="35" style="object-fit: cover;">
-                                                            <div class="flex-grow-1 overflow-hidden">
-                                                                <router-link :to="'/thanh-vien/detail/' + mother.id" class="fw-bold text-dark text-decoration-none d-block text-truncate hover-primary">{{ mother.ho_ten }}</router-link>
-                                                                <span class="font-11 text-muted">Đời {{ mother.doi_thu }} - {{ mother.trang_thai }}</span>
-                                                            </div>
-                                                        </template>
-                                                        <div v-else class="text-muted italic font-13 py-1">Chưa cập nhật mẹ ruột</div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <!-- Spouses (Bạn đời) -->
-                                        <div class="mb-4">
-                                            <h6 class="fw-bold text-secondary mb-2"><i class="bx bx-chevron-right text-warning"></i> Bạn Đời (Vợ / Chồng)</h6>
-                                            <div class="row g-3">
-                                                <div v-if="spouses.length === 0" class="col-12">
-                                                    <div class="p-3 bg-white radius-8 border text-center text-muted italic font-13">Chưa kết hôn / chưa cập nhật thông tin bạn đời</div>
-                                                </div>
-                                                <div v-else v-for="sp in spouses" :key="sp.id" class="col-md-6">
-                                                    <div class="family-relation-card p-2 bg-white radius-8 border d-flex align-items-center gap-3">
-                                                        <div class="relation-role-tag bg-warning text-dark font-10 px-2 py-1 rounded">PHỐI NGẪU</div>
-                                                        <img :src="sp.avatar || 'https://ui-avatars.com/api/?name=' + sp.ho_ten" class="rounded-circle border" width="35" height="35" style="object-fit: cover;">
-                                                        <div class="flex-grow-1 overflow-hidden">
-                                                            <router-link :to="'/thanh-vien/detail/' + sp.id" class="fw-bold text-dark text-decoration-none d-block text-truncate hover-primary">{{ sp.ho_ten }}</router-link>
-                                                            <span class="font-11 text-muted">{{ sp.gioi_tinh }} - Đời {{ sp.doi_thu }} - {{ sp.trang_thai }}</span>
+                                                            </span>
+                                                        </div>
+                                                        <div class="info-row-premium d-flex justify-content-between py-2 border-bottom border-light">
+                                                            <span class="label text-muted font-13">Email</span>
+                                                            <span class="value fw-bold text-dark font-13">{{ member.email || 'Chưa cập nhật' }}</span>
+                                                        </div>
+                                                        <div class="info-row-premium d-flex justify-content-between py-2 border-bottom border-light">
+                                                            <span class="label text-muted font-13">Số điện thoại</span>
+                                                            <span class="value fw-bold text-dark font-13">{{ member.so_dien_thoai || 'Chưa cập nhật' }}</span>
+                                                        </div>
+                                                        <div class="info-row-premium d-flex justify-content-between py-2 border-bottom border-light">
+                                                            <span class="label text-muted font-13">Nghề nghiệp</span>
+                                                            <span class="value fw-bold text-dark font-13">{{ member.nghe_nghiep || 'Chưa cập nhật' }}</span>
+                                                        </div>
+                                                        <div class="info-row-premium d-flex justify-content-between py-2">
+                                                            <span class="label text-muted font-13">Địa chỉ</span>
+                                                            <span class="value fw-bold text-dark font-13">{{ member.dia_chi || 'Chưa cập nhật' }}</span>
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
 
-                                        <!-- Children -->
-                                        <div>
-                                            <h6 class="fw-bold text-secondary mb-2"><i class="bx bx-chevron-right text-warning"></i> Thế Hệ Hậu Duệ (Con Cái)</h6>
-                                            <div class="row g-3">
-                                                <div v-if="children.length === 0" class="col-12">
-                                                    <div class="p-3 bg-white radius-8 border text-center text-muted italic font-13">Chưa có hậu duệ / chưa cập nhật thông tin con cái</div>
+                                        <!-- Family Connections Tab -->
+                                        <div class="tab-pane fade" id="family-pane" role="tabpanel" tabindex="0">
+                                            <div class="family-tree-section">
+                                                <h5 class="section-title mb-4"><i class="bx bx-network-chart text-warning me-1"></i> Quan Hệ Gia Đình</h5>
+                                                
+                                                <!-- Parents -->
+                                                <div class="relation-group mb-4">
+                                                    <h6 class="relation-group-title text-muted text-uppercase fw-bold font-12 mb-3"><i class="bx bx-chevron-right text-warning"></i> Đấng Sinh Thành (Cha & Mẹ)</h6>
+                                                    <div class="row g-3">
+                                                        <div class="col-md-6">
+                                                            <div class="relation-card-premium p-3 radius-12 border d-flex align-items-center gap-3">
+                                                                <div class="relation-badge bg-primary text-white font-9 px-2 py-0.5 rounded position-absolute top-0 end-0 m-2">CHA</div>
+                                                                <template v-if="father">
+                                                                    <img :src="father.avatar || 'https://ui-avatars.com/api/?name=' + father.ho_ten" class="relation-avatar rounded-circle border shadow-sm">
+                                                                    <div class="relation-info overflow-hidden">
+                                                                        <router-link :to="'/thanh-vien/detail/' + father.id" class="relation-name d-block text-truncate">{{ father.ho_ten }}</router-link>
+                                                                        <span class="relation-sub text-muted font-11">Đời {{ father.doi_thu }} - {{ father.trang_thai }}</span>
+                                                                    </div>
+                                                                </template>
+                                                                <div v-else class="relation-empty text-muted italic font-13 py-2 px-1">Chưa cập nhật thông tin cha</div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <div class="relation-card-premium p-3 radius-12 border d-flex align-items-center gap-3">
+                                                                <div class="relation-badge bg-pink text-white font-9 px-2 py-0.5 rounded position-absolute top-0 end-0 m-2">MẸ</div>
+                                                                <template v-if="mother">
+                                                                    <img :src="mother.avatar || 'https://ui-avatars.com/api/?name=' + mother.ho_ten" class="relation-avatar rounded-circle border shadow-sm">
+                                                                    <div class="relation-info overflow-hidden">
+                                                                        <router-link :to="'/thanh-vien/detail/' + mother.id" class="relation-name d-block text-truncate">{{ mother.ho_ten }}</router-link>
+                                                                        <span class="relation-sub text-muted font-11">Đời {{ mother.doi_thu }} - {{ mother.trang_thai }}</span>
+                                                                    </div>
+                                                                </template>
+                                                                <div v-else class="relation-empty text-muted italic font-13 py-2 px-1">Chưa cập nhật thông tin mẹ</div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                                <div v-else v-for="child in children" :key="child.id" class="col-md-6">
-                                                    <div class="family-relation-card p-2 bg-white radius-8 border d-flex align-items-center gap-3">
-                                                        <div class="relation-role-tag bg-success text-white font-10 px-2 py-1 rounded">CON CÁI</div>
-                                                        <img :src="child.avatar || 'https://ui-avatars.com/api/?name=' + child.ho_ten" class="rounded-circle border" width="35" height="35" style="object-fit: cover;">
-                                                        <div class="flex-grow-1 overflow-hidden">
-                                                            <router-link :to="'/thanh-vien/detail/' + child.id" class="fw-bold text-dark text-decoration-none d-block text-truncate hover-primary">{{ child.ho_ten }}</router-link>
-                                                            <span class="font-11 text-muted">{{ child.gioi_tinh }} - Đời {{ child.doi_thu }} - {{ child.trang_thai }}</span>
+
+                                                <!-- Spouses -->
+                                                <div class="relation-group mb-4">
+                                                    <h6 class="relation-group-title text-muted text-uppercase fw-bold font-12 mb-3"><i class="bx bx-chevron-right text-warning"></i> Bạn Đời (Vợ / Chồng)</h6>
+                                                    <div class="row g-3">
+                                                        <div v-if="spouses.length === 0" class="col-12">
+                                                            <div class="relation-empty-large text-center py-4 border border-dashed rounded-12 bg-light text-muted italic font-13">
+                                                                Chưa kết hôn hoặc chưa cập nhật thông tin bạn đời
+                                                            </div>
+                                                        </div>
+                                                        <div v-else-if="spouses" v-for="sp in spouses" :key="sp.id" class="col-md-6">
+                                                            <div class="relation-card-premium p-3 radius-12 border d-flex align-items-center gap-3">
+                                                                <div class="relation-badge bg-warning text-dark font-9 px-2 py-0.5 rounded position-absolute top-0 end-0 m-2">BẠN ĐỜI</div>
+                                                                <img :src="sp.avatar || 'https://ui-avatars.com/api/?name=' + sp.ho_ten" class="relation-avatar rounded-circle border shadow-sm">
+                                                                <div class="relation-info overflow-hidden">
+                                                                    <router-link :to="'/thanh-vien/detail/' + sp.id" class="relation-name d-block text-truncate">{{ sp.ho_ten }}</router-link>
+                                                                    <span class="relation-sub text-muted font-11">{{ sp.gioi_tinh }} - Đời {{ sp.doi_thu }} - {{ sp.trang_thai }}</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Children -->
+                                                <div class="relation-group">
+                                                    <h6 class="relation-group-title text-muted text-uppercase fw-bold font-12 mb-3"><i class="bx bx-chevron-right text-warning"></i> Thế Hệ Hậu Duệ (Con Cái)</h6>
+                                                    <div class="row g-3">
+                                                        <div v-if="children.length === 0" class="col-12">
+                                                            <div class="relation-empty-large text-center py-4 border border-dashed rounded-12 bg-light text-muted italic font-13">
+                                                                Chưa có hậu duệ hoặc chưa cập nhật thông tin con cái
+                                                            </div>
+                                                        </div>
+                                                        <div v-else v-for="child in children" :key="child.id" class="col-md-6">
+                                                            <div class="relation-card-premium p-3 radius-12 border d-flex align-items-center gap-3">
+                                                                <div class="relation-badge bg-success text-white font-9 px-2 py-0.5 rounded position-absolute top-0 end-0 m-2">CON CÁI</div>
+                                                                <img :src="child.avatar || 'https://ui-avatars.com/api/?name=' + child.ho_ten" class="relation-avatar rounded-circle border shadow-sm">
+                                                                <div class="relation-info overflow-hidden">
+                                                                    <router-link :to="'/thanh-vien/detail/' + child.id" class="relation-name d-block text-truncate">{{ child.ho_ten }}</router-link>
+                                                                    <span class="relation-sub text-muted font-11">{{ child.gioi_tinh }} - Đời {{ child.doi_thu }} - {{ child.trang_thai }}</span>
+                                                                </div>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
+                                    </div>
 
+                                    <!-- Footer CTAs -->
+                                    <div class="card-footer-premium mt-5 pt-4 border-top border-light-grey text-center">
+                                        <p class="text-muted font-12 mb-3">Bản quyền thuộc về Hệ Thống Quản Lý Gia Phả Số</p>
+                                        <div class="d-flex flex-wrap justify-content-center gap-3">
+                                            <router-link to="/gia-pha" class="btn btn-premium-outline-primary px-4 py-2 radius-30 font-14 shadow-xs">
+                                                <i class="bx bx-git-branch me-1"></i> Xem Cây Gia Phả
+                                            </router-link>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-
-                            <!-- Footer CTAs -->
-                            <div class="text-center mt-5 pt-4 border-top border-light-grey">
-                                <p class="text-muted font-13">Bản quyền thuộc về Hệ Thống Quản Lý Gia Phả Số</p>
-                                <div class="d-flex flex-wrap justify-content-center gap-3">
-                                    <router-link to="/gia-pha" class="btn btn-outline-primary px-4 radius-30 font-14">
-                                        <i class="bx bx-git-branch"></i> Xem Cây Gia Phả
-                                    </router-link>
-                                    <router-link to="/tra-cuu" class="btn btn-outline-secondary px-4 radius-30 font-14">
-                                        <i class="bx bx-search"></i> Tra Cứu Dòng Họ
-                                    </router-link>
-                                </div>
-                            </div>
-
                         </div>
                     </div>
                 </div>
@@ -381,7 +393,8 @@ export default {
             dynamicRelationship: null,
             dynamicRelError: null,
             isLoadingRelationship: false,
-            isLoggedIn: !!localStorage.getItem('access_token')
+            isLoggedIn: !!localStorage.getItem('access_token'),
+            myMemberId: null
         }
     },
     watch: {
@@ -460,24 +473,27 @@ export default {
                             return;
                         }
 
+                        this.myMemberId = myMember.id;
+
                         if (myMember.id === targetId) {
                             // Dang xem chinh minh
                             this.dynamicRelError = 'Đây chính là hồ sơ của bạn trong cây gia phả.';
                             return;
                         }
 
-                        // 3. Goi API xac dinh quan he BFS
+                        // 3. Goi API xac dinh quan he BFS (Dao chieu de xem nguoi nay la gi cua BAN)
                         this.isLoadingRelationship = true;
                         return axios.post('http://127.0.0.1:8000/api/thanh-vien/xac-dinh-quan-he', {
-                            id_a: myMember.id,
-                            id_b: targetId
+                            id_a: targetId,
+                            id_b: myMember.id
                         })
                         .then(relRes => {
                             if (relRes.data.status) {
                                 this.dynamicRelationship = {
                                     term: relRes.data.term,
                                     description: relRes.data.description,
-                                    path: relRes.data.path || []
+                                    path: relRes.data.path || [],
+                                    members: relRes.data.members || []
                                 };
                             } else {
                                 this.dynamicRelError = 'Không tìm thấy mối quan hệ huyết thống giữa bạn và người này.';
@@ -519,240 +535,375 @@ export default {
 </script>
 
 <style scoped>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,700;0,900;1,700&display=swap');
+
 .public-profile-container {
-    background-color: #f7f9fc;
+    background: radial-gradient(circle at 10% 20%, rgba(253, 244, 215, 0.4) 0%, rgba(248, 250, 252, 1) 90%);
     min-height: 100vh;
+    padding-top: 110px; /* CRITICAL: spacing to ensure no header overlap */
+    padding-bottom: 60px;
+    font-family: 'Inter', sans-serif;
 }
+
 .radius-15 { border-radius: 15px !important; }
-.radius-bottom-15 { 
-    border-bottom-left-radius: 15px !important; 
-    border-bottom-right-radius: 15px !important; 
-}
-.radius-top-15 {
-    border-top-left-radius: 15px !important;
-    border-top-right-radius: 15px !important;
-}
-.radius-12 { border-radius: 12px !important; }
-.radius-30 { border-radius: 30px !important; }
-.radius-8 { border-radius: 8px !important; }
 .z-index-2 { z-index: 2; }
 .shadow-xs { box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important; }
+.border-light-grey { border: 1px solid #eaedf1; }
 
-/* Parallax Headers */
-.profile-header {
-    background-size: cover;
-    background-position: center;
+/* Premium Hero Profile Card */
+.profile-hero-card {
+    border-radius: 24px;
+    padding: 40px;
+    margin-bottom: 35px;
     position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 20px 45px rgba(15, 23, 42, 0.08);
+}
+.hero-alive {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
     border-bottom: 5px solid #d4af37;
 }
-.header-alive {
-    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+.hero-memorial {
+    background: linear-gradient(135deg, #3b0c11 0%, #5c1218 100%);
+    border-bottom: 5px solid #c5a059;
 }
-.header-memorial {
-    background: linear-gradient(135deg, #4b121a 0%, #7d1f2b 100%);
-    border-bottom-color: #c5a059 !important;
-}
-.header-overlay {
+.hero-bg-accent {
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: radial-gradient(circle, transparent 20%, rgba(0,0,0,0.3) 100%);
-    z-index: 1;
-}
-
-/* Avatar Border Styling */
-.avatar-holder {
-    display: inline-block;
-}
-.profile-avatar {
-    width: 120px;
-    height: 120px;
-    object-fit: cover;
-    transition: transform 0.3s ease;
-}
-.profile-avatar:hover {
-    transform: scale(1.05);
-}
-.border-gold {
-    border-color: #d4af37 !important;
-}
-.header-memorial .border-gold {
-    border-color: #c5a059 !important;
-}
-.drop-shadow {
-    text-shadow: 0 2px 4px rgba(0,0,0,0.4);
-}
-.italic-nickname {
-    font-style: italic;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
-}
-
-.badge-glass {
-    background: rgba(255, 255, 255, 0.15) !important;
-    backdrop-filter: blur(5px);
-    -webkit-backdrop-filter: blur(5px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: white;
-}
-
-/* Dynamic Relation Card */
-.relationship-card {
-    background: linear-gradient(135deg, #fffcf5 0%, #fff8e8 100%);
-    border-color: rgba(212, 175, 55, 0.3) !important;
-}
-.border-light-gold {
-    border-color: rgba(212, 175, 55, 0.15) !important;
-}
-.bg-light-gold {
-    background-color: #fff9e6;
-}
-.text-warning-gold {
-    color: #e5a93b !important;
-}
-.bg-dark-gold {
-    background-color: #3b2c0c;
-    color: #ffd891 !important;
-}
-.decor-light {
-    position: absolute;
-    top: -20px;
-    right: -20px;
-    width: 100px;
-    height: 100px;
-    background: radial-gradient(circle, rgba(212,175,55,0.2) 0%, transparent 70%);
+    top: -50px;
+    right: -50px;
+    width: 350px;
+    height: 350px;
+    background: radial-gradient(circle, rgba(212, 175, 55, 0.12) 0%, transparent 70%);
     pointer-events: none;
     z-index: 1;
 }
 
-/* Memorial styling */
-.memorial-panel {
-    background: linear-gradient(135deg, #fff5f5 0%, #ffe9e9 100%);
-    border-color: rgba(245, 81, 95, 0.2) !important;
+/* Avatar Holder */
+.avatar-holder-premium {
+    display: inline-block;
 }
-.text-dark-rose { color: #5c181b; }
-.text-rose { color: #a11d23; }
-.border-rose { border-color: rgba(161, 29, 35, 0.2) !important; }
-.border-rose-light { border-color: rgba(161, 29, 35, 0.1) !important; }
-.bg-glass-rose { background-color: rgba(255,255,255,0.6); }
-.text-muted-rose { color: #8a484c; }
+.profile-avatar-img {
+    width: 140px;
+    height: 140px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 4px solid #ffffff;
+    transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+.profile-hero-card:hover .profile-avatar-img {
+    transform: scale(1.04);
+}
+.status-indicator {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    padding: 4px 12px;
+    border-radius: 30px;
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    border: 2px solid white;
+}
+.status-alive { background-color: #10b981; }
+.status-deceased { background-color: #ef4444; }
 
+/* Badges and Text */
+.badge-generation {
+    background: rgba(212, 175, 55, 0.2) !important;
+    border: 1px solid rgba(212, 175, 55, 0.4);
+    color: #ffd891 !important;
+    font-weight: 700;
+    padding: 6px 12px;
+    border-radius: 20px;
+}
+.badge-gender {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-weight: 700;
+}
+.gender-male {
+    background: rgba(59, 130, 246, 0.2) !important;
+    border: 1px solid rgba(59, 130, 246, 0.4);
+    color: #93c5fd !important;
+}
+.gender-female {
+    background: rgba(236, 72, 153, 0.2) !important;
+    border: 1px solid rgba(236, 72, 153, 0.4);
+    color: #fbcfe8 !important;
+}
+.badge-branch {
+    background: rgba(16, 185, 129, 0.2) !important;
+    border: 1px solid rgba(16, 185, 129, 0.4);
+    color: #a7f3d0 !important;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-weight: 700;
+}
+
+.profile-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.5rem;
+    font-weight: 900;
+    letter-spacing: -0.5px;
+    margin-top: 10px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+.profile-nickname {
+    font-style: italic;
+    color: rgba(255, 255, 255, 0.85);
+    margin-bottom: 5px;
+    font-size: 1.05rem;
+}
+.profile-email-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 4px 14px;
+    border-radius: 30px;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* Sidebar Styling */
+.sidebar-card {
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);
+    border: 1px solid rgba(0, 0, 0, 0.04);
+    margin-bottom: 24px;
+}
+
+/* Relationship Card */
+.relationship-card-premium {
+    background: linear-gradient(135deg, #ffffff 0%, #fffcf3 100%);
+    border: 1px dashed rgba(212, 175, 55, 0.4);
+}
+.rel-icon-box-premium {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: rgba(212, 175, 55, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.relationship-term {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.2rem;
+    font-weight: 900;
+    color: #b58d1e;
+    line-height: 1.1;
+    margin-top: 4px;
+    text-shadow: 0 4px 12px rgba(212, 175, 55, 0.15);
+}
+.bg-gold-badge {
+    background-color: #d4af37;
+}
+.bg-primary-badge {
+    background-color: #0d6efd;
+}
+.font-9 { font-size: 9px !important; font-weight: 800; }
+.font-11 { font-size: 11px !important; }
+.font-10 { font-size: 10px !important; }
+.font-12 { font-size: 12px !important; }
+.path-node-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    overflow: hidden;
+    z-index: 2;
+}
+.path-node-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.path-connector-line {
+    position: absolute;
+    left: 15px;
+    top: 32px;
+    width: 2px;
+    height: 18px;
+    background-color: rgba(212, 175, 55, 0.25);
+    z-index: 1;
+}
+
+/* Guest Prompt */
+.lock-icon-holder {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background-color: rgba(212, 175, 55, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Memorial Sidebar Panel */
+.memorial-card-premium {
+    background: linear-gradient(135deg, #ffffff 0%, #fff6f6 100%);
+    border: 1px dashed rgba(239, 68, 68, 0.3);
+}
+.text-rose { color: #9f1c24; }
+.text-muted-rose { color: #82474b; }
+.memorial-info-box-premium {
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 12px;
+    border: 1px solid rgba(239, 68, 68, 0.1);
+}
 @keyframes flicker {
     0%, 100% { transform: scale(1); opacity: 0.9; }
     50% { transform: scale(1.1) rotate(2deg); opacity: 1; }
 }
 .animate-candle {
     display: inline-block;
-    animation: flicker 1.5s infinite ease-in-out;
+    animation: flicker 1.6s infinite ease-in-out;
 }
 
-/* Tabs */
-.nav-tabs-custom {
-    border-bottom: 2px solid #eaedf1;
+/* Right Content Area */
+.content-card-premium {
+    background: #ffffff;
+    border-radius: 24px;
+    padding: 40px;
+    box-shadow: 0 15px 35px rgba(15, 23, 42, 0.03);
+    border: 1px solid rgba(0, 0, 0, 0.03);
+    min-height: 500px;
 }
-.nav-tabs-custom .nav-link {
-    border: none;
-    color: #5c6873;
-    padding: 12px 20px;
-    background: transparent;
+
+/* Premium Pills */
+.custom-pills .nav-link {
+    border-radius: 30px;
+    color: #64748b;
+    font-weight: 700;
+    padding: 10px 24px;
     transition: all 0.3s ease;
+    border: 1px solid transparent;
 }
-.nav-tabs-custom .nav-link.active {
-    color: #d4af37;
-    border-bottom: 3px solid #d4af37;
+.custom-pills .nav-link:hover {
+    color: #0f172a;
+    background-color: #f1f5f9;
+}
+.custom-pills .nav-link.active {
+    background-color: #0f172a;
+    color: #ffffff;
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.15);
 }
 
-/* Quote story block */
-.quote-story {
-    box-shadow: inset 0 0 10px rgba(0,0,0,0.01);
+/* Biography Pane */
+.section-title {
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: -0.2px;
+    border-bottom: 2px solid #f1f5f9;
+    padding-bottom: 12px;
 }
-.text-border-bottom {
-    border-bottom: 2px solid #eaedf1;
-    padding-bottom: 8px;
-}
-.lh-relaxed { line-height: 1.7; }
-.italic { font-style: italic; }
-
-/* Timeline Vital */
-.timeline-vital li {
+.quote-story-premium {
     position: relative;
+    box-shadow: inset 0 0 15px rgba(0,0,0,0.005);
 }
-.timeline-icon {
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 14px;
+.story-content-premium {
+    font-size: 0.95rem;
+    line-height: 1.75;
+    color: #475569;
+}
+.timeline-indicator-premium {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    border: 3px solid #ffffff;
+    box-shadow: 0 0 0 2px currentColor;
+}
+.info-row-premium {
+    border-bottom: 1px solid #f8fafc;
 }
 
-/* Family relation cards */
-.family-relation-card {
-    transition: all 0.25s ease;
+/* Family Relations Tree */
+.relation-group-title {
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 6px;
 }
-.family-relation-card:hover {
-    border-color: #d4af37 !important;
-    box-shadow: 0 4px 10px rgba(212, 175, 55, 0.1) !important;
+.relation-card-premium {
+    background: #f8fafc;
+    border: 1px solid #eaedf1;
+    position: relative;
+    transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+.relation-card-premium:hover {
+    border-color: #d4af37;
+    background: #ffffff;
+    box-shadow: 0 10px 24px rgba(212, 175, 55, 0.08);
     transform: translateY(-2px);
 }
-.relation-role-tag {
+.relation-avatar {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+}
+.relation-name {
+    font-weight: 700;
+    color: #0f172a;
+    font-size: 14px;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+.relation-name:hover {
+    color: #d4af37;
+}
+.relation-badge {
+    font-size: 8px !important;
     font-weight: 800;
     letter-spacing: 0.5px;
-    font-size: 9px !important;
 }
-.hover-primary:hover {
-    color: #d4af37 !important;
-}
-.text-pink { color: #e83e8c; }
-.bg-pink { background-color: #e83e8c; }
-.bg-light-primary { background-color: rgba(13, 110, 253, 0.08); }
-.bg-light-warning { background-color: rgba(255, 193, 7, 0.1); }
+.bg-pink { background-color: #ec4899 !important; }
 
-/* === RELATIONSHIP FINDER PANEL === */
-.border-dashed-gold {
-    border-color: rgba(212, 175, 55, 0.4) !important;
-    border-style: dashed !important;
-}
-.rel-finder-card {
-    background: linear-gradient(135deg, #fffdf5 0%, #fdf8e8 100%);
-}
-.rel-finder-bg-decor {
-    position: absolute;
-    top: 0; right: 0;
-    width: 200px; height: 200px;
-    background: radial-gradient(circle at top right, rgba(212,175,55,0.12) 0%, transparent 70%);
-    pointer-events: none;
-}
-.rel-icon-box {
-    width: 44px; height: 44px;
-    border-radius: 12px;
-    background: rgba(212,175,55,0.15);
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-}
-.btn-dark-gold {
-    background: #0f172a;
-    color: #d4af37;
-    border: 1px solid #d4af37;
-    transition: all 0.2s ease;
-}
-.btn-dark-gold:hover:not(:disabled) {
-    background: #d4af37;
+/* CTAs Outlines */
+.btn-premium-outline-primary {
+    background-color: transparent;
+    border: 1px solid #0f172a;
     color: #0f172a;
-    transform: translateY(-1px);
+    font-weight: 700;
+    transition: all 0.3s ease;
+    border-radius: 30px;
 }
-.btn-dark-gold:disabled { opacity: 0.55; }
+.btn-premium-outline-primary:hover {
+    background-color: #0f172a;
+    color: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.1);
+}
+.btn-premium-outline-secondary {
+    background-color: transparent;
+    border: 1px solid #64748b;
+    color: #64748b;
+    font-weight: 700;
+    transition: all 0.3s ease;
+    border-radius: 30px;
+}
+.btn-premium-outline-secondary:hover {
+    background-color: #64748b;
+    color: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(100, 116, 139, 0.1);
+}
 
-.dyn-result { border: 1px solid rgba(212,175,55,0.3); }
-.dyn-term-value {
-    font-family: 'Playfair Display', serif;
-    font-size: 2.5rem;
-    font-weight: 900;
-    color: #d4af37;
-    line-height: 1.1;
-    text-shadow: 0 0 30px rgba(212,175,55,0.3);
+@media (max-width: 991px) {
+    .public-profile-container {
+        padding-top: 120px;
+    }
+    .profile-hero-card {
+        padding: 30px 20px;
+    }
+    .profile-name {
+        font-size: 2rem;
+    }
+    .content-card-premium {
+        padding: 25px;
+    }
 }
-.dyn-path-node { transition: all 0.2s ease; }
-.dyn-path-node:hover { transform: translateY(-1px); }
 </style>

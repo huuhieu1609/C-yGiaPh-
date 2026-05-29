@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use App\Models\ChiNhanh;
+use App\Models\NguoiDung;
 
 class SuKienSeeder extends Seeder
 {
@@ -16,9 +17,12 @@ class SuKienSeeder extends Seeder
         // Xóa sạch sự kiện cũ để tránh trùng lặp
         DB::table('su_kiens')->delete();
 
-        // Lấy chi nhánh của Đối tác Demo
-        $chiNhanh = ChiNhanh::where('ten_chi', 'like', '%Nguyễn Đức%')->first();
-        $cnId = $chiNhanh ? $chiNhanh->id : 1;
+        // Lấy chi nhánh của Đối tác Demo (ưu tiên chi nhánh sở hữu bởi đối tác)
+        $partnerId = NguoiDung::where('email', 'doitac@master.com')->value('id');
+        $chiNhanh = $partnerId
+            ? ChiNhanh::where('id_nguoi_dung', $partnerId)->first()
+            : ChiNhanh::where('ten_chi', 'like', '%Nguyễn Đức%')->first();
+        $cnId = $chiNhanh ? $chiNhanh->id : ChiNhanh::value('id');
 
         $events = [
             [
@@ -35,7 +39,7 @@ class SuKienSeeder extends Seeder
                 'ngay_to_chuc' => now()->addDays(5)->toDateString(),
                 'dia_diem' => 'Nhà Thờ Tổ Dòng Họ Nguyễn Đức, Thạch Thất, Hà Nội',
                 'chi_nhanh_id' => $cnId,
-                'loai' => 'Khuyến học',
+                'loai' => 'Họp họ',
             ],
             [
                 'tieu_de' => 'Họp Họ Tổng Kết Năm & Bàn Kế Hoạch 2027',

@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
             ThanhVienSeeder::class,
             DoiTocHoSeeder::class,
             NhaThoHoSeeder::class,
+            RolesAndPermissionsSeeder::class,
             SuKienSeeder::class,
             TaiLieuSeeder::class,
             ThongBaoSeeder::class,
@@ -33,6 +34,7 @@ class DatabaseSeeder extends Seeder
             DoiTacSeeder::class,
             DeXuatChinhSuaSeeder::class,
             TuongNiemSeeder::class,
+            GoiDichVuSeeder::class,
         ]);
     }
 }

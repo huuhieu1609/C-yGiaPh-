@@ -65,6 +65,12 @@ const routes = [
         meta: { layout: 'client', requiresAuth: true }
     },
     {
+        path: '/thanh-vien/detail/:id',
+        name: 'client-thanh-vien-detail',
+        component: () => import('../components/ClientTraCuu/PublicDetail.vue'),
+        meta: { layout: 'client' }
+    },
+    {
         path: '/de-xuat',
         name: 'client-de-xuat',
         component: () => import('../components/ClientDeXuat/index.vue'),
@@ -219,6 +225,12 @@ const routes = [
                 path: 'phan-quyen',
                 name: 'admin-phan-quyen',
                 component: () => import('../components/Admin/PhanQuyen/index.vue')
+            },
+            {
+                path: 'quan-ly-ban-do',
+                name: 'admin-quan-ly-ban-do',
+                component: () => import('../components/Admin/QuanLyBanDo/index.vue'),
+                meta: { permission: 'Quản Lý Mộ Phần' }
             }
         ]
     },

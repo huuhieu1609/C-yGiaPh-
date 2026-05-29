@@ -84,6 +84,13 @@
             <span class="nav-dot hide-on-collapse"></span>
           </router-link>
         </li>
+        <li class="nav-item item-map">
+          <router-link to="/admin/quan-ly-ban-do" class="nav-link" active-class="active" title="Quản Lý Bản Đồ">
+            <span class="nav-icon"><i class="bx bx-map-alt"></i></span>
+            <span class="hide-on-collapse nav-label">Quản Lý Bản Đồ</span>
+            <span class="nav-dot hide-on-collapse"></span>
+          </router-link>
+        </li>
 
         <li class="section-heading hide-on-collapse">Gói & Thanh Toán</li>
 
@@ -251,6 +258,7 @@ export default {
   --color-partner:   #06b6d4;
   --color-payment:   #8b5cf6;
   --color-security:  #ef4444;
+  --color-map:       #0ea5e9;
 
   --transition-smooth: 0.35s cubic-bezier(0.25, 1, 0.5, 1);
 }
@@ -367,6 +375,7 @@ export default {
 .item-partner .nav-dot, .item-partner .nav-link.active { --c-active: var(--color-partner); }
 .item-payment .nav-dot, .item-payment .nav-link.active { --c-active: var(--color-payment); }
 .item-security .nav-dot, .item-security .nav-link.active { --c-active: var(--color-security); }
+.item-map .nav-dot, .item-map .nav-link.active { --c-active: var(--color-map); }
 
 .nav-link.active {
   color: var(--text-main) !important; background: var(--neo-bg) !important;

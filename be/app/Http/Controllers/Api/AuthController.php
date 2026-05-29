@@ -50,14 +50,7 @@ class AuthController extends Controller
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
-        $permissions = [];
-        if ($user->id_chuc_vu) {
-            $permissions = ChiTietPhanQuyen::join('chuc_nangs', 'chi_tiet_phan_quyens.chuc_nang_id', '=', 'chuc_nangs.id')
-                ->where('chi_tiet_phan_quyens.chuc_vu_id', $user->id_chuc_vu)
-                ->where('chuc_nangs.trang_thai', 'Hoạt động')
-                ->pluck('chuc_nangs.ten_chuc_nang')
-                ->toArray();
-        }
+        $permissions = \App\Models\ThanhVienChucNang::getMemberActivePermissions($user);
 
         // Mặc định: Tài khoản người dùng thì vào trang người dùng
         $redirect_url = '/nguoi-dung';
@@ -146,14 +139,7 @@ class AuthController extends Controller
     public function me(Request $request)
     {
         $user = $request->user();
-        $permissions = [];
-        if ($user->id_chuc_vu) {
-            $permissions = ChiTietPhanQuyen::join('chuc_nangs', 'chi_tiet_phan_quyens.chuc_nang_id', '=', 'chuc_nangs.id')
-                ->where('chi_tiet_phan_quyens.chuc_vu_id', $user->id_chuc_vu)
-                ->where('chuc_nangs.trang_thai', 'Hoạt động')
-                ->pluck('chuc_nangs.ten_chuc_nang')
-                ->toArray();
-        }
+        $permissions = \App\Models\ThanhVienChucNang::getMemberActivePermissions($user);
 
         return response()->json([
             'user' => $user,
