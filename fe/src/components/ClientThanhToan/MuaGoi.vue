@@ -67,9 +67,49 @@
               </div>
             </div>
 
-            <!-- Right Column: Donation QR -->
+            <!-- Right Column: Pending state OR Donation QR -->
             <div class="col-lg-6">
-              <div class="payment-section">
+              <!-- Pending request luxury view -->
+              <div class="payment-section h-100 d-flex flex-column justify-content-center align-items-stretch" v-if="hasPending">
+                <div class="glass-card-pending text-center p-5 rounded-3xl border border-warning/30 shadow-2xl position-relative overflow-hidden">
+                  <div class="ambient-glow"></div>
+                  <div class="pending-icon-wrap mb-4 mx-auto d-flex align-items-center justify-content-center">
+                    <div class="pending-icon-circle d-flex align-items-center justify-content-center">
+                      <i class="bx bx-time-five text-warning fs-1"></i>
+                    </div>
+                    <div class="pending-pulse-circle"></div>
+                  </div>
+                  
+                  <h4 class="text-gradient-gold fw-bold mb-3">Yêu Cầu Đang Chờ Phê Duyệt</h4>
+                  <p class="text-white-50 px-3 small">
+                    Hệ thống đã ghi nhận thông tin chuyển khoản nâng cấp tài khoản đối tác của bạn.
+                  </p>
+                  
+                  <div class="glass-info p-4 rounded-2xl border border-white/10 text-start my-4">
+                    <div class="info-row">
+                      <span>Gói đăng ký:</span>
+                      <strong class="text-white">{{ ten_goi }}</strong>
+                    </div>
+                    <div class="info-row">
+                      <span>Trạng thái:</span>
+                      <strong class="text-warning d-flex align-items-center gap-1">
+                        <span class="status-pulse-dot"></span>Chờ Admin phê duyệt
+                      </strong>
+                    </div>
+                    <div class="info-row border-0">
+                      <span>Thời gian gửi:</span>
+                      <strong class="text-white-50">Hôm nay</strong>
+                    </div>
+                  </div>
+
+                  <p class="small text-white-50 mt-3 mb-0">
+                    <i class="bx bx-shield-quarter me-1 text-warning"></i> Quyền lợi đối tác sẽ tự động được kích hoạt ngay sau khi Admin xác nhận giao dịch. Vui lòng không thực hiện thanh toán lại!
+                  </p>
+                </div>
+              </div>
+
+              <!-- Standard QR payment form -->
+              <div class="payment-section" v-else>
                 <h4 class="text-gold mb-4 fw-bold"><i class="bx bx-qr-scan me-2"></i>Thanh toán nhanh qua mã QR</h4>
                 
                 <div class="qr-payment-section text-center p-4 rounded-3xl mb-4">
@@ -102,7 +142,7 @@
                 </form>
                 
                 <p class="text-center text-white-50 small mt-3">
-                  <i class="bx bx-info-circle me-1"></i> Hệ thống tự động kích hoạt tài khoản đối tác sau 1-3 phút.
+                  <i class="bx bx-info-circle me-1"></i> Hệ thống sẽ ghi nhận giao dịch và gửi yêu cầu phê duyệt đến Admin.
                 </p>
               </div>
             </div>
@@ -114,7 +154,7 @@
         <div class="d-inline-flex align-items-center gap-5">
           <span class="note-item"><i class="bx bx-lock-alt"></i> Bảo mật tư liệu</span>
           <span class="note-item"><i class="bx bx-support"></i> Hỗ trợ dòng tộc 24/7</span>
-          <span class="note-item"><i class="bx bx-shield-quarter"></i> Tự động hóa thông minh</span>
+          <span class="note-item"><i class="bx bx-shield-quarter"></i> Kiểm duyệt an toàn</span>
         </div>
       </div>
     </div>
@@ -137,7 +177,8 @@ export default {
       ten_goi: 'Gói Đối Tác Quản Trị Gia Phả',
       isSubmitting: false,
       checkInterval: null,
-      paymentCode: null
+      paymentCode: null,
+      hasPending: false
     }
   },
   computed: {
@@ -183,15 +224,30 @@ export default {
       this.ten_goi = this.$route.query.ten_goi;
     }
 
+    // Check pending status on mount
+    this.checkPendingStatus();
     this.startAutoCheck();
   },
   beforeUnmount() {
     this.stopAutoCheck();
   },
   methods: {
+    getHeaders() {
+      return { headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` } };
+    },
+    checkPendingStatus() {
+      axios.get('http://127.0.0.1:8000/api/doi-tac/check-pending', this.getHeaders())
+        .then(res => {
+          if (res.data.status && res.data.has_pending) {
+            this.hasPending = true;
+            this.stopAutoCheck();
+          }
+        })
+        .catch(() => {});
+    },
     startAutoCheck() {
       this.checkInterval = setInterval(() => {
-        if (this.cleanAmount > 0 && !this.isSubmitting) {
+        if (this.cleanAmount > 0 && !this.isSubmitting && !this.hasPending) {
           this.checkPaymentSilent();
         }
       }, 5000);
@@ -213,19 +269,34 @@ export default {
       axios.post('http://127.0.0.1:8000/api/thanh-toan/xac-nhan-thanh-toan', {
         nguoi_dung_id: userId,
         noi_dung: this.transferContent + ' | Mua gói dịch vụ: ' + this.form.so_tien + ' VNĐ | QR Đối Tác',
-        trang_thai: 'Chờ duyệt'
+        trang_thai: 'Chờ duyệt',
+        so_tien: this.form.so_tien
       }, this.getHeaders())
       .then(res => {
         if (res.data.success) {
           this.stopAutoCheck();
-          toastr.success('Thăng cấp tài khoản Đối tác thành công! Hệ thống đang chuyển trang...');
-          this.$router.push('/doi-tac/dashboard');
+          
+          if (res.data.is_partner) {
+            // Cập nhật localStorage
+            if (user) {
+              if (user.user) user.user.is_doi_tac = 1;
+              else user.is_doi_tac = 1;
+              localStorage.setItem('user', JSON.stringify(user));
+            }
+            toastr.success('Chúc mừng! Tài khoản của bạn đã được nâng cấp lên Đối Tác thành công!');
+            window.dispatchEvent(new Event('storage'));
+            
+            setTimeout(() => {
+              window.location.href = '/doi-tac/dashboard';
+            }, 1500);
+            return;
+          }
+
+          this.hasPending = true;
+          toastr.success('Hệ thống đã nhận được thanh toán chuyển khoản! Yêu cầu đang ở trạng thái chờ duyệt.');
         }
       })
       .catch(() => {});
-    },
-    getHeaders() {
-      return { headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` } };
     },
     copyContent() {
       navigator.clipboard.writeText(this.transferContent);
@@ -252,19 +323,37 @@ export default {
       axios.post('http://127.0.0.1:8000/api/thanh-toan/xac-nhan-thanh-toan', {
         nguoi_dung_id: userId,
         noi_dung: this.transferContent + ' | Mua gói dịch vụ: ' + this.form.so_tien + ' VNĐ | QR Đối Tác',
-        trang_thai: 'Chờ duyệt'
+        trang_thai: 'Chờ duyệt',
+        so_tien: this.form.so_tien
       }, this.getHeaders())
       .then(res => {
         if (res.data.success) {
           this.stopAutoCheck();
-          toastr.success('Kích hoạt tài khoản đối tác thành công! Chào mừng Trưởng tộc.');
-          this.$router.push('/doi-tac/dashboard');
+
+          if (res.data.is_partner) {
+            // Cập nhật localStorage
+            if (user) {
+              if (user.user) user.user.is_doi_tac = 1;
+              else user.is_doi_tac = 1;
+              localStorage.setItem('user', JSON.stringify(user));
+            }
+            toastr.success('Chúc mừng! Tài khoản của bạn đã được nâng cấp lên Đối Tác thành công!');
+            window.dispatchEvent(new Event('storage'));
+            
+            setTimeout(() => {
+              window.location.href = '/doi-tac/dashboard';
+            }, 1500);
+            return;
+          }
+
+          toastr.success('Ghi nhận giao dịch thành công! Yêu cầu mua gói của bạn đang chờ Admin phê duyệt.');
+          this.hasPending = true;
         } else {
           toastr.error(res.data.message || 'Hệ thống chưa nhận được giao dịch chuyển khoản mua gói.');
         }
       })
       .catch((err) => { 
-        toastr.error('Có lỗi xảy ra trong quá trình kích hoạt tài khoản!'); 
+        toastr.error(err.response?.data?.message || 'Có lỗi xảy ra trong quá trình kích hoạt tài khoản!'); 
         console.error(err);
       })
       .finally(() => { this.isSubmitting = false; });
@@ -323,6 +412,13 @@ export default {
 
 .text-gradient {
     background: linear-gradient(90deg, #fbff00, #ff8c00);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.text-gradient-gold {
+    background: linear-gradient(135deg, #ffd700 0%, #ff8c00 100%);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
@@ -402,6 +498,89 @@ export default {
 }
 
 .note-item i { font-size: 1.2rem; color: #ffd700; }
+
+/* GLASS CARD PENDING */
+.glass-card-pending {
+    background: rgba(243, 156, 18, 0.04);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(243, 156, 18, 0.15) !important;
+}
+
+.ambient-glow {
+    position: absolute;
+    top: -50px; left: -50px; width: 150px; height: 150px;
+    background: radial-gradient(circle, rgba(243, 156, 18, 0.1) 0%, transparent 70%);
+    z-index: 0;
+    pointer-events: none;
+}
+
+.pending-icon-wrap {
+    position: relative;
+    width: 80px;
+    height: 80px;
+}
+
+.pending-icon-circle {
+    position: relative;
+    z-index: 2;
+    width: 80px;
+    height: 80px;
+    background: rgba(243, 156, 18, 0.1);
+    border: 2px solid rgba(243, 156, 18, 0.25);
+    border-radius: 50%;
+}
+
+.pending-pulse-circle {
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    border: 2px solid rgba(243, 156, 18, 0.4);
+    animation: pendingPulse 2s infinite;
+    z-index: 1;
+}
+
+@keyframes pendingPulse {
+    0% {
+        transform: scale(0.95);
+        opacity: 0.8;
+        box-shadow: 0 0 0 0 rgba(243, 156, 18, 0.4);
+    }
+    70% {
+        transform: scale(1.15);
+        opacity: 0;
+        box-shadow: 0 0 0 15px rgba(243, 156, 18, 0);
+    }
+    100% {
+        transform: scale(0.95);
+        opacity: 0;
+        box-shadow: 0 0 0 0 rgba(243, 156, 18, 0);
+    }
+}
+
+.status-pulse-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background: #d97706;
+    border-radius: 50%;
+    box-shadow: 0 0 0 0 rgba(217, 119, 6, 0.7);
+    animation: statusDotPulse 1.6s infinite;
+}
+
+@keyframes statusDotPulse {
+    0% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(217, 119, 6, 0.5);
+    }
+    70% {
+        transform: scale(1.1);
+        box-shadow: 0 0 0 5px rgba(217, 119, 6, 0);
+    }
+    100% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(217, 119, 6, 0);
+    }
+}
 
 @media (max-width: 992px) {
     .info-row { flex-direction: column; align-items: flex-start; gap: 5px; }

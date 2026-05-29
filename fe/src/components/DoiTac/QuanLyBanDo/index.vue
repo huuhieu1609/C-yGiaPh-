@@ -11,9 +11,14 @@
           </h4>
           <p class="text-muted font-sm mb-0">Quản lý định vị Mộ phần & Nhà thờ</p>
         </div>
-        <button v-if="!isCreating" class="btn btn-sm btn-create-new d-flex align-items-center gap-1" @click="startCreating">
-          <i class="bx bx-plus-circle"></i> Thêm mới
-        </button>
+        <div class="d-flex align-items-center gap-2">
+          <button class="btn btn-refresh-premium rounded-circle d-flex align-items-center justify-content-center" @click="loadAllData" :disabled="isLoading" title="Làm mới dữ liệu">
+            <i class="bx bx-sync fs-5 text-warning" :class="{'bx-spin': isLoading}"></i>
+          </button>
+          <button v-if="!isCreating" class="btn btn-sm btn-create-new d-flex align-items-center gap-1" @click="startCreating">
+            <i class="bx bx-plus-circle"></i> Thêm mới
+          </button>
+        </div>
       </div>
 
       <!-- Quick Statistics Cards (hidden when creating) -->
@@ -1207,5 +1212,26 @@ export default {
 @keyframes activePulseRing {
   0% { transform: rotate(45deg) scale(1); opacity: 0.8; }
   100% { transform: rotate(45deg) scale(2); opacity: 0; }
+}
+
+.btn-refresh-premium {
+  background: var(--input-bg) !important;
+  border: 1px solid var(--border-color) !important;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  transition: all 0.25s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.btn-refresh-premium:hover {
+  transform: rotate(30deg) scale(1.05);
+  border-color: #f97316 !important;
+  box-shadow: 0 4px 12px rgba(249, 115, 22, 0.15);
+}
+.btn-refresh-premium:active {
+  transform: scale(0.95);
 }
 </style>

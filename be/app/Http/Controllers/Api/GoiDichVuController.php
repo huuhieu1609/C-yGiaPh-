@@ -32,25 +32,26 @@ class GoiDichVuController extends Controller
     {
         try {
             $validated = $request->validate([
-                'ten_goi' => 'required|string|max:255',
-                'gia_ca' => 'required|numeric|min:0',
-                'thoi_han' => 'required|integer|min:1',
-                'max_doi' => 'required|integer|min:1',
+                'ten_goi'        => 'required|string|max:255',
+                'gia_ca'         => 'required|numeric|min:0',
+                'thoi_han'       => 'required|integer|min:1',
+                'max_doi'        => 'required|integer|min:1',
                 'max_thanh_vien' => 'required|integer|min:1',
-                'mo_ta' => 'nullable|string',
-                'trang_thai' => 'required|in:Hoạt động,Tạm dừng',
+                'mo_ta'          => 'nullable|string',
+                'trang_thai'     => 'required|in:Hoạt động,Tạm dừng',
+                'features'       => 'nullable|string',
             ]);
 
             $item = GoiDichVu::create($validated);
 
             return response()->json([
-                'status' => true,
+                'status'  => true,
                 'message' => 'Thêm gói dịch vụ thành công!',
-                'data' => $item,
+                'data'    => $item,
             ]);
         } catch (Exception $e) {
             return response()->json([
-                'status' => false,
+                'status'  => false,
                 'message' => 'Lỗi khi tạo mới: ' . $e->getMessage(),
             ], 500);
         }
@@ -61,25 +62,26 @@ class GoiDichVuController extends Controller
         try {
             $item = GoiDichVu::findOrFail($request->id);
             $validated = $request->validate([
-                'ten_goi' => 'required|string|max:255',
-                'gia_ca' => 'required|numeric|min:0',
-                'thoi_han' => 'required|integer|min:1',
-                'max_doi' => 'required|integer|min:1',
+                'ten_goi'        => 'required|string|max:255',
+                'gia_ca'         => 'required|numeric|min:0',
+                'thoi_han'       => 'required|integer|min:1',
+                'max_doi'        => 'required|integer|min:1',
                 'max_thanh_vien' => 'required|integer|min:1',
-                'mo_ta' => 'nullable|string',
-                'trang_thai' => 'required|in:Hoạt động,Tạm dừng',
+                'mo_ta'          => 'nullable|string',
+                'trang_thai'     => 'required|in:Hoạt động,Tạm dừng',
+                'features'       => 'nullable|string',
             ]);
 
             $item->update($validated);
 
             return response()->json([
-                'status' => true,
+                'status'  => true,
                 'message' => 'Cập nhật gói dịch vụ thành công!',
-                'data' => $item,
+                'data'    => $item,
             ]);
         } catch (Exception $e) {
             return response()->json([
-                'status' => false,
+                'status'  => false,
                 'message' => 'Lỗi khi cập nhật: ' . $e->getMessage(),
             ], 500);
         }

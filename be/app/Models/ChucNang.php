@@ -17,5 +17,6 @@ class ChucNang extends Model
         'url',
         'mo_ta',
         'trang_thai',
+        'hien_thi_cho',
     ];
 }

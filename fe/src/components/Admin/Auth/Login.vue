@@ -68,6 +68,7 @@ export default {
                         toastr.success(res.data.message);
                         localStorage.setItem('access_token', res.data.access_token);
                         localStorage.setItem('user', JSON.stringify(res.data.user));
+                        localStorage.setItem('permissions', JSON.stringify(res.data.permissions || []));
                         this.$router.push('/admin/dashboard');
                     }
                 })

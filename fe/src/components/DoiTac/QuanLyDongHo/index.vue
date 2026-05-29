@@ -75,11 +75,14 @@
 
         <div class="col-lg-8 col-md-12 mb-4">
             <div class="card genealogy-main-card shadow-sm border-0 radius-10 h-100">
-                <div class="card-header py-3 border-0 mt-2 px-4">
+                <div class="card-header py-3 border-0 mt-2 px-4 d-flex align-items-center justify-content-between">
                     <h5 class="mb-0 fw-bold text-uppercase theme-text-main">
                         <i class="bx bx-list-ul me-1 text-warning"></i>
                         Thông Tin Dòng Họ Của Tôi
                     </h5>
+                    <button class="btn btn-refresh-premium rounded-circle d-flex align-items-center justify-content-center" @click="loadData" :disabled="isLoading" title="Làm mới dữ liệu">
+                        <i class="bx bx-sync fs-5 text-warning" :class="{'bx-spin': isLoading}"></i>
+                    </button>
                 </div>
 
                 <div class="card-body p-4 pt-2">
@@ -320,4 +323,25 @@ export default {
 }
 .btn-action-edit:hover { background: #f59e0b !important; color: white !important; }
 .font-medium { font-weight: 500; }
+
+.btn-refresh-premium {
+  background: var(--input-bg) !important;
+  border: 1px solid var(--border-color) !important;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  transition: all 0.25s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.btn-refresh-premium:hover {
+  transform: rotate(30deg) scale(1.05);
+  border-color: #f97316 !important;
+  box-shadow: 0 4px 12px rgba(249, 115, 22, 0.15);
+}
+.btn-refresh-premium:active {
+  transform: scale(0.95);
+}
 </style>

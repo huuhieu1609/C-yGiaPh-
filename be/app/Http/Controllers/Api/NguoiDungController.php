@@ -12,7 +12,16 @@ class NguoiDungController extends Controller
     public function getData()
     {
         try {
-            $data = NguoiDung::all();
+            $user = auth('sanctum')->user();
+            if ($user && $user->vai_tro === 'Admin') {
+                $data = NguoiDung::all();
+            } else if ($user && $user->chi_nhanh_id) {
+                $data = NguoiDung::where('chi_nhanh_id', $user->chi_nhanh_id)->get();
+            } else if ($user) {
+                $data = NguoiDung::where('id', $user->id)->get();
+            } else {
+                $data = [];
+            }
 
             return response()->json([
                 'status' => true,
@@ -30,6 +39,7 @@ class NguoiDungController extends Controller
     public function create(Request $request)
     {
         try {
+            $user = auth('sanctum')->user();
             $data = [
                 'ho_ten' => $request->ho_ten,
                 'email' => $request->email,
@@ -39,6 +49,7 @@ class NguoiDungController extends Controller
                 'id_chuc_vu' => $request->id_chuc_vu,
                 'trang_thai' => $request->trang_thai,
                 'is_doi_tac' => $request->is_doi_tac,
+                'chi_nhanh_id' => $request->chi_nhanh_id ?? ($user ? $user->chi_nhanh_id : null),
             ];
             if ($request->has('mat_khau') && $request->mat_khau) {
                 $data['mat_khau'] = bcrypt($request->mat_khau);
@@ -71,6 +82,7 @@ class NguoiDungController extends Controller
                 'id_chuc_vu' => $request->id_chuc_vu,
                 'trang_thai' => $request->trang_thai,
                 'is_doi_tac' => $request->is_doi_tac,
+                'chi_nhanh_id' => $request->has('chi_nhanh_id') ? $request->chi_nhanh_id : $item->chi_nhanh_id,
             ];
             if ($request->has('mat_khau') && $request->mat_khau) {
                 $data['mat_khau'] = bcrypt($request->mat_khau);

@@ -23,7 +23,7 @@ class MoPhanController extends Controller
             if ($user->vai_tro === 'Admin') {
                 $data = MoPhan::with(['thanhVien'])->get();
             } elseif ($user->is_doi_tac == 1) {
-                $chiNhanhIds = ChiNhanh::where('id_nguoi_dung', $user->id)->pluck('id');
+                $chiNhanhIds = ChiNhanh::getManagedBranchIds($user);
                 $data = MoPhan::whereHas('thanhVien', function ($q) use ($chiNhanhIds) {
                     $q->whereIn('chi_nhanh_id', $chiNhanhIds);
                 })->with(['thanhVien'])->get();
@@ -105,7 +105,7 @@ class MoPhanController extends Controller
             // Phân quyền
             if ($user && $user->vai_tro !== 'Admin') {
                 if ($user->is_doi_tac == 1) {
-                    $chiNhanhIds = ChiNhanh::where('id_nguoi_dung', $user->id)->pluck('id');
+                    $chiNhanhIds = ChiNhanh::getManagedBranchIds($user);
                     $query->whereHas('thanhVien', function ($q) use ($chiNhanhIds) {
                         $q->whereIn('chi_nhanh_id', $chiNhanhIds);
                     });
@@ -239,16 +239,15 @@ class MoPhanController extends Controller
         }
     }
 
-    // ─── HELPER ─────────────────────────────────────────────────────────────────
-    private function ghiNhatKy(string $hanhDong)
+    private function ghiNhatKy(string $hanhDong, $chiTiet = null)
     {
         try {
             $user = auth('sanctum')->user();
             if ($user) {
-                \App\Models\NhatKyHoatDong::create([
-                    'nguoi_dung_id' => $user->id,
-                    'hanh_dong'     => $hanhDong,
-                ]);
+                if ($chiTiet === null) {
+                    $chiTiet = request()->except(['avatar', 'password', 'mat_khau']);
+                }
+                \App\Models\NhatKyHoatDong::ghiLog($hanhDong, $chiTiet, 'Thành công', $user->id);
             }
         } catch (\Throwable $e) {
             // Không ném lỗi nếu ghi nhật ký thất bại

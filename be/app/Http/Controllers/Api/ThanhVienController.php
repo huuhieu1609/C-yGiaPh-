@@ -58,9 +58,9 @@ class ThanhVienController extends Controller
             if ($user->vai_tro === 'Admin') {
                 $thanhViens = ThanhVien::where('chi_nhanh_id', $chiNhanhId)->get();
             } elseif ($user->is_doi_tac == 1) {
-                // Đối tác phải sở hữu chi nhánh này
-                $ownsBranch = \App\Models\ChiNhanh::where('id', $chiNhanhId)->where('id_nguoi_dung', $user->id)->exists();
-                if ($ownsBranch) {
+                // Đối tác phải sở hữu hoặc có quyền quản lý chi nhánh này
+                $managedBranchIds = \App\Models\ChiNhanh::getManagedBranchIds($user);
+                if (in_array((int)$chiNhanhId, $managedBranchIds)) {
                     $thanhViens = ThanhVien::where('chi_nhanh_id', $chiNhanhId)->get();
                 } else {
                     return response()->json(['status' => false, 'message' => 'Bạn không có quyền truy cập dòng họ này!'], 403);
@@ -96,7 +96,7 @@ class ThanhVienController extends Controller
             if ($user->vai_tro === 'Admin') {
                 $data = ThanhVien::all();
             } elseif ($user->is_doi_tac == 1) {
-                $chiNhanhIds = \App\Models\ChiNhanh::where('id_nguoi_dung', $user->id)->pluck('id');
+                $chiNhanhIds = \App\Models\ChiNhanh::getManagedBranchIds($user);
                 $data = ThanhVien::with('chiNhanh')->whereIn('chi_nhanh_id', $chiNhanhIds)->get();
             } else {
                 // Thành viên bình thường chỉ được lấy danh sách thành viên thuộc chi nhánh dòng họ của mình

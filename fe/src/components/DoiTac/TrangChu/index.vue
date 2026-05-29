@@ -12,8 +12,11 @@
                                 </h4>
                                 <p class="mb-0 opacity-75 banner-sub font-medium">Tên Dòng Họ sẽ được sử dụng làm tên Chi Nhánh chính của bạn trên hệ thống.</p>
                             </div>
-                            <div class="col-md-4 text-md-end mt-3 mt-md-0">
-                                <div class="input-group search-pill-group">
+                            <div class="col-md-4 text-md-end mt-3 mt-md-0 d-flex align-items-center justify-content-md-end gap-2">
+                                <button class="btn btn-refresh-premium rounded-circle d-flex align-items-center justify-content-center" @click="refreshAllData" :disabled="isLoading" title="Làm mới dữ liệu">
+                                    <i class="bx bx-sync fs-5 text-warning" :class="{'bx-spin': isLoading}"></i>
+                                </button>
+                                <div class="input-group search-pill-group mb-0">
                                     <input type="text" class="form-control premium-input border-1" v-model="newTenGoi" placeholder="Tên Dòng Họ (VD: Nguyễn Đức)">
                                     <button class="btn btn-action-orange fw-bold px-4 ms-2" @click="updatePartnerInfo">
                                         {{ partnerProfile && (partnerProfile.ten_goi === 'Gói Đối Tác' || !partnerProfile.ten_goi) ? 'Cập Nhật Ngay' : 'Đổi Tên' }}
@@ -237,6 +240,26 @@ export default {
                     }
                 });
         },
+        refreshAllData() {
+            this.isLoading = true;
+            Promise.all([
+                axios.get('http://127.0.0.1:8000/api/doi-tac/get-profile', this.getHeaders()),
+                axios.get('http://127.0.0.1:8000/api/doi-tac/statistics', this.getHeaders())
+            ]).then(([resProfile, resStats]) => {
+                if (resProfile.data.status) {
+                    this.partnerProfile = resProfile.data.data;
+                    this.newTenGoi = this.partnerProfile.ten_goi !== 'Gói Đối Tác' ? this.partnerProfile.ten_goi : '';
+                }
+                if (resStats.data.status) {
+                    this.stats = resStats.data.data;
+                }
+                toastr.success('Dữ liệu trang chủ đã được làm mới!');
+            }).catch(() => {
+                toastr.error('Lỗi khi tải lại dữ liệu.');
+            }).finally(() => {
+                this.isLoading = false;
+            });
+        },
         formatDate(dateString) {
             if (!dateString) return '---';
             return new Date(dateString).toLocaleDateString('vi-VN');
@@ -335,5 +358,24 @@ export default {
   border: 1px solid rgba(234, 88, 12, 0.15);
   border-radius: 30px !important;
   font-size: 11px !important;
+}
+
+.btn-refresh-premium {
+  background: var(--input-bg) !important;
+  border: 1px solid var(--border-color) !important;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  transition: all 0.25s ease;
+  flex-shrink: 0;
+}
+.btn-refresh-premium:hover {
+  transform: rotate(30deg) scale(1.05);
+  border-color: #f97316 !important;
+  box-shadow: 0 4px 12px rgba(249, 115, 22, 0.15);
+}
+.btn-refresh-premium:active {
+  transform: scale(0.95);
 }
 </style>

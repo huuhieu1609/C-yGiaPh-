@@ -26,6 +26,32 @@ class NhatKyHoatDongController extends Controller
         }
     }
 
+    public function getMyLogs(Request $request)
+    {
+        try {
+            $user = auth('sanctum')->user();
+            if (!$user) {
+                return response()->json(['status' => false, 'message' => 'Chưa đăng nhập!'], 401);
+            }
+
+            $data = NhatKyHoatDong::with('nguoiDung')->where('nguoi_dung_id', $user->id)
+                ->orderBy('id', 'desc')
+                ->limit(200)
+                ->get();
+
+            return response()->json([
+                'status'  => true,
+                'message' => 'Lấy nhật ký cá nhân thành công!',
+                'data'    => $data,
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'status'  => false,
+                'message' => 'Có lỗi xảy ra: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
     public function create(Request $request)
     {
         try {

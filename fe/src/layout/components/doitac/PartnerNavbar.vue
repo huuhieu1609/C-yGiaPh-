@@ -16,7 +16,7 @@
       <i class='bx' :class="isCollapsed ? 'bx-chevron-right' : 'bx-chevron-left'"></i>
     </button>
 
-    <div class="user-greeting d-flex align-items-center gap-3 mb-2">
+    <div class="user-greeting d-flex align-items-center gap-3 mb-2" @click="goToProfile" style="cursor: pointer;" title="Xem hồ sơ & đổi mật khẩu">
       <div class="avatar flex-shrink-0">
         <span>{{ userName.charAt(0).toUpperCase() }}</span>
         <div class="avatar-ring"></div>
@@ -129,6 +129,13 @@
             <span class="nav-dot hide-on-collapse"></span>
           </router-link>
         </li>
+        <li class="nav-item item-events" v-for="menu in comingSoonMenus" :key="'cs'+menu.id">
+          <router-link :to="'/coming-soon?name=' + encodeURIComponent(menu.ten_chuc_nang)" class="nav-link" active-class="active" :title="menu.ten_chuc_nang">
+            <span class="nav-icon"><i class="bx bx-crown text-warning"></i></span>
+            <span class="hide-on-collapse nav-label text-gradient-gold-sidebar">{{ menu.ten_chuc_nang }}</span>
+            <span class="nav-dot hide-on-collapse"></span>
+          </router-link>
+        </li>
       </ul>
     </div>
 
@@ -149,6 +156,8 @@
 </template>
 
 <script>
+import axios from 'axios';
+
 export default {
   name: 'PartnerNavbar',
   props: {
@@ -161,15 +170,19 @@ export default {
   data() {
     return {
       userName: 'Đối Tác',
-      isDarkMode: false
+      isDarkMode: false,
+      permissions: [],
+      isMasterAdmin: false,
+      comingSoonMenus: []
     }
   },
   mounted() {
-    // Đọc trạng thái theme đã lưu từ trước
+    // Đọc trạng thái theme
     const savedTheme = localStorage.getItem('theme') || 'light';
     this.isDarkMode = savedTheme === 'dark';
     document.documentElement.setAttribute('data-theme', savedTheme);
 
+    // Đọc thông tin user
     const userStr = localStorage.getItem('user');
     if (userStr) {
       try {
@@ -179,12 +192,59 @@ export default {
         } else if (user && user.username) {
           this.userName = user.username;
         }
+        // Master Admin luôn có toàn quyền
+        this.isMasterAdmin = user?.vai_tro?.toLowerCase() === 'admin';
       } catch (e) {
         console.error("Lỗi parse thông tin user trong Sidebar:", e);
       }
     }
+
+    // Đọc permissions từ localStorage (được lưu khi login)
+    try {
+      const permsStr = localStorage.getItem('permissions');
+      this.permissions = permsStr ? JSON.parse(permsStr) : [];
+    } catch (e) {
+      this.permissions = [];
+    }
+
+    // Tải danh sách menu Coming Soon động
+    this.loadComingSoonMenus();
   },
   methods: {
+    loadComingSoonMenus() {
+      axios.get('http://127.0.0.1:8000/api/chuc-nang/coming-soon-menus', {
+        headers: { Authorization: 'Bearer ' + localStorage.getItem('access_token') }
+      }).then(res => {
+        if (res.data && res.data.status) {
+          this.comingSoonMenus = res.data.data || [];
+        }
+      }).catch(() => {});
+    },
+    /**
+     * Kiểm tra user có quyền chức năng không.
+     * Master Admin (vai_tro='admin') hoặc Đối Tác không có chức vụ -> hiện tất cả.
+     */
+    hasPermission(chucNang) {
+      if (this.isMasterAdmin) return true;
+
+      // Đọc thông tin user từ localStorage để kiểm tra id_chuc_vu
+      const userStr = localStorage.getItem('user');
+      let idChucVu = null;
+      if (userStr) {
+        try {
+          const user = JSON.parse(userStr);
+          idChucVu = user?.id_chuc_vu;
+        } catch (e) {}
+      }
+
+      // Nếu không có chức vụ (là Đối Tác chính) -> có toàn quyền
+      if (idChucVu === null || idChucVu === undefined) {
+        return true;
+      }
+
+      // Nếu có chức vụ -> bắt buộc phải có tên quyền trong mảng permissions
+      return this.permissions.includes(chucNang);
+    },
     toggleTheme() {
       this.isDarkMode = !this.isDarkMode;
       const themeStr = this.isDarkMode ? 'dark' : 'light';
@@ -194,10 +254,14 @@ export default {
     logout() {
       localStorage.removeItem('access_token');
       localStorage.removeItem('user');
+      localStorage.removeItem('permissions');
       this.$router.push('/login');
     },
     goHome() {
       this.$router.push('/');
+    },
+    goToProfile() {
+      this.$router.push('/profile');
     }
   }
 }
@@ -354,4 +418,10 @@ export default {
 .admin-sidebar.sidebar-collapsed-state .btn-home,
 .admin-sidebar.sidebar-collapsed-state .btn-logout { padding: 12px 0; justify-content: center; border-radius: 14px !important; }
 .admin-sidebar.sidebar-collapsed-state .btn-logout { background: var(--neo-bg) !important; border: 1px solid rgba(244, 63, 94, 0.2); color: #f43f5e; }
+.text-gradient-gold-sidebar {
+  background: linear-gradient(135deg, #b8860b 0%, #ffd700 50%, #e5a93b 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  font-weight: 600 !important;
+}
 </style>

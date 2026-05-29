@@ -14,8 +14,7 @@ class DeXuatController extends Controller
         try {
             $user = auth('sanctum')->user();
             if ($user && $user->is_doi_tac == 1) {
-                // Get branches owned by this partner
-                $chiNhanhIds = \App\Models\ChiNhanh::where('id_nguoi_dung', $user->id)->pluck('id')->toArray();
+                $chiNhanhIds = \App\Models\ChiNhanh::getManagedBranchIds($user);
                 
                 $proposals = DeXuatChinhSua::with(['thanhVien', 'proposedBy', 'approver'])
                     ->orderBy('id', 'desc')

@@ -6,10 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class NguoiDung extends Authenticatable
 {
-    use HasApiTokens, HasFactory;
+    use HasApiTokens, HasFactory, SoftDeletes;
 
     protected $table = "nguoi_dungs";
     protected $fillable = ["ho_ten", "email", "mat_khau", "so_dien_thoai", "avatar", "vai_tro", "id_chuc_vu", "trang_thai", "hash_reset", "is_doi_tac", "chi_nhanh_id"];

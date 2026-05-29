@@ -13,6 +13,9 @@
           <li v-if="isLoggedIn"><router-link to="/tuong-niem">Dòng Lịch Sử</router-link></li>
           <li><router-link to="/tra-cuu">Tra Cứu</router-link></li>
           <li><router-link to="/dich-vu-goi">Dịch Vụ Gói</router-link></li>
+          <li v-for="menu in comingSoonMenus" :key="'cs'+menu.id">
+            <router-link :to="'/coming-soon?name=' + encodeURIComponent(menu.ten_chuc_nang)" class="text-gold-client-menu">{{ menu.ten_chuc_nang }}</router-link>
+          </li>
         </ul>
         <div class="nav-actions">
           <template v-if="!isLoggedIn">
@@ -87,6 +90,8 @@
 </template>
 
 <script>
+import axios from 'axios';
+
 export default {
   name: 'Topclient',
   data() {
@@ -99,7 +104,8 @@ export default {
       isDropdownOpen: false,
       userName: '',
       defaultAvatar: "data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%231e293b'/%3E%3Ccircle cx='50' cy='35' r='18' fill='%23d4af37'/%3E%3Cpath d='M15 85 C15 67 30 55 50 55 C70 55 85 67 85 85 Z' fill='%23d4af37'/%3E%3C/svg%3E",
-      userAvatar: "data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%231e293b'/%3E%3Ccircle cx='50' cy='35' r='18' fill='%23d4af37'/%3E%3Cpath d='M15 85 C15 67 30 55 50 55 C70 55 85 67 85 85 Z' fill='%23d4af37'/%3E%3C/svg%3E"
+      userAvatar: "data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%231e293b'/%3E%3Ccircle cx='50' cy='35' r='18' fill='%23d4af37'/%3E%3Cpath d='M15 85 C15 67 30 55 50 55 C70 55 85 67 85 85 Z' fill='%23d4af37'/%3E%3C/svg%3E",
+      comingSoonMenus: []
     }
   },
   directives: {
@@ -121,12 +127,24 @@ export default {
     window.addEventListener('scroll', this.handleScroll);
     window.addEventListener('profile-updated', this.checkLogin);
     this.checkLogin();
+    this.loadComingSoonMenus();
   },
   unmounted() {
     window.removeEventListener('scroll', this.handleScroll);
     window.removeEventListener('profile-updated', this.checkLogin);
   },
   methods: {
+    loadComingSoonMenus() {
+      const token = localStorage.getItem('access_token');
+      if (!token) return;
+      axios.get('http://127.0.0.1:8000/api/chuc-nang/coming-soon-menus', {
+        headers: { Authorization: 'Bearer ' + token }
+      }).then(res => {
+        if (res.data && res.data.status) {
+          this.comingSoonMenus = res.data.data || [];
+        }
+      }).catch(() => {});
+    },
     handleScroll() {
       this.isScrolled = window.scrollY > 50;
     },
@@ -441,5 +459,14 @@ export default {
 }
 .partner-link:hover {
   background: #fdf8ef !important;
+}
+.text-gold-client-menu {
+  color: #ffd700 !important;
+  font-weight: 700 !important;
+  text-shadow: 0 0 4px rgba(255, 215, 0, 0.2);
+}
+.text-gold-client-menu:hover {
+  color: #ffffff !important;
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.4);
 }
 </style>

@@ -50,7 +50,7 @@ class DoiTacController extends Controller
 
     public function getStatistics(Request $request): JsonResponse
     {
-        $chiNhanhIds = ChiNhanh::where('id_nguoi_dung', $request->user()->id)->pluck('id');
+        $chiNhanhIds = ChiNhanh::getManagedBranchIds($request->user());
         $memberQuery = ThanhVien::whereIn('chi_nhanh_id', $chiNhanhIds);
 
         return response()->json([
@@ -98,17 +98,29 @@ class DoiTacController extends Controller
 
     public function layChiNhanhCuaDoiTac(Request $request): JsonResponse
     {
-        $chiNhanhs = ChiNhanh::where('id_nguoi_dung', $request->user()->id)->get();
+        $chiNhanhs = ChiNhanh::whereIn('id', ChiNhanh::getManagedBranchIds($request->user()))->get();
 
         return response()->json(['data' => $chiNhanhs]);
+    }
+
+    public function checkPending(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $pending = DoiTac::where('id_nguoi_dung', $user->id)
+            ->where('trang_thai', 'PENDING')
+            ->first();
+
+        return response()->json([
+            'status' => true,
+            'has_pending' => $pending ? true : false,
+            'data' => $pending
+        ]);
     }
 
     public function traCuuThanhVien(Request $request, int|string $chiNhanhId): JsonResponse
     {
         $keyword = $request->input('tu_khoa');
-        $ownsBranch = ChiNhanh::where('id_nguoi_dung', $request->user()->id)
-            ->where('id', $chiNhanhId)
-            ->exists();
+        $ownsBranch = in_array((int)$chiNhanhId, ChiNhanh::getManagedBranchIds($request->user()));
 
         if (! $ownsBranch) {
             return response()->json([

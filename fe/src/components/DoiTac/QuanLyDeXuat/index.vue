@@ -33,11 +33,16 @@
             <h5 class="fw-bold mb-0 theme-text-main">
               <i class="bx bx-git-pull-request me-2 text-warning"></i>Quản Lý Kiểm Duyệt Đề Xuất Phả Hệ
             </h5>
-            <div class="d-flex gap-2 project-filter-group">
-              <button class="btn btn-sm btn-filter" :class="{active: filterStatus === 'all'}" @click="filterStatus = 'all'">Tất cả</button>
-              <button class="btn btn-sm btn-filter" :class="{active: filterStatus === 'pending'}" @click="filterStatus = 'pending'">Chờ duyệt</button>
-              <button class="btn btn-sm btn-filter" :class="{active: filterStatus === 'approved'}" @click="filterStatus = 'approved'">Đã duyệt</button>
-              <button class="btn btn-sm btn-filter" :class="{active: filterStatus === 'rejected'}" @click="filterStatus = 'rejected'">Từ chối</button>
+            <div class="d-flex align-items-center gap-2">
+              <button class="btn btn-refresh-premium rounded-circle d-flex align-items-center justify-content-center" @click="refreshData" :disabled="isLoading" title="Làm mới dữ liệu">
+                <i class="bx bx-sync fs-5 text-warning" :class="{'bx-spin': isLoading}"></i>
+              </button>
+              <div class="d-flex gap-2 project-filter-group">
+                <button class="btn btn-sm btn-filter" :class="{active: filterStatus === 'all'}" @click="filterStatus = 'all'">Tất cả</button>
+                <button class="btn btn-sm btn-filter" :class="{active: filterStatus === 'pending'}" @click="filterStatus = 'pending'">Chờ duyệt</button>
+                <button class="btn btn-sm btn-filter" :class="{active: filterStatus === 'approved'}" @click="filterStatus = 'approved'">Đã duyệt</button>
+                <button class="btn btn-sm btn-filter" :class="{active: filterStatus === 'rejected'}" @click="filterStatus = 'rejected'">Từ chối</button>
+              </div>
             </div>
           </div>
           <div class="card-body p-0">
@@ -244,6 +249,21 @@ export default {
         toastr.error(err.response?.data?.message || 'Không thể lấy dữ liệu danh sách đề xuất.');
       })
       .finally(() => {
+        this.isLoading = false;
+      });
+    },
+    refreshData() {
+      this.isLoading = true;
+      Promise.all([
+        axios.get('http://127.0.0.1:8000/api/chi-nhanh/get-data', this.getHeaders()),
+        axios.get('http://127.0.0.1:8000/api/de-xuat/get-data', this.getHeaders())
+      ]).then(([resC, resP]) => {
+        if (resC.data.status) this.listChiNhanh = resC.data.data;
+        if (resP.data.status) this.proposals = resP.data.data;
+        toastr.success('Dữ liệu đề xuất đã được làm mới!');
+      }).catch(err => {
+        toastr.error('Lỗi khi tải lại dữ liệu đề xuất.');
+      }).finally(() => {
         this.isLoading = false;
       });
     },
@@ -461,5 +481,26 @@ export default {
 .diff-highlight-danger {
   background-color: rgba(239, 68, 68, 0.08) !important; color: #ef4444 !important;
   border: 1px solid rgba(239, 68, 68, 0.18); padding: 2px 8px; border-radius: 6px;
+}
+
+.btn-refresh-premium {
+  background: var(--input-bg) !important;
+  border: 1px solid var(--border-color) !important;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  transition: all 0.25s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.btn-refresh-premium:hover {
+  transform: rotate(30deg) scale(1.05);
+  border-color: #f97316 !important;
+  box-shadow: 0 4px 12px rgba(249, 115, 22, 0.15);
+}
+.btn-refresh-premium:active {
+  transform: scale(0.95);
 }
 </style>

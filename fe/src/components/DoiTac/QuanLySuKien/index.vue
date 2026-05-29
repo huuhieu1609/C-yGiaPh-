@@ -7,9 +7,14 @@
             <h5 class="fw-bold mb-0 theme-text-main">
               <i class="bx bx-calendar-event me-2 text-warning"></i>Quản Lý Sự Kiện Dòng Họ
             </h5>
-            <button class="btn btn-sm btn-gradient-orange radius-30 px-3 fw-bold shadow-sm" @click="openAddModal">
-              <i class="bx bx-plus-circle me-1"></i> Tạo Sự Kiện Mới
-            </button>
+            <div class="d-flex align-items-center gap-2">
+              <button class="btn btn-refresh-premium rounded-circle d-flex align-items-center justify-content-center" @click="refreshData" :disabled="isLoading" title="Làm mới dữ liệu">
+                <i class="bx bx-sync fs-5 text-warning" :class="{'bx-spin': isLoading}"></i>
+              </button>
+              <button class="btn btn-sm btn-gradient-orange radius-30 px-3 fw-bold shadow-sm" @click="openAddModal">
+                <i class="bx bx-plus-circle me-1"></i> Tạo Sự Kiện Mới
+              </button>
+            </div>
           </div>
           <div class="card-body p-0">
             <div class="table-responsive table-container-premium mx-4 mb-4">
@@ -323,6 +328,32 @@ export default {
         this.isLoading = false;
       });
     },
+    refreshData() {
+      this.isLoading = true;
+      Promise.all([
+        axios.get('http://127.0.0.1:8000/api/su-kien/get-data', this.getHeaders()),
+        axios.get('http://127.0.0.1:8000/api/chi-nhanh/get-data', this.getHeaders())
+      ]).then(([resEvents, resBranch]) => {
+        if (resEvents.data.status) {
+          this.events = resEvents.data.data;
+          if (this.events.length > 0) {
+            const stillExists = this.events.find(x => x.id === this.selectedEventId);
+            this.selectEvent(stillExists || this.events[0]);
+          } else {
+            this.selectedEventId = null;
+            this.participants = [];
+          }
+        }
+        if (resBranch.data.status) {
+          this.listChiNhanh = resBranch.data.data;
+        }
+        toastr.success('Dữ liệu sự kiện đã được làm mới!');
+      }).catch(() => {
+        toastr.error('Lỗi khi tải lại dữ liệu sự kiện.');
+      }).finally(() => {
+        this.isLoading = false;
+      });
+    },
     loadChiNhanh() {
       axios.get('http://127.0.0.1:8000/api/chi-nhanh/get-data', this.getHeaders())
       .then(res => {
@@ -630,4 +661,25 @@ export default {
   transform: translateY(-1.5px);
 }
 .premium-textarea:focus { border-color: #f97316 !important; background-color: var(--card-bg) !important; }
+
+.btn-refresh-premium {
+  background: var(--input-bg) !important;
+  border: 1px solid var(--border-color) !important;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  transition: all 0.25s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.btn-refresh-premium:hover {
+  transform: rotate(30deg) scale(1.05);
+  border-color: #f97316 !important;
+  box-shadow: 0 4px 12px rgba(249, 115, 22, 0.15);
+}
+.btn-refresh-premium:active {
+  transform: scale(0.95);
+}
 </style>

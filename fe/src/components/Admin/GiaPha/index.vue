@@ -31,6 +31,10 @@
                                 <button class="btn btn-white px-3" @click="resetView" title="Đặt lại"><i class="bx bx-refresh"></i></button>
                             </div>
 
+                            <button class="btn btn-refresh-premium rounded-circle d-flex align-items-center justify-content-center me-2 shadow-sm" @click="loadData" :disabled="isLoading" title="Làm mới phả hệ">
+                                <i class="bx bx-sync fs-5 text-warning" :class="{'bx-spin': isLoading}"></i>
+                            </button>
+
                             <button class="btn btn-primary radius-30 px-4 shadow-sm" @click="openAddModal">
                                 <i class="bx bx-plus"></i> Thêm Thành Viên
                             </button>
@@ -417,6 +421,7 @@ export default {
             searchQuery: '',
             showQRModal: false,
             activeMember: {},
+            isLoading: false,
             
             // Zoom & Pan state
             zoom: 1,
@@ -516,11 +521,18 @@ export default {
                 });
         },
         loadData() {
+            this.isLoading = true;
             axios.get('http://127.0.0.1:8000/api/thanh-vien/get-data', this.getHeaders())
                 .then(res => {
                     if (res.data.status) {
                         this.allMembers = res.data.data;
                     }
+                })
+                .catch(err => {
+                    toastr.error('Lỗi khi tải phả hệ!');
+                })
+                .finally(() => {
+                    this.isLoading = false;
                 });
         },
         filterTree() {
@@ -961,5 +973,24 @@ export default {
 }
 .drop-shadow {
     text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+
+/* Circular reload button */
+.btn-refresh-premium {
+    background: rgba(0, 0, 0, 0.03) !important;
+    border: 1px solid rgba(0, 0, 0, 0.05) !important;
+    width: 36px;
+    height: 36px;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+    transition: all 0.25s ease;
+}
+.btn-refresh-premium:hover {
+    transform: rotate(30deg) scale(1.05);
+    border-color: #ffd700 !important;
+    background: rgba(255, 215, 0, 0.05) !important;
+}
+.btn-refresh-premium:active {
+    transform: scale(0.95);
 }
 </style>

@@ -20,7 +20,7 @@
     </button>
 
     <!-- User Section -->
-    <div class="user-greeting d-flex align-items-center gap-3">
+    <div class="user-greeting d-flex align-items-center gap-3" @click="goToProfile" style="cursor: pointer;" title="Xem hồ sơ & đổi mật khẩu">
       <div class="avatar flex-shrink-0">
         <span>A</span>
         <div class="avatar-ring"></div>
@@ -70,35 +70,17 @@
         </li>
 
         <li class="nav-item item-members">
-          <router-link to="/admin/chi-nhanh" class="nav-link" active-class="active" title="Quản Lý Chi Nhánh">
-            <span class="nav-icon"><i class="bx bx-buildings"></i></span>
-            <span class="hide-on-collapse nav-label">Chi Nhánh Họ</span>
+          <router-link to="/admin/yeu-cau-mua-goi" class="nav-link" active-class="active" title="Yêu Cầu Mua Gói">
+            <span class="nav-icon"><i class="bx bx-receipt"></i></span>
+            <span class="hide-on-collapse nav-label">Yêu Cầu Mua Gói</span>
             <span class="nav-dot hide-on-collapse"></span>
           </router-link>
         </li>
 
         <li class="nav-item item-clan">
-          <router-link to="/admin/doi-toc-ho" class="nav-link" active-class="active" title="Đời Tộc Họ">
-            <span class="nav-icon"><i class="bx bx-layer"></i></span>
-            <span class="hide-on-collapse nav-label">Đời Tộc Họ</span>
-            <span class="nav-dot hide-on-collapse"></span>
-          </router-link>
-        </li>
-
-        <li class="section-heading hide-on-collapse">Đối Tác & Người Dùng</li>
-
-        <li class="nav-item item-user">
-          <router-link to="/admin/nguoi-dung" class="nav-link" active-class="active" title="Quản Lý Người Dùng">
-            <span class="nav-icon"><i class="bx bx-user"></i></span>
-            <span class="hide-on-collapse nav-label">Người Dùng</span>
-            <span class="nav-dot hide-on-collapse"></span>
-          </router-link>
-        </li>
-
-        <li class="nav-item item-partner">
-          <router-link to="/admin/doi-tac" class="nav-link" active-class="active" title="Quản Lý Đối Tác">
-            <span class="nav-icon"><i class="bx bx-briefcase"></i></span>
-            <span class="hide-on-collapse nav-label">Quản Lý Đối Tác</span>
+          <router-link to="/admin/quan-ly-tai-khoan" class="nav-link" active-class="active" title="Quản Lý Tài Khoản">
+            <span class="nav-icon"><i class="bx bx-user-check"></i></span>
+            <span class="hide-on-collapse nav-label">Quản Lý Tài Khoản</span>
             <span class="nav-dot hide-on-collapse"></span>
           </router-link>
         </li>
@@ -123,18 +105,10 @@
           </router-link>
         </li>
 
-        <li class="nav-item item-security">
-          <router-link to="/admin/chuc-vu" class="nav-link" active-class="active" title="Quản Lý Chức Vụ">
-            <span class="nav-icon"><i class="bx bx-id-card"></i></span>
-            <span class="hide-on-collapse nav-label">Quản Lý Chức Vụ</span>
-            <span class="nav-dot hide-on-collapse"></span>
-          </router-link>
-        </li>
-
-        <li class="nav-item item-security">
-          <router-link to="/admin/chuc-nang" class="nav-link" active-class="active" title="Quản Lý Chức Năng">
-            <span class="nav-icon"><i class="bx bx-cog"></i></span>
-            <span class="hide-on-collapse nav-label">Quản Lý Chức Năng</span>
+        <li class="nav-item item-security" v-for="menu in comingSoonMenus" :key="'cs'+menu.id">
+          <router-link :to="'/coming-soon?name=' + encodeURIComponent(menu.ten_chuc_nang)" class="nav-link" active-class="active" :title="menu.ten_chuc_nang">
+            <span class="nav-icon"><i class="bx bx-crown text-warning"></i></span>
+            <span class="hide-on-collapse nav-label text-gradient-gold-sidebar">{{ menu.ten_chuc_nang }}</span>
             <span class="nav-dot hide-on-collapse"></span>
           </router-link>
         </li>
@@ -169,6 +143,8 @@
 </template>
 
 <script>
+import axios from 'axios';
+
 export default {
   name: 'AdminNavbar',
   props: {
@@ -181,15 +157,19 @@ export default {
   data() {
     return {
       userName: 'Quản Trị Viên',
-      isDarkMode: false
+      isDarkMode: false,
+      permissions: [],
+      isMasterAdmin: false,
+      comingSoonMenus: []
     }
   },
   mounted() {
-    // Đọc trạng thái theme đã lưu từ trước
+    // Đọc trạng thái theme
     const savedTheme = localStorage.getItem('theme') || 'light';
     this.isDarkMode = savedTheme === 'dark';
     document.documentElement.setAttribute('data-theme', savedTheme);
 
+    // Đọc thông tin user
     const userStr = localStorage.getItem('user');
     if (userStr) {
       try {
@@ -199,12 +179,42 @@ export default {
         } else if (user && user.username) {
           this.userName = user.username;
         }
+        // Master Admin luôn có toàn quyền, không bị lọc menu
+        this.isMasterAdmin = user?.vai_tro?.toLowerCase() === 'admin';
       } catch (e) {
-        console.error("Lỗi parse thông tin user trong Sidebar:", e);
+        console.error('Lỗi parse thông tin user trong Sidebar:', e);
       }
     }
+
+    // Đọc permissions từ localStorage (được lưu khi login)
+    try {
+      const permsStr = localStorage.getItem('permissions');
+      this.permissions = permsStr ? JSON.parse(permsStr) : [];
+    } catch (e) {
+      this.permissions = [];
+    }
+
+    // Tải danh sách menu Coming Soon động
+    this.loadComingSoonMenus();
   },
   methods: {
+    loadComingSoonMenus() {
+      axios.get('http://127.0.0.1:8000/api/chuc-nang/coming-soon-menus', {
+        headers: { Authorization: 'Bearer ' + localStorage.getItem('access_token') }
+      }).then(res => {
+        if (res.data && res.data.status) {
+          this.comingSoonMenus = res.data.data || [];
+        }
+      }).catch(() => {});
+    },
+    /**
+     * Kiểm tra user có quyền truy cập chức năng không.
+     * Master Admin luôn trả về true (không bị giới hạn).
+     */
+    hasPermission(chucNang) {
+      if (this.isMasterAdmin) return true;
+      return this.permissions.includes(chucNang);
+    },
     toggleTheme() {
       this.isDarkMode = !this.isDarkMode;
       const themeStr = this.isDarkMode ? 'dark' : 'light';
@@ -214,14 +224,19 @@ export default {
     logout() {
       localStorage.removeItem('access_token');
       localStorage.removeItem('user');
+      localStorage.removeItem('permissions');
       this.$router.push('/login');
     },
     goHome() {
       this.$router.push('/');
+    },
+    goToProfile() {
+      this.$router.push('/profile');
     }
   }
 }
 </script>
+
 
 <style scoped>
 .admin-sidebar {
@@ -381,4 +396,10 @@ export default {
 .admin-sidebar.sidebar-collapsed-state .btn-home,
 .admin-sidebar.sidebar-collapsed-state .btn-logout { padding: 12px 0; justify-content: center; border-radius: 14px !important; }
 .admin-sidebar.sidebar-collapsed-state .btn-logout { background: var(--neo-bg) !important; border: 1px solid rgba(79, 70, 229, 0.2); color: #4f46e5; }
+.text-gradient-gold-sidebar {
+  background: linear-gradient(135deg, #b8860b 0%, #ffd700 50%, #e5a93b 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  font-weight: 600 !important;
+}
 </style>

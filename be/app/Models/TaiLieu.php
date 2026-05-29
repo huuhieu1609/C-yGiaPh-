@@ -10,6 +10,6 @@ class TaiLieu extends Model
     use HasFactory;
 
     protected $table = "tai_lieus";
-    protected $fillable = ["tieu_de", "file_path", "mo_ta"];
+    protected $fillable = ["tieu_de", "file_path", "mo_ta", "chi_nhanh_id"];
 
 }

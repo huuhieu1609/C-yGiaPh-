@@ -7,9 +7,9 @@
                     <div class="card-body p-4">
                         <div class="d-flex align-items-center">
                             <div class="stat-content flex-grow-1">
-                                <p class="stat-label mb-1">Tổng Thành Viên</p>
+                                <p class="stat-label mb-1">Tổng Nhân Khẩu</p>
                                 <h3 class="stat-number my-1 fw-bold text-dark">{{ formatNumber(metrics.total_members) }}</h3>
-                                <p class="stat-desc mb-0 text-success"><i class="bx bx-trending-up"></i> +2.5% so với tháng trước</p>
+                                <p class="stat-desc mb-0 text-success"><i class="bx bx-check-circle"></i> Đã đồng bộ hệ thống</p>
                             </div>
                             <div class="stat-icon-box rounded-circle">
                                 <i class='bx bxs-group'></i>
@@ -24,9 +24,9 @@
                     <div class="card-body p-4">
                         <div class="d-flex align-items-center">
                             <div class="stat-content flex-grow-1">
-                                <p class="stat-label mb-1">Cây Gia Phả</p>
+                                <p class="stat-label mb-1">Chi Nhánh & Dòng Họ</p>
                                 <h3 class="stat-number my-1 fw-bold text-dark">{{ formatNumber(metrics.total_trees) }}</h3>
-                                <p class="stat-desc mb-0 text-success"><i class="bx bx-trending-up"></i> +5.4% so với tháng trước</p>
+                                <p class="stat-desc mb-0 text-success"><i class="bx bx-git-branch"></i> Hoạt động ổn định</p>
                             </div>
                             <div class="stat-icon-box rounded-circle">
                                 <i class='bx bxs-share-alt'></i>
@@ -41,7 +41,7 @@
                     <div class="card-body p-4">
                         <div class="d-flex align-items-center">
                             <div class="stat-content flex-grow-1">
-                                <p class="stat-label mb-1">Đăng Ký & Đóng Góp</p>
+                                <p class="stat-label mb-1">Doanh Thu Gói Dịch Vụ</p>
                                 <h3 class="stat-number my-1 fw-bold text-dark" style="font-size: 20px;">{{ formatCurrency(metrics.total_contributions) }}</h3>
                                 <p class="stat-desc mb-0 text-success"><i class="bx bx-trending-up"></i> Tăng trưởng bền vững</p>
                             </div>
@@ -58,12 +58,12 @@
                     <div class="card-body p-4">
                         <div class="d-flex align-items-center">
                             <div class="stat-content flex-grow-1">
-                                <p class="stat-label mb-1">Yêu Cầu Hỗ Trợ</p>
-                                <h3 class="stat-number my-1 fw-bold text-dark">{{ formatNumber(metrics.total_requests) }}</h3>
-                                <p class="stat-desc mb-0 text-success"><i class="bx bx-trending-up"></i> +8.4% so với tháng trước</p>
+                                <p class="stat-label mb-1">Tài Khoản Đăng Ký</p>
+                                <h3 class="stat-number my-1 fw-bold text-dark">{{ formatNumber(metrics.total_users) }}</h3>
+                                <p class="stat-desc mb-0 text-success"><i class="bx bx-user-check"></i> Đang được quản lý</p>
                             </div>
                             <div class="stat-icon-box rounded-circle">
-                                <i class='bx bxs-cloud-upload'></i>
+                                <i class='bx bxs-user-detail'></i>
                             </div>
                         </div>
                     </div>
@@ -159,15 +159,15 @@
                         <!-- Premium Analytics Summary Badges -->
                         <div class="chart-summary-stats d-flex gap-4 mb-4 pb-3 border-bottom border-light-subtle flex-wrap">
                             <div class="summary-stat-box">
-                                <span class="summary-label text-muted small d-block mb-1">Tốc độ gia tăng</span>
+                                <span class="summary-label text-muted small d-block mb-1">Quy Mô Hệ Thống</span>
                                 <strong class="summary-val text-dark font-outfit" style="font-size: 15px;">
-                                    <i class="bx bx-up-arrow-alt text-success"></i> +3.9% / Tháng
+                                    <i class="bx bx-sitemap text-success"></i> {{ formatNumber(metrics.total_members) }} nhân khẩu
                                 </strong>
                             </div>
                             <div class="summary-stat-box border-start ps-4">
-                                <span class="summary-label text-muted small d-block mb-1">Tỉ lệ kích hoạt</span>
+                                <span class="summary-label text-muted small d-block mb-1">Tài Khoản Đăng Ký</span>
                                 <strong class="summary-val text-dark font-outfit" style="font-size: 15px;">
-                                    <i class="bx bx-check-circle text-info"></i> 94.2% Hoạt động
+                                    <i class="bx bx-user text-info"></i> {{ formatNumber(metrics.total_users) }} tài khoản
                                 </strong>
                             </div>
                             <div class="summary-stat-box border-start ps-4">
@@ -189,21 +189,22 @@
         <div class="row g-4">
             <div class="col-12 col-lg-8">
                 <div class="card luxury-panel border-0 shadow-sm h-100">
-                    <div class="card-header bg-transparent py-4 border-0 d-flex align-items-center">
+                    <div class="card-header bg-transparent py-4 border-0 d-flex align-items-center justify-content-between flex-wrap gap-3">
                         <h6 class="mb-0 fw-bold panel-title text-dark">
                             <i class="bx bx-time-five me-1 text-emerald"></i> Cập nhật Gia Phả Gần Đây
                         </h6>
-                        <div class="dropdown ms-auto">
-                            <a class="dropdown-toggle dropdown-toggle-nocaret custom-dropdown-trigger" href="#" data-bs-toggle="dropdown">
-                                <i class='bx bx-dots-horizontal-rounded'></i>
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-end luxury-dropdown border-0 shadow">
-                                <li><router-link class="dropdown-item" to="/admin/gia-pha"><i class="bx bx-list-ul me-2"></i> Đi tới Gia Phả</router-link></li>
-                            </ul>
+                        <div class="d-flex align-items-center gap-3 ms-auto">
+                            <!-- Premium Select Dropdown for Clan selection -->
+                            <select class="form-select form-select-sm premium-select border-2 shadow-none" v-model="selectedClanId" style="width: 250px; font-weight: 600; border-radius: 8px;">
+                                <option :value="null">-- Tất Cả Gia Tộc --</option>
+                                <option v-for="clan in listClans" :key="clan.id" :value="clan.id">
+                                    {{ clan.dong_ho }} ({{ clan.nguoi_dung ? clan.nguoi_dung.ho_ten : '' }})
+                                </option>
+                            </select>
                         </div>
                     </div>
                     <div class="card-body p-4 pt-0">
-                        <div class="table-responsive rounded-3 border border-light-subtle">
+                        <div class="table-responsive rounded-3 border border-light-subtle recent-updates-scroll">
                             <table class="table modern-table align-middle mb-0">
                                 <thead>
                                     <tr>
@@ -215,10 +216,10 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr v-if="recentUpdates.length === 0">
-                                        <td colspan="5" class="text-center py-4 text-muted">Chưa có cập nhật thành viên nào gần đây</td>
+                                    <tr v-if="filteredUpdates.length === 0">
+                                        <td colspan="5" class="text-center py-4 text-muted">Chưa có cập nhật thành viên nào gần đây của gia tộc này</td>
                                     </tr>
-                                    <tr v-for="item in recentUpdates" :key="item.id">
+                                    <tr v-for="item in filteredUpdates" :key="item.id">
                                         <td>
                                             <div class="d-flex align-items-center gap-3">
                                                 <img :src="`https://ui-avatars.com/api/?name=${encodeURIComponent(item.ho_ten)}&background=eef2ff&color=4f46e5`" class="rounded-circle shadow-sm" width="36" height="36">
@@ -301,7 +302,8 @@ export default {
                 total_members: 0,
                 total_trees: 0,
                 total_contributions: 0,
-                total_requests: 0
+                total_requests: 0,
+                total_users: 0
             },
             recentUpdates: [],
             systemActivities: {
@@ -315,13 +317,17 @@ export default {
             currentFilter: 'month',
             startDate: '',
             endDate: '',
-            todayDate: ''
+            todayDate: '',
+            // Clan selection variables
+            selectedClanId: null,
+            listClans: []
         };
     },
     mounted() {
         const today = new Date();
         this.todayDate = this.formatDateYYYYMMDD(today);
         this.fetchDashboardData();
+        this.fetchClans();
     },
     computed: {
         chartTitle() {
@@ -336,9 +342,37 @@ export default {
                 return 'Thống Kê Tăng Trưởng Hệ Thống (Khoảng Thời Gian Tùy Chọn)';
             }
             return 'Thống Kê Tăng Trưởng Hệ Thống (6 Tháng Gần Đây)';
+        },
+        filteredUpdates() {
+            if (!this.selectedClanId) {
+                return this.recentUpdates;
+            }
+            const clan = this.listClans.find(c => c.id === this.selectedClanId);
+            if (!clan || !clan.dong_ho) return [];
+            
+            return this.recentUpdates.filter(item => 
+                item.dong_ho && item.dong_ho.toLowerCase() === clan.dong_ho.toLowerCase()
+            );
         }
     },
     methods: {
+        getHeaders() {
+            return {
+                headers: {
+                    Authorization: 'Bearer ' + localStorage.getItem('access_token')
+                }
+            };
+        },
+        fetchClans() {
+            axios.get('http://127.0.0.1:8000/api/admin/doi-tac/get-data', this.getHeaders())
+            .then(res => {
+                if (res.data.status) {
+                    // Filter partners who have associated clan names
+                    this.listClans = res.data.data.filter(c => c.dong_ho);
+                }
+            })
+            .catch(err => console.error('Lỗi tải danh sách gia tộc:', err));
+        },
         fetchDashboardData() {
             const params = {
                 filter_type: this.currentFilter
@@ -902,5 +936,43 @@ export default {
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(4px); }
     to { opacity: 1; transform: translateY(0); }
+}
+
+.premium-select {
+    background-color: #f8fafc !important;
+    border: 1px solid rgba(0, 0, 0, 0.06) !important;
+    font-family: 'Outfit', sans-serif;
+    color: #334155 !important;
+    padding: 6px 12px !important;
+    font-size: 13px !important;
+    transition: all 0.25s ease !important;
+}
+.premium-select:focus {
+    border-color: #ffd700 !important;
+    box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.15) !important;
+}
+
+[data-theme="dark"] .premium-select {
+    background-color: #1e1e2d !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+    color: #e2e8f0 !important;
+}
+[data-theme="dark"] .premium-select:focus {
+    border-color: #e5a93b !important;
+}
+
+.recent-updates-scroll {
+    max-height: 400px;
+    overflow-y: auto;
+}
+.recent-updates-scroll::-webkit-scrollbar {
+    width: 6px;
+}
+.recent-updates-scroll::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.08);
+    border-radius: 10px;
+}
+[data-theme="dark"] .recent-updates-scroll::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.15);
 }
 </style>

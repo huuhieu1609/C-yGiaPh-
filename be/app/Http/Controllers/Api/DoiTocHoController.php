@@ -20,8 +20,7 @@ class DoiTocHoController extends Controller
             if ($user->vai_tro === 'Admin') {
                 $data = DoiTocHo::with('chiNhanh')->get();
             } elseif ($user->is_doi_tac == 1) {
-                // Lấy ID các chi nhánh thuộc sở hữu của đối tác này
-                $chiNhanhIds = \App\Models\ChiNhanh::where('id_nguoi_dung', $user->id)->pluck('id');
+                $chiNhanhIds = \App\Models\ChiNhanh::getManagedBranchIds($user);
                 $data = DoiTocHo::whereIn('chi_nhanh_id', $chiNhanhIds)->with('chiNhanh')->get();
             } else {
                 // Thành viên bình thường chỉ thấy các đời của chi nhánh mình thuộc về

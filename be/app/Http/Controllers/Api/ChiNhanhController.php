@@ -18,7 +18,7 @@ class ChiNhanhController extends Controller
             $user = auth('sanctum')->user();
 
             $data = $user && (int) $user->is_doi_tac === 1 && $user->vai_tro !== 'Admin'
-                ? ChiNhanh::where('id_nguoi_dung', $user->id)->get()
+                ? ChiNhanh::whereIn('id', ChiNhanh::getManagedBranchIds($user))->get()
                 : ChiNhanh::all();
 
             return response()->json([

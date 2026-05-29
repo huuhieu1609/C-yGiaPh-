@@ -18,6 +18,7 @@ class GoiDichVu extends Model
         'max_doi',
         'max_thanh_vien',
         'mo_ta',
-        'trang_thai'
+        'trang_thai',
+        'features'
     ];
 }

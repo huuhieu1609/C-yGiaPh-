@@ -5,7 +5,12 @@
         <h5 class="mb-0 fw-bold theme-text-main">
           <i class="bx bx-bell text-warning me-2 fs-4 animate-bell"></i>Quản Lý Thông Báo Dòng Họ
         </h5>
-        <span class="badge bg-orange-light-premium text-orange-premium">Phát tin tức gia tộc</span>
+        <div class="d-flex align-items-center gap-2">
+          <button class="btn btn-refresh-premium rounded-circle d-flex align-items-center justify-content-center" @click="loadAnnouncements" :disabled="loading" title="Làm mới dữ liệu">
+            <i class="bx bx-sync fs-5 text-warning" :class="{'bx-spin': loading}"></i>
+          </button>
+          <span class="badge bg-orange-light-premium text-orange-premium">Phát tin tức gia tộc</span>
+        </div>
       </div>
       <div class="card-body px-4 pb-4">
         <div class="row mb-4 g-3 align-items-center">
@@ -427,6 +432,24 @@ export default {
 /* Badge tin tức dòng tộc mờ pastel */
 .bg-orange-light-premium { background-color: rgba(249, 115, 22, 0.08) !important; border: 1px solid rgba(249, 115, 22, 0.15); }
 .text-orange-premium { color: #f97316 !important; font-weight: 700; }
+
+.btn-refresh-premium {
+  background: var(--input-bg) !important;
+  border: 1px solid var(--border-color) !important;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  transition: all 0.25s ease;
+}
+.btn-refresh-premium:hover {
+  transform: rotate(30deg) scale(1.05);
+  border-color: #f97316 !important;
+  box-shadow: 0 4px 12px rgba(249, 115, 22, 0.15);
+}
+.btn-refresh-premium:active {
+  transform: scale(0.95);
+}
 
 /* MODAL HEADER PREMIUM */
 .bg-dark-premium {

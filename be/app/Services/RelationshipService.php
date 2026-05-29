@@ -6,364 +6,345 @@ use App\Models\ThanhVien;
 
 class RelationshipService
 {
-    private const ANCESTORS = [
-        "",
-        "bố/mẹ",
-        "ông/bà",
-        "cụ",
-        "kỵ",
-        "sơ",
-        "tiệm",
-        "tiểu",
-        "di",
-        "diễn",
-    ];
+    private $nguoi1;
+    private $nguoi2;
+    private $isNam1;
 
-    private const DESCENDANTS = [
-        "",
-        "con",
-        "cháu",
-        "chắt",
-        "chít",
-        "chút",
-        "chét",
-        "chót",
-        "chẹt",
-    ];
+    private $chaNguoi1;
+    private $meNguoi1;
 
-    protected $graphService;
+    private $chaNguoi2;
+    private $meNguoi2;
 
-    public function __construct(FamilyGraphService $graphService)
-    {
-        $this->graphService = $graphService;
-    }
+    public function resolve(
+        ThanhVien $nguoi1,
+        ThanhVien $nguoi2
+    ): ?string {
 
-    /**
-     * Xác định danh xưng họ hàng của Người 1 đối với Người 2.
-     * Ví dụ: Nếu Người 1 là cha của Người 2, kết quả trả về là "cha".
-     * Câu hiển thị cuối cùng: "Người 1 là cha của Người 2".
-     *
-     * @param ThanhVien $nguoi1
-     * @param ThanhVien $nguoi2
-     * @return string|null
-     */
-    public function resolve(ThanhVien $nguoi1, ThanhVien $nguoi2): ?string
-    {
-        if ($nguoi1->id === $nguoi2->id) {
-            return 'bản thân';
-        }
+        $this->nguoi1 = $nguoi1;
+        $this->nguoi2 = $nguoi2;
 
-        // 1. Tạo đồ thị quan hệ gia đình tránh N+1 Query
-        $graphData = $this->graphService->buildGraph($nguoi1->chi_nhanh_id);
-        $graph = $graphData['graph'];
-        $personsMap = $graphData['map'];
+        $this->isNam1 =
+            $nguoi1->gioi_tinh === 'Nam';
 
-        // 2. Chạy thuật toán BFS Engine tìm đường đi ngắn nhất từ Người 1 sang Người 2
-        $path = $this->graphService->findShortestPath($nguoi1->id, $nguoi2->id, $graph);
+        // Tối ưu: Gom 4 câu query `find()` thành 1 câu query `whereIn` duy nhất.
+        $parentIds = array_filter([
+            $nguoi1->cha_id,
+            $nguoi1->me_id,
+            $nguoi2->cha_id,
+            $nguoi2->me_id,
+        ]);
 
-        if ($path === null || empty($path)) {
-            return null;
-        }
+        $parents = !empty($parentIds)
+            ? ThanhVien::whereIn('id', $parentIds)->get()->keyBy('id')
+            : collect();
 
-        // 3. Phân tích đường đi BFS và chuyển dịch sang danh xưng từ góc nhìn của Người 1 đối với Người 2
-        return $this->resolvePathToRelationship($path, $personsMap);
-    }
+        $this->chaNguoi1 = $parents->get($nguoi1->cha_id);
+        $this->meNguoi1 = $parents->get($nguoi1->me_id);
+        $this->chaNguoi2 = $parents->get($nguoi2->cha_id);
+        $this->meNguoi2 = $parents->get($nguoi2->me_id);
 
-    /**
-     * Tra cứu chi tiết quan hệ bao gồm cả lộ trình (path) và danh sách thành viên (members).
-     *
-     * @param ThanhVien $nguoi1
-     * @param ThanhVien $nguoi2
-     * @return array
-     */
-    public function resolveDetailed(ThanhVien $nguoi1, ThanhVien $nguoi2): array
-    {
-        if ($nguoi1->id === $nguoi2->id) {
-            return [
-                'relationship' => 'bản thân',
-                'path' => [],
-                'members' => [
-                    [
-                        'id' => $nguoi1->id,
-                        'ho_ten' => $nguoi1->ho_ten,
-                        'gioi_tinh' => $nguoi1->gioi_tinh,
-                    ]
-                ]
-            ];
-        }
-
-        $graphData = $this->graphService->buildGraph($nguoi1->chi_nhanh_id);
-        $graph = $graphData['graph'];
-        $personsMap = $graphData['map'];
-
-        $path = $this->graphService->findShortestPath($nguoi1->id, $nguoi2->id, $graph);
-
-        if ($path === null || empty($path)) {
-            return [
-                'relationship' => "{$nguoi1->ho_ten} và {$nguoi2->ho_ten} chưa có dữ liệu quan hệ họ hàng gần được hỗ trợ tra cứu.",
-                'path' => [],
-                'members' => []
-            ];
-        }
-
-        $relationName = $this->resolvePathToRelationship($path, $personsMap);
-        $resultMessage = "{$nguoi1->ho_ten} là {$relationName} của {$nguoi2->ho_ten}";
-
-        // Chuẩn bị danh sách path và members theo đúng yêu cầu API
-        $pathSteps = [];
-        $membersInPath = [];
-        foreach ($path as $step) {
-            // Không đẩy bước 'start' vào path nếu chỉ muốn xem các bước chuyển dịch quan hệ,
-            // hoặc đẩy tất cả bước để vẽ đường nối
-            $pathSteps[] = $step['type'];
-            
-            $memberId = $step['id'];
-            if (isset($personsMap[$memberId])) {
-                $membersInPath[] = [
-                    'id' => $memberId,
-                    'ho_ten' => $personsMap[$memberId]->ho_ten,
-                    'gioi_tinh' => $personsMap[$memberId]->gioi_tinh,
-                    'avatar' => $personsMap[$memberId]->avatar,
-                    'nghe_nghiep' => $personsMap[$memberId]->nghe_nghiep,
-                ];
-            }
-        }
-
-        return [
-            'relationship' => $resultMessage,
-            'path' => $pathSteps,
-            'members' => $membersInPath
+        $checks = [
+            'checkVoChong',
+            'checkChaMe',
+            'checkConCai',
+            'checkAnhChiEm',
+            'checkOngBa',
+            'checkChuBacCo',
+            'checkDiCau',
+            'checkChau', // Gộp cháu nội/ngoại và cháu (con của anh chị em)
         ];
+
+        foreach ($checks as $method) {
+
+            $relationship =
+                $this->{$method}();
+
+            if ($relationship) {
+                return $relationship;
+            }
+
+        }
+
+        return null;
     }
 
-
-    /**
-     * Chuyển đổi lộ trình BFS thành danh xưng quan hệ theo đúng chiều: A là gì của B.
-     */
-    private function resolvePathToRelationship(array $path, array $personsMap): string
+    private function checkVoChong(): ?string
     {
-        $types = [];
-        for ($i = 1; $i < count($path); $i++) {
-            $types[] = $path[$i]['type'];
+        if (
+            (
+                $this->nguoi1->spouse_of_id &&
+                $this->nguoi1->spouse_of_id
+                    == $this->nguoi2->id
+            )
+            ||
+            (
+                $this->nguoi2->spouse_of_id &&
+                $this->nguoi2->spouse_of_id
+                    == $this->nguoi1->id
+            )
+        ) {
+
+            return $this->isNam1
+                ? 'chồng'
+                : 'vợ';
+
         }
 
-        $personA = $personsMap[$path[0]['id']];
-        $personB = $personsMap[end($path)['id']];
-        
-        $genderA = $personA->gioi_tinh;
-        $genderB = $personB->gioi_tinh;
-
-        // 1. Mối quan hệ: Vợ / Chồng (B là spouse của A -> A là vợ/chồng của B)
-        if ($types === ['spouse']) {
-            return $genderA === 'Nữ' ? 'vợ' : 'chồng';
-        }
-
-        // 2. Mối quan hệ: Cha / Mẹ (B là cha/mẹ của A -> A là con của B)
-        if ($types === ['parent']) {
-            return $genderA === 'Nữ' ? 'con gái' : 'con trai';
-        }
-
-        // 3. Mối quan hệ: Con cái (B là con của A -> A là cha/mẹ của B)
-        if ($types === ['child']) {
-            return $genderA === 'Nữ' ? 'mẹ' : 'cha';
-        }
-
-        // 4. Mối quan hệ: Anh / Chị / Em ruột
-        if ($types === ['sibling']) {
-            $isAOlder = $this->compareSeniority($personA, $personB) === 'senior';
-            if ($isAOlder) {
-                return $genderA === 'Nữ' ? 'chị gái' : 'anh trai';
-            } else {
-                return $genderA === 'Nữ' ? 'em gái' : 'em trai';
-            }
-        }
-
-        // 5. Mối quan hệ: Ông / Bà nội ngoại (B là ông/bà của A -> A là cháu của B)
-        if ($types === ['parent', 'parent']) {
-            $parentOfA = $personsMap[$path[1]['id']];
-            $isPaternal = $parentOfA->gioi_tinh === 'Nam';
-            return $isPaternal ? 'cháu nội' : 'cháu ngoại';
-        }
-
-        // 6. Mối quan hệ: Cháu nội ngoại (B là cháu của A -> A là ông/bà của B)
-        if ($types === ['child', 'child']) {
-            $childOfA = $personsMap[$path[1]['id']];
-            $isPaternal = $childOfA->gioi_tinh === 'Nam';
-            if ($isPaternal) {
-                return $genderA === 'Nữ' ? 'bà nội' : 'ông nội';
-            } else {
-                return $genderA === 'Nữ' ? 'bà ngoại' : 'ông ngoại';
-            }
-        }
-
-        // 7. Mối quan hệ: Cô / Dì / Chú / Bác / Cậu (B là cô/dì/chú/bác của A -> A là cháu của B)
-        if ($types === ['parent', 'sibling']) {
-            return 'cháu';
-        }
-
-        // 8. Mối quan hệ: Cháu ruột vế dưới (B là cháu của A -> A là cô/dì/chú/bác/cậu của B)
-        if ($types === ['sibling', 'child']) {
-            $siblingOfA = $personsMap[$path[1]['id']]; // Anh chị em của A (bố/mẹ của B)
-            $isPaternalSide = $siblingOfA->gioi_tinh === 'Nam';
-            
-            if ($isPaternalSide) {
-                if ($genderA === 'Nữ') {
-                    return 'cô';
-                } else {
-                    $isAOlder = $this->compareSeniority($personA, $siblingOfA) === 'senior';
-                    return $isAOlder ? 'bác' : 'chú';
-                }
-            } else {
-                return $genderA === 'Nữ' ? 'dì' : 'cậu';
-            }
-        }
-
-        // 9. Mối quan hệ: Bố mẹ chồng / Bố mẹ vợ (B là bố mẹ của spouse A -> A là dâu/rể của B)
-        if ($types === ['spouse', 'parent']) {
-            return $genderA === 'Nữ' ? 'con dâu' : 'con rể';
-        }
-
-        // 10. Mối quan hệ: Con dâu / Con rể (B là spouse của con A -> A là bố mẹ chồng/vợ của B)
-        if ($types === ['child', 'spouse']) {
-            $childOfA = $personsMap[$path[1]['id']];
-            if ($childOfA->gioi_tinh === 'Nam') {
-                return $genderA === 'Nữ' ? 'mẹ chồng' : 'bố chồng';
-            } else {
-                return $genderA === 'Nữ' ? 'mẹ vợ' : 'bố vợ';
-            }
-        }
-
-        // 11. Mối quan hệ: Anh rể / Chị dâu / Em rể / Em dâu vế vợ/chồng (B là sibling của spouse A)
-        if ($types === ['spouse', 'sibling']) {
-            $spouseOfA = $personsMap[$path[1]['id']];
-            $isSpouseOlderThanB = $this->compareSeniority($spouseOfA, $personB) === 'senior';
-            if ($isSpouseOlderThanB) {
-                return $genderA === 'Nữ' ? 'chị dâu' : 'anh rể';
-            } else {
-                return $genderA === 'Nữ' ? 'em dâu' : 'em rể';
-            }
-        }
-
-        // 12. Mối quan hệ: Anh vợ / Chị vợ / Em vợ / Anh chồng / Chị chồng / Em chồng (B là spouse của sibling A)
-        if ($types === ['sibling', 'spouse']) {
-            $siblingOfA = $personsMap[$path[1]['id']];
-            $isAOlderThanSibling = $this->compareSeniority($personA, $siblingOfA) === 'senior';
-            if ($genderB === 'Nam') { // Chồng của chị/em gái A
-                if ($genderA === 'Nam') {
-                    return $isAOlderThanSibling ? 'anh vợ' : 'em vợ';
-                } else {
-                    return $isAOlderThanSibling ? 'chị vợ' : 'em vợ';
-                }
-            } else { // Vợ của anh/em trai A
-                if ($genderA === 'Nam') {
-                    return $isAOlderThanSibling ? 'anh chồng' : 'em chồng';
-                } else {
-                    return $isAOlderThanSibling ? 'chị chồng' : 'em chồng';
-                }
-            }
-        }
-
-        // 13. Mối quan hệ: Cụ nội / Cụ ngoại (B là cụ của A -> A là chắt của B)
-        if ($types === ['parent', 'parent', 'parent']) {
-            $parentOfA = $personsMap[$path[1]['id']];
-            $isPaternal = $parentOfA->gioi_tinh === 'Nam';
-            return $isPaternal ? 'chắt nội' : 'chắt ngoại';
-        }
-
-        // 14. Mối quan hệ: Chắt nội / Chắt ngoại (B là chắt của A -> A là cụ của B)
-        if ($types === ['child', 'child', 'child']) {
-            $childOfA = $personsMap[$path[1]['id']];
-            $isPaternal = $childOfA->gioi_tinh === 'Nam';
-            if ($isPaternal) {
-                return $genderA === 'Nữ' ? 'cụ bà (bà cố nội)' : 'cụ ông (ông cố nội)';
-            } else {
-                return $genderA === 'Nữ' ? 'cụ bà (bà cố ngoại)' : 'cụ ông (ông cố ngoại)';
-            }
-        }
-
-        // 15. Mối quan hệ: Anh chị em họ (cousin)
-        if ($types === ['parent', 'sibling', 'child']) {
-            $parentOfA = $personsMap[$path[1]['id']];
-            $parentOfB = $personsMap[$path[2]['id']];
-            $isParentAOlder = $this->compareSeniority($parentOfA, $parentOfB) === 'senior';
-            
-            if ($isParentAOlder) {
-                return $genderA === 'Nữ' ? 'chị họ' : 'anh họ';
-            } else {
-                return 'em họ';
-            }
-        }
-
-        // 16. Mối quan hệ: Dượng / Thím / Mợ ruột (B là spouse của cô/dì/chú/bác của A)
-        if ($types === ['parent', 'sibling', 'spouse']) {
-            return 'cháu';
-        }
-
-        // 17. Mối quan hệ: Ông bác / Ông chú / Bà cô / Ông cậu / Bà dì (B là sibling của ông/bà A)
-        if ($types === ['parent', 'parent', 'sibling']) {
-            return 'cháu';
-        }
-
-        // Cơ chế Fallback cho các trường hợp quan hệ nhiều đời khác
-        return $this->resolveFallbackRelationship($path, $personsMap);
+        return null;
     }
 
-    /**
-     * Thuật toán Fallback tính toán độ lệch thế hệ (Generation Difference) từ góc nhìn của A.
-     */
-    private function resolveFallbackRelationship(array $path, array $personsMap): string
+    private function checkChaMe(): ?string
     {
-        $genDiff = 0;
-        for ($i = 1; $i < count($path); $i++) {
-            $type = $path[$i]['type'];
-            if ($type === 'parent') {
-                $genDiff--; // A ở thế hệ dưới B
-            } elseif ($type === 'child') {
-                $genDiff++; // A ở thế hệ trên B
-            }
+        if (
+            $this->nguoi2->cha_id
+                == $this->nguoi1->id
+            ||
+            $this->nguoi2->me_id
+                == $this->nguoi1->id
+        ) {
+
+            return $this->isNam1
+                ? 'cha'
+                : 'mẹ';
+
         }
 
-        $personA = $personsMap[$path[0]['id']];
-        $genderA = $personA->gioi_tinh;
-
-        if ($genDiff === 0) {
-            $endPerson = $personsMap[end($path)['id']];
-            $seniority = $this->compareSeniority($personA, $endPerson);
-            if ($seniority === 'senior') {
-                return $genderA === 'Nữ' ? 'chị họ' : 'anh họ';
-            } else {
-                return 'em họ';
-            }
-        } elseif ($genDiff === 1) {
-            return $genderA === 'Nữ' ? 'cô họ' : 'chú họ';
-        } elseif ($genDiff === 2) {
-            return $genderA === 'Nữ' ? 'bà họ' : 'ông họ';
-        } elseif ($genDiff >= 3) {
-            return $genderA === 'Nữ' ? 'cụ họ' : 'cụ họ';
-        } elseif ($genDiff === -1) {
-            return 'cháu họ';
-        } elseif ($genDiff === -2) {
-            return 'chắt họ';
-        } else {
-            return 'họ hàng';
-        }
+        return null;
     }
 
-    /**
-     * So sánh vai vế (Seniority) lớn/nhỏ dựa trên ngày sinh.
-     * Trả về 'senior' (vai vế lớn hơn - sinh trước) hoặc 'junior' (vai vế nhỏ hơn - sinh sau).
-     */
-    private function compareSeniority(ThanhVien $a, ThanhVien $b): string
+    private function checkConCai(): ?string
     {
-        if ($a->id === $b->id) {
-            return 'equal';
+        if (
+            $this->nguoi1->cha_id
+                == $this->nguoi2->id
+            ||
+            $this->nguoi1->me_id
+                == $this->nguoi2->id
+        ) {
+
+            return $this->isNam1
+                ? 'con trai'
+                : 'con gái';
+
         }
-        if ($a->ngay_sinh && $b->ngay_sinh) {
-            $timeA = strtotime($a->ngay_sinh);
-            $timeB = strtotime($b->ngay_sinh);
-            if ($timeA < $timeB) return 'senior';
-            if ($timeA > $timeB) return 'junior';
+
+        return null;
+    }
+
+    private function checkAnhChiEm(): ?string
+    {
+        if (
+            $this->nguoi1->cha_id &&
+            $this->nguoi1->me_id &&
+
+            $this->nguoi1->cha_id
+                == $this->nguoi2->cha_id &&
+
+            $this->nguoi1->me_id
+                == $this->nguoi2->me_id
+        ) {
+
+            $isOlder =
+                $this->soSanhTuoi(
+                    $this->nguoi1,
+                    $this->nguoi2
+                );
+
+            return $this->isNam1
+                ? (
+                    $isOlder
+                    ? 'anh trai'
+                    : 'em trai'
+                )
+                : (
+                    $isOlder
+                    ? 'chị gái'
+                    : 'em gái'
+                );
+
         }
-        return $a->id < $b->id ? 'senior' : 'junior';
+
+        return null;
+    }
+
+    private function checkOngBa(): ?string
+    {
+        if (
+            $this->chaNguoi2 &&
+            (
+                $this->chaNguoi2->cha_id
+                    == $this->nguoi1->id
+                ||
+                $this->chaNguoi2->me_id
+                    == $this->nguoi1->id
+            )
+        ) {
+
+            return $this->isNam1
+                ? 'ông nội'
+                : 'bà nội';
+
+        }
+
+        if (
+            $this->meNguoi2 &&
+            (
+                $this->meNguoi2->cha_id
+                    == $this->nguoi1->id
+                ||
+                $this->meNguoi2->me_id
+                    == $this->nguoi1->id
+            )
+        ) {
+
+            return $this->isNam1
+                ? 'ông ngoại'
+                : 'bà ngoại';
+
+        }
+
+        return null;
+    }
+
+    private function checkChuBacCo(): ?string
+    {
+        if (
+            $this->chaNguoi2 &&
+            $this->nguoi1->cha_id &&
+            $this->nguoi1->me_id &&
+
+            $this->nguoi1->cha_id
+                == $this->chaNguoi2->cha_id &&
+
+            $this->nguoi1->me_id
+                == $this->chaNguoi2->me_id
+        ) {
+
+            if ($this->isNam1) {
+
+                return $this->soSanhTuoi(
+                    $this->nguoi1,
+                    $this->chaNguoi2
+                )
+                    ? 'bác'
+                    : 'chú';
+
+            }
+
+            return 'cô';
+        }
+
+        return null;
+    }
+
+    private function checkDiCau(): ?string
+    {
+        if (
+            $this->meNguoi2 &&
+            $this->nguoi1->cha_id &&
+            $this->nguoi1->me_id &&
+
+            $this->nguoi1->cha_id
+                == $this->meNguoi2->cha_id &&
+
+            $this->nguoi1->me_id
+                == $this->meNguoi2->me_id
+        ) {
+
+            return $this->isNam1
+                ? 'cậu'
+                : 'dì';
+
+        }
+
+        return null;
+    }
+
+    private function checkChau(): ?string
+    {
+        if (
+            $this->chaNguoi1 &&
+            (
+                $this->chaNguoi1->cha_id
+                    == $this->nguoi2->id
+                ||
+                $this->chaNguoi1->me_id
+                    == $this->nguoi2->id
+            )
+        ) {
+
+            return 'cháu nội';
+
+        }
+
+        if (
+            $this->meNguoi1 &&
+            (
+                $this->meNguoi1->cha_id
+                    == $this->nguoi2->id
+                ||
+                $this->meNguoi1->me_id
+                    == $this->nguoi2->id
+            )
+        ) {
+
+            return 'cháu ngoại';
+
+        }
+
+        if (
+            (
+                $this->chaNguoi1 &&
+                $this->nguoi2->cha_id &&
+                $this->nguoi2->me_id &&
+
+                $this->chaNguoi1->cha_id
+                    == $this->nguoi2->cha_id &&
+
+                $this->chaNguoi1->me_id
+                    == $this->nguoi2->me_id
+            )
+            ||
+            (
+                $this->meNguoi1 &&
+                $this->nguoi2->cha_id &&
+                $this->nguoi2->me_id &&
+
+                $this->meNguoi1->cha_id
+                    == $this->nguoi2->cha_id &&
+
+                $this->meNguoi1->me_id
+                    == $this->nguoi2->me_id
+            )
+        ) {
+
+            return 'cháu';
+
+        }
+
+        return null;
+    }
+
+    private function soSanhTuoi(
+        ThanhVien $nguoi1,
+        ThanhVien $nguoi2
+    ): bool {
+
+        if (
+            $nguoi1->ngay_sinh &&
+            $nguoi2->ngay_sinh
+        ) {
+
+            return strtotime(
+                $nguoi1->ngay_sinh
+            ) < strtotime(
+                $nguoi2->ngay_sinh
+            );
+
+        }
+
+        return $nguoi1->id
+            < $nguoi2->id;
     }
 }
