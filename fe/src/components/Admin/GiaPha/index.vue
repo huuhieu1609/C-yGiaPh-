@@ -434,6 +434,7 @@ const TreeItem = defineComponent({
             return h('div', { class: ['tree-node-card', 'spouse', spouseClass, { 'is-dead': spouse.trang_thai === 'Đã mất', 'highlighted': this.searchQuery && spouse.ho_ten.toLowerCase().includes(this.searchQuery.toLowerCase()) }], style: order !== null ? { order: order } : undefined, onClick: (e) => { e.stopPropagation(); clearTimeout(this.clickTimeout); this.isDoubleClick = false; this.clickTimeout = setTimeout(() => { if (!this.isDoubleClick) this.$emit('edit', spouse); }, 200); }, onDblclick: (e) => { e.stopPropagation(); this.isDoubleClick = true; clearTimeout(this.clickTimeout); this.$emit('show-qr', spouse); } }, [ h('div', { class: 'node-avatar-container' }, [ h('img', { src: spouse.avatar ? spouse.avatar : ('https://ui-avatars.com/api/?name=' + spouse.ho_ten + '&background=d4af37&color=fff'), class: 'node-avatar shadow-sm' }) ]), h('div', { class: 'node-content' }, [ h('div', { class: 'node-name' }, spouse.ho_ten), h('div', { class: 'node-tag spouse-tag' }, 'Vợ/Chồng') ]), h('div', { class: 'node-edit-btn' }, [ h('i', { class: 'bx bx-pencil' }) ]) ]);
         };
 
+        let children = null;
         const coupleChildren = [];
         const hasMultipleSpouses = this.member.spouses && this.member.spouses.length === 2;
 
@@ -449,6 +450,11 @@ const TreeItem = defineComponent({
                 style: { order: 4 } 
             }, [ h('i', { class: 'bx bxs-heart connector-heart' }) ]));
             coupleChildren.push(makeSpouseChunk(this.member.spouses[1], 5));
+
+            const sp0 = this.member.spouses[0];
+            const sp1 = this.member.spouses[1];
+            const kids0 = hasChildren ? this.member.children.filter(c => c.me_id == sp0.id || c.cha_id == sp0.id) : [];
+            const kids1 = hasChildren ? this.member.children.filter(c => c.me_id == sp1.id || c.cha_id == sp1.id) : [];
 
             const col0 = h('div', { class: ['union-column', 'union-column-0', kids0.length === 0 ? 'union-column-empty' : ''] }, [
                 kids0.length > 0
@@ -485,17 +491,17 @@ const TreeItem = defineComponent({
                     coupleChildren.push(makeSpouseChunk(sp));
                 });
             }
+            children = hasChildren ? h('ul', 
+                this.member.children.map(child => h(TreeItem, { 
+                    key: child.id,
+                    member: child, 
+                    listDoiTocHo: this.listDoiTocHo, 
+                    searchQuery: this.searchQuery,
+                    onEdit: (m) => this.$emit('edit', m),
+                    onShowQr: (m) => this.$emit('show-qr', m)
+                }))
+            ) : null;
         }
-        const children = hasChildren ? h('ul', 
-            this.member.children.map(child => h(TreeItem, { 
-                key: child.id,
-                member: child, 
-                listDoiTocHo: this.listDoiTocHo, 
-                searchQuery: this.searchQuery,
-                onEdit: (m) => this.$emit('edit', m),
-                onShowQr: (m) => this.$emit('show-qr', m)
-            }))
-        ) : null;
 
         const nodeGroup = h('div', { class: 'tree-node-group' }, [ h('div', { class: 'couple-wrapper' }, coupleChildren) ]);
         
