@@ -27,6 +27,9 @@ class ChucNangSeeder extends Seeder
             ['ten_chuc_nang' => 'Quản Lý Tài Liệu', 'ten_slug' => 'quan-ly-tai-lieu', 'url' => '/doi-tac/tai-lieu', 'mo_ta' => 'Thư viện và tài liệu gia phả'],
             ['ten_chuc_nang' => 'Quản Lý Thông Báo', 'ten_slug' => 'quan-ly-thong-bao', 'url' => '/doi-tac/thong-bao', 'mo_ta' => 'Quản lý các thông báo và tin tức dòng họ'],
             ['ten_chuc_nang' => 'Nhật Ký Thao Tác', 'ten_slug' => 'nhat-ky-thao-tac', 'url' => '/doi-tac/nhat-ky', 'mo_ta' => 'Xem lịch sử nhật ký hoạt động dòng họ'],
+            ['ten_chuc_nang' => 'Quản Lý Thành Viên', 'ten_slug' => 'quan-ly-thanh-vien', 'url' => '/doi-tac/thanh-vien', 'mo_ta' => 'Quản lý thành viên chi nhánh dòng họ'],
+            ['ten_chuc_nang' => 'Kiểm Duyệt Đề Xuất', 'ten_slug' => 'kiem-duyet-de-xuat', 'url' => '/doi-tac/de-xuat', 'mo_ta' => 'Kiểm duyệt đề xuất chỉnh sửa gia phả'],
+            ['ten_chuc_nang' => 'Quản Lý Gói Dịch Vụ', 'ten_slug' => 'quan-ly-goi-dich-vu', 'url' => '/doi-tac/quan-ly-goi', 'mo_ta' => 'Quản lý thông tin gói và thanh toán'],
         ];
 
         foreach ($permissions as $permission) {

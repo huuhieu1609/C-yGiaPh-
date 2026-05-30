@@ -30,14 +30,13 @@ class ChucVuSeeder extends Seeder
         }
 
         // Map default permissions for Thành Viên
-        $branchAdminId = DB::table('chuc_vus')->where('ten_chuc_vu', 'Quản Trị Viên Chi Nhánh')->value('id');
+        $branchAdminId = DB::table('chuc_vus')->where('ten_chuc_vu', 'Trưởng Nhánh')->value('id');
         $memberId = DB::table('chuc_vus')->where('ten_chuc_vu', 'Thành Viên')->value('id');
 
         $memberPermissions = [
             'cay-gia-pha',
             'tra-cuu-xung-ho',
             'quan-ly-mo-phan',
-            'quy-va-su-kien',
             'quan-ly-su-kien',
             'quan-ly-tai-lieu',
             'quan-ly-thong-bao',
@@ -57,21 +56,19 @@ class ChucVuSeeder extends Seeder
             }
         }
 
-        // Map default permissions for Quản Trị Viên Chi Nhánh
+        // Map default permissions for Trưởng Nhánh
         $branchAdminPermissions = [
             'cay-gia-pha',
             'tra-cuu-xung-ho',
-            'quan-ly-dong-ho',
             'quan-ly-chi-nhanh',
-            'quan-ly-doi-toc-ho',
-            'quan-ly-nha-tho-ho',
             'quan-ly-mo-phan',
-            'quy-va-su-kien',
             'quan-ly-su-kien',
             'quan-ly-tai-lieu',
-            'quan-ly-dong-gop',
             'quan-ly-thong-bao',
-            'nhat-ky-thao-tac'
+            'nhat-ky-thao-tac',
+            'quan-ly-thanh-vien',
+            'kiem-duyet-de-xuat',
+            'quan-ly-goi-dich-vu'
         ];
 
         if ($branchAdminId) {
