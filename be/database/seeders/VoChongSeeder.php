@@ -12,7 +12,11 @@ class VoChongSeeder extends Seeder
      */
     public function run(): void
     {
-        DB::table('vo_chongs')->truncate();
+        // Chỉ xóa các cặp vợ chồng thuộc chi nhánh mặc định (ThanhVienSeeder)
+        // KHÔNG truncate toàn bộ bảng vì sẽ xóa mất dữ liệu của DoiTacSeeder
+        $defaultNames = ['Nguyễn Tân', 'Lê Thị Tí', 'Nguyễn Đức Thắng', 'Phạm Thị Mai', 'Nguyễn Văn Trung', 'Đỗ Thu Trang', 'Lê Anh Tuấn', 'Nguyễn Thị Hương'];
+        $defaultMemberIds = DB::table('thanh_viens')->whereIn('ho_ten', $defaultNames)->pluck('id');
+        DB::table('vo_chongs')->whereIn('chong_id', $defaultMemberIds)->orWhereIn('vo_id', $defaultMemberIds)->delete();
 
         // 1. Nguyễn Tân & Lê Thị Tí
         $ongTan = DB::table('thanh_viens')->where('ho_ten', 'Nguyễn Tân')->first();
