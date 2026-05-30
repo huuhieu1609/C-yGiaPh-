@@ -58,7 +58,7 @@ interface MoPhan {
   };
 }
 
-// ─── BUILD LEAFLET HTML (tối ưu - chỉ 2 CDN, markers qua postMessage) ────────
+// ─── BUILD LEAFLET HTML (tối ưu - tích hợp MapLibre GL Vector Tiles) ────────
 function buildLeafletHTML(): string {
   return `<!DOCTYPE html>
 <html>
@@ -67,6 +67,9 @@ function buildLeafletHTML(): string {
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"><\/script>
+  <link href="https://unpkg.com/maplibre-gl@4.3.2/dist/maplibre-gl.css" rel="stylesheet"/>
+  <script src="https://unpkg.com/maplibre-gl@4.3.2/dist/maplibre-gl.js"><\/script>
+  <script src="https://unpkg.com/@maplibre/maplibre-gl-leaflet@0.0.20/leaflet-maplibre-gl.js"><\/script>
   <style>
     * { margin:0; padding:0; box-sizing:border-box; }
     html, body, #map { width:100%; height:100%; background:#e8dfd5; }
@@ -88,7 +91,7 @@ function buildLeafletHTML(): string {
     .pbtn { margin-top:8px; background:#FF9F43; color:#0c0e12;
             border:none; border-radius:9px; padding:7px 0;
             font-weight:800; font-size:11px; width:100%; cursor:pointer; }
-  <\/style>
+  </style>
 </head>
 <body>
   <div id="map"></div>
@@ -96,18 +99,10 @@ function buildLeafletHTML(): string {
     var map = L.map('map', { zoomControl:false, preferCanvas:true })
                .setView([16.047079, 108.206230], 6);
 
-    var tile = L.tileLayer(
-      'https://api.openmap.vn/map/tiles/{z}/{x}/{y}?apikey=DNmLXlnYjfHFnvaThBU1FXYrXAGhfpgD',
-      { maxZoom:20, attribution:'&copy; OpenMap VN' }
-    ).addTo(map);
-
-    var fbDone = false;
-    tile.on('tileerror', function() {
-      if (fbDone) return; fbDone = true;
-      map.removeLayer(tile);
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-        { maxZoom:19, attribution:'&copy; OSM' }).addTo(map);
-    });
+    var tile = L.maplibreGL({
+      style: 'https://nda-tiles.openmap.vn/styles/ndamap/style.json?apikey=DNmLXlnYjfHFnvaThBU1FXYrXAGhfpgD',
+      attribution: '&copy; OpenMap VN'
+    }).addTo(map);
 
     var layerGroup = L.layerGroup().addTo(map);
     var markers = {}, selId = null, route = null, uMarker = null;

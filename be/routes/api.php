@@ -312,6 +312,13 @@ Route::middleware(['auth:sanctum', 'activity'])->group(function () {
     // =========================================================
     // (đã thuộc /thanh-vien bên trên, không cần route riêng)
 
+    // =========================================================
+    // BẢN ĐỒ & ĐỊNH VỊ
+    // =========================================================
+    Route::prefix('/map')->group(function () {
+        Route::get('/geocode/forward', [App\Http\Controllers\Api\MapController::class, 'geocodeForward']);
+        Route::get('/geocode/reverse', [App\Http\Controllers\Api\MapController::class, 'geocodeReverse']);
+    });
 
 });
 
