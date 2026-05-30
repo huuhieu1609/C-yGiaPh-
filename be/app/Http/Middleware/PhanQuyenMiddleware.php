@@ -37,20 +37,6 @@ class PhanQuyenMiddleware
             return $next($request);
         }
 
-        // Đối tác tối cao (chủ tài khoản đối tác) không có chức vụ → có toàn quyền đối tác
-        if ($user->is_doi_tac == 1 && !$user->id_chuc_vu) {
-            return $next($request);
-        }
-
-        // Xác định ID Chức Vụ để kiểm tra quyền:
-        // Nếu user không có chức vụ (id_chuc_vu = null) -> Mặc định gán vai trò "Thành Viên" (ID = 3)
-        $idChucVu = $user->id_chuc_vu;
-        if (!$idChucVu) {
-            $idChucVu = \Illuminate\Support\Facades\DB::table('chuc_vus')
-                ->where('ten_chuc_vu', 'like', '%Thành Viên%')
-                ->value('id') ?? 3;
-        }
-
         // Kiểm tra chức năng này có đang hoạt động không
         $chucNangRecord = ChucNang::where('ten_chuc_nang', $chucNang)
             ->where('trang_thai', 'Hoạt động')
@@ -66,9 +52,13 @@ class PhanQuyenMiddleware
         $hasPermission = in_array($chucNangRecord->ten_chuc_nang, $active_permissions);
 
         if (!$hasPermission) {
+            $msg = 'Bạn không có quyền thực hiện chức năng: ' . $chucNang;
+            if ($user->is_doi_tac == 1) {
+                $msg = 'Bạn không có quyền sử dụng chức năng này. Khi nào bên Admin bật lại thì bạn mới có thể dùng được!';
+            }
             return response()->json([
                 'success' => false,
-                'message' => 'Bạn không có quyền thực hiện chức năng: ' . $chucNang,
+                'message' => $msg,
                 'required_permission' => $chucNang,
             ], 403);
         }

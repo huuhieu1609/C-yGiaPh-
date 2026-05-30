@@ -187,7 +187,7 @@ Route::middleware(['auth:sanctum', 'activity'])->group(function () {
         Route::post('/search', [NguoiDungController::class, 'search']);
     });
 
-    Route::prefix('/doi-toc-ho')->middleware('phan_quyen:Quản Lý Đời Tộc Họ')->group(function () {
+    Route::prefix('/doi-toc-ho')->middleware('phan_quyen:Cây Gia Phả')->group(function () {
         Route::get('/get-data', [DoiTocHoController::class, 'getData']);
         Route::post('/create', [DoiTocHoController::class, 'create']);
         Route::post('/update', [DoiTocHoController::class, 'update']);
@@ -208,7 +208,7 @@ Route::middleware(['auth:sanctum', 'activity'])->group(function () {
     // =========================================================
     // NHÀ THỜ HỌ, MỘ PHẦN
     // =========================================================
-    Route::prefix('/nha-tho-ho')->middleware('phan_quyen:Quản Lý Nhà Thờ Họ')->group(function () {
+    Route::prefix('/nha-tho-ho')->middleware('phan_quyen:Cây Gia Phả')->group(function () {
         Route::get('/get-data', [NhaThoHoController::class, 'getData']);
         Route::post('/create', [NhaThoHoController::class, 'create']);
         Route::post('/update', [NhaThoHoController::class, 'update']);
@@ -240,7 +240,7 @@ Route::middleware(['auth:sanctum', 'activity'])->group(function () {
         Route::post('/unregister', [SuKienController::class, 'unregister']);
     });
 
-    Route::prefix('/dong-gop')->middleware('phan_quyen:Quản Lý Đóng Góp')->group(function () {
+    Route::prefix('/dong-gop')->middleware('phan_quyen:Quản Lý Sự Kiện')->group(function () {
         Route::get('/get-data', [DongGopController::class, 'getData']);
         Route::post('/create', [DongGopController::class, 'create']);
         Route::post('/update', [DongGopController::class, 'update']);
