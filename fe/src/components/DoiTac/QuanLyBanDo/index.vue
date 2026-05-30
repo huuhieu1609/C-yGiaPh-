@@ -352,6 +352,18 @@
 import axios from 'axios';
 import toastr from 'toastr';
 
+// NDA Maps Constants & Geocoding helpers
+const NDA_API_KEY = '6TTIZbUWJmRMSpiYzQ0YY8z5v8wv43w0';
+const NDA_MAP_STYLE = 'https://tiles.openmap.vn/styles/day-v1/style.json';
+
+const BE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
+const ndaGeocodeForward = (query) =>
+  `${BE_URL}/api/map/geocode/forward?text=${encodeURIComponent(query)}`;
+
+const ndaGeocodeReverse = (lat, lng) =>
+  `${BE_URL}/api/map/geocode/reverse?lat=${lat}&lng=${lng}`;
+
 export default {
   name: 'QuanLyBanDo',
   data() {
@@ -420,10 +432,36 @@ export default {
       return { headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` } };
     },
     loadLeafletCDN(callback) {
-      if (window.L) {
+      if (window.L && window.L.maplibreGL) {
         callback();
         return;
       }
+      
+      const loadMapLibreGL = () => {
+        // Load MapLibre CSS
+        const linkMapLibre = document.createElement('link');
+        linkMapLibre.rel = 'stylesheet';
+        linkMapLibre.href = 'https://unpkg.com/maplibre-gl@4.3.2/dist/maplibre-gl.css';
+        document.head.appendChild(linkMapLibre);
+
+        // Load MapLibre JS
+        const scriptMapLibre = document.createElement('script');
+        scriptMapLibre.src = 'https://unpkg.com/maplibre-gl@4.3.2/dist/maplibre-gl.js';
+        scriptMapLibre.onload = () => {
+          // Load MapLibre Leaflet Adapter
+          const scriptAdapter = document.createElement('script');
+          scriptAdapter.src = 'https://unpkg.com/@maplibre/maplibre-gl-leaflet@0.0.20/leaflet-maplibre-gl.js';
+          scriptAdapter.onload = callback;
+          document.head.appendChild(scriptAdapter);
+        };
+        document.head.appendChild(scriptMapLibre);
+      };
+
+      if (window.L) {
+        loadMapLibreGL();
+        return;
+      }
+
       const link = document.createElement('link');
       link.rel = 'stylesheet';
       link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
@@ -433,9 +471,7 @@ export default {
       const script = document.createElement('script');
       script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
       script.crossOrigin = '';
-      script.onload = () => {
-        callback();
-      };
+      script.onload = loadMapLibreGL;
       document.head.appendChild(script);
     },
     initMap() {
@@ -443,21 +479,16 @@ export default {
 
       this.map = window.L.map('leaflet-manager-map').setView([16.047079, 108.206230], 6);
 
-      const openMapKey = 'DNmLXlnYjfHFnvaThBU1FXYrXAGhfpgD';
-      const openMapUrl = `https://api.openmap.vn/styles/osm-bright/{z}/{x}/{y}.png?apikey=${openMapKey}`;
-      const osmUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+      // Configure enterprise OpenMap.vn layer with MapLibre GL Vector 'day-v1' style
+      const openMapKey = NDA_API_KEY;
+      const openMapUrl = `${NDA_MAP_STYLE}?apikey=${openMapKey}`;
 
-      const tileLayer = window.L.tileLayer(openMapUrl, {
-        attribution: '&copy; <a href="https://openmap.vn" target="_blank">OpenMap.vn</a> contributors',
-        maxZoom: 19
+      const glLayer = window.L.maplibreGL({
+        style: openMapUrl,
+        attribution: '&copy; <a href="https://openmap.vn" target="_blank">OpenMap.vn</a> contributors'
       });
 
-      tileLayer.on('tileerror', () => {
-        console.warn("OpenMap.vn tile server loading error. Falling back to OpenStreetMap.");
-        tileLayer.setUrl(osmUrl);
-      });
-
-      tileLayer.addTo(this.map);
+      glLayer.addTo(this.map);
 
       // Click event for coordinates capture
       this.map.on('click', (e) => {
@@ -832,20 +863,26 @@ export default {
     reverseGeocode(lat, lng, target) {
       if (!lat || !lng) return;
       
-      const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1&email=huuhieu1609@gmail.com`;
+      const url = ndaGeocodeReverse(lat, lng);
+      const headers = this.getHeaders();
       
-      axios.get(url, {
-        headers: {
-          'Accept-Language': 'vi,en;q=0.9',
-          'User-Agent': 'CayGiaPhaMapApp/1.0'
-        }
-      })
+      axios.get(url, headers)
         .then(res => {
-          if (res.data && res.data.display_name) {
-            let displayAddress = res.data.display_name;
-            
-            // Clean up Nominatim response to be neat and standard for VN address hierarchy
-            const addr = res.data.address;
+          let displayAddress = "";
+          let addr = null;
+
+          if (res.data) {
+            if (res.data.results && res.data.results.length > 0) {
+              const firstResult = res.data.results[0];
+              displayAddress = firstResult.formatted_address || firstResult.display_name || "";
+              addr = firstResult.address || null;
+            } else {
+              displayAddress = res.data.display_name || res.data.formatted_address || "";
+              addr = res.data.address || null;
+            }
+          }
+
+          if (displayAddress) {
             if (addr) {
               const houseNumber = addr.house_number || addr.building || '';
               const road = addr.road || '';
@@ -882,7 +919,7 @@ export default {
           }
         })
         .catch(err => {
-          console.warn("Lỗi khi giải ngược địa chỉ bằng Nominatim:", err);
+          console.warn("Lỗi khi giải ngược địa chỉ bằng NDA Geocoder:", err);
         });
     }
   }

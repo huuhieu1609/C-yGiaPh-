@@ -137,6 +137,18 @@
 import axios from 'axios';
 import toastr from 'toastr';
 
+// NDA Maps Constants & Geocoding helpers translated from ReactJS
+export const NDA_API_KEY = '6TTIZbUWJmRMSpiYzQ0YY8z5v8wv43w0';
+export const NDA_MAP_STYLE = `https://tiles.openmap.vn/styles/day-v1/style.json`;
+
+const BE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
+export const ndaGeocodeForward = (query) =>
+  `${BE_URL}/api/map/geocode/forward?text=${encodeURIComponent(query)}`;
+
+export const ndaGeocodeReverse = (lat, lng) =>
+  `${BE_URL}/api/map/geocode/reverse?lat=${lat}&lng=${lng}`;
+
 export default {
   name: 'ClientBanDo',
   data() {
@@ -216,7 +228,7 @@ export default {
       return { headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` } };
     },
     loadLeafletCDN(callback) {
-      if (window.L && window.L.Routing) {
+      if (window.L && window.L.maplibreGL && window.L.Routing) {
         callback();
         return;
       }
@@ -233,8 +245,28 @@ export default {
         document.head.appendChild(script2);
       };
 
+      const loadMapLibreGL = () => {
+        // Load MapLibre CSS
+        const linkMapLibre = document.createElement('link');
+        linkMapLibre.rel = 'stylesheet';
+        linkMapLibre.href = 'https://unpkg.com/maplibre-gl@4.3.2/dist/maplibre-gl.css';
+        document.head.appendChild(linkMapLibre);
+
+        // Load MapLibre JS
+        const scriptMapLibre = document.createElement('script');
+        scriptMapLibre.src = 'https://unpkg.com/maplibre-gl@4.3.2/dist/maplibre-gl.js';
+        scriptMapLibre.onload = () => {
+          // Load MapLibre Leaflet Adapter
+          const scriptAdapter = document.createElement('script');
+          scriptAdapter.src = 'https://unpkg.com/@maplibre/maplibre-gl-leaflet@0.0.20/leaflet-maplibre-gl.js';
+          scriptAdapter.onload = loadRouting;
+          document.head.appendChild(scriptAdapter);
+        };
+        document.head.appendChild(scriptMapLibre);
+      };
+
       if (window.L) {
-        loadRouting();
+        loadMapLibreGL();
         return;
       }
 
@@ -245,7 +277,7 @@ export default {
 
       const script = document.createElement('script');
       script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
-      script.onload = loadRouting;
+      script.onload = loadMapLibreGL;
       document.head.appendChild(script);
     },
     initMap() {
@@ -259,23 +291,16 @@ export default {
       // Add elegant zoom control at bottom right
       window.L.control.zoom({ position: 'bottomright' }).addTo(this.map);
 
-      // Configure OpenMap.vn layer with Fallback to OSM on load failure
-      const openMapKey = 'DNmLXlnYjfHFnvaThBU1FXYrXAGhfpgD';
-      const openMapUrl = `https://api.openmap.vn/styles/osm-bright/{z}/{x}/{y}.png?apikey=${openMapKey}`;
-      const osmUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+      // Configure enterprise OpenMap.vn layer with MapLibre GL Vector 'day-v1' style
+      const openMapKey = NDA_API_KEY;
+      const openMapUrl = `${NDA_MAP_STYLE}?apikey=${openMapKey}`;
 
-      const tileLayer = window.L.tileLayer(openMapUrl, {
-        attribution: '&copy; <a href="https://openmap.vn" target="_blank">OpenMap.vn</a> contributors',
-        maxZoom: 19
+      const glLayer = window.L.maplibreGL({
+        style: openMapUrl,
+        attribution: '&copy; <a href="https://openmap.vn" target="_blank">OpenMap.vn</a> contributors'
       });
 
-      // Simple, beautiful error handler fallback
-      tileLayer.on('tileerror', () => {
-        console.warn("OpenMap.vn tile server loading error. Falling back to OpenStreetMap.");
-        tileLayer.setUrl(osmUrl);
-      });
-
-      tileLayer.addTo(this.map);
+      glLayer.addTo(this.map);
     },
     loadMapData() {
       this.isLoading = true;

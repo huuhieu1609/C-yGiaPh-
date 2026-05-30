@@ -24,6 +24,12 @@ class ThongBaoController extends Controller
                     ->get();
             } else {
                 $cnId = $user ? $user->chi_nhanh_id : null;
+                if (!$cnId && $user) {
+                    $myMember = \App\Models\ThanhVien::where('email', $user->email)->whereNotNull('email')->first();
+                    if ($myMember) {
+                        $cnId = $myMember->chi_nhanh_id;
+                    }
+                }
                 if ($cnId) {
                     $data = ThongBao::where('chi_nhanh_id', $cnId)
                         ->orWhereNull('chi_nhanh_id')

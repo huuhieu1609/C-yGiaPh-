@@ -232,6 +232,16 @@ export default {
       }
       this.currentEvent = ev;
       this.selectedMemberIds = [];
+      const userData = JSON.parse(localStorage.getItem('user'));
+      if (userData) {
+        const user = userData.user || userData;
+        if (user && user.email) {
+          const myMember = this.allMembers.find(m => m.email && m.email.toLowerCase() === user.email.toLowerCase());
+          if (myMember && !this.isAlreadyRegistered(myMember.id)) {
+            this.selectedMemberIds.push(myMember.id);
+          }
+        }
+      }
       this.searchQuery = '';
       this.modal.show();
     },
