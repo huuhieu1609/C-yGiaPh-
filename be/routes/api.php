@@ -149,6 +149,8 @@ Route::middleware(['auth:sanctum', 'activity'])->group(function () {
     Route::get('/thanh-vien/get-data', [ThanhVienController::class, 'getData'])
         ->middleware('phan_quyen:Quản Lý Thành Viên|Cây Gia Phả|Quản Lý Mộ Phần|Quản Lý Sự Kiện|Tra Cứu Xưng Hô');
 
+    Route::post('/thanh-vien/upload-avatar', [ThanhVienController::class, 'uploadAvatar']);
+
     Route::prefix('/thanh-vien')->middleware('phan_quyen:Quản Lý Thành Viên')->group(function () {
         Route::get('/chi-nhanh/{chiNhanhId}', [ThanhVienController::class, 'getByChiNhanh']);
         Route::post('/create', [ThanhVienController::class, 'create']);
