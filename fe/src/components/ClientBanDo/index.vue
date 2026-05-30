@@ -1,133 +1,126 @@
 <template>
-  <div class="map-view-container">
-    <!-- Left Sidebar for Search & List -->
-    <div class="glass-sidebar shadow-lg">
-      <div class="sidebar-header d-flex justify-content-between align-items-center mb-3">
-        <div>
-          <h4 class="sidebar-title mb-1">
-            <i class="bx bx-map-alt text-orange"></i> Bản Đồ Số Dòng Tộc
-          </h4>
-          <p class="sidebar-subtitle mb-0">Định vị & Chỉ đường Mộ phần, Nhà thờ họ</p>
-        </div>
-        <button class="btn btn-refresh-premium rounded-circle d-flex align-items-center justify-content-center" @click="loadMapData" :disabled="isLoading" title="Làm mới dữ liệu">
-          <i class="bx bx-sync fs-5 text-orange" :class="{'bx-spin': isLoading}"></i>
-        </button>
-      </div>
-
-      <!-- Quick Stats -->
-      <div class="quick-stats-row mb-3">
-        <div class="stat-card" @click="filterType = 'all'" :class="{ active: filterType === 'all' }">
-          <span class="stat-num">{{ totalCount }}</span>
-          <span class="stat-lbl">Tất cả</span>
-        </div>
-        <div class="stat-card grave-stat" @click="filterType = 'grave'" :class="{ active: filterType === 'grave' }">
-          <span class="stat-num">{{ graves.length }}</span>
-          <span class="stat-lbl">Mộ phần</span>
-        </div>
-        <div class="stat-card shrine-stat" @click="filterType = 'shrine'" :class="{ active: filterType === 'shrine' }">
-          <span class="stat-num">{{ shrines.length }}</span>
-          <span class="stat-lbl">Nhà thờ</span>
-        </div>
-      </div>
-
-      <!-- Search Input -->
-      <div class="search-box mb-3">
-        <div class="input-group">
-          <span class="input-group-text"><i class="bx bx-search"></i></span>
-          <input 
-            type="text" 
-            class="form-control" 
-            placeholder="Tìm kiếm vị trí..." 
-            v-model="searchQuery"
-          />
-          <button v-if="searchQuery" class="btn btn-clear-search" @click="searchQuery = ''">
-            <i class="bx bx-x"></i>
+  <div class="map-page-wrapper">
+    <div class="map-view-container">
+      <!-- Left Sidebar for Search & List -->
+      <div class="glass-sidebar shadow-lg">
+        <div class="sidebar-header d-flex justify-content-between align-items-center mb-3">
+          <div>
+            <h4 class="sidebar-title mb-1">
+              <i class="bx bx-map-alt text-orange"></i> Bản Đồ Số Dòng Tộc
+            </h4>
+            <p class="sidebar-subtitle mb-0">Định vị & Chỉ đường Mộ phần, Nhà thờ họ</p>
+          </div>
+          <button class="btn btn-refresh-premium rounded-circle d-flex align-items-center justify-content-center"
+            @click="loadMapData" :disabled="isLoading" title="Làm mới dữ liệu">
+            <i class="bx bx-sync fs-5 text-orange" :class="{ 'bx-spin': isLoading }"></i>
           </button>
         </div>
-      </div>
 
-      <!-- List of locations -->
-      <div class="location-list flex-grow-1">
-        <div v-if="isLoading" class="d-flex flex-column align-items-center justify-content-center py-5">
-          <div class="spinner-border text-orange" role="status">
-            <span class="visually-hidden">Loading...</span>
+        <!-- Quick Stats -->
+        <div class="quick-stats-row mb-3">
+          <div class="stat-card" @click="filterType = 'all'" :class="{ active: filterType === 'all' }">
+            <span class="stat-num">{{ totalCount }}</span>
+            <span class="stat-lbl">Tất cả</span>
           </div>
-          <span class="mt-3 text-muted">Đang tải bản đồ dòng tộc...</span>
+          <div class="stat-card grave-stat" @click="filterType = 'grave'" :class="{ active: filterType === 'grave' }">
+            <span class="stat-num">{{ graves.length }}</span>
+            <span class="stat-lbl">Mộ phần</span>
+          </div>
+          <div class="stat-card shrine-stat" @click="filterType = 'shrine'"
+            :class="{ active: filterType === 'shrine' }">
+            <span class="stat-num">{{ shrines.length }}</span>
+            <span class="stat-lbl">Nhà thờ</span>
+          </div>
         </div>
 
-        <div v-else-if="filteredItems.length === 0" class="text-center py-5 text-muted">
-          <i class="bx bx-map-pin fs-1 opacity-25 mb-2"></i>
-          <p class="mb-0">Không tìm thấy vị trí nào khớp</p>
+        <!-- Search Input -->
+        <div class="search-box mb-3">
+          <div class="input-group">
+            <span class="input-group-text"><i class="bx bx-search"></i></span>
+            <input type="text" class="form-control" placeholder="Tìm kiếm vị trí..." v-model="searchQuery" />
+            <button v-if="searchQuery" class="btn btn-clear-search" @click="searchQuery = ''">
+              <i class="bx bx-x"></i>
+            </button>
+          </div>
         </div>
 
-        <div v-else class="list-wrapper">
-          <div 
-            v-for="item in filteredItems" 
-            :key="item.uniqueId" 
-            class="location-card"
-            :class="{ 
+        <!-- List of locations -->
+        <div class="location-list flex-grow-1">
+          <div v-if="isLoading" class="d-flex flex-column align-items-center justify-content-center py-5">
+            <div class="spinner-border text-orange" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+            <span class="mt-3 text-muted">Đang tải bản đồ dòng tộc...</span>
+          </div>
+
+          <div v-else-if="filteredItems.length === 0" class="text-center py-5 text-muted">
+            <i class="bx bx-map-pin fs-1 opacity-25 mb-2"></i>
+            <p class="mb-0">Không tìm thấy vị trí nào khớp</p>
+          </div>
+
+          <div v-else class="list-wrapper">
+            <div v-for="item in filteredItems" :key="item.uniqueId" class="location-card" :class="{
               active: selectedItem && selectedItem.uniqueId === item.uniqueId,
-              'no-coords': !item.hasCoords 
-            }"
-            @click="focusLocation(item)"
-          >
-            <div class="d-flex gap-3">
-              <div class="card-icon-box" :class="item.type">
-                <i :class="item.type === 'grave' ? 'bx bx-shield' : 'bx bx-home-alt-2'"></i>
-              </div>
-              <div class="flex-grow-1">
-                <div class="d-flex justify-content-between align-items-start">
-                  <span class="badge-type" :class="item.type">
-                    {{ item.type === 'grave' ? 'Mộ Cổ' : 'Nhà Thờ Tổ' }}
-                  </span>
-                  <span v-if="!item.hasCoords" class="badge bg-warning-subtle text-warning border-0 font-sm">
-                    Chưa ghim
-                  </span>
+              'no-coords': !item.hasCoords
+            }" @click="focusLocation(item)">
+              <div class="d-flex gap-3">
+                <div class="card-icon-box" :class="item.type">
+                  <i :class="item.type === 'grave' ? 'bx bx-shield' : 'bx bx-home-alt-2'"></i>
                 </div>
-                <h6 class="item-title mt-1 mb-1">{{ item.name }}</h6>
-                <p class="item-desc text-muted mb-1 text-truncate-2">{{ item.address || 'Chưa cập nhật địa chỉ' }}</p>
-                
-                <div v-if="item.hasCoords" class="d-flex justify-content-between align-items-center mt-2">
-                  <span class="coords-text">
-                    <i class="bx bx-target-lock"></i> {{ item.lat.toFixed(5) }}, {{ item.lng.toFixed(5) }}
-                  </span>
-                  <button class="btn btn-sm btn-navigate-inline" @click.stop="startInAppRouting(item)">
-                    <i class="bx bx-navigation"></i> Dẫn đường
-                  </button>
+                <div class="flex-grow-1">
+                  <div class="d-flex justify-content-between align-items-start">
+                    <span class="badge-type" :class="item.type">
+                      {{ item.type === 'grave' ? 'Mộ Cổ' : 'Nhà Thờ Tổ' }}
+                    </span>
+                    <span v-if="!item.hasCoords" class="badge bg-warning-subtle text-warning border-0 font-sm">
+                      Chưa ghim
+                    </span>
+                  </div>
+                  <h6 class="item-title mt-1 mb-1">{{ item.name }}</h6>
+                  <p class="item-desc text-muted mb-1 text-truncate-2">{{ item.address || 'Chưa cập nhật địa chỉ' }}</p>
+
+                  <div v-if="item.hasCoords" class="d-flex justify-content-between align-items-center mt-2">
+                    <span class="coords-text">
+                      <i class="bx bx-target-lock"></i> {{ item.lat.toFixed(5) }}, {{ item.lng.toFixed(5) }}
+                    </span>
+                    <button class="btn btn-sm btn-navigate-inline" @click.stop="startInAppRouting(item)">
+                      <i class="bx bx-navigation"></i> Dẫn đường
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- Quick Back Button -->
-      <div class="sidebar-footer border-top pt-3">
-        <router-link to="/gia-pha" class="btn btn-back-gp w-100">
-          <i class="bx bx-arrow-back"></i> Quay lại Gia Phả
-        </router-link>
-      </div>
-    </div>
-
-    <!-- Map Canvas -->
-    <div id="leaflet-clan-map" class="map-canvas"></div>
-
-    <!-- Floating Routing Stats Card -->
-    <div v-if="routeStats" class="routing-stats-overlay shadow-lg animate-fade-in">
-      <div class="d-flex align-items-center gap-3">
-        <div class="route-icon-box">
-          <i class="bx bx-navigation"></i>
+        <!-- Quick Back Button -->
+        <div class="sidebar-footer border-top pt-3">
+          <router-link to="/gia-pha" class="btn btn-back-gp w-100">
+            <i class="bx bx-arrow-back"></i> Quay lại Gia Phả
+          </router-link>
         </div>
-        <div class="flex-grow-1">
-          <h6 class="stats-title mb-0">Thông tin dẫn đường</h6>
-          <div class="stats-values d-flex gap-3 mt-1">
-            <span class="stat-item"><i class="bx bx-transfer-alt"></i> {{ routeStats.distance }}</span>
-            <span class="stat-item"><i class="bx bx-time"></i> {{ routeStats.duration }}</span>
+      </div>
+
+      <!-- Map Canvas -->
+      <div id="leaflet-clan-map" class="map-canvas"></div>
+
+      <!-- Floating Routing Stats Card -->
+      <div v-if="routeStats" class="routing-stats-overlay shadow-lg animate-fade-in">
+        <div class="d-flex align-items-center gap-3">
+          <div class="route-icon-box">
+            <i class="bx bx-navigation"></i>
           </div>
+          <div class="flex-grow-1">
+            <h6 class="stats-title mb-0">Thông tin dẫn đường</h6>
+            <div class="stats-values d-flex gap-3 mt-1">
+              <span class="stat-item"><i class="bx bx-transfer-alt"></i> {{ routeStats.distance }}</span>
+              <span class="stat-item"><i class="bx bx-time"></i> {{ routeStats.duration }}</span>
+            </div>
+          </div>
+          <button class="btn btn-close-route btn-sm ms-2" @click="clearRoute" title="Xóa đường đi">
+            <i class="bx bx-x"></i>
+          </button>
         </div>
-        <button class="btn btn-close-route btn-sm ms-2" @click="clearRoute" title="Xóa đường đi">
-          <i class="bx bx-x"></i>
-        </button>
       </div>
     </div>
   </div>
@@ -193,7 +186,7 @@ export default {
     filteredItems() {
       return this.unifiedItems.filter(item => {
         const matchesType = this.filterType === 'all' || this.filterType === item.type;
-        const matchesQuery = !this.searchQuery || 
+        const matchesQuery = !this.searchQuery ||
           item.name.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
           (item.address && item.address.toLowerCase().includes(this.searchQuery.toLowerCase()));
         return matchesType && matchesQuery;
@@ -220,13 +213,13 @@ export default {
         callback();
         return;
       }
-      
+
       const loadRouting = () => {
         const link2 = document.createElement('link');
         link2.rel = 'stylesheet';
         link2.href = 'https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css';
         document.head.appendChild(link2);
-        
+
         const script2 = document.createElement('script');
         script2.src = 'https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js';
         script2.onload = callback;
@@ -280,7 +273,7 @@ export default {
     loadMapData() {
       this.isLoading = true;
       const headers = this.getHeaders();
-      
+
       const reqGraves = axios.get('http://127.0.0.1:8000/api/mo-phan/get-data', headers);
       const reqShrines = axios.get('http://127.0.0.1:8000/api/nha-tho-ho/get-data', headers);
 
@@ -288,7 +281,7 @@ export default {
         .then(([resG, resS]) => {
           if (resG.data.status) this.graves = resG.data.data;
           if (resS.data.status) this.shrines = resS.data.data;
-          
+
           this.$nextTick(() => {
             this.plotMarkers();
           });
@@ -412,10 +405,10 @@ export default {
     startInAppRouting(item) {
       if (!item.lat || !item.lng) return;
       if (!this.map || !window.L.Routing) {
-          toastr.error('Hệ thống chỉ đường chưa sẵn sàng.');
-          return;
+        toastr.error('Hệ thống chỉ đường chưa sẵn sàng.');
+        return;
       }
-      
+
       const destination = [item.lat, item.lng];
 
       if ("geolocation" in navigator) {
@@ -423,7 +416,7 @@ export default {
         navigator.geolocation.getCurrentPosition((position) => {
           const userLat = position.coords.latitude;
           const userLng = position.coords.longitude;
-          
+
           this.drawRoute([userLat, userLng], destination);
         }, (error) => {
           console.error("Lỗi geolocation: ", error);
@@ -443,7 +436,7 @@ export default {
         this.map.removeControl(this.routingControl);
       }
       this.routeStats = null;
-      
+
       this.routingControl = window.L.Routing.control({
         waypoints: [
           window.L.latLng(startCoords[0], startCoords[1]),
@@ -455,21 +448,21 @@ export default {
         show: false, // Hides the bulky text instruction panel to prevent overlap with the top navbar
         fitSelectedRoutes: true,
         lineOptions: {
-            styles: [{color: '#f97316', opacity: 0.8, weight: 6}]
+          styles: [{ color: '#f97316', opacity: 0.8, weight: 6 }]
         },
-        createMarker: function(i, waypoint, n) {
-            if (i === 0) {
-                return window.L.marker(waypoint.latLng, {
-                    draggable: isFallback, // Allow dragging if it's a fallback location
-                    icon: window.L.divIcon({
-                        className: 'custom-div-icon',
-                        html: `<div style="background:#3b82f6; width:18px; height:18px; border-radius:50%; border:3px solid white; box-shadow:0 0 5px rgba(0,0,0,0.5);"></div>`,
-                        iconSize: [18,18],
-                        iconAnchor: [9,9]
-                    })
-                }).bindPopup(isFallback ? "Kéo chấm xanh này đến vị trí của bạn" : "Vị trí của bạn").openPopup();
-            }
-            return null;
+        createMarker: function (i, waypoint, n) {
+          if (i === 0) {
+            return window.L.marker(waypoint.latLng, {
+              draggable: isFallback, // Allow dragging if it's a fallback location
+              icon: window.L.divIcon({
+                className: 'custom-div-icon',
+                html: `<div style="background:#3b82f6; width:18px; height:18px; border-radius:50%; border:3px solid white; box-shadow:0 0 5px rgba(0,0,0,0.5);"></div>`,
+                iconSize: [18, 18],
+                iconAnchor: [9, 9]
+              })
+            }).bindPopup(isFallback ? "Kéo chấm xanh này đến vị trí của bạn" : "Vị trí của bạn").openPopup();
+          }
+          return null;
         }
       }).addTo(this.map);
 
@@ -480,11 +473,11 @@ export default {
           const route = routes[0];
           const distance = route.summary.totalDistance; // meters
           const time = route.summary.totalTime; // seconds
-          
-          const formattedDistance = distance >= 1000 
-            ? (distance / 1000).toFixed(1) + ' km' 
+
+          const formattedDistance = distance >= 1000
+            ? (distance / 1000).toFixed(1) + ' km'
             : Math.round(distance) + ' m';
-            
+
           const minutes = Math.round(time / 60);
           let formattedDuration = '';
           if (minutes >= 60) {
@@ -494,7 +487,7 @@ export default {
           } else {
             formattedDuration = `${minutes} phút`;
           }
-          
+
           this.routeStats = {
             distance: formattedDistance,
             duration: formattedDuration
@@ -522,12 +515,25 @@ export default {
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
+.map-page-wrapper {
+  min-height: 100vh;
+  width: 100%;
+  background-image: linear-gradient(rgba(15, 23, 42, 0.96), rgba(15, 23, 42, 0.96)), url('https://images.unsplash.com/photo-1501854140801-50d01698950b?auto=format&fit=crop&q=80&w=1200');
+  background-size: cover;
+  background-attachment: fixed;
+  padding-top: 100px;
+  /* Space for fixed header navbar */
+  padding-bottom: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .map-view-container {
   display: flex;
-  height: calc(100vh - 140px);
+  height: calc(100vh - 160px);
   width: 96%;
   max-width: 1600px;
-  margin: 100px auto 40px auto;
   position: relative;
   font-family: 'Inter', sans-serif;
   overflow: hidden;
@@ -544,7 +550,7 @@ export default {
   bottom: 20px;
   width: 380px;
   z-index: 1000;
-  background: rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(15px);
   -webkit-backdrop-filter: blur(15px);
   border: 1px solid rgba(255, 255, 255, 0.35);
@@ -552,7 +558,7 @@ export default {
   padding: 24px;
   display: flex;
   flex-direction: column;
-  color: #1e293b;
+  color: #1e293b !important;
   transition: all 0.3s ease;
 }
 
@@ -573,6 +579,7 @@ export default {
   display: flex;
   align-items: center;
   gap: 8px;
+  color: #1e293b !important;
 }
 
 .text-orange {
@@ -615,7 +622,7 @@ export default {
 
 .stat-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .stat-card.active {
@@ -641,6 +648,7 @@ export default {
 .stat-num {
   font-size: 16px;
   font-weight: 700;
+  color: #1e293b;
 }
 
 .stat-lbl {
@@ -665,7 +673,7 @@ export default {
 }
 
 [data-theme="dark"] .search-box .input-group {
-  background: rgba(0,0,0,0.2);
+  background: rgba(0, 0, 0, 0.2);
   border-color: rgba(255, 255, 255, 0.1);
 }
 
@@ -686,7 +694,7 @@ export default {
   border: none;
   font-size: 14px;
   padding: 10px 10px 10px 4px;
-  color: inherit;
+  color: #1e293b !important;
   box-shadow: none !important;
 }
 
@@ -717,12 +725,12 @@ export default {
 }
 
 .location-list::-webkit-scrollbar-thumb {
-  background: rgba(0,0,0,0.1);
+  background: rgba(0, 0, 0, 0.1);
   border-radius: 10px;
 }
 
 [data-theme="dark"] .location-list::-webkit-scrollbar-thumb {
-  background: rgba(255,255,255,0.1);
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .list-wrapper {
@@ -811,11 +819,12 @@ export default {
 .item-title {
   font-size: 14px;
   font-weight: 700;
-  color: inherit;
+  color: #1e293b !important;
 }
 
 .item-desc {
   font-size: 12px;
+  color: #475569 !important;
 }
 
 .text-truncate-2 {
@@ -860,7 +869,7 @@ export default {
 /* FOOTER */
 .btn-back-gp {
   background: var(--input-bg, #f1f5f9);
-  border: 1px solid rgba(0,0,0,0.05);
+  border: 1px solid rgba(0, 0, 0, 0.05);
   color: var(--text-main);
   font-weight: 600;
   padding: 10px;
@@ -891,7 +900,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   border: 2.5px solid #ffffff;
 }
 
@@ -916,6 +925,7 @@ export default {
     transform: rotate(45deg) scale(1);
     opacity: 0.5;
   }
+
   100% {
     transform: rotate(45deg) scale(2.2);
     opacity: 0;
@@ -929,7 +939,7 @@ export default {
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(8px);
   border-radius: 16px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
   padding: 0;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.4);
@@ -937,7 +947,7 @@ export default {
 
 [data-theme="dark"] .premium-leaflet-popup .leaflet-popup-content-wrapper {
   background: rgba(15, 23, 42, 0.95);
-  border-color: rgba(255,255,255,0.1);
+  border-color: rgba(255, 255, 255, 0.1);
   color: #f8fafc;
 }
 
@@ -981,7 +991,7 @@ export default {
   padding: 4px 8px;
   border-radius: 20px;
   color: #fff;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 .popup-badge.grave {
@@ -1066,11 +1076,13 @@ export default {
   align-items: center;
   justify-content: center;
 }
+
 .btn-refresh-premium:hover {
   transform: rotate(30deg) scale(1.05);
   border-color: #f97316 !important;
   box-shadow: 0 4px 12px rgba(249, 115, 22, 0.15);
 }
+
 .btn-refresh-premium:active {
   transform: scale(0.95);
 }
@@ -1156,6 +1168,7 @@ export default {
     transform: translateY(-20px);
     opacity: 0;
   }
+
   to {
     transform: translateY(0);
     opacity: 1;

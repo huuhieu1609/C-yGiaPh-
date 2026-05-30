@@ -7,6 +7,7 @@ use App\Models\SuKien;
 use App\Models\ThamGiaSuKien;
 use Illuminate\Http\Request;
 use Exception;
+use Carbon\Carbon;
 
 class SuKienController extends Controller
 {
@@ -67,14 +68,21 @@ class SuKienController extends Controller
     public function create(Request $request)
     {
         try {
+            $request->validate([
+                'ngay_to_chuc' => 'required|date|after:now',
+            ], [
+                'ngay_to_chuc.after' => 'Thời gian tổ chức phải là thời gian trong tương lai.',
+            ]);
+
             $data = $request->validate([
                 'tieu_de' => 'required|string|max:255',
                 'noi_dung' => 'nullable|string',
-                'ngay_to_chuc' => 'required|date',
+                'ngay_to_chuc' => 'required|date|after:now',
                 'dia_diem' => 'nullable|string|max:255',
-                'chi_nhanh_id' => 'nullable|exists:chi_nhanhs,id',
-                'loai' => 'required|in:Giỗ tổ,Họp họ,Cưới hỏi,Tang lễ',
                 'chi_nhanh_id' => 'nullable|integer|exists:chi_nhanhs,id',
+                'loai' => 'required|in:Giỗ tổ,Họp họ,Cưới hỏi,Tang lễ',
+            ], [
+                'ngay_to_chuc.after' => 'Thời gian tổ chức phải là thời gian trong tương lai.',
             ]);
 
             $user = auth('sanctum')->user();
@@ -113,14 +121,21 @@ class SuKienController extends Controller
     {
         try {
             $item = SuKien::findOrFail($request->id);
+            $request->validate([
+                'ngay_to_chuc' => 'required|date|after:now',
+            ], [
+                'ngay_to_chuc.after' => 'Thời gian tổ chức phải là thời gian trong tương lai.',
+            ]);
+
             $data = $request->validate([
                 'tieu_de' => 'required|string|max:255',
                 'noi_dung' => 'nullable|string',
-                'ngay_to_chuc' => 'required|date',
+                'ngay_to_chuc' => 'required|date|after:now',
                 'dia_diem' => 'nullable|string|max:255',
-                'chi_nhanh_id' => 'nullable|exists:chi_nhanhs,id',
-                'loai' => 'required|in:Giỗ tổ,Họp họ,Cưới hỏi,Tang lễ',
                 'chi_nhanh_id' => 'nullable|integer|exists:chi_nhanhs,id',
+                'loai' => 'required|in:Giỗ tổ,Họp họ,Cưới hỏi,Tang lễ',
+            ], [
+                'ngay_to_chuc.after' => 'Thời gian tổ chức phải là thời gian trong tương lai.',
             ]);
 
             $user = auth('sanctum')->user();
@@ -203,6 +218,14 @@ class SuKienController extends Controller
                 'thanh_vien_ids.*' => 'exists:thanh_viens,id',
             ]);
 
+            $suKien = SuKien::findOrFail($request->su_kien_id);
+            if (Carbon::parse($suKien->ngay_to_chuc)->lte(now())) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Sự kiện đã diễn ra, không thể đăng ký tham gia.'
+                ], 422);
+            }
+
             $suKienId = $request->su_kien_id;
             $thanhVienIds = $request->thanh_vien_ids;
 
@@ -233,6 +256,14 @@ class SuKienController extends Controller
                 'su_kien_id' => 'required|exists:su_kiens,id',
                 'thanh_vien_id' => 'required|exists:thanh_viens,id',
             ]);
+
+            $suKien = SuKien::findOrFail($request->su_kien_id);
+            if (Carbon::parse($suKien->ngay_to_chuc)->lte(now())) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Sự kiện đã diễn ra, không thể thay đổi danh sách đăng ký.'
+                ], 422);
+            }
 
             ThamGiaSuKien::where('su_kien_id', $request->su_kien_id)
                 ->where('thanh_vien_id', $request->thanh_vien_id)

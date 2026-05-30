@@ -19,6 +19,12 @@ class NhaThoHoController extends Controller
 
             if ($user->vai_tro === 'Admin') {
                 $data = NhaThoHo::with('chiNhanh')->get();
+            } elseif ($user->is_doi_tac == 1) {
+                $chiNhanhIds = \App\Models\ChiNhanh::getManagedBranchIds($user);
+                $data = NhaThoHo::whereIn('chi_nhanh_id', $chiNhanhIds)
+                    ->orWhereNull('chi_nhanh_id')
+                    ->with('chiNhanh')
+                    ->get();
             } else {
                 $cnId = $user->chi_nhanh_id;
                 if (!$cnId) {
@@ -112,7 +118,7 @@ class NhaThoHoController extends Controller
     {
         try {
             $item = NhaThoHo::findOrFail($request->id);
-            
+
             if ('NhaThoHo' === 'ThanhVien') {
                 $item->trang_thai = $item->trang_thai == 'Còn sống' ? 'Đã mất' : 'Còn sống';
             } elseif (isset($item->trang_thai)) {
@@ -123,7 +129,7 @@ class NhaThoHoController extends Controller
                     'message' => 'Model này không hỗ trợ trạng thái!',
                 ]);
             }
-            
+
             $item->save();
             return response()->json([
                 'status'  => true,

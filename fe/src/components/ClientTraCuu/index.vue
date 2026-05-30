@@ -123,7 +123,7 @@
                             <div class="row g-0">
                                 <div class="col-md-5 p-5 text-white bg-heritage-dark d-flex flex-column justify-content-center text-center text-md-start">
                                     <span class="text-warning text-uppercase fw-bold tracking-widest small mb-2">Cách xưng hô</span>
-                                    <h1 class="display-3 fw-bold text-gold mb-0">{{ result.term }}</h1>
+                                    <h1 class="display-3 fw-bold text-gold mb-0">{{ result.xung_ho }}</h1>
                                 </div>
                                 <div class="col-md-7 p-5 bg-white">
                                     <div class="d-flex align-items-center mb-4">
@@ -134,7 +134,7 @@
                                     </div>
                                     <p class="fs-4 lh-base text-dark mb-4">
                                         Trong truyền thống gia tộc, <strong>{{ personA.ho_ten }}</strong> sẽ gọi <strong>{{ personB.ho_ten }}</strong> là 
-                                        <span class="text-gold fw-bold">{{ result.term }}</span>.
+                                        <span class="text-gold fw-bold">{{ result.xung_ho }}</span>.
                                     </p>
                                     <div class="info-footer p-3 rounded-3 bg-light border-start border-4 border-warning">
                                         <span class="text-secondary small fw-bold text-uppercase d-block mb-1">Ghi chú:</span>
@@ -309,6 +309,7 @@ export default {
                 if (res.data.status) {
                     this.result = {
                         term: res.data.term,
+                        xung_ho: res.data.xung_ho,
                         description: res.data.description,
                         path: res.data.path
                     };

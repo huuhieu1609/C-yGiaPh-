@@ -5,7 +5,7 @@
     <div class="glow-blob blob-blue"></div>
 
     <div class="page-content">
-      <div class="page-header text-center">
+      <div class="page-header text-center mt-5">
         <span class="subtitle-gradient d-block text-uppercase mb-2">DI SẢN TRỰC TUYẾN</span>
         <h2 class="text-gradient fw-bold display-5 mb-1">Cây Gia Phả Dòng Họ</h2>
         <p class="text-white-50 mb-0">Sơ đồ phả hệ các thế hệ dòng họ</p>
@@ -24,21 +24,14 @@
             </button>
           </div>
           <div class="toolbar-right">
-             <span class="toolbar-hint">
+            <span class="toolbar-hint">
               <i class="bx bx-mouse-alt"></i> Cuộn thu phóng &bull; Kéo di chuyển &bull; Click xem chi tiết
             </span>
           </div>
         </div>
 
-        <div
-          class="tree-viewport"
-          ref="viewport"
-          @wheel.prevent="handleWheel"
-          @mousedown="startPan"
-          @mousemove="doPan"
-          @mouseup="endPan"
-          @mouseleave="endPan"
-        >
+        <div class="tree-viewport" ref="viewport" @wheel.prevent="handleWheel" @mousedown="startPan" @mousemove="doPan"
+          @mouseup="endPan" @mouseleave="endPan">
           <div class="tree-canvas" :style="canvasStyle">
             <div v-if="isLoading" class="empty-state">
               <div class="ld-ring"></div>
@@ -50,14 +43,8 @@
             </div>
             <div class="tree" v-else>
               <ul class="tree-ul">
-                <TreeItem
-                  v-for="root in treeData"
-                  :key="root.id"
-                  :member="root"
-                  :listDoiTocHo="listDoiTocHo"
-                  @view="onView"
-                  @show-qr="showQRCard"
-                />
+                <TreeItem v-for="root in treeData" :key="root.id" :member="root" :listDoiTocHo="listDoiTocHo"
+                  @view="onView" @show-qr="showQRCard" />
               </ul>
             </div>
           </div>
@@ -74,8 +61,11 @@
       <div class="modal-dialog modal-dialog-centered modal-md">
         <div class="modal-content premium-member-modal-content border-0 overflow-hidden shadow-2xl">
           <!-- Parallax/Gold Header -->
-          <div class="modal-header premium-modal-header border-0 bg-royal text-white d-flex align-items-center justify-content-between py-3 px-4" style="border-radius:24px 24px 0 0 !important;">
-            <h5 class="modal-title fw-extrabold d-flex align-items-center gap-2 text-gold" style="color:#d4af37 !important;">
+          <div
+            class="modal-header premium-modal-header border-0 bg-royal text-white d-flex align-items-center justify-content-between py-3 px-4"
+            style="border-radius:24px 24px 0 0 !important;">
+            <h5 class="modal-title fw-extrabold d-flex align-items-center gap-2 text-gold"
+              style="color:#d4af37 !important;">
               <i class="bx bx-id-card fs-4"></i>
               <span>Hồ Sơ Thành Viên</span>
             </h5>
@@ -86,32 +76,36 @@
 
           <div class="modal-body premium-modal-body p-4 text-center position-relative">
             <div class="modal-decor-light"></div>
-            
+
             <!-- Avatar Frame -->
             <div class="modal-avatar-wrapper-premium mb-3 d-inline-block position-relative">
               <img
                 :src="currentMember.avatar || `https://ui-avatars.com/api/?name=${currentMember.ho_ten}&background=d4af37&color=fff&size=128`"
-                class="rounded-circle border border-4 border-white shadow-lg profile-avatar-modal"
-                width="120" height="120" style="object-fit:cover"
-                alt="avatar"
-              >
-              <span class="status-indicator-modal shadow-sm" :class="currentMember.trang_thai === 'Còn sống' ? 'status-alive' : 'status-deceased'">
+                class="rounded-circle border border-4 border-white shadow-lg profile-avatar-modal" width="120"
+                height="120" style="object-fit:cover" alt="avatar">
+              <span class="status-indicator-modal shadow-sm"
+                :class="currentMember.trang_thai === 'Còn sống' ? 'status-alive' : 'status-deceased'">
                 <i class="bx" :class="currentMember.trang_thai === 'Còn sống' ? 'bx-heart' : 'bx-bookmark-heart'"></i>
               </span>
             </div>
 
             <!-- Name and Generation -->
             <h3 class="fw-extrabold text-dark mb-1 font-serif">{{ currentMember.ho_ten }}</h3>
-            <span class="badge badge-generation-modal mb-3"><i class="bx bx-git-branch"></i> Đời tộc họ thứ {{ currentMember.doi_thu }}</span>
+            <span class="badge badge-generation-modal mb-3"><i class="bx bx-git-branch"></i> Đời tộc họ thứ {{
+              currentMember.doi_thu }}</span>
 
             <!-- Relationship with logged-in user -->
-            <div v-if="isLoggedIn && currentMemberRelationshipLoading" class="mb-4 p-3 bg-light-gold border-dashed-gold radius-12 text-center shadow-xs">
-              <div class="spinner-border spinner-border-sm text-warning me-2" role="status" style="width: 1.2rem; height: 1.2rem;"></div>
+            <div v-if="isLoggedIn && currentMemberRelationshipLoading"
+              class="mb-4 p-3 bg-light-gold border-dashed-gold radius-12 text-center shadow-xs">
+              <div class="spinner-border spinner-border-sm text-warning me-2" role="status"
+                style="width: 1.2rem; height: 1.2rem;"></div>
               <span class="text-muted font-12 fw-medium">Hệ thống đang đối chiếu vai vế gia tộc...</span>
             </div>
-            
-            <div v-else-if="isLoggedIn && currentMemberRelationship" class="mb-4 p-3 bg-light-gold border-dashed-gold radius-12 text-center shadow-xs animate__animated animate__fadeIn">
-              <span class="text-muted small d-block mb-1 text-uppercase fw-bold font-10 tracking-wider">Mối Quan Hệ Với Bạn</span>
+
+            <div v-else-if="isLoggedIn && currentMemberRelationship"
+              class="mb-4 p-3 bg-light-gold border-dashed-gold radius-12 text-center shadow-xs animate__animated animate__fadeIn">
+              <span class="text-muted small d-block mb-1 text-uppercase fw-bold font-10 tracking-wider">Mối Quan Hệ Với
+                Bạn</span>
               <div class="relationship-term-modal font-serif">{{ currentMemberRelationship }}</div>
               <div class="small text-muted mt-1 font-12 italic">{{ currentMemberRelationshipDesc }}</div>
             </div>
@@ -122,7 +116,8 @@
                 <div class="vital-item-card p-3 radius-12 border bg-light-soft">
                   <span class="text-muted small d-block mb-1 text-uppercase fw-bold font-10">Giới tính</span>
                   <div class="d-flex align-items-center gap-2">
-                    <i class="bx fs-5" :class="currentMember.gioi_tinh === 'Nam' ? 'bx-male-sign text-primary' : 'bx-female-sign text-pink'"></i>
+                    <i class="bx fs-5"
+                      :class="currentMember.gioi_tinh === 'Nam' ? 'bx-male-sign text-primary' : 'bx-female-sign text-pink'"></i>
                     <span class="fw-bold text-dark font-14">{{ currentMember.gioi_tinh }}</span>
                   </div>
                 </div>
@@ -131,8 +126,10 @@
                 <div class="vital-item-card p-3 radius-12 border bg-light-soft">
                   <span class="text-muted small d-block mb-1 text-uppercase fw-bold font-10">Trạng thái</span>
                   <div class="d-flex align-items-center gap-2">
-                    <i class="bx fs-5" :class="currentMember.trang_thai === 'Đã mất' ? 'bx-bookmark-heart text-danger' : 'bx-heart text-success'"></i>
-                    <span class="fw-bold font-14" :class="currentMember.trang_thai === 'Đã mất' ? 'text-danger' : 'text-success'">
+                    <i class="bx fs-5"
+                      :class="currentMember.trang_thai === 'Đã mất' ? 'bx-bookmark-heart text-danger' : 'bx-heart text-success'"></i>
+                    <span class="fw-bold font-14"
+                      :class="currentMember.trang_thai === 'Đã mất' ? 'text-danger' : 'text-success'">
                       {{ currentMember.trang_thai }}
                     </span>
                   </div>
@@ -165,7 +162,8 @@
                   <span class="text-muted small d-block mb-1 text-uppercase fw-bold font-10">Ngày sinh</span>
                   <div class="d-flex align-items-center gap-2">
                     <i class="bx bx-calendar text-muted fs-5"></i>
-                    <span class="fw-bold text-dark font-14">{{ currentMember.ngay_sinh ? fmtDate(currentMember.ngay_sinh) : 'Chưa rõ' }}</span>
+                    <span class="fw-bold text-dark font-14">{{ currentMember.ngay_sinh ?
+                      fmtDate(currentMember.ngay_sinh) : 'Chưa rõ' }}</span>
                   </div>
                 </div>
               </div>
@@ -174,15 +172,18 @@
                   <span class="text-muted small d-block mb-1 text-uppercase fw-bold font-10">Ngày mất</span>
                   <div class="d-flex align-items-center gap-2">
                     <i class="bx bx-calendar-x text-danger fs-5"></i>
-                    <span class="fw-bold text-dark font-14">{{ currentMember.ngay_mat ? fmtDate(currentMember.ngay_mat) : 'Chưa rõ' }}</span>
+                    <span class="fw-bold text-dark font-14">{{ currentMember.ngay_mat ? fmtDate(currentMember.ngay_mat)
+                      : 'Chưa rõ' }}</span>
                   </div>
                 </div>
               </div>
-              
+
               <!-- Biography / Notes -->
               <div class="col-12" v-if="currentMember.ghi_chu">
-                <div class="vital-item-card p-3 radius-12 border bg-light-soft border-start border-4 border-warning-gold">
-                  <span class="text-muted small d-block mb-1 text-uppercase fw-bold font-10"><i class="bx bx-book-open"></i> Ghi chép / Ghi chú</span>
+                <div
+                  class="vital-item-card p-3 radius-12 border bg-light-soft border-start border-4 border-warning-gold">
+                  <span class="text-muted small d-block mb-1 text-uppercase fw-bold font-10"><i
+                      class="bx bx-book-open"></i> Ghi chép / Ghi chú</span>
                   <p class="mb-0 text-dark font-13 fst-italic lh-relaxed opacity-90">{{ currentMember.ghi_chu }}</p>
                 </div>
               </div>
@@ -190,20 +191,24 @@
           </div>
 
           <!-- Footer Dock with Modern Layout -->
-          <div class="modal-footer premium-modal-footer bg-light border-0 justify-content-center gap-2 py-3 px-4 flex-wrap">
+          <div
+            class="modal-footer premium-modal-footer bg-light border-0 justify-content-center gap-2 py-3 px-4 flex-wrap">
             <button class="btn btn-premium-action btn-edit-premium" @click="openProposal('edit')">
               <i class="bx bx-edit-alt"></i> Đề xuất sửa
             </button>
-            <button v-if="currentMember.loai_quan_he === 'Chính'" class="btn btn-premium-action btn-child-premium" @click="openProposal('add_child')">
+            <button v-if="currentMember.loai_quan_he === 'Chính'" class="btn btn-premium-action btn-child-premium"
+              @click="openProposal('add_child')">
               <i class="bx bx-plus-circle"></i> Đề xuất con
             </button>
-            <button v-if="currentMember.loai_quan_he === 'Chính'" class="btn btn-premium-action btn-spouse-premium" @click="openProposal('add_spouse')">
+            <button v-if="currentMember.loai_quan_he === 'Chính'" class="btn btn-premium-action btn-spouse-premium"
+              @click="openProposal('add_spouse')">
               <i class="bx bx-heart"></i> Đề xuất Vợ/Chồng
             </button>
             <button class="btn btn-premium-action btn-delete-premium" @click="openDeleteProposal">
               <i class="bx bx-trash"></i> Đề xuất xóa
             </button>
-            <button v-if="isDirectRelative" class="btn btn-premium-action btn-delete-premium" style="background: #ef4444 !important; color: white !important;" @click="openLifeStatusModal">
+            <button v-if="isDirectRelative" class="btn btn-premium-action btn-delete-premium"
+              style="background: #ef4444 !important; color: white !important;" @click="openLifeStatusModal">
               <i class="bx bx-heart-voice"></i> Cập nhật Sống/Mất
             </button>
             <button class="btn btn-premium-action btn-qr-premium" @click="showQRCardFromModal">
@@ -227,7 +232,7 @@
           </div>
           <div class="modal-body p-4 text-center">
             <h5 class="fw-bold mb-3" style="color: #ffd700;">{{ currentMember.ho_ten }}</h5>
-            
+
             <div class="mb-3 text-start">
               <label class="form-label fw-bold text-white-50">Tình trạng hiện tại</label>
               <select class="form-select bg-secondary text-white border-0 radius-8" v-model="lifeStatusForm.trang_thai">
@@ -235,15 +240,17 @@
                 <option value="Đã mất">Đã mất</option>
               </select>
             </div>
-            
+
             <div class="mb-3 text-start" v-if="lifeStatusForm.trang_thai === 'Đã mất'">
               <label class="form-label fw-bold text-white-50">Ngày mất (Dương lịch)</label>
-              <input type="date" class="form-control bg-secondary text-white border-0 radius-8" v-model="lifeStatusForm.ngay_mat">
+              <input type="date" class="form-control bg-secondary text-white border-0 radius-8"
+                v-model="lifeStatusForm.ngay_mat">
             </div>
           </div>
           <div class="modal-footer border-0 justify-content-center">
             <button class="btn btn-light px-4 radius-10" data-bs-dismiss="modal">Hủy</button>
-            <button class="btn btn-warning text-dark px-4 radius-10 fw-bold" @click="submitLifeStatus">Cập nhật ngay</button>
+            <button class="btn btn-warning text-dark px-4 radius-10 fw-bold" @click="submitLifeStatus">Cập nhật
+              ngay</button>
           </div>
         </div>
       </div>
@@ -263,7 +270,8 @@
             <div class="row g-3">
               <div class="col-md-6">
                 <label class="form-label fw-bold">Họ và Tên</label>
-                <input type="text" class="form-control radius-8 border-2 shadow-none" v-model="proposalForm.ho_ten" placeholder="Nguyễn Văn A">
+                <input type="text" class="form-control radius-8 border-2 shadow-none" v-model="proposalForm.ho_ten"
+                  placeholder="Nguyễn Văn A">
               </div>
               <div class="col-md-3">
                 <label class="form-label fw-bold">Giới tính</label>
@@ -274,9 +282,11 @@
               </div>
               <div class="col-md-3">
                 <label class="form-label fw-bold">Đời thứ</label>
-                <input type="number" class="form-control radius-8 border-2 shadow-none" v-model="proposalForm.doi_thu" min="1">
+                <input type="number" class="form-control radius-8 border-2 shadow-none" v-model="proposalForm.doi_thu"
+                  min="1">
               </div>
-              <div class="col-md-6" v-if="proposalType === 'add_child' && currentMember.spouses && currentMember.spouses.length > 0">
+              <div class="col-md-6"
+                v-if="proposalType === 'add_child' && currentMember.spouses && currentMember.spouses.length > 0">
                 <label class="form-label fw-bold">Chọn cha/mẹ còn lại (Vợ/Chồng)</label>
                 <select class="form-select radius-8 border-2 shadow-none" v-model="proposalForm.other_parent_id">
                   <option :value="null">-- Chưa xác định / Khác --</option>
@@ -314,15 +324,10 @@
                   <span>Hình ảnh đại diện</span>
                   <span class="text-muted small fw-normal" v-if="proposalForm.avatar">Đã tải lên</span>
                 </label>
-                
+
                 <!-- Hidden Input -->
-                <input 
-                  type="file" 
-                  ref="avatarFileInput" 
-                  class="d-none" 
-                  accept="image/png, image/jpeg, image/jpg" 
-                  @change="uploadAvatarFile"
-                >
+                <input type="file" ref="avatarFileInput" class="d-none" accept="image/png, image/jpeg, image/jpg"
+                  @change="uploadAvatarFile">
 
                 <!-- Premium Upload Widget Box -->
                 <div class="avatar-upload-widget radius-10 overflow-hidden">
@@ -335,10 +340,14 @@
                   </div>
 
                   <!-- Case 2: Uploaded & Showing Preview -->
-                  <div v-else-if="proposalForm.avatar" class="upload-state-box preview-state d-flex align-items-center gap-3 p-3">
-                    <img :src="proposalForm.avatar" class="preview-thumbnail rounded-circle border border-2 border-primary shadow" alt="Avatar Preview">
+                  <div v-else-if="proposalForm.avatar"
+                    class="upload-state-box preview-state d-flex align-items-center gap-3 p-3">
+                    <img :src="proposalForm.avatar"
+                      class="preview-thumbnail rounded-circle border border-2 border-primary shadow"
+                      alt="Avatar Preview">
                     <div class="preview-actions text-start">
-                      <button type="button" class="btn btn-sm btn-outline-primary radius-8 px-3 me-2" @click="triggerFileInput">
+                      <button type="button" class="btn btn-sm btn-outline-primary radius-8 px-3 me-2"
+                        @click="triggerFileInput">
                         <i class="bx bx-sync me-1"></i>Thay ảnh khác
                       </button>
                       <button type="button" class="btn btn-sm btn-outline-danger radius-8 px-3" @click="removeAvatar">
@@ -349,7 +358,9 @@
                   </div>
 
                   <!-- Case 3: Empty / Click to upload -->
-                  <div v-else class="upload-state-box empty-state-box text-center p-4 border-2 border-dashed radius-10 cursor-pointer" @click="triggerFileInput">
+                  <div v-else
+                    class="upload-state-box empty-state-box text-center p-4 border-2 border-dashed radius-10 cursor-pointer"
+                    @click="triggerFileInput">
                     <i class="bx bx-cloud-upload display-6 text-primary mb-2"></i>
                     <h6 class="fw-bold mb-1 text-dark">Tải ảnh lên từ máy tính</h6>
                     <p class="mb-0 text-muted small">Nhấp vào đây hoặc kéo thả tệp hình ảnh vào đây</p>
@@ -359,7 +370,8 @@
               </div>
               <div class="col-md-12">
                 <label class="form-label fw-bold">Ghi chú / Tiểu sử</label>
-                <textarea class="form-control radius-8 border-2 shadow-none" rows="3" v-model="proposalForm.ghi_chu" placeholder="Thông tin thêm về thành viên..."></textarea>
+                <textarea class="form-control radius-8 border-2 shadow-none" rows="3" v-model="proposalForm.ghi_chu"
+                  placeholder="Thông tin thêm về thành viên..."></textarea>
               </div>
             </div>
           </div>
@@ -372,91 +384,115 @@
     </div>
 
     <!-- Vue QR Card Modal -->
-    <div v-if="showQRModal" class="custom-modal-backdrop animate__animated animate__fadeIn" @click.self="closeQRModal" style="z-index: 2000 !important;">
-        <div class="custom-modal-content animate__animated animate__zoomIn p-4 rounded-4 shadow-2xl bg-white position-relative text-center" style="max-width: 420px; z-index: 2060;">
-            <button class="btn-close-custom position-absolute top-0 end-0 m-3 border-0 bg-transparent" @click="closeQRModal">
-                <i class="bx bx-x fs-2 text-muted"></i>
-            </button>
-            
-            <h5 class="fw-bold mb-3 text-dark">Mã QR Thành Viên</h5>
+    <div v-if="showQRModal" class="custom-modal-backdrop animate__animated animate__fadeIn" @click.self="closeQRModal"
+      style="z-index: 2000 !important;">
+      <div
+        class="custom-modal-content animate__animated animate__zoomIn p-4 rounded-4 shadow-2xl bg-white position-relative text-center"
+        style="max-width: 420px; z-index: 2060;">
+        <button class="btn-close-custom position-absolute top-0 end-0 m-3 border-0 bg-transparent"
+          @click="closeQRModal">
+          <i class="bx bx-x fs-2 text-muted"></i>
+        </button>
 
-            <!-- QR Card Canvas container (for printing / visual preview) -->
-            <div id="qr-card-print" class="qr-card-container p-4 rounded-3 border border-3 border-gold bg-royal shadow-sm mb-4 position-relative overflow-hidden">
-                <div class="card-watermark"></div>
-                <div class="card-header-royal mb-3 border-bottom border-light-gold pb-2">
-                    <div class="fw-extrabold text-gold tracking-widest font-13 text-uppercase" style="color: #d4af37 !important;">Hệ Thống Gia Phả Số</div>
-                    <div class="text-white-50 font-9 text-uppercase tracking-wider">Thẻ Nhận Diện Thành Viên</div>
-                </div>
-                
-                <div class="d-flex align-items-center gap-3 mb-3 text-start">
-                    <img :src="activeMember.avatar || ('https://ui-avatars.com/api/?name=' + activeMember.ho_ten + '&background=d4af37&color=fff')" class="rounded-circle border border-2 border-gold shadow-sm" width="55" height="55" style="object-fit: cover;">
-                    <div class="overflow-hidden">
-                        <h5 class="fw-extrabold text-white mb-0 text-truncate drop-shadow" style="color: white !important;">{{ activeMember.ho_ten }}</h5>
-                        <div class="d-flex gap-1.5 mt-1 flex-wrap">
-                            <span class="badge badge-gold-soft font-9 px-2 py-0.5" style="background: rgba(212, 175, 55, 0.15) !important; color: #ffd891 !important; border: 1px solid rgba(212, 175, 55, 0.25);">Đời {{ activeMember.doi_thu }}</span>
-                            <span class="badge badge-gold-soft font-9 px-2 py-0.5" style="background: rgba(212, 175, 55, 0.15) !important; color: #ffd891 !important; border: 1px solid rgba(212, 175, 55, 0.25);">{{ activeMember.gioi_tinh }}</span>
-                            <span class="badge badge-gold-soft font-9 px-2 py-0.5" style="background: rgba(212, 175, 55, 0.15) !important; color: #ffd891 !important; border: 1px solid rgba(212, 175, 55, 0.25);">{{ activeMember.trang_thai }}</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- QR Frame -->
-                <div class="qr-frame-royal bg-white p-3 rounded-3 shadow-md d-inline-block position-relative border border-2 border-gold">
-                    <img :src="'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + encodeURIComponent(getMemberQRUrl(activeMember))" class="img-fluid" width="180" height="180" alt="QR Code">
-                </div>
-                
-                <p class="text-white-50 font-10 mt-3 mb-0 italic">Quét mã để truy cập tiểu sử & xem mối quan hệ dòng tộc</p>
-            </div>
+        <h5 class="fw-bold mb-3 text-dark">Mã QR Thành Viên</h5>
 
-            <!-- Control Buttons -->
-            <div class="d-flex gap-3">
-                <button class="btn btn-outline-secondary w-50 py-2 rounded-pill fw-bold" @click="printQRCard">
-                    <i class="bx bx-printer me-1"></i> In Thẻ QR
-                </button>
-                <button class="btn btn-gold w-50 py-2 rounded-pill fw-bold text-dark shadow-sm" @click="downloadQRCard" style="background: #d4af37 !important; border-color: #d4af37 !important; font-weight: bold;">
-                    <i class="bx bx-download me-1"></i> Tải Thẻ Về
-                </button>
+        <!-- QR Card Canvas container (for printing / visual preview) -->
+        <div id="qr-card-print"
+          class="qr-card-container p-4 rounded-3 border border-3 border-gold bg-royal shadow-sm mb-4 position-relative overflow-hidden">
+          <div class="card-watermark"></div>
+          <div class="card-header-royal mb-3 border-bottom border-light-gold pb-2">
+            <div class="fw-extrabold text-gold tracking-widest font-13 text-uppercase"
+              style="color: #d4af37 !important;">Hệ Thống Gia Phả Số</div>
+            <div class="text-white-50 font-9 text-uppercase tracking-wider">Thẻ Nhận Diện Thành Viên</div>
+          </div>
+
+          <div class="d-flex align-items-center gap-3 mb-3 text-start">
+            <img
+              :src="activeMember.avatar || ('https://ui-avatars.com/api/?name=' + activeMember.ho_ten + '&background=d4af37&color=fff')"
+              class="rounded-circle border border-2 border-gold shadow-sm" width="55" height="55"
+              style="object-fit: cover;">
+            <div class="overflow-hidden">
+              <h5 class="fw-extrabold text-white mb-0 text-truncate drop-shadow" style="color: white !important;">{{
+                activeMember.ho_ten }}</h5>
+              <div class="d-flex gap-1.5 mt-1 flex-wrap">
+                <span class="badge badge-gold-soft font-9 px-2 py-0.5"
+                  style="background: rgba(212, 175, 55, 0.15) !important; color: #ffd891 !important; border: 1px solid rgba(212, 175, 55, 0.25);">Đời
+                  {{ activeMember.doi_thu }}</span>
+                <span class="badge badge-gold-soft font-9 px-2 py-0.5"
+                  style="background: rgba(212, 175, 55, 0.15) !important; color: #ffd891 !important; border: 1px solid rgba(212, 175, 55, 0.25);">{{
+                    activeMember.gioi_tinh }}</span>
+                <span class="badge badge-gold-soft font-9 px-2 py-0.5"
+                  style="background: rgba(212, 175, 55, 0.15) !important; color: #ffd891 !important; border: 1px solid rgba(212, 175, 55, 0.25);">{{
+                    activeMember.trang_thai }}</span>
+              </div>
             </div>
+          </div>
+
+          <!-- QR Frame -->
+          <div
+            class="qr-frame-royal bg-white p-3 rounded-3 shadow-md d-inline-block position-relative border border-2 border-gold">
+            <img
+              :src="'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + encodeURIComponent(getMemberQRUrl(activeMember))"
+              class="img-fluid" width="180" height="180" alt="QR Code">
+          </div>
+
+          <p class="text-white-50 font-10 mt-3 mb-0 italic">Quét mã để truy cập tiểu sử & xem mối quan hệ dòng tộc</p>
         </div>
+
+        <!-- Control Buttons -->
+        <div class="d-flex gap-3">
+          <button class="btn btn-outline-secondary w-50 py-2 rounded-pill fw-bold" @click="printQRCard">
+            <i class="bx bx-printer me-1"></i> In Thẻ QR
+          </button>
+          <button class="btn btn-gold w-50 py-2 rounded-pill fw-bold text-dark shadow-sm" @click="downloadQRCard"
+            style="background: #d4af37 !important; border-color: #d4af37 !important; font-weight: bold;">
+            <i class="bx bx-download me-1"></i> Tải Thẻ Về
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- Delete Proposal Modal -->
-    <div v-if="showDeleteProposalModal" class="custom-modal-backdrop animate__animated animate__fadeIn" @click.self="closeDeleteProposalModal" style="z-index: 2000 !important;">
-        <div class="custom-modal-content animate__animated animate__zoomIn p-4 rounded-4 shadow-2xl bg-white position-relative text-center" style="max-width: 460px; z-index: 2060;">
-            <button class="btn-close-custom position-absolute top-0 end-0 m-3 border-0 bg-transparent" @click="closeDeleteProposalModal">
-                <i class="bx bx-x fs-2 text-muted"></i>
-            </button>
-            
-            <div class="text-danger mb-3">
-              <i class="bx bx-trash display-5" style="color: #dc3545 !important;"></i>
-            </div>
-            <h5 class="fw-bold mb-2 text-dark">Đề Xuất Xóa Thành Viên</h5>
-            <p class="text-muted small mb-4">Bạn đang tạo đề xuất yêu cầu quản trị viên/đối tác xóa thành viên **{{ currentMember.ho_ten }}** khỏi cây gia phả.</p>
+    <div v-if="showDeleteProposalModal" class="custom-modal-backdrop animate__animated animate__fadeIn"
+      @click.self="closeDeleteProposalModal" style="z-index: 2000 !important;">
+      <div
+        class="custom-modal-content animate__animated animate__zoomIn p-4 rounded-4 shadow-2xl bg-white position-relative text-center"
+        style="max-width: 460px; z-index: 2060;">
+        <button class="btn-close-custom position-absolute top-0 end-0 m-3 border-0 bg-transparent"
+          @click="closeDeleteProposalModal">
+          <i class="bx bx-x fs-2 text-muted"></i>
+        </button>
 
-            <div class="text-start mb-4">
-              <label class="form-label fw-bold text-dark small">Lý do đề xuất xóa <span class="text-danger">*</span></label>
-              <textarea 
-                class="form-control radius-8 border-2 shadow-none" 
-                rows="3" 
-                v-model="deleteProposalReason" 
-                placeholder="Nhập lý do chi tiết vì sao cần xóa thành viên này..."
-              ></textarea>
-            </div>
-
-            <!-- Control Buttons -->
-            <div class="d-flex gap-3">
-                <button class="btn btn-outline-secondary w-50 py-2 rounded-pill fw-bold" @click="closeDeleteProposalModal">
-                    Hủy bỏ
-                </button>
-                <button class="btn btn-danger w-50 py-2 rounded-pill fw-bold text-white shadow-sm" @click="submitDeleteProposal" style="background-color: #dc3545 !important; border-color: #dc3545 !important;">
-                    Gửi đề xuất xóa
-                </button>
-            </div>
+        <div class="text-danger mb-3">
+          <i class="bx bx-trash display-5" style="color: #dc3545 !important;"></i>
         </div>
+        <h5 class="fw-bold mb-2 text-dark">Đề Xuất Xóa Thành Viên</h5>
+        <p class="text-muted small mb-4">Bạn đang tạo đề xuất yêu cầu quản trị viên/đối tác xóa thành viên **{{
+          currentMember.ho_ten }}** khỏi cây gia phả.</p>
+
+        <div class="text-start mb-4">
+          <label class="form-label fw-bold text-dark small">Lý do đề xuất xóa <span class="text-danger">*</span></label>
+          <textarea class="form-control radius-8 border-2 shadow-none" rows="3" v-model="deleteProposalReason"
+            placeholder="Nhập lý do chi tiết vì sao cần xóa thành viên này..."></textarea>
+        </div>
+
+        <!-- Control Buttons -->
+        <div class="d-flex gap-3">
+          <button class="btn btn-outline-secondary w-50 py-2 rounded-pill fw-bold" @click="closeDeleteProposalModal">
+            Hủy bỏ
+          </button>
+          <button class="btn btn-danger w-50 py-2 rounded-pill fw-bold text-white shadow-sm"
+            @click="submitDeleteProposal"
+            style="background-color: #dc3545 !important; border-color: #dc3545 !important;">
+            Gửi đề xuất xóa
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- proposalsHistoryModal -->
-    <div class="modal fade" id="proposalsHistoryModal" tabindex="-1" aria-hidden="true" style="z-index: 2050 !important;">
+    <div class="modal fade" id="proposalsHistoryModal" tabindex="-1" aria-hidden="true"
+      style="z-index: 2050 !important;">
       <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content radius-15 shadow-lg border-0 bg-dark text-white">
           <div class="modal-header border-0 bg-black/40 pb-2">
@@ -466,7 +502,7 @@
             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
           </div>
           <div class="modal-body p-4 scrollable-proposals" style="max-height: 480px; overflow-y: auto;">
-            
+
             <div v-if="isProposalsLoading" class="text-center py-4">
               <div class="spinner-border text-warning" role="status">
                 <span class="visually-hidden">Loading...</span>
@@ -480,7 +516,8 @@
             </div>
 
             <div v-else class="timeline-list">
-              <div v-for="item in proposalsList" :key="item.id" class="proposal-history-item mb-4 p-3 rounded-3" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);">
+              <div v-for="item in proposalsList" :key="item.id" class="proposal-history-item mb-4 p-3 rounded-3"
+                style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);">
                 <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
                   <div>
                     <h6 class="fw-bold mb-1" style="color:#ffd700;">{{ typeLabel(item.type) }}</h6>
@@ -497,7 +534,8 @@
                   <!-- Target Deceased/Member -->
                   <div class="target-member mb-2 p-2 rounded bg-white/5 border border-white/5" v-if="item.thanh_vien">
                     <span class="small d-block text-white-50 mb-1">
-                      {{ item.type === 'edit' ? 'Thành viên cần chỉnh sửa:' : (item.type === 'add_child' ? 'Đề xuất làm con của:' : 'Đề xuất kết hôn với:') }}
+                      {{ item.type === 'edit' ? 'Thành viên cần chỉnh sửa:' : (item.type === 'add_child' ?
+                        'Đề xuất làm con của: ' : 'Đề xuất kết hôn với:') }}
                     </span>
                     <strong>{{ item.thanh_vien.ho_ten }}</strong> (Đời {{ item.thanh_vien.doi_thu }})
                   </div>
@@ -508,16 +546,26 @@
                       <div class="col-6">Họ tên: <strong class="text-white">{{ item.data.ho_ten }}</strong></div>
                       <div class="col-6">Giới tính: <strong class="text-white">{{ item.data.gioi_tinh }}</strong></div>
                       <div class="col-6">Thế hệ: <strong class="text-white">Đời {{ item.data.doi_thu }}</strong></div>
-                      <div class="col-6" v-if="item.data.ngay_sinh">Ngày sinh: <strong class="text-white">{{ fmtDate(item.data.ngay_sinh) }}</strong></div>
-                      <div class="col-6">Trạng thái: <strong :class="item.data.trang_thai === 'Đã mất' ? 'text-danger' : 'text-success'">{{ item.data.trang_thai }}</strong></div>
-                      <div class="col-6" v-if="item.data.trang_thai === 'Đã mất' && item.data.ngay_mat">Ngày mất: <strong class="text-white">{{ fmtDate(item.data.ngay_mat) }}</strong></div>
-                      <div class="col-12 mt-1" v-if="item.data.ghi_chu">Ghi chú: <p class="mb-0 text-white-50">{{ item.data.ghi_chu }}</p></div>
+                      <div class="col-6" v-if="item.data.ngay_sinh">Ngày sinh: <strong class="text-white">{{
+                        fmtDate(item.data.ngay_sinh) }}</strong></div>
+                      <div class="col-6">Trạng thái: <strong
+                          :class="item.data.trang_thai === 'Đã mất' ? 'text-danger' : 'text-success'">{{
+                            item.data.trang_thai }}</strong></div>
+                      <div class="col-6" v-if="item.data.trang_thai === 'Đã mất' && item.data.ngay_mat">Ngày mất:
+                        <strong class="text-white">{{ fmtDate(item.data.ngay_mat) }}</strong>
+                      </div>
+                      <div class="col-12 mt-1" v-if="item.data.ghi_chu">Ghi chú: <p class="mb-0 text-white-50">{{
+                        item.data.ghi_chu }}</p>
+                      </div>
                     </div>
                   </div>
 
                   <!-- Clan Feedback Note -->
-                  <div class="mt-2 p-2 rounded border" :class="item.status === 'approved' ? 'border-success/20 bg-success/5 text-success' : 'border-danger/20 bg-danger/5 text-danger'" v-if="item.note">
-                    <span class="d-block small fw-bold mb-1"><i class="bx bx-comment-detail me-1"></i>Phản hồi từ Gia tộc:</span>
+                  <div class="mt-2 p-2 rounded border"
+                    :class="item.status === 'approved' ? 'border-success/20 bg-success/5 text-success' : 'border-danger/20 bg-danger/5 text-danger'"
+                    v-if="item.note">
+                    <span class="d-block small fw-bold mb-1"><i class="bx bx-comment-detail me-1"></i>Phản hồi từ Gia
+                      tộc:</span>
                     <p class="mb-0 text-white">{{ item.note }}</p>
                   </div>
 
@@ -606,7 +654,7 @@ const TreeItem = defineComponent({
         }
       }, [
         h('div', { class: 'node-avatar-container' }, [
-          person.avatar 
+          person.avatar
             ? h('img', { src, class: 'node-avatar shadow-sm', width: 50, height: 50 })
             : h('div', { class: 'node-initials shadow-sm' }, initials)
         ]),
@@ -641,23 +689,23 @@ const TreeItem = defineComponent({
 
       // spouse - connector - main - connector - spouse
       coupleChildren.push(makeCard(m.spouses[0], true, 'spouse-left', 1));
-      coupleChildren.push(h('div', { 
+      coupleChildren.push(h('div', {
         class: [
-          'tree-connector-h', 
+          'tree-connector-h',
           'spouse-connector-0',
           kids0.length > 0 ? 'spouse-connector' : ''
-        ], 
-        style: { order: 2 } 
-      }, [ h('i', { class: 'bx bxs-heart connector-heart' }) ]));
+        ],
+        style: { order: 2 }
+      }, [h('i', { class: 'bx bxs-heart connector-heart' })]));
       coupleChildren.push(makeCard(m, false, 'main-centered', 3));
-      coupleChildren.push(h('div', { 
+      coupleChildren.push(h('div', {
         class: [
-          'tree-connector-h', 
+          'tree-connector-h',
           'spouse-connector-1',
           kids1.length > 0 ? 'spouse-connector' : ''
-        ], 
-        style: { order: 4 } 
-      }, [ h('i', { class: 'bx bxs-heart connector-heart' }) ]));
+        ],
+        style: { order: 4 }
+      }, [h('i', { class: 'bx bxs-heart connector-heart' })]));
       coupleChildren.push(makeCard(m.spouses[1], true, 'spouse-right', 5));
 
       const col0 = h('div', { class: ['union-column', 'union-column-0', kids0.length === 0 ? 'union-column-empty' : ''] }, [
@@ -678,7 +726,7 @@ const TreeItem = defineComponent({
       coupleChildren.push(makeCard(m, false));
       if (m.spouses && m.spouses.length) {
         m.spouses.forEach(s => {
-          coupleChildren.push(h('div', { class: 'tree-connector-h' }, [ h('i', { class: 'bx bxs-heart connector-heart' }) ]));
+          coupleChildren.push(h('div', { class: 'tree-connector-h' }, [h('i', { class: 'bx bxs-heart connector-heart' })]));
           coupleChildren.push(makeCard(s, true));
         });
       }
@@ -727,7 +775,7 @@ export default {
         ghi_chu: '',
         avatar: ''
       },
-       proposalsHistoryModal: null,
+      proposalsHistoryModal: null,
       proposalsList: [],
       isProposalsLoading: false,
       isUploading: false,
@@ -827,7 +875,7 @@ export default {
     },
     loadDoiTocHo() {
       axios.get('http://127.0.0.1:8000/api/doi-toc-ho/get-data', this.getHeaders())
-        .then(r => { if (r.data.status) this.listDoiTocHo = r.data.data.sort((a,b)=>a.so_doi-b.so_doi); });
+        .then(r => { if (r.data.status) this.listDoiTocHo = r.data.data.sort((a, b) => a.so_doi - b.so_doi); });
     },
     loadData() {
       this.isLoading = true;
@@ -859,18 +907,18 @@ export default {
             }, {
               headers: { Authorization: `Bearer ${token}` }
             })
-            .then(res => {
-              if (res.data.status) {
-                this.currentMemberRelationship = res.data.term;
-                this.currentMemberRelationshipDesc = res.data.description;
-              }
-            })
-            .catch(() => {
-              // Silent fail
-            })
-            .finally(() => {
-              this.currentMemberRelationshipLoading = false;
-            });
+              .then(res => {
+                if (res.data.status) {
+                  this.currentMemberRelationship = res.data.term;
+                  this.currentMemberRelationshipDesc = res.data.description;
+                }
+              })
+              .catch(() => {
+                // Silent fail
+              })
+              .finally(() => {
+                this.currentMemberRelationshipLoading = false;
+              });
           }
         }
       }
@@ -972,23 +1020,23 @@ export default {
           Authorization: `Bearer ${token}`
         }
       })
-      .then(res => {
-        if (res.data.status) {
-          this.proposalForm.avatar = res.data.url;
-          toastr.success('Tải ảnh đại diện lên thành công!');
-        } else {
-          toastr.error(res.data.message || 'Lỗi tải ảnh lên.');
-        }
-      })
-      .catch(err => {
-        toastr.error(err.response?.data?.message || 'Tải ảnh lên thất bại, vui lòng thử lại.');
-      })
-      .finally(() => {
-        this.isUploading = false;
-        if (this.$refs.avatarFileInput) {
-          this.$refs.avatarFileInput.value = '';
-        }
-      });
+        .then(res => {
+          if (res.data.status) {
+            this.proposalForm.avatar = res.data.url;
+            toastr.success('Tải ảnh đại diện lên thành công!');
+          } else {
+            toastr.error(res.data.message || 'Lỗi tải ảnh lên.');
+          }
+        })
+        .catch(err => {
+          toastr.error(err.response?.data?.message || 'Tải ảnh lên thất bại, vui lòng thử lại.');
+        })
+        .finally(() => {
+          this.isUploading = false;
+          if (this.$refs.avatarFileInput) {
+            this.$refs.avatarFileInput.value = '';
+          }
+        });
     },
     removeAvatar() {
       this.proposalForm.avatar = '';
@@ -1028,18 +1076,18 @@ export default {
       axios.post('http://127.0.0.1:8000/api/de-xuat/create', payload, {
         headers: { Authorization: `Bearer ${token}` }
       })
-      .then(res => {
-        if (res.data.status) {
-          toastr.success(res.data.message);
-          this.closeDeleteProposalModal();
-          this.loadData();
-        } else {
-          toastr.error(res.data.message);
-        }
-      })
-      .catch(err => {
-        toastr.error(err.response?.data?.message || 'Gửi đề xuất xóa thất bại, vui lòng thử lại.');
-      });
+        .then(res => {
+          if (res.data.status) {
+            toastr.success(res.data.message);
+            this.closeDeleteProposalModal();
+            this.loadData();
+          } else {
+            toastr.error(res.data.message);
+          }
+        })
+        .catch(err => {
+          toastr.error(err.response?.data?.message || 'Gửi đề xuất xóa thất bại, vui lòng thử lại.');
+        });
     },
     submitProposal() {
       if (!this.proposalForm.ho_ten) {
@@ -1072,18 +1120,18 @@ export default {
       axios.post('http://127.0.0.1:8000/api/de-xuat/create', payload, {
         headers: { Authorization: `Bearer ${token}` }
       })
-      .then(res => {
-        if (res.data.status) {
-          toastr.success(res.data.message);
-          this.proposalModal.hide();
-          this.loadData();
-        } else {
-          toastr.error(res.data.message);
-        }
-      })
-      .catch(err => {
-        toastr.error(err.response?.data?.message || 'Gửi đề xuất thất bại, vui lòng thử lại.');
-      });
+        .then(res => {
+          if (res.data.status) {
+            toastr.success(res.data.message);
+            this.proposalModal.hide();
+            this.loadData();
+          } else {
+            toastr.error(res.data.message);
+          }
+        })
+        .catch(err => {
+          toastr.error(err.response?.data?.message || 'Gửi đề xuất thất bại, vui lòng thử lại.');
+        });
     },
     showQRCard(member) {
       this.activeMember = member;
@@ -1273,18 +1321,19 @@ export default {
       }, {
         headers: { Authorization: `Bearer ${token}` }
       })
-      .then(res => {
-        if (res.data.status) {
-          toastr.success(res.data.message);
-          if (this.lifeStatusModalObj) this.lifeStatusModalObj.hide();
-          this.loadData();
-        } else {
-          toastr.error(res.data.message);
-        }
-      })
-      .catch(err => {
-        toastr.error(err.response?.data?.message || 'Không thể cập nhật trạng thái.');
-      });    }
+        .then(res => {
+          if (res.data.status) {
+            toastr.success(res.data.message);
+            if (this.lifeStatusModalObj) this.lifeStatusModalObj.hide();
+            this.loadData();
+          } else {
+            toastr.error(res.data.message);
+          }
+        })
+        .catch(err => {
+          toastr.error(err.response?.data?.message || 'Không thể cập nhật trạng thái.');
+        });
+    }
   }
 };
 </script>
@@ -1299,51 +1348,151 @@ export default {
   position: relative;
   overflow: hidden;
 }
+
 .hero-background {
-  position: absolute; inset: 0;
-  background-image: linear-gradient(to bottom, rgba(11,17,32,0.5), rgba(11,17,32,1)), url('@/assets/images/bg_product.webp');
-  background-size: cover; background-position: center;
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(to bottom, rgba(11, 17, 32, 0.5), rgba(11, 17, 32, 1)), url('@/assets/images/bg_product.webp');
+  background-size: cover;
+  background-position: center;
   z-index: 0;
 }
-.glow-blob { position: absolute; width: 400px; height: 400px; border-radius: 50%; filter: blur(120px); opacity: 0.3; z-index: 1; }
-.blob-purple { background: #1e0b3a; top: 0; left: -5%; }
-.blob-blue { background: #031948; top: 30%; right: -5%; }
 
-.page-content { position: relative; z-index: 2; padding: 0 20px 40px; max-width: 1500px; margin: 0 auto; }
-.page-header { padding: 60px 0 30px; }
-.subtitle-gradient { font-size: 0.8rem; font-weight: 700; letter-spacing: 0.2em; color: #d4af37; }
-.text-gradient { background: linear-gradient(90deg,#fbff00,#ff8c00); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.glow-blob {
+  position: absolute;
+  width: 400px;
+  height: 400px;
+  border-radius: 50%;
+  filter: blur(120px);
+  opacity: 0.3;
+  z-index: 1;
+}
+
+.blob-purple {
+  background: #1e0b3a;
+  top: 0;
+  left: -5%;
+}
+
+.blob-blue {
+  background: #031948;
+  top: 30%;
+  right: -5%;
+}
+
+.page-content {
+  position: relative;
+  z-index: 2;
+  margin-top: 100px;
+  max-width: 1500px;
+  margin: 0 auto;
+}
+
+.page-header {
+  padding: 60px 0 30px;
+}
+
+.subtitle-gradient {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: #d4af37;
+}
+
+.text-gradient {
+  background: linear-gradient(90deg, #fbff00, #ff8c00);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
 
 .tree-card-wrapper {
   background: #fff;
   border-radius: 20px;
   overflow: hidden;
-  box-shadow: 0 25px 70px rgba(0,0,0,0.5);
+  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.5);
   position: relative;
 }
 
 .card-toolbar {
-  display: flex; justify-content: space-between; align-items: center; padding: 15px 25px; border-bottom: 1px solid #eee; background: #fff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 25px;
+  border-bottom: 1px solid #eee;
+  background: #fff;
 }
-.toolbar-left { display: flex; align-items: center; gap: 10px; }
+
+.toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .tb-btn {
-  width: 40px; height: 40px; border-radius: 12px; border: 1px solid #e5e7eb; background: #f9fafb;
-  color: #4b5563; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  background: #f9fafb;
+  color: #4b5563;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
 }
-.tb-btn:hover { background: #d4af37; border-color: #d4af37; color: #fff; transform: translateY(-2px); }
+
+.tb-btn:hover {
+  background: #d4af37;
+  border-color: #d4af37;
+  color: #fff;
+  transform: translateY(-2px);
+}
+
 .tb-btn-text {
-  height: 40px; padding: 0 14px; border-radius: 12px; border: 1px solid #e5e7eb; background: #f9fafb;
-  color: #4b5563; font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 6px;
-  cursor: pointer; transition: all 0.2s; white-space: nowrap;
+  height: 40px;
+  padding: 0 14px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  background: #f9fafb;
+  color: #4b5563;
+  font-size: 0.85rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
 }
+
 .tb-btn-text.text-warning {
   color: #d4af37 !important;
   border-color: rgba(212, 175, 55, 0.25) !important;
   background: rgba(212, 175, 55, 0.05);
 }
-.tb-btn-text:hover { background: #d4af37; border-color: #d4af37; color: #fff !important; transform: translateY(-2px); }
-.zoom-label { font-size: 0.9rem; font-weight: 800; color: #111827; min-width: 50px; text-align: center; }
-.toolbar-hint { font-size: 0.85rem; color: #6b7280; }
+
+.tb-btn-text:hover {
+  background: #d4af37;
+  border-color: #d4af37;
+  color: #fff !important;
+  transform: translateY(-2px);
+}
+
+.zoom-label {
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: #111827;
+  min-width: 50px;
+  text-align: center;
+}
+
+.toolbar-hint {
+  font-size: 0.85rem;
+  color: #6b7280;
+}
 
 .tree-viewport {
   height: 800px;
@@ -1354,7 +1503,10 @@ export default {
   overflow: hidden;
   cursor: grab;
 }
-.tree-viewport:active { cursor: grabbing; }
+
+.tree-viewport:active {
+  cursor: grabbing;
+}
 
 .tree-canvas {
   padding: 100px;
@@ -1365,7 +1517,9 @@ export default {
 }
 
 /* ─── CSS TREE STRUCTURE (FORCED HORIZONTAL) ─── */
-.tree, .tree-ul, .tree-li {
+.tree,
+.tree-ul,
+.tree-li {
   position: relative;
   transition: all 0.3s;
 }
@@ -1392,23 +1546,56 @@ export default {
 }
 
 /* Vertical line from parent to current horizontal bar */
-.tree-li::before, .tree-li::after {
-  content: ''; position: absolute; top: 0; right: 50%;
-  border-top: 2px solid #d4af37; width: 50%; height: 50px;
+.tree-li::before,
+.tree-li::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 50%;
+  border-top: 2px solid #d4af37;
+  width: 50%;
+  height: 50px;
 }
-.tree-li::after { right: auto; left: 50%; border-left: 2px solid #d4af37; }
+
+.tree-li::after {
+  right: auto;
+  left: 50%;
+  border-left: 2px solid #d4af37;
+}
 
 /* Remove lines for single child or edges */
-.tree-li:only-child::after, .tree-li:only-child::before { display: none; }
-.tree-li:only-child { padding-top: 0 !important; }
-.tree-li:first-child::before, .tree-li:last-child::after { border: 0 none; }
-.tree-li:last-child::before { border-right: 2px solid #d4af37; border-radius: 0 10px 0 0; }
-.tree-li:first-child::after { border-radius: 10px 0 0 0; }
+.tree-li:only-child::after,
+.tree-li:only-child::before {
+  display: none;
+}
+
+.tree-li:only-child {
+  padding-top: 0 !important;
+}
+
+.tree-li:first-child::before,
+.tree-li:last-child::after {
+  border: 0 none;
+}
+
+.tree-li:last-child::before {
+  border-right: 2px solid #d4af37;
+  border-radius: 0 10px 0 0;
+}
+
+.tree-li:first-child::after {
+  border-radius: 10px 0 0 0;
+}
 
 /* Vertical line down from current node to children ul */
 .tree-ul::before {
-  content: ''; position: absolute; top: 0; left: 50%;
-  border-left: 2px solid #d4af37; width: 0; height: 50px;
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  border-left: 2px solid #d4af37;
+  width: 0;
+  height: 50px;
 }
 
 /* ─── NODE STYLING ─── */
@@ -1433,8 +1620,14 @@ export default {
 .tree-node-card.main-centered {
   order: 2;
 }
-.tree-node-card.spouse-left { order: 1; }
-.tree-node-card.spouse-right { order: 3; }
+
+.tree-node-card.spouse-left {
+  order: 1;
+}
+
+.tree-node-card.spouse-right {
+  order: 3;
+}
 
 .tree-connector-h {
   width: 40px;
@@ -1488,22 +1681,36 @@ export default {
 
 /* Generation Colors - Left border gradient */
 .tree-node-card::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 6px;
-    background: linear-gradient(to bottom, #d4af37, #fdfbf3);
-    border-top-left-radius: 9px;
-    border-bottom-left-radius: 9px;
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 6px;
+  background: linear-gradient(to bottom, #d4af37, #fdfbf3);
+  border-top-left-radius: 9px;
+  border-bottom-left-radius: 9px;
 }
 
-.gen-1::before { background: linear-gradient(to bottom, #e1b12c, #fdfbf3); }
-.gen-2::before { background: linear-gradient(to bottom, #d4af37, #fdfbf3); }
-.gen-3::before { background: linear-gradient(to bottom, #b38d21, #fdfbf3); }
-.gen-4::before { background: linear-gradient(to bottom, #957314, #fdfbf3); }
-.gen-5::before { background: linear-gradient(to bottom, #e58e26, #fdfbf3); }
+.gen-1::before {
+  background: linear-gradient(to bottom, #e1b12c, #fdfbf3);
+}
+
+.gen-2::before {
+  background: linear-gradient(to bottom, #d4af37, #fdfbf3);
+}
+
+.gen-3::before {
+  background: linear-gradient(to bottom, #b38d21, #fdfbf3);
+}
+
+.gen-4::before {
+  background: linear-gradient(to bottom, #957314, #fdfbf3);
+}
+
+.gen-5::before {
+  background: linear-gradient(to bottom, #e58e26, #fdfbf3);
+}
 
 
 .tree-node-card.spouse {
@@ -1601,6 +1808,7 @@ export default {
 .dummy-group {
   padding: 20px 0;
 }
+
 .dummy-line {
   width: 2px;
   height: 60px;
@@ -1608,92 +1816,142 @@ export default {
 }
 
 /* ─── UI ELEMENTS ─── */
-.empty-state { text-align: center; padding: 120px; color: #9ca3af; }
-.empty-state i { font-size: 4rem; display: block; margin-bottom: 15px; opacity: 0.3; }
-.ld-ring { width: 50px; height: 50px; border: 4px solid #f3f4f6; border-top-color: #d4af37; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px; }
-@keyframes spin { to { transform: rotate(360deg); } }
-
-.view-hint {
-  position: absolute; bottom: 20px; right: 25px;
-  font-size: 12px; color: #6b7280; font-weight: 500;
-  background: rgba(255,255,255,0.9);
-  padding: 6px 18px; border-radius: 30px;
-  border: 1px solid #e5e7eb;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+.empty-state {
+  text-align: center;
+  padding: 120px;
+  color: #9ca3af;
 }
 
-.radius-15 { border-radius: 15px !important; }
-.radius-10 { border-radius: 10px !important; }
+.empty-state i {
+  font-size: 4rem;
+  display: block;
+  margin-bottom: 15px;
+  opacity: 0.3;
+}
+
+.ld-ring {
+  width: 50px;
+  height: 50px;
+  border: 4px solid #f3f4f6;
+  border-top-color: #d4af37;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 20px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.view-hint {
+  position: absolute;
+  bottom: 20px;
+  right: 25px;
+  font-size: 12px;
+  color: #6b7280;
+  font-weight: 500;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 6px 18px;
+  border-radius: 30px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.radius-15 {
+  border-radius: 15px !important;
+}
+
+.radius-10 {
+  border-radius: 10px !important;
+}
 
 /* Custom Vue Modal Styling for QR Card */
 .custom-modal-backdrop {
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background-color: rgba(15, 23, 42, 0.6);
-    backdrop-filter: blur(8px);
-    z-index: 1050;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(8px);
+  z-index: 1050;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
 }
+
 .custom-modal-content {
-    width: 100%;
-    max-width: 480px;
-    background: #ffffff;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 15px;
+  width: 100%;
+  max-width: 480px;
+  background: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 15px;
 }
+
 .btn-close-custom {
-    transition: all 0.2s ease;
+  transition: all 0.2s ease;
 }
+
 .btn-close-custom:hover {
-    transform: rotate(90deg);
+  transform: rotate(90deg);
 }
+
 .border-gold {
-    border-color: #d4af37 !important;
+  border-color: #d4af37 !important;
 }
+
 .bg-royal {
-    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important;
 }
+
 .qr-card-container {
-    color: white !important;
-    border-color: #d4af37 !important;
-    background-size: cover;
-    position: relative;
+  color: white !important;
+  border-color: #d4af37 !important;
+  background-size: cover;
+  position: relative;
 }
+
 .card-header-royal {
-    border-bottom: 1px solid rgba(212, 175, 55, 0.3) !important;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.3) !important;
 }
+
 .badge-gold-soft {
-    background: rgba(212, 175, 55, 0.15) !important;
-    color: #ffd891 !important;
-    border: 1px solid rgba(212, 175, 55, 0.25) !important;
+  background: rgba(212, 175, 55, 0.15) !important;
+  color: #ffd891 !important;
+  border: 1px solid rgba(212, 175, 55, 0.25) !important;
 }
+
 .qr-frame-royal {
-    background: white;
+  background: white;
 }
+
 .btn-gold {
-    background: #d4af37;
-    color: #3b2c0c;
-    border: none;
-    transition: all 0.3s ease;
+  background: #d4af37;
+  color: #3b2c0c;
+  border: none;
+  transition: all 0.3s ease;
 }
+
 .btn-gold:hover {
-    background: #e5c055;
-    transform: translateY(-2px);
+  background: #e5c055;
+  transform: translateY(-2px);
 }
+
 .card-watermark {
-    position: absolute;
-    top: -40px;
-    right: -40px;
-    width: 140px;
-    height: 140px;
-    background: radial-gradient(circle, rgba(212, 175, 55, 0.08) 0%, transparent 70%);
-    pointer-events: none;
+  position: absolute;
+  top: -40px;
+  right: -40px;
+  width: 140px;
+  height: 140px;
+  background: radial-gradient(circle, rgba(212, 175, 55, 0.08) 0%, transparent 70%);
+  pointer-events: none;
 }
+
 .drop-shadow {
-    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 /* Premium Avatar Upload Widget Styles */
@@ -1702,10 +1960,12 @@ export default {
   background: #fdfdfd;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
 .avatar-upload-widget:hover {
   border-color: #3b82f6;
   box-shadow: 0 4px 12px rgba(59, 130, 246, 0.08);
 }
+
 .upload-state-box {
   min-height: 110px;
   display: flex;
@@ -1713,54 +1973,69 @@ export default {
   justify-content: center;
   align-items: center;
 }
+
 .empty-state-box {
   background: rgba(59, 130, 246, 0.015);
   border-color: #d1d5db !important;
   transition: all 0.2s ease;
 }
+
 .empty-state-box:hover {
   background: rgba(59, 130, 246, 0.04);
   border-color: #3b82f6 !important;
 }
+
 .preview-thumbnail {
   width: 70px;
   height: 70px;
   object-fit: cover;
 }
+
 .cursor-pointer {
   cursor: pointer;
 }
+
 .italic {
   font-style: italic;
 }
+
 .font-9 {
   font-size: 10px !important;
   color: #888;
 }
+
 .border-dashed-gold {
   border: 1px dashed rgba(212, 175, 55, 0.4) !important;
 }
+
 .bg-light-gold {
   background-color: #fffcf3 !important;
 }
+
 .text-gold {
   color: #b58d1e !important;
 }
+
 .font-18 {
   font-size: 18px !important;
 }
+
 .font-10 {
   font-size: 10px !important;
 }
+
 .font-11 {
   font-size: 11px !important;
 }
+
 .font-12 {
   font-size: 12px !important;
 }
+
 .fw-extrabold {
   font-weight: 800 !important;
 }
+
 .radius-10 {
   border-radius: 10px !important;
 }
@@ -1771,11 +2046,13 @@ export default {
   background: #ffffff;
   box-shadow: 0 25px 60px -15px rgba(15, 23, 42, 0.3) !important;
 }
+
 .premium-modal-header {
   border-radius: 24px 24px 0 0 !important;
   border-bottom: 2px solid #d4af37 !important;
   background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important;
 }
+
 .btn-close-royal {
   background: transparent;
   border: none;
@@ -1783,13 +2060,16 @@ export default {
   transition: all 0.3s ease;
   padding: 4px;
 }
+
 .btn-close-royal:hover {
   color: #d4af37;
   transform: rotate(90deg);
 }
+
 .font-serif {
   font-family: 'Playfair Display', serif !important;
 }
+
 .badge-generation-modal {
   background: rgba(212, 175, 55, 0.1) !important;
   color: #b58d1e !important;
@@ -1800,26 +2080,35 @@ export default {
   font-size: 11px !important;
   display: inline-block;
 }
+
 .modal-decor-light {
   position: absolute;
-  top: 0; right: 0;
-  width: 150px; height: 150px;
+  top: 0;
+  right: 0;
+  width: 150px;
+  height: 150px;
   background: radial-gradient(circle at top right, rgba(212, 175, 55, 0.08) 0%, transparent 70%);
   pointer-events: none;
 }
+
 .modal-avatar-wrapper-premium {
   padding: 5px;
 }
+
 .profile-avatar-modal {
   transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
+
 .profile-avatar-modal:hover {
   transform: scale(1.05);
 }
+
 .status-indicator-modal {
   position: absolute;
-  bottom: 8px; right: 8px;
-  width: 28px; height: 28px;
+  bottom: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -1828,8 +2117,14 @@ export default {
   color: white;
   font-size: 13px;
 }
-.status-indicator-modal.status-alive { background-color: #10b981; }
-.status-indicator-modal.status-deceased { background-color: #ef4444; }
+
+.status-indicator-modal.status-alive {
+  background-color: #10b981;
+}
+
+.status-indicator-modal.status-deceased {
+  background-color: #ef4444;
+}
 
 .relationship-term-modal {
   font-size: 1.8rem !important;
@@ -1844,16 +2139,24 @@ export default {
   border: 1px solid #e2e8f0 !important;
   transition: all 0.2s ease;
 }
+
 .vital-item-card:hover {
   background: #ffffff;
   border-color: #cbd5e1 !important;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.02);
 }
+
 .border-warning-gold {
   border-left: 4px solid #d4af37 !important;
 }
-.font-14 { font-size: 14px !important; }
-.font-13 { font-size: 13px !important; }
+
+.font-14 {
+  font-size: 14px !important;
+}
+
+.font-13 {
+  font-size: 13px !important;
+}
 
 /* Premium Action Buttons inside footer */
 .btn-premium-action {
@@ -1866,57 +2169,68 @@ export default {
   align-items: center;
   gap: 4px;
 }
+
 .btn-edit-premium {
   background: #ffffff !important;
   border: 1px solid #cbd5e1 !important;
   color: #475569 !important;
 }
+
 .btn-edit-premium:hover {
   background: #f1f5f9 !important;
   color: #0f172a !important;
   border-color: #94a3b8 !important;
 }
+
 .btn-child-premium {
   background: #ffffff !important;
   border: 1px solid #93c5fd !important;
   color: #2563eb !important;
 }
+
 .btn-child-premium:hover {
   background: #eff6ff !important;
   color: #1d4ed8 !important;
   border-color: #3b82f6 !important;
 }
+
 .btn-spouse-premium {
   background: #ffffff !important;
   border: 1px solid #fbcfe8 !important;
   color: #db2777 !important;
 }
+
 .btn-spouse-premium:hover {
   background: #fdf2f8 !important;
   color: #be185d !important;
   border-color: #f472b6 !important;
 }
+
 .btn-delete-premium {
   background: #ffffff !important;
   border: 1px solid #fca5a5 !important;
   color: #dc2626 !important;
 }
+
 .btn-delete-premium:hover {
   background: #fef2f2 !important;
   color: #b91c1c !important;
   border-color: #ef4444 !important;
 }
+
 .btn-qr-premium {
   background: #d4af37 !important;
   color: #3b2c0c !important;
   border: 1px solid #d4af37 !important;
 }
+
 .btn-qr-premium:hover {
   background: #c5a059 !important;
   border-color: #c5a059 !important;
   color: #2e2206 !important;
   transform: translateY(-1px);
 }
+
 .btn-premium-close {
   background: #64748b !important;
   color: #ffffff !important;
@@ -1927,6 +2241,7 @@ export default {
   border-radius: 8px !important;
   transition: all 0.2s ease !important;
 }
+
 .btn-premium-close:hover {
   background: #475569 !important;
 }
@@ -1940,6 +2255,7 @@ export default {
   position: relative;
   margin-top: 50px;
 }
+
 .union-column {
   width: 50%;
   flex: 0 0 50%;
@@ -1948,6 +2264,7 @@ export default {
   align-items: center;
   position: relative;
 }
+
 .union-column-0::after {
   content: '';
   position: absolute;
@@ -1958,6 +2275,7 @@ export default {
   background: #d4af37;
   z-index: 1;
 }
+
 .union-column-1::after {
   content: '';
   position: absolute;
@@ -1968,9 +2286,11 @@ export default {
   background: #d4af37;
   z-index: 1;
 }
+
 .union-column-empty::after {
   display: none !important;
 }
+
 .tree-connector-h.spouse-connector::after {
   content: '';
   position: absolute;
@@ -1981,10 +2301,12 @@ export default {
   background: #d4af37;
   z-index: 1;
 }
-.has-multiple-spouses-li > .tree-ul::before {
+
+.has-multiple-spouses-li>.tree-ul::before {
   display: none !important;
 }
-.union-column > .tree-ul::before {
+
+.union-column>.tree-ul::before {
   display: block !important;
   content: '';
   position: absolute;
@@ -1994,6 +2316,7 @@ export default {
   width: 0 !important;
   height: 50px !important;
 }
+
 .union-empty-placeholder {
   width: 220px;
   height: 90px;

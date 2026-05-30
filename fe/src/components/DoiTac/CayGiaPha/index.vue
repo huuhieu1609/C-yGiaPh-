@@ -5,29 +5,38 @@
                 <div class="card-header bg-white py-3 border-0">
                     <div class="row align-items-center">
                         <div class="col-md-3">
-                            <h5 class="mb-0 fw-bold text-dark"><i class="bx bx-git-branch text-primary"></i> Trực Quan Cây Gia Phả</h5>
+                            <h5 class="mb-0 fw-bold text-dark"><i class="bx bx-git-branch text-primary"></i> Trực Quan
+                                Cây Gia Phả</h5>
                         </div>
                         <div class="col-md-9 text-md-end d-flex align-items-center justify-content-end gap-2 flex-wrap">
-                            
+
                             <!-- Branch Selector (Global Filter) -->
                             <div class="me-2" style="width: 220px;">
-                                <select class="form-select radius-30 border-2 shadow-none fw-bold" v-model="selectedChiNhanhId" @change="resetView">
-                                    <option v-for="cn in listChiNhanh" :key="cn.id" :value="cn.id">{{ cn.ten_chi }}</option>
+                                <select class="form-select radius-30 border-2 shadow-none fw-bold"
+                                    v-model="selectedChiNhanhId" @change="resetView">
+                                    <option v-for="cn in listChiNhanh" :key="cn.id" :value="cn.id">{{ cn.ten_chi }}
+                                    </option>
                                 </select>
                             </div>
 
                             <!-- Search Bar -->
                             <div class="position-relative d-none d-lg-block" style="width: 200px;">
-                                <input type="text" class="form-control ps-5 radius-30 border-2" v-model="searchQuery" placeholder="Tìm thành viên...">
-                                <span class="position-absolute top-50 translate-middle-y start-0 ms-3 text-secondary"><i class="bx bx-search"></i></span>
+                                <input type="text" class="form-control ps-5 radius-30 border-2" v-model="searchQuery"
+                                    placeholder="Tìm thành viên...">
+                                <span class="position-absolute top-50 translate-middle-y start-0 ms-3 text-secondary"><i
+                                        class="bx bx-search"></i></span>
                             </div>
-                            
+
                             <!-- Zoom Controls -->
                             <div class="btn-group shadow-sm radius-30 overflow-hidden border">
-                                <button class="btn btn-white px-2" @click="zoomOut" title="Thu nhỏ"><i class="bx bx-minus"></i></button>
-                                <button class="btn btn-white px-1 fw-bold" style="min-width: 50px; font-size: 13px;">{{ Math.round(zoom * 100) }}%</button>
-                                <button class="btn btn-white px-2" @click="zoomIn" title="Phóng to"><i class="bx bx-plus"></i></button>
-                                <button class="btn btn-white px-2" @click="resetView" title="Đặt lại"><i class="bx bx-refresh"></i></button>
+                                <button class="btn btn-white px-2" @click="zoomOut" title="Thu nhỏ"><i
+                                        class="bx bx-minus"></i></button>
+                                <button class="btn btn-white px-1 fw-bold" style="min-width: 50px; font-size: 13px;">{{
+                                    Math.round(zoom * 100) }}%</button>
+                                <button class="btn btn-white px-2" @click="zoomIn" title="Phóng to"><i
+                                        class="bx bx-plus"></i></button>
+                                <button class="btn btn-white px-2" @click="resetView" title="Đặt lại"><i
+                                        class="bx bx-refresh"></i></button>
                             </div>
 
                             <!-- Export Buttons -->
@@ -48,7 +57,9 @@
                 </div>
                 <div class="card-body p-0 position-relative">
                     <!-- Loading Overlay for Export -->
-                    <div v-if="isExporting" class="position-absolute top-0 start-0 w-100 h-100 bg-white bg-opacity-75 d-flex flex-column align-items-center justify-content-center" style="z-index: 1050 !important;">
+                    <div v-if="isExporting"
+                        class="position-absolute top-0 start-0 w-100 h-100 bg-white bg-opacity-75 d-flex flex-column align-items-center justify-content-center"
+                        style="z-index: 1050 !important;">
                         <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;"></div>
                         <h5 class="mt-3 fw-bold text-dark">Đang xuất file...</h5>
                         <p class="text-muted small">Quá trình này có thể mất vài giây nếu cây gia phả lớn.</p>
@@ -56,7 +67,8 @@
 
                     <div v-if="listChiNhanh.length === 0" class="text-center py-5">
                         <div class="mb-4 mt-5">
-                            <i class="bx bx-building-house fs-1 text-muted opacity-25" style="font-size: 100px !important;"></i>
+                            <i class="bx bx-building-house fs-1 text-muted opacity-25"
+                                style="font-size: 100px !important;"></i>
                         </div>
                         <h4 class="fw-bold text-dark">Chưa có thông tin Dòng Họ!</h4>
                         <p class="text-muted">Bạn cần khởi tạo Dòng Họ (Chi Nhánh) để bắt đầu xây dựng cây gia phả.</p>
@@ -65,29 +77,16 @@
                         </router-link>
                     </div>
                     <!-- Pan & Zoom Tree Container -->
-                    <div v-else class="tree-viewport" 
-                         ref="viewport"
-                         @wheel.prevent="handleWheel"
-                         @mousedown="startPan"
-                         @mousemove="doPan"
-                         @mouseup="endPan"
-                         @mouseleave="endPan"
-                         :style="{ cursor: isPanning ? 'grabbing' : 'grab' }">
-                        
+                    <div v-else class="tree-viewport" ref="viewport" @wheel.prevent="handleWheel" @mousedown="startPan"
+                        @mousemove="doPan" @mouseup="endPan" @mouseleave="endPan"
+                        :style="{ cursor: isPanning ? 'grabbing' : 'grab' }">
+
                         <div class="tree-canvas" :style="canvasStyle">
-                            <div class="tree" v-if="treeData.length">
+                            <div class="tree" :class="{ 'is-exporting-tree': isExporting }" v-if="treeData.length">
                                 <ul>
-                                    <TreeItem 
-                                        v-for="member in treeData" 
-                                        :key="member.id" 
-                                        :member="member" 
-                                        :listDoiTocHo="listDoiTocHo"
-                                        :searchQuery="searchQuery"
-                                        @edit="onEdit"
-                                        @show-qr="showQRCard"
-                                        @add-child="onAddChild"
-                                        @add-spouse="onAddSpouse"
-                                    />
+                                    <TreeItem v-for="member in treeData" :key="member.id" :member="member"
+                                        :listDoiTocHo="listDoiTocHo" :searchQuery="searchQuery" @edit="onEdit"
+                                        @show-qr="showQRCard" @add-child="onAddChild" @add-spouse="onAddSpouse" />
                                 </ul>
                             </div>
                             <div v-else class="text-center py-5 mt-5">
@@ -95,15 +94,19 @@
                                     <i class="bx bx-git-repo-forked fs-1 text-muted opacity-25"></i>
                                 </div>
                                 <h5 class="text-muted">Chưa có dữ liệu thành viên</h5>
-                                <p class="text-muted small">Hãy bắt đầu bằng cách thêm thành viên đầu tiên (Thủy Tổ).</p>
-                                <button class="btn btn-outline-primary btn-sm radius-30 px-4 mt-2" @click="openAddModal">Thêm ngay</button>
+                                <p class="text-muted small">Hãy bắt đầu bằng cách thêm thành viên đầu tiên (Thủy Tổ).
+                                </p>
+                                <button class="btn btn-outline-primary btn-sm radius-30 px-4 mt-2"
+                                    @click="openAddModal">Thêm ngay</button>
                             </div>
                         </div>
                     </div>
 
                     <!-- Mini Map or Navigation Hint -->
-                    <div class="view-controls position-absolute bottom-0 end-0 m-3 p-2 bg-white bg-opacity-75 rounded-3 shadow-sm border small text-muted d-none d-md-block">
-                        <i class="bx bx-mouse ms-1"></i> Cuộn để thu phóng • <i class="bx bx-move ms-1"></i> Kéo để di chuyển
+                    <div
+                        class="view-controls position-absolute bottom-0 end-0 m-3 p-2 bg-white bg-opacity-75 rounded-3 shadow-sm border small text-muted d-none d-md-block">
+                        <i class="bx bx-mouse ms-1"></i> Cuộn để thu phóng • <i class="bx bx-move ms-1"></i> Kéo để di
+                        chuyển
                     </div>
                 </div>
             </div>
@@ -113,37 +116,48 @@
         <div class="modal fade" id="memberModal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-lg modal-dialog-centered">
                 <div class="modal-content radius-15 shadow-lg border-0">
-                    <div class="modal-header border-0 text-white radius-top-15" :class="isEditing ? 'bg-warning text-dark' : 'bg-primary'">
+                    <div class="modal-header border-0 text-white radius-top-15"
+                        :class="isEditing ? 'bg-warning text-dark' : 'bg-primary'">
                         <h5 class="modal-title fw-bold">
                             {{ isEditing ? 'Chỉnh Sửa Thông Tin' : 'Thêm Thành Viên Mới' }}
                         </h5>
-                        <button type="button" class="btn-close" :class="!isEditing ? 'btn-close-white' : ''" data-bs-dismiss="modal"></button>
+                        <button type="button" class="btn-close" :class="!isEditing ? 'btn-close-white' : ''"
+                            data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body p-4">
                         <div class="row g-4">
                             <div class="col-md-12 text-center mb-1">
                                 <div class="position-relative d-inline-block">
-                                    <img :src="avatarPreview || currentMember.avatar || ('https://ui-avatars.com/api/?name=' + (currentMember.ho_ten || 'A') + '&background=d4af37&color=fff')" class="rounded-circle border border-3 border-warning" alt="Avatar" width="100" height="100" style="object-fit: cover;">
-                                    <label for="member-avatar-upload" class="btn btn-sm btn-warning rounded-circle position-absolute bottom-0 end-0 shadow-sm" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer;" title="Chọn ảnh">
+                                    <img :src="avatarPreview || currentMember.avatar || ('https://ui-avatars.com/api/?name=' + (currentMember.ho_ten || 'A') + '&background=d4af37&color=fff')"
+                                        class="rounded-circle border border-3 border-warning" alt="Avatar" width="100"
+                                        height="100" style="object-fit: cover;">
+                                    <label for="member-avatar-upload"
+                                        class="btn btn-sm btn-warning rounded-circle position-absolute bottom-0 end-0 shadow-sm"
+                                        style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer;"
+                                        title="Chọn ảnh">
                                         <i class="bx bx-camera text-dark"></i>
                                     </label>
-                                    <input type="file" id="member-avatar-upload" @change="onAvatarChange" class="d-none" accept="image/*">
+                                    <input type="file" id="member-avatar-upload" @change="onAvatarChange" class="d-none"
+                                        accept="image/*">
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-bold">Họ và Tên</label>
-                                <input type="text" class="form-control radius-8 border-2 shadow-none" v-model="currentMember.ho_ten" placeholder="Nguyễn Văn A">
+                                <input type="text" class="form-control radius-8 border-2 shadow-none"
+                                    v-model="currentMember.ho_ten" placeholder="Nguyễn Văn A">
                             </div>
                             <div class="col-md-3">
                                 <label class="form-label fw-bold">Giới tính</label>
-                                <select class="form-select radius-8 border-2 shadow-none" v-model="currentMember.gioi_tinh">
+                                <select class="form-select radius-8 border-2 shadow-none"
+                                    v-model="currentMember.gioi_tinh">
                                     <option value="Nam">Nam</option>
                                     <option value="Nữ">Nữ</option>
                                 </select>
                             </div>
                             <div class="col-md-3">
                                 <label class="form-label fw-bold">Đời thứ</label>
-                                <select class="form-select radius-8 border-2 shadow-none" v-model="currentMember.doi_thu">
+                                <select class="form-select radius-8 border-2 shadow-none"
+                                    v-model="currentMember.doi_thu">
                                     <option v-for="doi in listDoiTocHo" :key="doi.id" :value="doi.so_doi">
                                         Đời {{ doi.so_doi }} - {{ doi.ten_doi }}
                                     </option>
@@ -152,30 +166,35 @@
 
                             <div class="col-md-6">
                                 <label class="form-label fw-bold">Ngày sinh</label>
-                                <input type="date" class="form-control radius-8 border-2 shadow-none" v-model="currentMember.ngay_sinh">
+                                <input type="date" class="form-control radius-8 border-2 shadow-none"
+                                    v-model="currentMember.ngay_sinh">
                             </div>
 
                             <div class="col-md-6">
                                 <label class="form-label fw-bold">Trạng thái</label>
                                 <div class="d-flex gap-3 pt-1">
                                     <div class="form-check">
-                                        <input class="form-check-input" type="radio" value="Còn sống" v-model="currentMember.trang_thai" id="status1">
+                                        <input class="form-check-input" type="radio" value="Còn sống"
+                                            v-model="currentMember.trang_thai" id="status1">
                                         <label class="form-check-label" for="status1">Còn sống</label>
                                     </div>
                                     <div class="form-check">
-                                        <input class="form-check-input" type="radio" value="Đã mất" v-model="currentMember.trang_thai" id="status2">
+                                        <input class="form-check-input" type="radio" value="Đã mất"
+                                            v-model="currentMember.trang_thai" id="status2">
                                         <label class="form-check-label" for="status2">Đã mất</label>
                                     </div>
                                 </div>
                             </div>
                             <div class="col-md-6" v-if="currentMember.trang_thai === 'Đã mất'">
                                 <label class="form-label fw-bold">Ngày mất</label>
-                                <input type="date" class="form-control radius-8 border-2 shadow-none" v-model="currentMember.ngay_mat">
+                                <input type="date" class="form-control radius-8 border-2 shadow-none"
+                                    v-model="currentMember.ngay_mat">
                             </div>
 
                             <div class="col-md-6">
                                 <label class="form-label fw-bold">Quan hệ với dòng họ</label>
-                                <select class="form-select radius-8 border-2 shadow-none" v-model="currentMember.loai_quan_he">
+                                <select class="form-select radius-8 border-2 shadow-none"
+                                    v-model="currentMember.loai_quan_he">
                                     <option value="Chính">Thành viên chính (Con cháu)</option>
                                     <option value="Vợ/Chồng">Người phối ngẫu (Vợ/Chồng)</option>
                                 </select>
@@ -183,9 +202,10 @@
 
                             <div class="col-md-6" v-if="currentMember.loai_quan_he === 'Chính'">
                                 <label class="form-label fw-bold">Con của ông (Cha)</label>
-                                <select class="form-select radius-8 border-2 shadow-none" v-model="currentMember.cha_id">
+                                <select class="form-select radius-8 border-2 shadow-none"
+                                    v-model="currentMember.cha_id">
                                     <option :value="null">--- Thủy Tổ ---</option>
-                                    <option v-for="m in allMembers" :key="m.id" :value="m.id" 
+                                    <option v-for="m in allMembers" :key="m.id" :value="m.id"
                                         v-show="m.id !== currentMember.id && m.loai_quan_he === 'Chính'">
                                         {{ m.ho_ten }} (Đời {{ m.doi_thu }})
                                     </option>
@@ -196,33 +216,40 @@
                                 <label class="form-label fw-bold">Chọn mẹ còn lại (Vợ/Chồng)</label>
                                 <select class="form-select radius-8 border-2 shadow-none" v-model="currentMember.me_id">
                                     <option :value="null">-- Chưa xác định / Khác --</option>
-                                    <option v-for="s in getSpousesOfFather(currentMember.cha_id)" :key="s.id" :value="s.id">{{ s.ho_ten }}</option>
+                                    <option v-for="s in getSpousesOfFather(currentMember.cha_id)" :key="s.id"
+                                        :value="s.id">{{ s.ho_ten }}</option>
                                 </select>
                             </div>
 
                             <div class="col-md-6" v-if="currentMember.loai_quan_he === 'Vợ/Chồng'">
                                 <label class="form-label fw-bold">Là Vợ/Chồng của ai?</label>
-                                <select class="form-select radius-8 border-2 shadow-none" v-model="currentMember.spouse_of_id">
-                                    <option v-for="m in allMembers" :key="m.id" :value="m.id" 
+                                <select class="form-select radius-8 border-2 shadow-none"
+                                    v-model="currentMember.spouse_of_id">
+                                    <option v-for="m in allMembers" :key="m.id" :value="m.id"
                                         v-show="m.loai_quan_he === 'Chính'">
                                         {{ m.ho_ten }}
                                     </option>
                                 </select>
                             </div>
-                            
+
                             <div class="col-md-12">
                                 <label class="form-label fw-bold">Ghi chú</label>
-                                <textarea class="form-control radius-8 border-2 shadow-none" rows="2" v-model="currentMember.ghi_chu" placeholder="Thông tin thêm..."></textarea>
+                                <textarea class="form-control radius-8 border-2 shadow-none" rows="2"
+                                    v-model="currentMember.ghi_chu" placeholder="Thông tin thêm..."></textarea>
                             </div>
 
-                            
+
                         </div>
                     </div>
                     <div class="modal-footer border-0 p-4 pt-0">
-                        <button v-if="isEditing" type="button" class="btn btn-outline-danger me-auto radius-8 px-3" @click="handleDelete">Xóa</button>
-                        <button v-if="isEditing" type="button" class="btn btn-warning text-dark radius-8 px-3 fw-bold" style="background:#d4af37; border-color:#d4af37;" @click="showQRCardFromModal">Xem Mã QR</button>
+                        <button v-if="isEditing" type="button" class="btn btn-outline-danger me-auto radius-8 px-3"
+                            @click="handleDelete">Xóa</button>
+                        <button v-if="isEditing" type="button" class="btn btn-warning text-dark radius-8 px-3 fw-bold"
+                            style="background:#d4af37; border-color:#d4af37;" @click="showQRCardFromModal">Xem Mã
+                            QR</button>
                         <button type="button" class="btn btn-light px-4 radius-8" data-bs-dismiss="modal">Hủy</button>
-                        <button type="button" class="btn px-4 radius-8 fw-bold" :class="isEditing ? 'btn-warning' : 'btn-primary'" @click="saveMember">
+                        <button type="button" class="btn px-4 radius-8 fw-bold"
+                            :class="isEditing ? 'btn-warning' : 'btn-primary'" @click="saveMember">
                             {{ isEditing ? 'Cập Nhật' : 'Lưu Lại' }}
                         </button>
                     </div>
@@ -231,40 +258,57 @@
         </div>
 
         <!-- Vue QR Card Modal -->
-        <div v-if="showQRModal" class="custom-modal-backdrop animate__animated animate__fadeIn" @click.self="closeQRModal">
-            <div class="custom-modal-content animate__animated animate__zoomIn p-4 rounded-4 shadow-2xl bg-white position-relative text-center" style="max-width: 420px; z-index: 1060;">
-                <button class="btn-close-custom position-absolute top-0 end-0 m-3 border-0 bg-transparent" @click="closeQRModal">
+        <div v-if="showQRModal" class="custom-modal-backdrop animate__animated animate__fadeIn"
+            @click.self="closeQRModal">
+            <div class="custom-modal-content animate__animated animate__zoomIn p-4 rounded-4 shadow-2xl bg-white position-relative text-center"
+                style="max-width: 420px; z-index: 1060;">
+                <button class="btn-close-custom position-absolute top-0 end-0 m-3 border-0 bg-transparent"
+                    @click="closeQRModal">
                     <i class="bx bx-x fs-2 text-muted"></i>
                 </button>
-                
+
                 <h5 class="fw-bold mb-3 text-dark">Mã QR Thành Viên</h5>
 
                 <!-- QR Card Canvas container (for printing / visual preview) -->
-                <div id="qr-card-print" class="qr-card-container p-4 rounded-3 border border-3 border-gold bg-royal shadow-sm mb-4 position-relative overflow-hidden">
+                <div id="qr-card-print"
+                    class="qr-card-container p-4 rounded-3 border border-3 border-gold bg-royal shadow-sm mb-4 position-relative overflow-hidden">
                     <div class="card-watermark"></div>
                     <div class="card-header-royal mb-3 border-bottom border-light-gold pb-2">
-                        <div class="fw-extrabold text-gold tracking-widest font-13 text-uppercase" style="color: #d4af37 !important;">Hệ Thống Gia Phả Số</div>
+                        <div class="fw-extrabold text-gold tracking-widest font-13 text-uppercase"
+                            style="color: #d4af37 !important;">Hệ Thống Gia Phả Số</div>
                         <div class="text-white-50 font-9 text-uppercase tracking-wider">Thẻ Nhận Diện Thành Viên</div>
                     </div>
-                    
+
                     <div class="d-flex align-items-center gap-3 mb-3 text-start">
-                        <img :src="activeMember.avatar || ('https://ui-avatars.com/api/?name=' + activeMember.ho_ten + '&background=d4af37&color=fff')" class="rounded-circle border border-2 border-gold shadow-sm" width="55" height="55" style="object-fit: cover;">
+                        <img :src="activeMember.avatar || ('https://ui-avatars.com/api/?name=' + activeMember.ho_ten + '&background=d4af37&color=fff')"
+                            class="rounded-circle border border-2 border-gold shadow-sm" width="55" height="55"
+                            style="object-fit: cover;">
                         <div class="overflow-hidden">
-                            <h5 class="fw-extrabold text-white mb-0 text-truncate drop-shadow" style="color: white !important;">{{ activeMember.ho_ten }}</h5>
+                            <h5 class="fw-extrabold text-white mb-0 text-truncate drop-shadow"
+                                style="color: white !important;">{{ activeMember.ho_ten }}</h5>
                             <div class="d-flex gap-1.5 mt-1 flex-wrap">
-                                <span class="badge badge-gold-soft font-9 px-2 py-0.5" style="background: rgba(212, 175, 55, 0.15) !important; color: #ffd891 !important; border: 1px solid rgba(212, 175, 55, 0.25);">Đời {{ activeMember.doi_thu }}</span>
-                                <span class="badge badge-gold-soft font-9 px-2 py-0.5" style="background: rgba(212, 175, 55, 0.15) !important; color: #ffd891 !important; border: 1px solid rgba(212, 175, 55, 0.25);">{{ activeMember.gioi_tinh }}</span>
-                                <span class="badge badge-gold-soft font-9 px-2 py-0.5" style="background: rgba(212, 175, 55, 0.15) !important; color: #ffd891 !important; border: 1px solid rgba(212, 175, 55, 0.25);">{{ activeMember.trang_thai }}</span>
+                                <span class="badge badge-gold-soft font-9 px-2 py-0.5"
+                                    style="background: rgba(212, 175, 55, 0.15) !important; color: #ffd891 !important; border: 1px solid rgba(212, 175, 55, 0.25);">Đời
+                                    {{ activeMember.doi_thu }}</span>
+                                <span class="badge badge-gold-soft font-9 px-2 py-0.5"
+                                    style="background: rgba(212, 175, 55, 0.15) !important; color: #ffd891 !important; border: 1px solid rgba(212, 175, 55, 0.25);">{{
+                                        activeMember.gioi_tinh }}</span>
+                                <span class="badge badge-gold-soft font-9 px-2 py-0.5"
+                                    style="background: rgba(212, 175, 55, 0.15) !important; color: #ffd891 !important; border: 1px solid rgba(212, 175, 55, 0.25);">{{
+                                        activeMember.trang_thai }}</span>
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- QR Frame -->
-                    <div class="qr-frame-royal bg-white p-3 rounded-3 shadow-md d-inline-block position-relative border border-2 border-gold">
-                        <img :src="'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + encodeURIComponent(getMemberQRUrl(activeMember))" class="img-fluid" width="180" height="180" alt="QR Code">
+                    <div
+                        class="qr-frame-royal bg-white p-3 rounded-3 shadow-md d-inline-block position-relative border border-2 border-gold">
+                        <img :src="'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + encodeURIComponent(getMemberQRUrl(activeMember))"
+                            class="img-fluid" width="180" height="180" alt="QR Code">
                     </div>
-                    
-                    <p class="text-white-50 font-10 mt-3 mb-0 italic">Quét mã để truy cập tiểu sử & xem mối quan hệ dòng tộc</p>
+
+                    <p class="text-white-50 font-10 mt-3 mb-0 italic">Quét mã để truy cập tiểu sử & xem mối quan hệ dòng
+                        tộc</p>
                 </div>
 
                 <!-- Control Buttons -->
@@ -272,7 +316,9 @@
                     <button class="btn btn-outline-secondary w-50 py-2 rounded-pill fw-bold" @click="printQRCard">
                         <i class="bx bx-printer me-1"></i> In Thẻ QR
                     </button>
-                    <button class="btn btn-gold w-50 py-2 rounded-pill fw-bold text-dark shadow-sm" @click="downloadQRCard" style="background: #d4af37 !important; border-color: #d4af37 !important; font-weight: bold;">
+                    <button class="btn btn-gold w-50 py-2 rounded-pill fw-bold text-dark shadow-sm"
+                        @click="downloadQRCard"
+                        style="background: #d4af37 !important; border-color: #d4af37 !important; font-weight: bold;">
                         <i class="bx bx-download me-1"></i> Tải Thẻ Về
                     </button>
                 </div>
@@ -287,11 +333,13 @@
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body p-3 text-start">
-                        <p class="mb-0 text-dark">Bạn có chắc chắn muốn xóa thành viên này? Hành động này không thể hoàn tác.</p>
+                        <p class="mb-0 text-dark">Bạn có chắc chắn muốn xóa thành viên này? Hành động này không thể hoàn
+                            tác.</p>
                     </div>
                     <div class="modal-footer border-0 p-3 justify-content-end">
                         <button type="button" class="btn btn-light radius-8 px-3" data-bs-dismiss="modal">Hủy</button>
-                        <button type="button" class="btn btn-danger radius-8 px-3 fw-bold" @click="confirmDelete">Xác Nhận Xóa</button>
+                        <button type="button" class="btn btn-danger radius-8 px-3 fw-bold" @click="confirmDelete">Xác
+                            Nhận Xóa</button>
                     </div>
                 </div>
             </div>
@@ -303,7 +351,7 @@
 import { defineComponent, h } from 'vue';
 import axios from 'axios';
 import toastr from 'toastr';
-import html2canvas from 'html2canvas';
+import html2canvas from 'html2canvas-pro';
 import { jsPDF } from 'jspdf';
 
 const TreeItem = defineComponent({
@@ -327,23 +375,23 @@ const TreeItem = defineComponent({
             const date = new Date(dateString);
             return date.toLocaleDateString('vi-VN');
         };
-        
+
         const generationClass = `gen-${(this.member.doi_thu % 5) + 1}`;
         const isHighlighted = this.searchQuery && this.member.ho_ten.toLowerCase().includes(this.searchQuery.toLowerCase());
-        
+
         const hasChildren = this.member.children && this.member.children.length > 0;
 
         if (this.member.isDummy) {
             const nodeGroup = h('div', { class: 'tree-node-group' }, [
-                h('div', { 
+                h('div', {
                     class: 'tree-dummy-node',
                     style: 'width: 2px; height: 100px; background-color: #ddd; margin: 0 auto;'
                 })
             ]);
-            const children = hasChildren ? h('ul', 
-                this.member.children.map(child => h(TreeItem, { 
-                    member: child, 
-                    listDoiTocHo: this.listDoiTocHo, 
+            const children = hasChildren ? h('ul',
+                this.member.children.map(child => h(TreeItem, {
+                    member: child,
+                    listDoiTocHo: this.listDoiTocHo,
                     searchQuery: this.searchQuery,
                     onEdit: (m) => this.$emit('edit', m),
                     onShowQr: (m) => this.$emit('show-qr', m),
@@ -353,11 +401,11 @@ const TreeItem = defineComponent({
             ) : null;
             return h('li', [nodeGroup, children]);
         }
-        
+
         // Build main card and spouse cards; if exactly two spouses, place main between them
-        const makeMainCard = (order = null, extraClass = '') => h('div', { 
-            class: ['tree-node-card', generationClass, extraClass, { 
-                'principal': !this.member.cha_id, 
+        const makeMainCard = (order = null, extraClass = '') => h('div', {
+            class: ['tree-node-card', generationClass, extraClass, {
+                'principal': !this.member.cha_id,
                 'is-dead': this.member.trang_thai === 'Đã mất',
                 'highlighted': isHighlighted
             }],
@@ -372,29 +420,29 @@ const TreeItem = defineComponent({
             },
             onDblclick: (e) => { e.stopPropagation(); this.isDoubleClick = true; clearTimeout(this.clickTimeout); this.$emit('show-qr', this.member); }
         }, [
-            h('div', { class: 'node-avatar-container' }, [ h('img', { src: this.member.avatar ? this.member.avatar : ('https://ui-avatars.com/api/?name=' + this.member.ho_ten + '&background=d4af37&color=fff'), class: 'node-avatar shadow-sm' }) ]),
-            h('div', { class: 'node-content' }, [ h('div', { class: 'node-name' }, this.member.ho_ten), this.member.ngay_sinh ? h('div', { class: 'node-date' }, formatDate(this.member.ngay_sinh)) : null, h('div', { class: 'node-tag' }, `Đời ${this.member.doi_thu}${getTenDoi(this.member.doi_thu)}`) ]),
-            h('div', { class: 'node-edit-btn' }, [ h('i', { class: 'bx bx-pencil' }) ]),
+            h('div', { class: 'node-avatar-container' }, [h('img', { src: this.member.avatar ? this.member.avatar : ('https://ui-avatars.com/api/?name=' + this.member.ho_ten + '&background=d4af37&color=fff'), class: 'node-avatar shadow-sm' })]),
+            h('div', { class: 'node-content' }, [h('div', { class: 'node-name' }, this.member.ho_ten), this.member.ngay_sinh ? h('div', { class: 'node-date' }, formatDate(this.member.ngay_sinh)) : null, h('div', { class: 'node-tag' }, `Đời ${this.member.doi_thu}${getTenDoi(this.member.doi_thu)}`)]),
+            h('div', { class: 'node-edit-btn' }, [h('i', { class: 'bx bx-pencil' })]),
             h('div', { class: 'quick-actions' }, [
-                h('button', { class: 'btn-action add-child', title: 'Thêm con', onClick: (e) => { e.stopPropagation(); this.$emit('add-child', this.member); } }, [ h('i', { class: 'bx bx-plus' }) ]),
-                h('button', { class: 'btn-action add-spouse', title: 'Thêm vợ/chồng', onClick: (e) => { e.stopPropagation(); this.$emit('add-spouse', this.member); } }, [ h('i', { class: 'bx bxs-heart' }) ])
+                h('button', { class: 'btn-action add-child', title: 'Thêm con', onClick: (e) => { e.stopPropagation(); this.$emit('add-child', this.member); } }, [h('i', { class: 'bx bx-plus' })]),
+                h('button', { class: 'btn-action add-spouse', title: 'Thêm vợ/chồng', onClick: (e) => { e.stopPropagation(); this.$emit('add-spouse', this.member); } }, [h('i', { class: 'bx bxs-heart' })])
             ])
         ]);
 
         const makeSpouseChunk = (spouse, order = null) => {
             const spouseClass = order === 1 ? 'spouse-left' : (order === 5 ? 'spouse-right' : '');
-            return h('div', { 
+            return h('div', {
                 class: ['tree-node-card', 'spouse', spouseClass, { 'is-dead': spouse.trang_thai === 'Đã mất', 'highlighted': this.searchQuery && spouse.ho_ten.toLowerCase().includes(this.searchQuery.toLowerCase()) }],
                 style: order !== null ? { order: order } : undefined,
                 onClick: (e) => { e.stopPropagation(); clearTimeout(this.clickTimeout); this.isDoubleClick = false; this.clickTimeout = setTimeout(() => { if (!this.isDoubleClick) this.$emit('edit', spouse); }, 200); },
                 onDblclick: (e) => { e.stopPropagation(); this.isDoubleClick = true; clearTimeout(this.clickTimeout); this.$emit('show-qr', spouse); }
             }, [
-                h('div', { class: 'node-avatar-container' }, [ h('img', { src: spouse.avatar ? spouse.avatar : ('https://ui-avatars.com/api/?name=' + spouse.ho_ten + '&background=d4af37&color=fff'), class: 'node-avatar shadow-sm' }) ]),
-                h('div', { class: 'node-content' }, [ h('div', { class: 'node-name' }, spouse.ho_ten), h('div', { class: 'node-tag spouse-tag' }, spouse.gioi_tinh === 'Nữ' ? 'Vợ' : (spouse.gioi_tinh === 'Nam' ? 'Chồng' : 'Vợ/Chồng')) ]),
-                h('div', { class: 'node-edit-btn' }, [ h('i', { class: 'bx bx-pencil' }) ]),
+                h('div', { class: 'node-avatar-container' }, [h('img', { src: spouse.avatar ? spouse.avatar : ('https://ui-avatars.com/api/?name=' + spouse.ho_ten + '&background=d4af37&color=fff'), class: 'node-avatar shadow-sm' })]),
+                h('div', { class: 'node-content' }, [h('div', { class: 'node-name' }, spouse.ho_ten), h('div', { class: 'node-tag spouse-tag' }, spouse.gioi_tinh === 'Nữ' ? 'Vợ' : (spouse.gioi_tinh === 'Nam' ? 'Chồng' : 'Vợ/Chồng'))]),
+                h('div', { class: 'node-edit-btn' }, [h('i', { class: 'bx bx-pencil' })]),
                 h('div', { class: 'quick-actions' }, [
-                    h('button', { class: 'btn-action add-child', title: 'Thêm con', onClick: (e) => { e.stopPropagation(); this.$emit('add-child', spouse); } }, [ h('i', { class: 'bx bx-plus' }) ]),
-                    h('button', { class: 'btn-action add-spouse', title: 'Thêm vợ/chồng', onClick: (e) => { e.stopPropagation(); this.$emit('add-spouse', spouse); } }, [ h('i', { class: 'bx bxs-heart' }) ])
+                    h('button', { class: 'btn-action add-child', title: 'Thêm con', onClick: (e) => { e.stopPropagation(); this.$emit('add-child', spouse); } }, [h('i', { class: 'bx bx-plus' })]),
+                    h('button', { class: 'btn-action add-spouse', title: 'Thêm vợ/chồng', onClick: (e) => { e.stopPropagation(); this.$emit('add-spouse', spouse); } }, [h('i', { class: 'bx bxs-heart' })])
                 ])
             ]);
         };
@@ -418,31 +466,31 @@ const TreeItem = defineComponent({
             }
 
             coupleChildren.push(makeSpouseChunk(this.member.spouses[0], 1));
-            coupleChildren.push(h('div', { 
+            coupleChildren.push(h('div', {
                 class: [
-                    'tree-connector-h', 
+                    'tree-connector-h',
                     'spouse-connector-0',
                     kids0.length > 0 ? 'spouse-connector' : ''
-                ], 
-                style: { order: 2 } 
-            }, [ h('i', { class: 'bx bxs-heart connector-heart' }) ]));
+                ],
+                style: { order: 2 }
+            }, [h('i', { class: 'bx bxs-heart connector-heart' })]));
             coupleChildren.push(makeMainCard(3, 'main-centered'));
-            coupleChildren.push(h('div', { 
+            coupleChildren.push(h('div', {
                 class: [
-                    'tree-connector-h', 
+                    'tree-connector-h',
                     'spouse-connector-1',
                     kids1.length > 0 ? 'spouse-connector' : ''
-                ], 
-                style: { order: 4 } 
-            }, [ h('i', { class: 'bx bxs-heart connector-heart' }) ]));
+                ],
+                style: { order: 4 }
+            }, [h('i', { class: 'bx bxs-heart connector-heart' })]));
             coupleChildren.push(makeSpouseChunk(this.member.spouses[1], 5));
 
             const col0 = h('div', { class: ['union-column', 'union-column-0', kids0.length === 0 ? 'union-column-empty' : ''] }, [
                 kids0.length > 0
-                    ? h('ul', kids0.map(child => h(TreeItem, { 
+                    ? h('ul', kids0.map(child => h(TreeItem, {
                         key: child.id,
-                        member: child, 
-                        listDoiTocHo: this.listDoiTocHo, 
+                        member: child,
+                        listDoiTocHo: this.listDoiTocHo,
                         searchQuery: this.searchQuery,
                         onEdit: (m) => this.$emit('edit', m),
                         onShowQr: (m) => this.$emit('show-qr', m),
@@ -454,10 +502,10 @@ const TreeItem = defineComponent({
 
             const col1 = h('div', { class: ['union-column', 'union-column-1', kids1.length === 0 ? 'union-column-empty' : ''] }, [
                 kids1.length > 0
-                    ? h('ul', kids1.map(child => h(TreeItem, { 
+                    ? h('ul', kids1.map(child => h(TreeItem, {
                         key: child.id,
-                        member: child, 
-                        listDoiTocHo: this.listDoiTocHo, 
+                        member: child,
+                        listDoiTocHo: this.listDoiTocHo,
                         searchQuery: this.searchQuery,
                         onEdit: (m) => this.$emit('edit', m),
                         onShowQr: (m) => this.$emit('show-qr', m),
@@ -472,15 +520,15 @@ const TreeItem = defineComponent({
             coupleChildren.push(makeMainCard());
             if (this.member.spouses && this.member.spouses.length) {
                 this.member.spouses.forEach(sp => {
-                    coupleChildren.push(h('div', { class: 'tree-connector-h' }, [ h('i', { class: 'bx bxs-heart connector-heart' }) ]));
+                    coupleChildren.push(h('div', { class: 'tree-connector-h' }, [h('i', { class: 'bx bxs-heart connector-heart' })]));
                     coupleChildren.push(makeSpouseChunk(sp));
                 });
             }
-            children = hasChildren ? h('ul', 
-                this.member.children.map(child => h(TreeItem, { 
+            children = hasChildren ? h('ul',
+                this.member.children.map(child => h(TreeItem, {
                     key: child.id,
-                    member: child, 
-                    listDoiTocHo: this.listDoiTocHo, 
+                    member: child,
+                    listDoiTocHo: this.listDoiTocHo,
                     searchQuery: this.searchQuery,
                     onEdit: (m) => this.$emit('edit', m),
                     onShowQr: (m) => this.$emit('show-qr', m),
@@ -490,8 +538,8 @@ const TreeItem = defineComponent({
             ) : null;
         }
 
-        const nodeGroup = h('div', { class: 'tree-node-group' }, [ h('div', { class: 'couple-wrapper' }, coupleChildren) ]);
-        
+        const nodeGroup = h('div', { class: 'tree-node-group' }, [h('div', { class: 'couple-wrapper' }, coupleChildren)]);
+
         return h('li', { class: ['tree-li', { 'has-multiple-spouses-li': hasMultipleSpouses }] }, [nodeGroup, children]);
     }
 });
@@ -516,7 +564,7 @@ export default {
             showQRModal: false,
             activeMember: {},
             // permissions/roles (removed)
-            
+
             // Zoom & Pan state
             zoom: 1,
             posX: 0,
@@ -525,7 +573,7 @@ export default {
             lastMouseX: 0,
             lastMouseY: 0,
             deleteModal: null,
-            
+
             // Export state
             isExporting: false
         }
@@ -533,7 +581,7 @@ export default {
     computed: {
         treeData() {
             let list = JSON.parse(JSON.stringify(this.allMembers));
-            
+
             // Filter by branch if selected
             if (this.selectedChiNhanhId) {
                 list = list.filter(m => m.chi_nhanh_id === this.selectedChiNhanhId);
@@ -542,7 +590,7 @@ export default {
             const map = {};
             const roots = [];
             list.forEach(item => { map[item.id] = item; item.children = []; item.spouses = []; });
-            
+
             // Helper for creating dummy nodes for skipped generations
             const getDummyNode = (parentId, doi_thu) => {
                 let dummyId = 'dummy_' + parentId + '_' + doi_thu;
@@ -637,107 +685,176 @@ export default {
             this.posX = 0;
             this.posY = 0;
         },
+        async _captureTreeCanvas() {
+            // Strategy: Clone .tree into an offscreen wrapper, compute the TRUE bounding
+            // box by iterating every descendant's getBoundingClientRect(), then translate
+            // the clone so all content (including negative-offset parts) sits in positive
+            // coordinate space. This guarantees html2canvas captures the full tree.
+
+            const treeEl = document.querySelector('.tree');
+            if (!treeEl) throw new Error('Không tìm thấy cây gia phả');
+
+            // --- Step 1: Create offscreen wrapper ---
+            const wrapper = document.createElement('div');
+            wrapper.style.cssText = [
+                'position:fixed',
+                'left:-99999px',
+                'top:0',
+                'background:#faf9f6',
+                'overflow:visible',
+                'padding:0',
+                'pointer-events:none',
+                'z-index:-9999'
+            ].join(';');
+
+            // --- Step 2: Clone .tree ---
+            const clone = treeEl.cloneNode(true);
+            clone.style.transform = 'none';
+            clone.style.position = 'relative';
+            clone.style.left = '0';
+            clone.style.top = '0';
+            clone.style.margin = '0';
+            clone.style.transition = 'none';
+
+            // --- Step 3: Inner container ---
+            const inner = document.createElement('div');
+            inner.style.position = 'relative';
+            inner.style.display = 'inline-block';
+            inner.style.overflow = 'visible';
+
+            // Kill transitions on every descendant so layout is instant
+            clone.querySelectorAll('*').forEach(el => { el.style.transition = 'none'; });
+
+            inner.appendChild(clone);
+            wrapper.appendChild(inner);
+            document.body.appendChild(wrapper);
+
+            // --- Step 4: Wait for browser to fully paint the clone ---
+            await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+
+            // --- Step 5: Compute the TRUE bounding box of ALL descendants ---
+            const elements = [clone, ...clone.querySelectorAll('*')];
+            let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+
+            elements.forEach(el => {
+                // Skip elements with no layout (display:none, etc.)
+                const rect = el.getBoundingClientRect();
+                if (rect.width === 0 && rect.height === 0) return;
+                if (rect.left < minX) minX = rect.left;
+                if (rect.top < minY) minY = rect.top;
+                if (rect.right > maxX) maxX = rect.right;
+                if (rect.bottom > maxY) maxY = rect.bottom;
+            });
+
+            // --- Step 6: Safe padding (covers ::before/::after that getBoundingClientRect can't measure) ---
+            const padding = 200;
+
+            // --- Step 7: Compute export dimensions ---
+            const exportWidth = Math.ceil(maxX - minX + padding * 2);
+            const exportHeight = Math.ceil(maxY - minY + padding * 2);
+
+            // --- Step 8: Translate clone so everything is in positive coordinate space ---
+            // minX/minY are relative to the viewport; we need to shift inner so that
+            // the leftmost/topmost content starts at x=padding, y=padding inside wrapper.
+            const innerRect = inner.getBoundingClientRect();
+            const shiftX = padding - (minX - innerRect.left);
+            const shiftY = padding - (minY - innerRect.top);
+            inner.style.transform = `translate(${shiftX}px, ${shiftY}px)`;
+            inner.style.transformOrigin = 'top left';
+
+            // --- Step 9: Set wrapper to exact computed size ---
+            wrapper.style.width = exportWidth + 'px';
+            wrapper.style.height = exportHeight + 'px';
+            wrapper.style.overflow = 'hidden';
+            wrapper.style.background = '#faf9f6';
+
+            // Wait for the transform to take effect
+            await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+
+            // --- Step 10: Decide scale based on export width ---
+            let scale = 2;
+            if (exportWidth > 10000) scale = 0.6;
+            else if (exportWidth > 7000) scale = 0.8;
+            else if (exportWidth > 4000) scale = 1;
+            else if (exportWidth > 2500) scale = 1.3;
+
+            try {
+                const rendered = await html2canvas(wrapper, {
+                    scale: scale,
+                    useCORS: true,
+                    backgroundColor: '#faf9f6',
+                    logging: false,
+                    width: exportWidth,
+                    height: exportHeight,
+                    windowWidth: exportWidth,
+                    windowHeight: exportHeight,
+                    scrollX: 0,
+                    scrollY: 0,
+                    x: 0,
+                    y: 0
+                });
+                return rendered;
+            } finally {
+                document.body.removeChild(wrapper);
+            }
+        },
+
         async exportToImage() {
             if (this.listChiNhanh.length === 0 || this.treeData.length === 0) {
                 toastr.warning('Không có dữ liệu để xuất!');
                 return;
             }
-            
             this.isExporting = true;
-            
-            // Save original view state
-            const origZoom = this.zoom;
-            const origPosX = this.posX;
-            const origPosY = this.posY;
-            
-            // Reset view to capture everything
-            this.resetView();
-            
-            // Wait for DOM to update
             await this.$nextTick();
-            
             try {
-                // Give a bit more time for any CSS transitions
-                await new Promise(resolve => setTimeout(resolve, 500));
-                
-                const canvas = document.querySelector('.tree');
-                if (!canvas) throw new Error("Không tìm thấy cây gia phả");
-                
-                const renderedCanvas = await html2canvas(canvas, {
-                    scale: 2, // High resolution
-                    useCORS: true,
-                    backgroundColor: '#faf9f6',
-                    logging: false
-                });
-                
-                const imgData = renderedCanvas.toDataURL('image/png');
-                
+                const rendered = await this._captureTreeCanvas();
+                const imgData = rendered.toDataURL('image/png');
                 const link = document.createElement('a');
                 link.download = `Cay_Gia_Pha_${this.selectedChiNhanhId || 'Export'}.png`;
                 link.href = imgData;
                 link.click();
-                
                 toastr.success('Xuất ảnh thành công!');
             } catch (error) {
                 console.error(error);
                 toastr.error('Có lỗi xảy ra khi xuất ảnh.');
             } finally {
-                // Restore original view state
-                this.zoom = origZoom;
-                this.posX = origPosX;
-                this.posY = origPosY;
                 this.isExporting = false;
             }
         },
+
         async exportToPDF() {
             if (this.listChiNhanh.length === 0 || this.treeData.length === 0) {
                 toastr.warning('Không có dữ liệu để xuất!');
                 return;
             }
-            
             this.isExporting = true;
-            
-            const origZoom = this.zoom;
-            const origPosX = this.posX;
-            const origPosY = this.posY;
-            
-            this.resetView();
             await this.$nextTick();
-            
             try {
-                await new Promise(resolve => setTimeout(resolve, 500));
-                
-                const canvas = document.querySelector('.tree');
-                if (!canvas) throw new Error("Không tìm thấy cây gia phả");
-                
-                const renderedCanvas = await html2canvas(canvas, {
-                    scale: 2,
-                    useCORS: true,
-                    backgroundColor: '#faf9f6',
-                    logging: false
-                });
-                
-                const imgData = renderedCanvas.toDataURL('image/jpeg', 1.0);
-                const imgProps = renderedCanvas; // width and height
-                
-                // Calculate PDF size matching the tree aspect ratio
+                const rendered = await this._captureTreeCanvas();
+                const imgData = rendered.toDataURL('image/jpeg', 1.0);
+
+                // Cap PDF page size to jsPDF safe limit (14400 pt max)
+                let pdfW = rendered.width;
+                let pdfH = rendered.height;
+                const MAX = 5000;
+                if (pdfW > MAX) {
+                    const r = MAX / pdfW;
+                    pdfW = MAX;
+                    pdfH = Math.round(pdfH * r);
+                }
+
                 const pdf = new jsPDF({
-                    orientation: imgProps.width > imgProps.height ? 'landscape' : 'portrait',
+                    orientation: pdfW > pdfH ? 'landscape' : 'portrait',
                     unit: 'px',
-                    format: [imgProps.width, imgProps.height]
+                    format: [pdfW, pdfH]
                 });
-                
-                pdf.addImage(imgData, 'JPEG', 0, 0, imgProps.width, imgProps.height);
+                pdf.addImage(imgData, 'JPEG', 0, 0, pdfW, pdfH);
                 pdf.save(`Cay_Gia_Pha_${this.selectedChiNhanhId || 'Export'}.pdf`);
-                
                 toastr.success('Xuất PDF thành công!');
             } catch (error) {
                 console.error(error);
                 toastr.error('Có lỗi xảy ra khi xuất PDF.');
             } finally {
-                this.zoom = origZoom;
-                this.posX = origPosX;
-                this.posY = origPosY;
                 this.isExporting = false;
             }
         },
@@ -822,10 +939,10 @@ export default {
             }
         },
         saveMember() {
-            const url = this.isEditing 
-                ? 'http://127.0.0.1:8000/api/thanh-vien/update' 
+            const url = this.isEditing
+                ? 'http://127.0.0.1:8000/api/thanh-vien/update'
                 : 'http://127.0.0.1:8000/api/thanh-vien/create';
-            
+
             const formData = new FormData();
             for (let key in this.currentMember) {
                 if (this.currentMember[key] !== null && this.currentMember[key] !== undefined) {
@@ -835,22 +952,22 @@ export default {
             if (this.avatarFile) {
                 formData.set('avatar', this.avatarFile);
             }
-            
+
             axios.post(url, formData, {
-                headers: { 
+                headers: {
                     'Content-Type': 'multipart/form-data',
                     'Authorization': `Bearer ${localStorage.getItem('access_token')}`
                 }
             })
-            .then(res => {
-                if (res.data.status) {
-                    toastr.success(res.data.message);
-                    this.loadData();
-                    this.modal.hide();
-                } else {
-                    toastr.error(res.data.message);
-                }
-            });
+                .then(res => {
+                    if (res.data.status) {
+                        toastr.success(res.data.message);
+                        this.loadData();
+                        this.modal.hide();
+                    } else {
+                        toastr.error(res.data.message);
+                    }
+                });
         },
         handleDelete() {
             if (this.deleteModal) {
@@ -1021,93 +1138,135 @@ export default {
     min-width: 100%;
 }
 
-.tree, .tree ul, .tree li {
+.tree,
+.tree ul,
+.tree li {
     position: relative;
     transition: all 0.3s;
 }
 
-.tree ul { 
-    padding-top: 50px; 
-    display: flex !important; 
-    flex-direction: row !important;
-    flex-wrap: nowrap !important;
-    justify-content: center; 
-    padding-left: 0; 
-    margin-bottom: 0; 
+/* Disable transitions during export to instantly snap elements to coordinates */
+.tree.is-exporting-tree,
+.tree.is-exporting-tree *,
+.tree-canvas:has(.is-exporting-tree) {
+    transition: none !important;
 }
 
-.tree li { 
-    text-align: center; 
-    list-style-type: none; 
-    padding: 50px 10px 0 10px; 
+.tree.is-exporting-tree {
+    padding: 50px !important;
+    background-color: #faf9f6 !important;
+}
+
+.tree ul {
+    padding-top: 50px;
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    justify-content: center;
+    padding-left: 0;
+    margin-bottom: 0;
+}
+
+.tree li {
+    text-align: center;
+    list-style-type: none;
+    padding: 50px 10px 0 10px;
     flex: 0 0 auto !important;
 }
 
 /* Connecting Lines (Gold) */
-.tree li::before, .tree li::after { 
-    content: ''; 
-    position: absolute; 
-    top: 0; 
-    right: 50%; 
-    border-top: 2px solid #d4af37; 
-    width: 50%; 
-    height: 50px; 
+.tree li::before,
+.tree li::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 50%;
+    border-top: 2px solid #d4af37;
+    width: 50%;
+    height: 50px;
 }
-.tree li::after { 
-    right: auto; 
-    left: 50%; 
-    border-left: 2px solid #d4af37; 
+
+.tree li::after {
+    right: auto;
+    left: 50%;
+    border-left: 2px solid #d4af37;
 }
-.tree li:only-child::after, .tree li:only-child::before { display: none; }
-.tree li:only-child { padding-top: 0; }
-.tree li:first-child::before, .tree li:last-child::after { border: 0 none; }
-.tree li:last-child::before { 
-    border-right: 2px solid #d4af37; 
-    border-radius: 0 10px 0 0; 
+
+.tree li:only-child::after,
+.tree li:only-child::before {
+    display: none;
 }
-.tree li:first-child::after { 
-    border-radius: 10px 0 0 0; 
+
+.tree li:only-child {
+    padding-top: 0;
 }
-.tree ul ul::before { 
-    content: ''; 
-    position: absolute; 
-    top: 0; 
-    left: 50%; 
-    border-left: 2px solid #d4af37; 
-    width: 0; 
-    height: 50px; 
+
+.tree li:first-child::before,
+.tree li:last-child::after {
+    border: 0 none;
+}
+
+.tree li:last-child::before {
+    border-right: 2px solid #d4af37;
+    border-radius: 0 10px 0 0;
+}
+
+.tree li:first-child::after {
+    border-radius: 10px 0 0 0;
+}
+
+.tree ul ul::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    border-left: 2px solid #d4af37;
+    width: 0;
+    height: 50px;
 }
 
 /* (restored default connector behavior) */
 
 /* Node Styling */
-.tree-node-group { 
-    display: flex; 
-    align-items: center; 
-    justify-content: center; 
-    position: relative; 
-    z-index: 10; 
+.tree-node-group {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 10;
     margin: 0 auto;
     width: max-content;
 }
+
 .couple-wrapper {
     display: flex;
     flex-direction: row;
     align-items: center;
     gap: 0;
 }
-.tree-node-card.main-centered { order: 2; }
-.tree-node-card.spouse-left { order: 1; }
-.tree-node-card.spouse-right { order: 3; }
-.tree-connector-h { 
-    width: 40px; 
-    height: 2px; 
-    background: #d4af37; 
-    position: relative; 
+
+.tree-node-card.main-centered {
+    order: 2;
+}
+
+.tree-node-card.spouse-left {
+    order: 1;
+}
+
+.tree-node-card.spouse-right {
+    order: 3;
+}
+
+.tree-connector-h {
+    width: 40px;
+    height: 2px;
+    background: #d4af37;
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
 }
+
 .connector-heart {
     position: absolute;
     top: 50%;
@@ -1153,11 +1312,13 @@ export default {
     z-index: 20;
     pointer-events: none;
 }
+
 .tree-node-card:hover .quick-actions {
     opacity: 1;
     pointer-events: auto;
     bottom: -15px;
 }
+
 .btn-action {
     width: 28px;
     height: 28px;
@@ -1167,13 +1328,14 @@ export default {
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
     color: #fff;
     font-size: 16px;
     padding: 0;
     transition: transform 0.2s;
     background: #d4af37;
 }
+
 .btn-action:hover {
     transform: scale(1.1);
     background: #c39b2e;
@@ -1192,9 +1354,17 @@ export default {
 }
 
 @keyframes pulse-border {
-    0% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.4); }
-    70% { box-shadow: 0 0 0 15px rgba(212, 175, 55, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0); }
+    0% {
+        box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.4);
+    }
+
+    70% {
+        box-shadow: 0 0 0 15px rgba(212, 175, 55, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(212, 175, 55, 0);
+    }
 }
 
 /* Generation Colors - Left border gradient */
@@ -1210,11 +1380,25 @@ export default {
     border-bottom-left-radius: 9px;
 }
 
-.gen-1::before { background: linear-gradient(to bottom, #e1b12c, #fdfbf3); }
-.gen-2::before { background: linear-gradient(to bottom, #d4af37, #fdfbf3); }
-.gen-3::before { background: linear-gradient(to bottom, #b38d21, #fdfbf3); }
-.gen-4::before { background: linear-gradient(to bottom, #957314, #fdfbf3); }
-.gen-5::before { background: linear-gradient(to bottom, #e58e26, #fdfbf3); }
+.gen-1::before {
+    background: linear-gradient(to bottom, #e1b12c, #fdfbf3);
+}
+
+.gen-2::before {
+    background: linear-gradient(to bottom, #d4af37, #fdfbf3);
+}
+
+.gen-3::before {
+    background: linear-gradient(to bottom, #b38d21, #fdfbf3);
+}
+
+.gen-4::before {
+    background: linear-gradient(to bottom, #957314, #fdfbf3);
+}
+
+.gen-5::before {
+    background: linear-gradient(to bottom, #e58e26, #fdfbf3);
+}
 
 .tree-node-card.is-dead {
     filter: grayscale(0.6);
@@ -1299,7 +1483,7 @@ export default {
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     opacity: 0;
     transition: 0.2s;
     color: #d4af37;
@@ -1318,7 +1502,10 @@ export default {
 /* Custom Vue Modal Styling for QR Card */
 .custom-modal-backdrop {
     position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     background-color: rgba(15, 23, 42, 0.6);
     backdrop-filter: blur(8px);
     z-index: 1050;
@@ -1327,6 +1514,7 @@ export default {
     justify-content: center;
     padding: 20px;
 }
+
 .custom-modal-content {
     width: 100%;
     max-width: 480px;
@@ -1334,45 +1522,56 @@ export default {
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 15px;
 }
+
 .btn-close-custom {
     transition: all 0.2s ease;
 }
+
 .btn-close-custom:hover {
     transform: rotate(90deg);
 }
+
 .border-gold {
     border-color: #d4af37 !important;
 }
+
 .bg-royal {
     background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important;
 }
+
 .qr-card-container {
     color: white !important;
     border-color: #d4af37 !important;
     background-size: cover;
     position: relative;
 }
+
 .card-header-royal {
     border-bottom: 1px solid rgba(212, 175, 55, 0.3) !important;
 }
+
 .badge-gold-soft {
     background: rgba(212, 175, 55, 0.15) !important;
     color: #ffd891 !important;
     border: 1px solid rgba(212, 175, 55, 0.25) !important;
 }
+
 .qr-frame-royal {
     background: white;
 }
+
 .btn-gold {
     background: #d4af37;
     color: #3b2c0c;
     border: none;
     transition: all 0.3s ease;
 }
+
 .btn-gold:hover {
     background: #e5c055;
     transform: translateY(-2px);
 }
+
 .card-watermark {
     position: absolute;
     top: -40px;
@@ -1385,70 +1584,78 @@ export default {
 
 /* ─── MULTIPLE SPOUSES CHILDREN BRANCHES ALIGNMENT ─── */
 .unions-wrapper {
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  width: 100%;
-  position: relative;
-  margin-top: 50px;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    width: 100%;
+    position: relative;
+    margin-top: 50px;
 }
+
 .union-column {
-  width: 50%;
-  flex: 0 0 50%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  position: relative;
+    width: 50%;
+    flex: 0 0 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
 }
+
 .union-column-0::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  right: 130px;
-  left: 50%;
-  height: 2px;
-  background: #d4af37;
-  z-index: 1;
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 130px;
+    left: 50%;
+    height: 2px;
+    background: #d4af37;
+    z-index: 1;
 }
+
 .union-column-1::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 130px;
-  right: 50%;
-  height: 2px;
-  background: #d4af37;
-  z-index: 1;
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 130px;
+    right: 50%;
+    height: 2px;
+    background: #d4af37;
+    z-index: 1;
 }
+
 .union-column-empty::after {
-  display: none !important;
+    display: none !important;
 }
+
 .tree-connector-h.spouse-connector::after {
-  content: '';
-  position: absolute;
-  top: -10px;
-  left: 50%;
-  width: 2px;
-  height: 105px;
-  background: #d4af37;
-  z-index: 1;
+    content: '';
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    width: 2px;
+    height: 105px;
+    background: #d4af37;
+    z-index: 1;
 }
-.has-multiple-spouses-li > ul::before {
-  display: none !important;
+
+.has-multiple-spouses-li>ul::before {
+    display: none !important;
 }
-.union-column > ul::before {
-  display: block !important;
-  content: '';
-  position: absolute;
-  top: 0 !important;
-  left: 50% !important;
-  border-left: 2px solid #d4af37 !important;
-  width: 0 !important;
-  height: 50px !important;
+
+.union-column>ul::before {
+    display: block !important;
+    content: '';
+    position: absolute;
+    top: 0 !important;
+    left: 50% !important;
+    border-left: 2px solid #d4af37 !important;
+    width: 0 !important;
+    height: 50px !important;
 }
+
 .union-empty-placeholder {
-  width: 220px;
-  height: 90px;
-  visibility: hidden;
+    width: 220px;
+    height: 90px;
+    visibility: hidden;
 }
 </style>

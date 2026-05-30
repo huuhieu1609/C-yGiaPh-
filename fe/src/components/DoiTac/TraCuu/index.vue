@@ -157,7 +157,7 @@
                             <div class="row g-0">
                                 <div class="col-md-5 result-term-box p-4 d-flex flex-column align-items-center justify-content-center">
                                     <div class="term-label mb-1">DANH XƯNG GỌI BẬC</div>
-                                    <div class="term-value fw-bold text-nowrap pop-text">{{ result.term }}</div>
+                                    <div class="term-value fw-bold text-nowrap pop-text">{{ result.xung_ho }}</div>
                                     <div class="term-glow"></div>
                                 </div>
                                 <div class="col-md-7 result-desc-box p-4 bg-adaptive-card d-flex align-items-center">
@@ -167,7 +167,7 @@
                                             Trong cùng gia tộc, <strong class="text-warning">{{ personA.ho_ten }}</strong> sẽ xưng hô với <strong class="text-pink">{{ personB.ho_ten }}</strong> là:
                                         </p>
                                         <div class="relation-badge-large mb-3 fw-bold pulse-orange">
-                                            {{ result.term }}
+                                            {{ result.xung_ho }}
                                         </div>
                                         <div class="desc-footer p-3 rounded-3 border-start border-4 border-warning bg-adaptive-input">
                                             <i class="bx bx-info-circle me-2 text-warning fs-5 align-middle"></i> {{ result.description }}
@@ -241,6 +241,7 @@ export default {
                 if (res.data.status) {
                     this.result = {
                         term: res.data.term,
+                        xung_ho: res.data.xung_ho,
                         description: res.data.description,
                         path: res.data.path || []
                     };

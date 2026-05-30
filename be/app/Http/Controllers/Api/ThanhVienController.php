@@ -273,11 +273,15 @@ class ThanhVienController extends Controller
             $result = $relationshipService->resolveDetailed($nguoi1, $nguoi2);
             $term = $relationshipService->resolve($nguoi1, $nguoi2) ?? 'quan hệ';
 
+            // "Xưng hô" = A gọi B là gì = B là gì của A = resolve(B, A)
+            $xungHo = $relationshipService->resolve($nguoi2, $nguoi1) ?? 'quan hệ';
+
             // Bổ sung đầy đủ các bộ key để tương thích đồng thời cả Web và Mobile
             return response()->json([
                 'status' => true,
                 'success' => true,
-                'term' => $term, // Cho Web hiển thị trên Badge (Ví dụ: "cụ họ")
+                'term' => $term, // Quan hệ: "A là [term] của B" (Ví dụ: A là cha của B → term = "cha")
+                'xung_ho' => $xungHo, // Xưng hô: "A gọi B là [xung_ho]" (Ví dụ: A là cha của B → xung_ho = "con trai/con gái")
                 'relationship' => $result['relationship'], // Cho Mobile/API (Ví dụ: "Nguyễn Đức Cường là cụ họ của...")
                 'description' => $result['relationship'], // Cho Web hiển thị ở Footer (Ví dụ: "Nguyễn Đức Cường là cụ họ của...")
                 'path' => $result['path'],

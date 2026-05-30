@@ -1,14 +1,18 @@
 <template>
   <div class="tuong-niem-container">
-    <div class="container py-5 mt-5">
-      
+    <div class="container py-5">
+
       <!-- Top Section Heading -->
       <div class="section-heading text-center mb-5 pt-4 position-relative">
-        <span class="subtitle-gradient d-block text-uppercase mb-2 tracking-widest font-xs fw-bold">DI SẢN DÒNG HỌ</span>
+        <span class="subtitle-gradient d-block text-uppercase mb-2 tracking-widest font-xs fw-bold">DI SẢN DÒNG
+          HỌ</span>
         <h2 class="text-gradient fw-bold display-5 mb-2 font-serif">Dòng Lịch Sử Gia Tộc</h2>
-        <p class="text-white-50 max-w-600 mx-auto font-sm">Ôn lại niên trình, tiểu sử và những cột mốc vẻ vang của các thế hệ tổ tiên đã dựng xây cơ nghiệp.</p>
-        <button class="btn btn-refresh-premium rounded-circle d-flex align-items-center justify-content-center position-absolute end-0 top-0 mt-4" @click="loadAllMembersData" :disabled="isLoading" title="Làm mới dữ liệu">
-          <i class="bx bx-sync fs-5 text-warning" :class="{'bx-spin': isLoading}"></i>
+        <p class="text-white-50 max-w-600 mx-auto">Ôn lại niên trình, tiểu sử và những cột mốc vẻ vang của các
+          thế hệ tổ tiên đã dựng xây cơ nghiệp.</p>
+        <button
+          class="btn btn-refresh-premium rounded-circle d-flex align-items-center justify-content-center position-absolute end-0 top-0 mt-4"
+          @click="loadAllMembersData" :disabled="isLoading" title="Làm mới dữ liệu">
+          <i class="bx bx-sync fs-5 text-warning" :class="{ 'bx-spin': isLoading }"></i>
         </button>
       </div>
 
@@ -28,16 +32,13 @@
       <!-- Visual Family Timeline -->
       <div v-else class="row justify-content-center animate-fade-in">
         <div class="col-lg-10 position-relative mt-2">
-          
+
           <div class="timeline-axis-wrapper">
             <div class="timeline-axis-line"></div>
 
-            <div 
-              v-for="(member, index) in sortedTimelineMembers" 
-              :key="member.id" 
+            <div v-for="(member, index) in sortedTimelineMembers" :key="member.id"
               class="timeline-row d-flex align-items-center position-relative mb-5"
-              :class="index % 2 === 0 ? 'flex-row' : 'flex-row-reverse'"
-            >
+              :class="index % 2 === 0 ? 'flex-row' : 'flex-row-reverse'">
               <!-- Center Axis Bullet Point -->
               <div class="timeline-axis-bullet shadow" :class="{ 'deceased': member.trang_thai === 'Đã mất' }">
                 <i class="bx" :class="member.trang_thai === 'Đã mất' ? 'bx-ghost' : 'bx-user'"></i>
@@ -47,28 +48,29 @@
               <div class="timeline-card-col">
                 <div class="timeline-premium-card card border-0 shadow-lg">
                   <div class="card-body p-4 d-flex gap-4 align-items-start flex-column flex-md-row">
-                    
-                    <img 
-                      :src="member.avatar || 'https://ui-avatars.com/api/?name=' + member.ho_ten + '&background=f97316&color=fff'" 
-                      :alt="member.ho_ten" 
-                      class="ancestor-avatar flex-shrink-0 shadow-sm border border-2 border-white"
-                    />
+
+                    <img
+                      :src="member.avatar || 'https://ui-avatars.com/api/?name=' + member.ho_ten + '&background=f97316&color=fff'"
+                      :alt="member.ho_ten"
+                      class="ancestor-avatar flex-shrink-0 shadow-sm border border-2 border-white" />
 
                     <div class="flex-grow-1">
                       <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
                         <span class="badge generation-badge">
                           Thế hệ thứ {{ member.doi_thu }}
                         </span>
-                        <span class="badge status-badge" :class="member.trang_thai === 'Đã mất' ? 'bg-secondary' : 'bg-success'">
+                        <span class="badge status-badge"
+                          :class="member.trang_thai === 'Đã mất' ? 'bg-secondary' : 'bg-success'">
                           {{ member.trang_thai }}
                         </span>
                       </div>
 
                       <h4 class="ancestor-name mb-1">{{ member.ho_ten }}</h4>
-                      
+
                       <p class="lifespan-text font-bold mb-2">
                         <i class="bx bx-calendar"></i>
-                        {{ formatYear(member.ngay_sinh) }} - {{ member.trang_thai === 'Đã mất' ? formatYear(member.ngay_mat) : 'Nay' }}
+                        {{ formatYear(member.ngay_sinh) }} - {{ member.trang_thai === 'Đã mất' ?
+                          formatYear(member.ngay_mat) : 'Nay' }}
                       </p>
 
                       <p v-if="member.nghe_nghiep" class="career-text font-medium text-secondary mb-2">
@@ -159,11 +161,19 @@ export default {
   background-attachment: fixed;
   font-family: 'Inter', sans-serif;
   color: #f8fafc;
+  padding-top: 80px;
   padding-bottom: 50px;
+  position: relative;
+  z-index: 100;
 }
 
-.font-xs { font-size: 12px; }
-.font-sm { font-size: 0.95px; }
+.font-xs {
+  font-size: 12px;
+}
+
+.font-sm {
+  font-size: 0.95px;
+}
 
 /* FADE IN TRANSITION */
 .animate-fade-in {
@@ -171,8 +181,15 @@ export default {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .subtitle-gradient {
@@ -253,7 +270,7 @@ export default {
 .timeline-premium-card {
   border-radius: 20px !important;
   background: #1e293b !important;
-  border: 1px solid rgba(255,255,255,0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
@@ -311,33 +328,41 @@ export default {
 }
 
 .border-dashed {
-  border-color: rgba(255,255,255,0.08);
+  border-color: rgba(255, 255, 255, 0.08);
 }
 
-.font-serif { font-family: 'Playfair Display', serif !important; }
-.tracking-widest { letter-spacing: 0.22em !important; }
-.max-w-600 { max-width: 600px; }
+.font-serif {
+  font-family: 'Playfair Display', serif !important;
+}
+
+.tracking-widest {
+  letter-spacing: 0.22em !important;
+}
+
+.max-w-600 {
+  max-width: 600px;
+}
 
 @media (max-width: 991px) {
   .timeline-axis-line {
     left: 20px;
     transform: none;
   }
-  
+
   .timeline-axis-bullet {
     left: 20px;
     transform: translate(-50%, -50%);
   }
-  
+
   .timeline-row {
     flex-direction: row !important;
     padding-left: 45px;
   }
-  
+
   .timeline-card-col {
     width: 100%;
   }
-  
+
   .hide-on-mobile {
     display: none !important;
   }
@@ -355,11 +380,13 @@ export default {
   align-items: center;
   justify-content: center;
 }
+
 .btn-refresh-premium:hover {
   transform: rotate(30deg) scale(1.05);
   border-color: #ffd700 !important;
   box-shadow: 0 4px 12px rgba(255, 215, 0, 0.15);
 }
+
 .btn-refresh-premium:active {
   transform: scale(0.95);
 }
