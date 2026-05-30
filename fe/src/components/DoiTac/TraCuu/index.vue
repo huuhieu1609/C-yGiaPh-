@@ -65,16 +65,35 @@
                     <div class="heritage-card h-100 p-4">
                         <div class="card-label">THÀNH VIÊN THỨ NHẤT</div>
                         
-                        <div class="selection-box mt-4">
-                            <div class="custom-select-wrapper shadow-none border">
-                                <i class="bx bx-user-pin select-icon"></i>
-                                <select class="custom-select text-dark fw-bold" v-model="idA">
-                                    <option :value="null">-- Chọn thành viên --</option>
-                                    <option v-for="m in filteredMembers" :key="m.id" :value="m.id">
-                                        {{ m.ho_ten }} (Đời {{ m.doi_thu }})
-                                    </option>
-                                </select>
+                        <div class="selection-box mt-4" ref="selectBoxA">
+                            <div v-if="!dropdownOpenA" class="custom-dropdown-toggle" @click.stop="toggleDropdownA">
+                                <span>{{ personA ? `${personA.ho_ten} (Đời ${personA.doi_thu})` : '-- Chọn thành viên --' }}</span>
+                                <i class="bx bx-chevron-down"></i>
                             </div>
+                            <div class="custom-dropdown-input-wrapper" v-else>
+                                <input type="text" class="custom-dropdown-toggle-input" placeholder="Nhập tên thành viên để tìm kiếm..." v-model="searchQueryA" ref="searchInputA" @click.stopPropagation>
+                                <i class="bx bx-x clear-btn" v-if="searchQueryA" @click.stopPropagation="searchQueryA = ''"></i>
+                                <i class="bx bx-chevron-up toggle-arrow" @click.stopPropagation="toggleDropdownA"></i>
+                            </div>
+                            
+                            <div v-if="dropdownOpenA" class="custom-dropdown-menu">
+                                <div class="dropdown-list-container">
+                                    <div class="custom-dropdown-item text-muted" @click="selectMemberA(null)">
+                                        -- Chọn thành viên --
+                                    </div>
+                                    <div v-for="m in filteredSearchMembersA" :key="m.id" class="custom-dropdown-item" :class="{'selected': idA === m.id}" @click="selectMemberA(m.id)">
+                                        {{ m.ho_ten }} (Đời {{ m.doi_thu }})
+                                    </div>
+                                    <div v-if="filteredSearchMembersA.length === 0" class="text-muted small py-2 text-center">
+                                        Không tìm thấy thành viên phù hợp
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-center mt-3 mb-2">
+                            <button class="btn btn-outline-danger btn-sm rounded-pill px-3 fw-bold transition d-flex align-items-center gap-1" @click="resetMemberA" :disabled="!idA" style="font-size: 12px; border-width: 1.5px;">
+                                <i class="bx bx-refresh"></i> Đặt lại
+                            </button>
                         </div>
  
                         <div v-if="personA" class="member-profile mt-4 text-center p-4 rounded-4 animate__animated animate__zoomIn">
@@ -112,16 +131,35 @@
                     <div class="heritage-card h-100 p-4">
                         <div class="card-label bg-orange-label">THÀNH VIÊN THỨ HAI</div>
  
-                        <div class="selection-box mt-4">
-                            <div class="custom-select-wrapper shadow-none border">
-                                <i class="bx bx-user-pin select-icon icon-secondary"></i>
-                                <select class="custom-select text-dark fw-bold" v-model="idB">
-                                    <option :value="null">-- Chọn thành viên --</option>
-                                    <option v-for="m in filteredMembers" :key="m.id" :value="m.id">
-                                        {{ m.ho_ten }} (Đời {{ m.doi_thu }})
-                                    </option>
-                                </select>
+                        <div class="selection-box mt-4" ref="selectBoxB">
+                            <div v-if="!dropdownOpenB" class="custom-dropdown-toggle" @click.stop="toggleDropdownB">
+                                <span>{{ personB ? `${personB.ho_ten} (Đời ${personB.doi_thu})` : '-- Chọn thành viên --' }}</span>
+                                <i class="bx bx-chevron-down"></i>
                             </div>
+                            <div class="custom-dropdown-input-wrapper" v-else>
+                                <input type="text" class="custom-dropdown-toggle-input" placeholder="Nhập tên thành viên để tìm kiếm..." v-model="searchQueryB" ref="searchInputB" @click.stopPropagation>
+                                <i class="bx bx-x clear-btn" v-if="searchQueryB" @click.stopPropagation="searchQueryB = ''"></i>
+                                <i class="bx bx-chevron-up toggle-arrow" @click.stopPropagation="toggleDropdownB"></i>
+                            </div>
+                            
+                            <div v-if="dropdownOpenB" class="custom-dropdown-menu">
+                                <div class="dropdown-list-container">
+                                    <div class="custom-dropdown-item text-muted" @click="selectMemberB(null)">
+                                        -- Chọn thành viên --
+                                    </div>
+                                    <div v-for="m in filteredSearchMembersB" :key="m.id" class="custom-dropdown-item" :class="{'selected': idB === m.id}" @click="selectMemberB(m.id)">
+                                        {{ m.ho_ten }} (Đời {{ m.doi_thu }})
+                                    </div>
+                                    <div v-if="filteredSearchMembersB.length === 0" class="text-muted small py-2 text-center">
+                                        Không tìm thấy thành viên phù hợp
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-center mt-3 mb-2">
+                            <button class="btn btn-outline-danger btn-sm rounded-pill px-3 fw-bold transition d-flex align-items-center gap-1" @click="resetMemberB" :disabled="!idB" style="font-size: 12px; border-width: 1.5px;">
+                                <i class="bx bx-refresh"></i> Đặt lại
+                            </button>
                         </div>
  
                         <div v-if="personB" class="member-profile mt-4 text-center p-4 rounded-4 animate__animated animate__zoomIn">
@@ -196,7 +234,11 @@ export default {
             selectedChiNhanhId: null,
             idA: null,
             idB: null,
-            result: null
+            result: null,
+            searchQueryA: '',
+            searchQueryB: '',
+            dropdownOpenA: false,
+            dropdownOpenB: false
         }
     },
     computed: {
@@ -205,11 +247,25 @@ export default {
             return this.allMembers.filter(m => m.chi_nhanh_id === this.selectedChiNhanhId);
         },
         personA() { return this.allMembers.find(m => m.id === this.idA); },
-        personB() { return this.allMembers.find(m => m.id === this.idB); }
+        personB() { return this.allMembers.find(m => m.id === this.idB); },
+        filteredSearchMembersA() {
+            if (!this.searchQueryA) return this.filteredMembers;
+            const q = this.searchQueryA.toLowerCase().trim();
+            return this.filteredMembers.filter(m => m.ho_ten.toLowerCase().includes(q));
+        },
+        filteredSearchMembersB() {
+            if (!this.searchQueryB) return this.filteredMembers;
+            const q = this.searchQueryB.toLowerCase().trim();
+            return this.filteredMembers.filter(m => m.ho_ten.toLowerCase().includes(q));
+        }
     },
     mounted() {
         this.loadData();
         this.loadChiNhanh();
+        document.addEventListener('click', this.closeDropdowns);
+    },
+    beforeUnmount() {
+        document.removeEventListener('click', this.closeDropdowns);
     },
     methods: {
         getHeaders() {
@@ -229,7 +285,61 @@ export default {
                     }
                 });
         },
-        resetSelection() { this.idA = null; this.idB = null; this.result = null; },
+        resetSelection() {
+            this.idA = null;
+            this.idB = null;
+            this.result = null;
+            this.searchQueryA = '';
+            this.searchQueryB = '';
+        },
+        closeDropdowns(e) {
+            const selectBoxA = this.$refs.selectBoxA;
+            const selectBoxB = this.$refs.selectBoxB;
+            if (selectBoxA && !selectBoxA.contains(e.target)) {
+                this.dropdownOpenA = false;
+            }
+            if (selectBoxB && !selectBoxB.contains(e.target)) {
+                this.dropdownOpenB = false;
+            }
+        },
+        toggleDropdownA() {
+            this.dropdownOpenA = !this.dropdownOpenA;
+            if (this.dropdownOpenA) {
+                this.dropdownOpenB = false;
+                this.$nextTick(() => {
+                    if (this.$refs.searchInputA) this.$refs.searchInputA.focus();
+                });
+            }
+        },
+        toggleDropdownB() {
+            this.dropdownOpenB = !this.dropdownOpenB;
+            if (this.dropdownOpenB) {
+                this.dropdownOpenA = false;
+                this.$nextTick(() => {
+                    if (this.$refs.searchInputB) this.$refs.searchInputB.focus();
+                });
+            }
+        },
+        selectMemberA(id) {
+            this.idA = id;
+            this.dropdownOpenA = false;
+            this.result = null;
+        },
+        selectMemberB(id) {
+            this.idB = id;
+            this.dropdownOpenB = false;
+            this.result = null;
+        },
+        resetMemberA() {
+            this.idA = null;
+            this.result = null;
+            this.searchQueryA = '';
+        },
+        resetMemberB() {
+            this.idB = null;
+            this.result = null;
+            this.searchQueryB = '';
+        },
         calculateRelationship() {
             if (this.idA === this.idB) { toastr.warning('Vui lòng chọn hai thành viên khác nhau!'); return; }
 
@@ -753,6 +863,131 @@ export default {
 }
 .btn-gradient-orange:active {
     transform: translateY(0) scale(0.98);
+}
+
+.selection-box {
+    position: relative;
+}
+
+/* Custom Searchable Dropdown Styling */
+.custom-dropdown-toggle {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 14px 20px;
+    font-weight: 700;
+    color: #1e293b;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.2s ease;
+    user-select: none;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.custom-dropdown-toggle:hover {
+    border-color: #cbd5e1;
+    background: #f8fafc;
+}
+
+.custom-dropdown-input-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.custom-dropdown-toggle-input {
+    width: 100%;
+    background: #fff;
+    border: 1px solid #d4af37; /* Gold focus style border when open */
+    border-radius: 12px;
+    padding: 14px 45px 14px 20px;
+    font-weight: 700;
+    color: #1e293b;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.15);
+    transition: all 0.2s ease;
+}
+
+.custom-dropdown-input-wrapper .clear-btn {
+    position: absolute;
+    right: 40px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #94a3b8;
+    font-size: 18px;
+    transition: color 0.15s ease;
+    z-index: 10;
+}
+.custom-dropdown-input-wrapper .clear-btn:hover {
+    color: #475569;
+}
+
+.custom-dropdown-input-wrapper .toggle-arrow {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #64748b;
+    font-size: 16px;
+    z-index: 10;
+}
+
+.custom-dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    margin-top: 6px;
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 14px;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    padding: 12px;
+}
+
+.dropdown-list-container {
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.dropdown-list-container::-webkit-scrollbar {
+    width: 6px;
+}
+.dropdown-list-container::-webkit-scrollbar-track {
+    background: transparent;
+}
+.dropdown-list-container::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+}
+.dropdown-list-container::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+.custom-dropdown-item {
+    padding: 8px 12px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #334155;
+    border-radius: 8px;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.15s ease;
+}
+
+.custom-dropdown-item:hover {
+    background: #f1f5f9;
+    color: #0f172a;
+}
+
+.custom-dropdown-item.selected {
+    background: rgba(212, 175, 55, 0.1);
+    color: #8a6d1c;
 }
 </style>
  

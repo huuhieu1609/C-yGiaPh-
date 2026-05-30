@@ -2,25 +2,30 @@
   <nav class="admin-sidebar shadow" :class="{ 'sidebar-collapsed-state': isCollapsed }">
     <div class="sidebar-bg-layer" aria-hidden="true"></div>
 
-    <div class="sidebar-header p-3 d-flex align-items-center justify-content-between position-relative">
+    <div class="sidebar-header d-flex align-items-center justify-content-between position-relative">
       <div class="d-flex align-items-center gap-3">
         <div class="brand-icon d-flex align-items-center justify-content-center flex-shrink-0">
           <div class="brand-inner-circle"></div>
         </div>
         <div class="hide-on-collapse logo-wrap d-flex flex-column lh-1">
-          <span class="logo-text">Gia Phả</span>
-          <span class="logo-sub mt-1">Hệ Thống</span>
+          <span class="logo-text">Gia Phả <span class="logo-sub">Hệ Thống</span></span>
         </div>
       </div>
     </div>
 
     <!-- Toggle Collapse Button -->
     <button class="toggle-btn" @click.stop="$emit('toggle-sidebar')" :title="isCollapsed ? 'Mở rộng' : 'Thu gọn'">
-      <i class='bx' :class="isCollapsed ? 'bx-chevron-right' : 'bx-chevron-left'"></i>
+      <svg class="triangle-svg" viewBox="0 0 22 50" xmlns="http://www.w3.org/2000/svg">
+        <path
+          :d="isCollapsed ? 'M 0,0 Q 0,8 6,12 L 17,21 Q 20,25 17,29 L 6,38 Q 0,42 0,50' : 'M 22,0 Q 22,8 16,12 L 5,21 Q 2,25 5,29 L 16,38 Q 22,42 22,50'"
+          class="triangle-path" />
+      </svg>
+      <i class='bx bx-chevron-left transition-icon' :class="{ 'rotated': isCollapsed }"></i>
     </button>
 
     <!-- User Section -->
-    <div class="user-greeting d-flex align-items-center gap-3" @click="goToProfile" style="cursor: pointer;" title="Xem hồ sơ & đổi mật khẩu">
+    <div class="user-greeting d-flex align-items-center gap-3" @click="goToProfile" style="cursor: pointer;"
+      title="Xem hồ sơ & đổi mật khẩu">
       <div class="avatar flex-shrink-0">
         <span>A</span>
         <div class="avatar-ring"></div>
@@ -32,7 +37,8 @@
     </div>
 
     <!-- Dark Mode Toggle Button (Nằm dưới User) -->
-    <div class="theme-toggle-container px-3 mb-2 hide-on-collapse" style="transition: opacity 0.2s;" :style="isCollapsed ? 'opacity: 0; pointer-events: none; height: 0;' : 'opacity: 1;'">
+    <div class="theme-toggle-container px-3 mb-2 hide-on-collapse" style="transition: opacity 0.2s;"
+      :style="isCollapsed ? 'opacity: 0; pointer-events: none; height: 0;' : 'opacity: 1;'">
       <button @click="toggleTheme" class="btn-theme-toggle w-100 d-flex align-items-center justify-content-between">
         <div class="d-flex align-items-center gap-2">
           <i class='bx' :class="isDarkMode ? 'bx-moon' : 'bx-sun'"></i>
@@ -50,7 +56,7 @@
     <!-- Menu Links -->
     <div class="sidebar-body overflow-auto flex-grow-1">
       <ul class="nav flex-column gap-1">
-        
+
         <li class="nav-item item-home">
           <router-link to="/admin/dashboard" class="nav-link" active-class="active" title="Tổng Quan">
             <span class="nav-icon"><i class="bx bx-home-circle"></i></span>
@@ -112,8 +118,9 @@
           </router-link>
         </li>
 
-        <li class="nav-item item-security" v-for="menu in comingSoonMenus" :key="'cs'+menu.id">
-          <router-link :to="'/coming-soon?name=' + encodeURIComponent(menu.ten_chuc_nang)" class="nav-link" active-class="active" :title="menu.ten_chuc_nang">
+        <li class="nav-item item-security" v-for="menu in comingSoonMenus" :key="'cs' + menu.id">
+          <router-link :to="'/coming-soon?name=' + encodeURIComponent(menu.ten_chuc_nang)" class="nav-link"
+            active-class="active" :title="menu.ten_chuc_nang">
             <span class="nav-icon"><i class="bx bx-crown text-warning"></i></span>
             <span class="hide-on-collapse nav-label text-gradient-gold-sidebar">{{ menu.ten_chuc_nang }}</span>
             <span class="nav-dot hide-on-collapse"></span>
@@ -137,7 +144,7 @@
         <span class="nav-icon"><i class="bx bx-home"></i></span>
         <span class="hide-on-collapse text-nowrap font-medium">Trang Chủ</span>
       </button>
-      
+
       <button class="btn-logout d-flex align-items-center justify-content-between" @click="logout" title="Đăng Xuất">
         <div class="d-flex align-items-center gap-3">
           <span class="nav-icon"><i class="bx bx-log-out-circle"></i></span>
@@ -212,7 +219,7 @@ export default {
         if (res.data && res.data.status) {
           this.comingSoonMenus = res.data.data || [];
         }
-      }).catch(() => {});
+      }).catch(() => { });
     },
     /**
      * Kiểm tra user có quyền truy cập chức năng không.
@@ -247,30 +254,34 @@ export default {
 
 <style scoped>
 .admin-sidebar {
-  --neo-bg:         var(--card-bg, #ffffff);
-  --neo-border:     var(--border-color, rgba(0, 0, 0, 0.05));
-  
-  --color-home:      #4f46e5;
-  --color-tree:      #db2777;
-  --color-members:   #0d9488;
-  --color-clan:      #059669;
-  --color-user:      #f59e0b;
-  --color-partner:   #06b6d4;
-  --color-payment:   #8b5cf6;
-  --color-security:  #ef4444;
-  --color-map:       #0ea5e9;
+  --neo-bg: var(--card-bg, #ffffff);
+  --neo-border: var(--border-color, rgba(0, 0, 0, 0.05));
+  --shadow-active: rgba(79, 70, 229, 0.25);
+
+  --color-home: #4f46e5;
+  --color-tree: #db2777;
+  --color-members: #0d9488;
+  --color-clan: #059669;
+  --color-user: #f59e0b;
+  --color-partner: #06b6d4;
+  --color-payment: #8b5cf6;
+  --color-security: #ef4444;
+  --color-map: #0ea5e9;
 
   --transition-smooth: 0.35s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 .admin-sidebar {
   position: fixed !important;
-  top: 15px; left: 15px;
+  top: 15px;
+  left: 15px;
   height: calc(100vh - 30px);
   width: 250px !important;
   min-width: 250px !important;
   display: flex;
   flex-direction: column;
+  justify-content: flex-start !important;
+  gap: 0 !important;
   z-index: 1040;
   background: var(--neo-bg) !important;
   border: 1px solid var(--neo-border);
@@ -286,125 +297,481 @@ export default {
 
 .sidebar-bg-layer {
   position: absolute;
-  inset: 0; pointer-events: none; overflow: hidden; border-radius: 24px; z-index: 0;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  border-radius: 24px;
+  z-index: 0;
 }
+
 .sidebar-bg-layer::before {
-  content: ''; position: absolute; top: -100px; left: -100px; width: 300px; height: 300px;
+  content: '';
+  position: absolute;
+  top: -100px;
+  left: -100px;
+  width: 300px;
+  height: 300px;
   background: radial-gradient(circle, rgba(79, 70, 229, 0.02) 0%, transparent 70%);
 }
 
-.admin-sidebar > *:not(.sidebar-bg-layer) { position: relative; z-index: 1; }
-.admin-sidebar.sidebar-collapsed-state .hide-on-collapse { display: none !important; }
-.admin-sidebar:not(.sidebar-collapsed-state) .show-on-collapse { display: none !important; }
+.admin-sidebar>*:not(.sidebar-bg-layer):not(.toggle-btn) {
+  position: relative;
+  z-index: 1;
+}
+
+.admin-sidebar.sidebar-collapsed-state .hide-on-collapse {
+  display: none !important;
+}
+
+.admin-sidebar:not(.sidebar-collapsed-state) .show-on-collapse {
+  display: none !important;
+}
 
 /* BRAND LOGO */
-.sidebar-header { padding: 24px 20px 16px; border-bottom: 1px solid var(--neo-border); }
-.admin-sidebar.sidebar-collapsed-state .sidebar-header { padding: 24px 10px 16px !important; justify-content: center !important; }
+.sidebar-header {
+  padding: 12px 16px 10px !important;
+  margin: 0 !important;
+  min-height: unset !important;
+  height: auto !important;
+  flex: 0 0 auto !important;
+  border-bottom: 1px solid var(--neo-border);
+}
+
+.admin-sidebar.sidebar-collapsed-state .sidebar-header {
+  padding: 12px 10px 8px !important;
+  min-height: unset !important;
+  height: auto !important;
+  justify-content: center !important;
+}
 
 .brand-icon {
-  width: 36px; height: 36px;
+  width: 36px;
+  height: 36px;
   background: linear-gradient(135deg, #4f46e5, #06b6d4, #10b981);
-  border-radius: 50%; padding: 2px;
+  border-radius: 50%;
+  padding: 2px;
 }
-.brand-inner-circle { width: 100%; height: 100%; background: var(--neo-bg); border-radius: 50%; transition: background-color 0.3s; }
-.logo-wrap { display: flex; align-items: baseline; gap: 4px; }
-.logo-text { font-size: 19px; color: var(--text-main); font-family: 'Playfair Display', serif; }
-.logo-sub { font-size: 11px; font-weight: 700; color: #06b6d4; letter-spacing: 0.5px; }
+
+.brand-inner-circle {
+  width: 100%;
+  height: 100%;
+  background: var(--neo-bg);
+  border-radius: 50%;
+  transition: background-color 0.3s;
+}
+
+.logo-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0 !important;
+  line-height: 1 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.logo-text {
+  font-size: 19px;
+  color: var(--text-main);
+  font-family: 'Playfair Display', serif;
+  margin: 0 !important;
+  padding: 0 !important;
+  line-height: 1.1 !important;
+}
+
+.logo-sub {
+  font-size: 11px;
+  font-weight: 700;
+  color: #06b6d4;
+  letter-spacing: 0.5px;
+  margin: 0 !important;
+  padding: 0 !important;
+  line-height: 1 !important;
+  margin-top: -2px !important;
+  /* Kéo lên thêm 1 chút */
+}
 
 /* NÚT TOGGLE */
 .toggle-btn {
-  position: absolute; left: 100%; top: 36px; transform: translateX(-50%); 
-  width: 34px !important; height: 34px !important; border-radius: 50% !important;
-  background: var(--neo-bg) !important; border: 1px solid var(--neo-border) !important;
-  color: var(--text-sub) !important; display: flex !important; align-items: center; justify-content: center;
-  cursor: pointer; z-index: 1060; padding: 0; font-size: 18px !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important; transition: all 0.25s ease;
+  position: absolute !important;
+  left: calc(100% - 22px);
+  /* sits inside when expanded */
+  top: 33px;
+  width: 22px !important;
+  height: 50px !important;
+  background: transparent !important;
+  border: none !important;
+  cursor: pointer;
+  z-index: 1060;
+  padding: 0 !important;
+  margin: 0 !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+  filter: drop-shadow(-3px 2px 3px rgba(0, 0, 0, 0.04));
+  /* shadow cast inwards when open */
 }
-.toggle-btn:hover { background: #4f46e5 !important; border-color: transparent !important; color: #ffffff !important; transform: translateX(-50%) scale(1.08); }
+
+.admin-sidebar.sidebar-collapsed-state .toggle-btn {
+  left: calc(100% - 1px);
+  /* sits outside when collapsed */
+  filter: drop-shadow(3px 2px 3px rgba(0, 0, 0, 0.04));
+  /* shadow cast outwards when closed */
+}
+
+.toggle-btn:hover {
+  transform: scale(1.08);
+  filter: drop-shadow(0 4px 8px var(--shadow-active));
+}
+
+.toggle-btn:active {
+  transform: scale(0.92);
+}
+
+.triangle-svg {
+  width: 22px;
+  height: 50px;
+  display: block;
+}
+
+.triangle-path {
+  fill: var(--neo-bg);
+  stroke: var(--neo-border);
+  stroke-width: 1.5px;
+  stroke-linejoin: round;
+  transition: all 0.3s ease;
+}
+
+.toggle-btn:hover .triangle-path {
+  fill: var(--color-home) !important;
+  stroke: var(--color-home) !important;
+}
+
+.toggle-btn:hover .transition-icon {
+  color: #ffffff !important;
+}
+
+.toggle-btn .transition-icon {
+  position: absolute;
+  left: 2px;
+  /* positioned close to the left apex when open */
+  font-size: 14px !important;
+  color: var(--text-sub);
+  z-index: 2;
+  transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1), color 0.3s ease;
+  pointer-events: none;
+}
+
+.admin-sidebar.sidebar-collapsed-state .toggle-btn .transition-icon {
+  left: 6px;
+  /* positioned close to the right apex when closed */
+}
+
+.transition-icon.rotated {
+  transform: rotate(180deg);
+}
 
 /* USER CARD */
-.user-greeting { padding: 14px 16px; margin: 12px 16px; background: var(--input-bg); border: 1px solid var(--neo-border); border-radius: 18px !important; }
-.admin-sidebar.sidebar-collapsed-state .user-greeting { margin: 12px 6px !important; padding: 12px 4px !important; justify-content: center !important; }
-.avatar { position: relative; width: 36px; height: 36px; }
+.user-greeting {
+  padding: 14px 16px;
+  margin: 10px 16px 10px !important;
+  flex: 0 0 auto !important;
+  background: var(--input-bg);
+  border: 1px solid var(--neo-border);
+  border-radius: 18px !important;
+}
+
+.admin-sidebar.sidebar-collapsed-state .user-greeting {
+  margin: 10px 6px 10px !important;
+  padding: 12px 4px !important;
+  justify-content: center !important;
+}
+
+.avatar {
+  position: relative;
+  width: 36px;
+  height: 36px;
+}
+
 .avatar span {
-  position: relative; z-index: 2; width: 36px; height: 36px; border-radius: 50%;
-  background: var(--app-bg); border: 1px solid var(--neo-border); color: var(--text-main);
-  font-weight: 700; font-size: 14px; display: flex; align-items: center; justify-content: center;
+  position: relative;
+  z-index: 2;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--app-bg);
+  border: 1px solid var(--neo-border);
+  color: var(--text-main);
+  font-weight: 700;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
+
 .avatar-ring {
-  position: absolute; inset: -2px; border-radius: 50%; border: 1px solid transparent;
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  border: 1px solid transparent;
   background: linear-gradient(135deg, #4f46e5, #06b6d4) border-box;
-  -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0); -webkit-mask-composite: destination-out; mask-composite: exclude;
+  -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: destination-out;
+  mask-composite: exclude;
 }
-.greeting-label { font-size: 11px; color: var(--text-sub); }
-.greeting-name { font-size: 13.5px; color: var(--text-main); }
+
+.greeting-label {
+  font-size: 11px;
+  color: var(--text-sub);
+}
+
+.greeting-name {
+  font-size: 13.5px;
+  color: var(--text-main);
+}
 
 /* NÚT THỂ HIỆN CHẾ ĐỘ CHUYỂN THEME */
 .btn-theme-toggle {
-  background: var(--input-bg) !important; border: 1px solid var(--neo-border) !important;
-  color: var(--text-sub) !important; border-radius: 14px; padding: 10px 14px; font-size: 13.5px; cursor: pointer; transition: all 0.25s ease;
+  background: var(--input-bg) !important;
+  border: 1px solid var(--neo-border) !important;
+  color: var(--text-sub) !important;
+  border-radius: 14px;
+  padding: 10px 14px;
+  font-size: 13.5px;
+  cursor: pointer;
+  transition: all 0.25s ease;
 }
-.btn-theme-toggle:hover { background: rgba(79, 70, 229, 0.08) !important; color: #4f46e5 !important; }
-.theme-status-dot { width: 8px; height: 8px; background: #cbd5e1; border-radius: 50%; transition: all 0.3s ease; }
-.theme-status-dot.dark-active { background: #f59e0b; box-shadow: 0 0 8px #f59e0b; }
-.admin-sidebar.sidebar-collapsed-state .theme-toggle-container { padding: 0 8px !important; }
-.admin-sidebar.sidebar-collapsed-state .btn-theme-toggle { justify-content: center !important; padding: 12px 0; }
+
+.btn-theme-toggle:hover {
+  background: rgba(79, 70, 229, 0.08) !important;
+  color: #4f46e5 !important;
+}
+
+.theme-status-dot {
+  width: 8px;
+  height: 8px;
+  background: #cbd5e1;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.theme-status-dot.dark-active {
+  background: #f59e0b;
+  box-shadow: 0 0 8px #f59e0b;
+}
+
+.admin-sidebar.sidebar-collapsed-state .theme-toggle-container {
+  padding: 0 8px !important;
+}
+
+.admin-sidebar.sidebar-collapsed-state .btn-theme-toggle {
+  justify-content: center !important;
+  padding: 12px 0;
+}
 
 /* THÂN DANH MỤC */
-.sidebar-body { padding: 12px 16px; }
-.sidebar-body::-webkit-scrollbar { width: 3px; }
-.sidebar-body::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.04); border-radius: 99px; }
-.section-heading { font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--text-sub); opacity: 0.6; padding: 20px 12px 6px; }
+.sidebar-body {
+  padding: 12px 16px;
+}
+
+.sidebar-body::-webkit-scrollbar {
+  width: 3px;
+}
+
+.sidebar-body::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.04);
+  border-radius: 99px;
+}
+
+.section-heading {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-sub);
+  opacity: 0.6;
+  padding: 20px 12px 6px;
+}
 
 .nav-link {
-  display: flex; align-items: center; gap: 14px; padding: 11px 14px; border-radius: 14px !important;
-  color: var(--text-sub) !important; font-size: 14px; font-weight: 500; transition: all 0.25s ease; text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 11px 14px;
+  border-radius: 14px !important;
+  color: var(--text-sub) !important;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.25s ease;
+  text-decoration: none;
 }
-.admin-sidebar.sidebar-collapsed-state .nav-link { justify-content: center; padding: 12px 0; }
-.nav-dot { width: 5px; height: 5px; border-radius: 50%; opacity: 0; transform: scale(0.5); transition: all 0.2s ease; margin-left: auto; }
-.nav-link:hover .nav-dot { opacity: 0.5; transform: scale(1); }
-.nav-icon { display: flex; align-items: center; justify-content: center; width: 20px; height: 20px; font-size: 18px; color: var(--text-sub); }
-.nav-link:hover { color: var(--text-main) !important; background: var(--input-bg); transform: translateX(4px); }
+
+.admin-sidebar.sidebar-collapsed-state .nav-link {
+  justify-content: center;
+  padding: 12px 0;
+}
+
+.nav-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  opacity: 0;
+  transform: scale(0.5);
+  transition: all 0.2s ease;
+  margin-left: auto;
+}
+
+.nav-link:hover .nav-dot {
+  opacity: 0.5;
+  transform: scale(1);
+}
+
+.nav-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  font-size: 18px;
+  color: var(--text-sub);
+}
+
+.nav-link:hover {
+  color: var(--text-main) !important;
+  background: var(--input-bg);
+  transform: translateX(4px);
+}
 
 /* Màu Active tương ứng từng mục */
-.item-home .nav-dot, .item-home .nav-link.active { --c-active: var(--color-home); }
-.item-tree .nav-dot, .item-tree .nav-link.active { --c-active: var(--color-tree); }
-.item-members .nav-dot, .item-members .nav-link.active { --c-active: var(--color-members); }
-.item-clan .nav-dot, .item-clan .nav-link.active { --c-active: var(--color-clan); }
-.item-user .nav-dot, .item-user .nav-link.active { --c-active: var(--color-user); }
-.item-partner .nav-dot, .item-partner .nav-link.active { --c-active: var(--color-partner); }
-.item-payment .nav-dot, .item-payment .nav-link.active { --c-active: var(--color-payment); }
-.item-security .nav-dot, .item-security .nav-link.active { --c-active: var(--color-security); }
-.item-map .nav-dot, .item-map .nav-link.active { --c-active: var(--color-map); }
+.item-home .nav-dot,
+.item-home .nav-link.active {
+  --c-active: var(--color-home);
+}
+
+.item-tree .nav-dot,
+.item-tree .nav-link.active {
+  --c-active: var(--color-tree);
+}
+
+.item-members .nav-dot,
+.item-members .nav-link.active {
+  --c-active: var(--color-members);
+}
+
+.item-clan .nav-dot,
+.item-clan .nav-link.active {
+  --c-active: var(--color-clan);
+}
+
+.item-user .nav-dot,
+.item-user .nav-link.active {
+  --c-active: var(--color-user);
+}
+
+.item-partner .nav-dot,
+.item-partner .nav-link.active {
+  --c-active: var(--color-partner);
+}
+
+.item-payment .nav-dot,
+.item-payment .nav-link.active {
+  --c-active: var(--color-payment);
+}
+
+.item-security .nav-dot,
+.item-security .nav-link.active {
+  --c-active: var(--color-security);
+}
+
+.item-map .nav-dot,
+.item-map .nav-link.active {
+  --c-active: var(--color-map);
+}
 
 .nav-link.active {
-  color: var(--text-main) !important; background: var(--neo-bg) !important;
-  border: 1px solid var(--neo-border) !important; font-weight: 600;
+  color: var(--text-main) !important;
+  background: var(--neo-bg) !important;
+  border: 1px solid var(--neo-border) !important;
+  font-weight: 600;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03), 0 1px 2px rgba(0, 0, 0, 0.01);
 }
-.nav-link.active .nav-icon i { color: var(--c-active) !important; }
-.nav-link.active .nav-dot { opacity: 1 !important; transform: scale(1.2); background: var(--c-active); }
+
+.nav-link.active .nav-icon i {
+  color: var(--c-active) !important;
+}
+
+.nav-link.active .nav-dot {
+  opacity: 1 !important;
+  transform: scale(1.2);
+  background: var(--c-active);
+}
 
 /* FOOTER BUTTON */
-.sidebar-footer { padding: 16px; border-top: 1px solid var(--neo-border); margin-top: auto; }
-.btn-home {
-  width: 100%; background: transparent; border: 1px solid var(--neo-border); color: var(--text-sub);
-  border-radius: 14px !important; padding: 10px 14px; font-size: 13.5px; cursor: pointer; transition: all 0.2s ease;
+.sidebar-footer {
+  padding: 16px;
+  border-top: 1px solid var(--neo-border);
+  margin-top: auto;
 }
-.btn-home:hover { background: var(--input-bg); color: var(--text-main); }
+
+.btn-home {
+  width: 100%;
+  background: transparent;
+  border: 1px solid var(--neo-border);
+  color: var(--text-sub);
+  border-radius: 14px !important;
+  padding: 10px 14px;
+  font-size: 13.5px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-home:hover {
+  background: var(--input-bg);
+  color: var(--text-main);
+}
 
 .btn-logout {
-  width: 100%; background: linear-gradient(135deg, #4f46e5 0%, #10b981 100%) !important;
-  border: none; color: #ffffff; border-radius: 30px !important; padding: 11px 18px; font-size: 14px; font-weight: 600; cursor: pointer;
-  box-shadow: 0 4px 14px rgba(79, 70, 229, 0.25); transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+  width: 100%;
+  background: linear-gradient(135deg, #4f46e5 0%, #10b981 100%) !important;
+  border: none;
+  color: #ffffff;
+  border-radius: 30px !important;
+  padding: 11px 18px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(79, 70, 229, 0.25);
+  transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
 }
-.btn-logout:hover { transform: translateY(-1.5px); box-shadow: 0 6px 18px rgba(79, 70, 229, 0.35); }
-.logout-arrow { font-size: 14px; transition: transform 0.3s ease; }
-.btn-logout:hover .logout-arrow { transform: translateX(2px); }
+
+.btn-logout:hover {
+  transform: translateY(-1.5px);
+  box-shadow: 0 6px 18px rgba(79, 70, 229, 0.35);
+}
+
+.logout-arrow {
+  font-size: 14px;
+  transition: transform 0.3s ease;
+}
+
+.btn-logout:hover .logout-arrow {
+  transform: translateX(2px);
+}
 
 .admin-sidebar.sidebar-collapsed-state .btn-home,
-.admin-sidebar.sidebar-collapsed-state .btn-logout { padding: 12px 0; justify-content: center; border-radius: 14px !important; }
-.admin-sidebar.sidebar-collapsed-state .btn-logout { background: var(--neo-bg) !important; border: 1px solid rgba(79, 70, 229, 0.2); color: #4f46e5; }
+.admin-sidebar.sidebar-collapsed-state .btn-logout {
+  padding: 12px 0;
+  justify-content: center;
+  border-radius: 14px !important;
+}
+
+.admin-sidebar.sidebar-collapsed-state .btn-logout {
+  background: var(--neo-bg) !important;
+  border: 1px solid rgba(79, 70, 229, 0.2);
+  color: #4f46e5;
+}
+
 .text-gradient-gold-sidebar {
   background: linear-gradient(135deg, #b8860b 0%, #ffd700 50%, #e5a93b 100%) !important;
   -webkit-background-clip: text !important;
