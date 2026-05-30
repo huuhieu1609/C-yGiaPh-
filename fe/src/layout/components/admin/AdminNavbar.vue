@@ -92,6 +92,46 @@
           </router-link>
         </li>
 
+        <li class="nav-item item-clan">
+          <router-link to="/admin/quan-ly-dong-ho" class="nav-link" active-class="active" title="Quản Lý Dòng Họ">
+            <span class="nav-icon"><i class="bx bx-sitemap"></i></span>
+            <span class="hide-on-collapse nav-label">Quản Lý Dòng Họ</span>
+            <span class="nav-dot hide-on-collapse"></span>
+          </router-link>
+        </li>
+
+        <li class="nav-item item-tree">
+          <router-link to="/admin/quan-ly-doi-ho" class="nav-link" active-class="active" title="Quản Lý Đời Họ">
+            <span class="nav-icon"><i class="bx bx-layer"></i></span>
+            <span class="hide-on-collapse nav-label">Quản Lý Đời Họ</span>
+            <span class="nav-dot hide-on-collapse"></span>
+          </router-link>
+        </li>
+
+        <li class="nav-item item-members">
+          <router-link to="/admin/nha-tho-ho" class="nav-link" active-class="active" title="Nhà Thờ Họ">
+            <span class="nav-icon"><i class="bx bx-building-house"></i></span>
+            <span class="hide-on-collapse nav-label">Nhà Thờ Họ</span>
+            <span class="nav-dot hide-on-collapse"></span>
+          </router-link>
+        </li>
+
+        <li class="nav-item item-map">
+          <router-link to="/admin/quan-ly-su-kien" class="nav-link" active-class="active" title="Quản Lý Sự Kiện">
+            <span class="nav-icon"><i class="bx bx-calendar-event"></i></span>
+            <span class="hide-on-collapse nav-label">Quản Lý Sự Kiện</span>
+            <span class="nav-dot hide-on-collapse"></span>
+          </router-link>
+        </li>
+
+        <li class="nav-item item-payment">
+          <router-link to="/admin/quan-ly-dong-gop" class="nav-link" active-class="active" title="Quản Lý Đóng Góp">
+            <span class="nav-icon"><i class="bx bx-wallet"></i></span>
+            <span class="hide-on-collapse nav-label">Quản Lý Đóng Góp</span>
+            <span class="nav-dot hide-on-collapse"></span>
+          </router-link>
+        </li>
+
         <li class="section-heading hide-on-collapse">Gói & Thanh Toán</li>
 
         <li class="nav-item item-payment">

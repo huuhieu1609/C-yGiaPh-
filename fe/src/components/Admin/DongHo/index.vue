@@ -5,51 +5,34 @@
             <div class="card luxury-panel border-0 shadow-sm h-100">
                 <div class="card-header bg-transparent py-4 border-0 border-bottom border-light-subtle d-flex align-items-center">
                     <h5 class="mb-0 fw-bold panel-title text-dark text-gradient-gold">
-                        <i class="bx bx-plus-circle me-2"></i> {{ isEditing ? 'Cập Nhật Sự Kiện' : 'Thêm Sự Kiện Mới' }}
+                        <i class="bx bx-plus-circle me-2"></i> {{ isEditing ? 'Cập Nhật Dòng Họ' : 'Thêm Dòng Họ Mới' }}
                     </h5>
                 </div>
                 <div class="card-body p-4">
                     <form @submit.prevent="saveData">
                         <div class="mb-4">
-                            <label class="form-label fw-bold text-secondary-custom">Tên Sự Kiện</label>
-                            <input type="text" class="form-control premium-input radius-10 border-2 shadow-none" placeholder="Nhập tên sự kiện..." v-model="formData.ten_su_kien" required>
+                            <label class="form-label fw-bold text-secondary-custom">Tên Dòng Họ (Chi Nhánh)</label>
+                            <input type="text" class="form-control premium-input radius-10 border-2 shadow-none" placeholder="Nhập tên dòng họ..." v-model="formData.ten_chi" required>
                         </div>
                         <div class="mb-4">
-                            <label class="form-label fw-bold text-secondary-custom">Ngày Diễn Ra</label>
-                            <input type="date" class="form-control premium-input radius-10 border-2 shadow-none" v-model="formData.ngay_dien_ra" required>
+                            <label class="form-label fw-bold text-secondary-custom">Địa Chỉ</label>
+                            <input type="text" class="form-control premium-input radius-10 border-2 shadow-none" placeholder="Nhập địa chỉ..." v-model="formData.dia_chi">
                         </div>
                         <div class="mb-4">
-                            <label class="form-label fw-bold text-secondary-custom">Địa Điểm</label>
-                            <input type="text" class="form-control premium-input radius-10 border-2 shadow-none" placeholder="Nhập địa điểm..." v-model="formData.dia_diem" required>
-                        </div>
-                        <div class="mb-4">
-                            <label class="form-label fw-bold text-secondary-custom">Loại Sự Kiện</label>
-                            <select class="form-select premium-input radius-10 border-2 shadow-none" v-model="formData.loai_su_kien" required>
-                                <option value="Gặp mặt">Gặp mặt</option>
-                                <option value="Thăm viếng">Thăm viếng</option>
-                                <option value="Từ thiện">Từ thiện</option>
-                                <option value="Giỗ tổ">Giỗ tổ</option>
-                            </select>
-                        </div>
-                        <div class="mb-4">
-                            <label class="form-label fw-bold text-secondary-custom">Thuộc Dòng Họ / Chi Nhánh</label>
-                            <select class="form-select premium-input radius-10 border-2 shadow-none" v-model="formData.chi_nhanh_id" required>
-                                <option :value="null">-- Chọn Dòng Họ --</option>
-                                <option v-for="cn in listChiNhanh" :key="cn.id" :value="cn.id">
-                                    {{ cn.ten_chi }}
+                            <label class="form-label fw-bold text-secondary-custom">Người Đại Diện (Đối Tác)</label>
+                            <select class="form-select premium-input radius-10 border-2 shadow-none" v-model="formData.id_nguoi_dung">
+                                <option :value="null">-- Hệ thống quản lý trực tiếp --</option>
+                                <option v-for="user in listPartners" :key="user.id" :value="user.id">
+                                    {{ user.ho_ten }} ({{ user.email }})
                                 </option>
                             </select>
                         </div>
                         <div class="mb-4">
-                            <label class="form-label fw-bold text-secondary-custom">Trạng Thái Duyệt</label>
+                            <label class="form-label fw-bold text-secondary-custom">Trạng Thái</label>
                             <select class="form-select premium-input radius-10 border-2 shadow-none" v-model="formData.trang_thai">
-                                <option value="Hoạt động">Hoạt động (Được duyệt)</option>
-                                <option value="Tạm dừng">Tạm dừng (Chờ duyệt)</option>
+                                <option value="Hoạt động">Hoạt động</option>
+                                <option value="Khóa">Khóa</option>
                             </select>
-                        </div>
-                        <div class="mb-4">
-                            <label class="form-label fw-bold text-secondary-custom">Mô Tả</label>
-                            <textarea class="form-control premium-input radius-10 border-2 shadow-none" rows="4" placeholder="Nhập mô tả..." v-model="formData.mo_ta"></textarea>
                         </div>
                         <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-5">
                             <button type="button" class="btn btn-outline-secondary radius-30 px-4" v-if="isEditing" @click="resetForm">Hủy</button>
@@ -67,7 +50,7 @@
             <div class="card luxury-panel border-0 shadow-sm h-100">
                 <div class="card-header bg-transparent py-4 border-0 border-bottom border-light-subtle d-flex align-items-center justify-content-between flex-wrap gap-3">
                     <h5 class="mb-0 fw-bold panel-title text-dark">
-                        <i class="bx bx-calendar-event me-2 text-warning"></i> Danh Sách Sự Kiện Hệ Thống
+                        <i class="bx bx-sitemap me-2 text-warning"></i> Quản Lý Danh Sách Dòng Họ
                     </h5>
                     <button class="btn btn-refresh-premium rounded-circle d-flex align-items-center justify-content-center" @click="loadData" :disabled="isLoading" title="Làm mới dữ liệu">
                         <i class="bx bx-sync fs-5 text-warning" :class="{'bx-spin': isLoading}"></i>
@@ -75,7 +58,7 @@
                 </div>
                 <div class="card-body p-4">
                     <div class="input-group mb-4 radius-10 overflow-hidden border-2 search-box-premium shadow-sm">
-                        <input type="text" class="form-control border-0 shadow-none ps-4 bg-transparent" placeholder="Tìm kiếm sự kiện..." v-model="searchQuery">
+                        <input type="text" class="form-control border-0 shadow-none ps-4 bg-transparent" placeholder="Tìm kiếm dòng họ..." v-model="searchQuery">
                         <span class="input-group-text border-0 bg-transparent pe-4"><i class="bx bx-search text-secondary"></i></span>
                     </div>
 
@@ -84,42 +67,37 @@
                             <thead>
                                 <tr>
                                     <th width="5%" class="text-center">#</th>
-                                    <th width="25%">Tên Sự Kiện</th>
-                                    <th width="15%" class="text-center">Ngày Diễn Ra</th>
-                                    <th width="20%">Địa Điểm</th>
-                                    <th width="15%">Chi Nhánh</th>
-                                    <th width="10%" class="text-center">Trạng Thái</th>
+                                    <th width="30%">Tên Dòng Họ</th>
+                                    <th width="30%">Địa Chỉ</th>
+                                    <th width="20%">Người Đại Diện</th>
+                                    <th width="15%" class="text-center">Trạng Thái</th>
                                     <th width="10%" class="text-center">Hành Động</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr v-if="isLoading">
-                                    <td colspan="7" class="text-center py-5">
+                                    <td colspan="6" class="text-center py-5">
                                         <div class="spinner-border text-warning" role="status">
                                             <span class="visually-hidden">Loading...</span>
                                         </div>
                                     </td>
                                 </tr>
                                 <tr v-else-if="filteredList.length === 0">
-                                    <td colspan="7" class="text-center py-5 text-muted">
+                                    <td colspan="6" class="text-center py-5 text-muted">
                                         <i class="bx bx-folder-open fs-1 mb-2 d-block opacity-50"></i>
-                                        Chưa có sự kiện nào được tạo dựng
+                                        Chưa có chi nhánh dòng họ nào được khởi tạo
                                     </td>
                                 </tr>
                                 <tr v-for="(item, index) in filteredList" :key="item.id">
                                     <td class="text-center fw-bold">{{ index + 1 }}</td>
-                                    <td class="fw-bold text-dark">
-                                        {{ item.ten_su_kien }}
-                                        <span class="badge bg-warning-soft text-warning border border-warning border-opacity-25 rounded-pill px-2 py-0.5 small ms-1" style="font-size: 10px;">
-                                            {{ item.loai_su_kien }}
-                                        </span>
+                                    <td class="fw-bold text-dark">{{ item.ten_chi }}</td>
+                                    <td class="text-secondary small">{{ item.dia_chi || '---' }}</td>
+                                    <td class="text-dark small fw-semibold">
+                                        {{ getPartnerName(item.id_nguoi_dung) }}
                                     </td>
-                                    <td class="text-center text-secondary small fw-bold">{{ formatDate(item.ngay_dien_ra) }}</td>
-                                    <td class="text-secondary small">{{ item.dia_diem }}</td>
-                                    <td class="small fw-semibold text-dark">{{ getChiNhanhName(item.chi_nhanh_id) }}</td>
                                     <td class="text-center">
                                         <button @click="changeStatus(item.id)" :class="item.trang_thai == 'Hoạt động' ? 'btn-status-active' : 'btn-status-locked'" class="btn-status-toggle w-100 fw-bold">
-                                            {{ item.trang_thai == 'Hoạt động' ? 'Đã duyệt' : 'Chờ duyệt' }}
+                                            {{ item.trang_thai || 'Hoạt động' }}
                                         </button>
                                     </td>
                                     <td class="text-center">
@@ -147,20 +125,17 @@ import axios from 'axios';
 import toastr from 'toastr';
 
 export default {
-    name: 'SuKienManagement',
+    name: 'DongHoManagement',
     data() {
         return {
             listData: [],
-            listChiNhanh: [],
+            listPartners: [],
             formData: {
                 id: null,
-                ten_su_kien: '',
-                ngay_dien_ra: '',
-                dia_diem: '',
-                loai_su_kien: 'Gặp mặt',
-                chi_nhanh_id: null,
-                trang_thai: 'Hoạt động',
-                mo_ta: ''
+                ten_chi: '',
+                dia_chi: '',
+                id_nguoi_dung: null,
+                trang_thai: 'Hoạt động'
             },
             isEditing: false,
             isLoading: false,
@@ -172,15 +147,15 @@ export default {
             if (!this.searchQuery) return this.listData;
             const q = this.searchQuery.toLowerCase();
             return this.listData.filter(item => 
-                (item.ten_su_kien && item.ten_su_kien.toLowerCase().includes(q)) ||
-                (item.dia_diem && item.dia_diem.toLowerCase().includes(q)) ||
-                (this.getChiNhanhName(item.chi_nhanh_id).toLowerCase().includes(q))
+                (item.ten_chi && item.ten_chi.toLowerCase().includes(q)) ||
+                (item.dia_chi && item.dia_chi.toLowerCase().includes(q)) ||
+                (this.getPartnerName(item.id_nguoi_dung).toLowerCase().includes(q))
             );
         }
     },
     mounted() {
         this.loadData();
-        this.loadChiNhanh();
+        this.loadPartners();
     },
     methods: {
         getHeaders() {
@@ -192,42 +167,39 @@ export default {
         },
         loadData() {
             this.isLoading = true;
-            axios.get('http://127.0.0.1:8000/api/su-kien/get-data', this.getHeaders())
+            axios.get('http://127.0.0.1:8000/api/chi-nhanh/get-data', this.getHeaders())
                 .then(res => {
                     if (res.data.status) {
                         this.listData = res.data.data;
                     }
                 })
                 .catch(err => {
-                    toastr.error('Lỗi khi tải danh sách sự kiện!');
+                    toastr.error('Lỗi khi tải danh sách dòng họ!');
                     console.error(err);
                 })
                 .finally(() => {
                     this.isLoading = false;
                 });
         },
-        loadChiNhanh() {
-            axios.get('http://127.0.0.1:8000/api/chi-nhanh/get-data', this.getHeaders())
+        loadPartners() {
+            axios.get('http://127.0.0.1:8000/api/nguoi-dung/get-data', this.getHeaders())
                 .then(res => {
                     if (res.data.status) {
-                        this.listChiNhanh = res.data.data;
+                        // Lọc các user có chức năng đối tác
+                        this.listPartners = res.data.data.filter(u => u.is_doi_tac == 1 || u.vai_tro == 'DoiTac');
                     }
                 })
                 .catch(err => console.error(err));
         },
-        getChiNhanhName(id) {
-            const cn = this.listChiNhanh.find(c => c.id === id);
-            return cn ? cn.ten_chi : 'Không xác định';
-        },
-        formatDate(d) {
-            if (!d) return '---';
-            const date = new Date(d);
-            return date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        getPartnerName(id) {
+            if (!id) return 'Hệ thống';
+            const partner = this.listPartners.find(p => p.id === id);
+            return partner ? partner.ho_ten : `Đối tác #${id}`;
         },
         saveData() {
             const url = this.isEditing 
-                ? 'http://127.0.0.1:8000/api/su-kien/update'
-                : 'http://127.0.0.1:8000/api/su-kien/create';
+                ? 'http://127.0.0.1:8000/api/chi-nhanh/update'
+                : 'http://127.0.0.1:8000/api/chi-nhanh/create';
             
             axios.post(url, this.formData, this.getHeaders())
                 .then(res => {
@@ -248,8 +220,8 @@ export default {
             this.formData = { ...item };
         },
         deleteItem(id) {
-            if (confirm('Bạn có chắc chắn muốn xóa sự kiện này?')) {
-                axios.post('http://127.0.0.1:8000/api/su-kien/delete', { id }, this.getHeaders())
+            if (confirm('Bạn có chắc chắn muốn xóa dòng họ này? Hành động này sẽ ảnh hưởng đến sơ đồ gia phả liên kết!')) {
+                axios.post('http://127.0.0.1:8000/api/chi-nhanh/delete', { id }, this.getHeaders())
                     .then(res => {
                         if (res.data.status) {
                             toastr.success(res.data.message);
@@ -264,7 +236,7 @@ export default {
             }
         },
         changeStatus(id) {
-            axios.post('http://127.0.0.1:8000/api/su-kien/status', { id }, this.getHeaders())
+            axios.post('http://127.0.0.1:8000/api/chi-nhanh/status', { id }, this.getHeaders())
                 .then(res => {
                     if (res.data.status) {
                         toastr.success(res.data.message);
@@ -276,13 +248,10 @@ export default {
             this.isEditing = false;
             this.formData = {
                 id: null,
-                ten_su_kien: '',
-                ngay_dien_ra: '',
-                dia_diem: '',
-                loai_su_kien: 'Gặp mặt',
-                chi_nhanh_id: null,
-                trang_thai: 'Hoạt động',
-                mo_ta: ''
+                ten_chi: '',
+                dia_chi: '',
+                id_nguoi_dung: null,
+                trang_thai: 'Hoạt động'
             };
         }
     }
@@ -442,10 +411,6 @@ export default {
     background: #dc3545;
     color: #fff;
     border-color: transparent;
-}
-
-.bg-warning-soft {
-    background: rgba(243, 156, 18, 0.1) !important;
 }
 
 .btn-status-toggle {
