@@ -37,49 +37,49 @@ const routes = [
     {
         path: '/profile',
         name: 'profile',
-        component: () => import('../components/ClientProfile/index.vue'),
+        component: () => import('../components/Client/Profile/index.vue'),
         meta: { layout: 'client', requiresAuth: true }
     },
     {
         path: '/gia-pha',
         name: 'gia-pha',
-        component: () => import('../components/ClientGiaPha/index.vue'),
+        component: () => import('../components/Client/GiaPha/index.vue'),
         meta: { layout: 'client', requiresAuth: true }
     },
     {
         path: '/ban-do',
         name: 'client-ban-do',
-        component: () => import('../components/ClientBanDo/index.vue'),
+        component: () => import('../components/Client/BanDo/index.vue'),
         meta: { layout: 'client', requiresAuth: true }
     },
     {
         path: '/tuong-niem',
         name: 'client-tuong-niem',
-        component: () => import('../components/ClientTuongNiem/index.vue'),
+        component: () => import('../components/Client/TuongNiem/index.vue'),
         meta: { layout: 'client', requiresAuth: true }
     },
     {
         path: '/tra-cuu',
         name: 'client-tra-cuu',
-        component: () => import('../components/ClientTraCuu/index.vue'),
+        component: () => import('../components/Client/TraCuu/index.vue'),
         meta: { layout: 'client', requiresAuth: true }
     },
     {
         path: '/thanh-vien/detail/:id',
         name: 'client-thanh-vien-detail',
-        component: () => import('../components/ClientTraCuu/PublicDetail.vue'),
+        component: () => import('../components/Client/TraCuu/PublicDetail.vue'),
         meta: { layout: 'client' }
     },
     {
         path: '/de-xuat',
         name: 'client-de-xuat',
-        component: () => import('../components/ClientDeXuat/index.vue'),
+        component: () => import('../components/Client/DeXuat/index.vue'),
         meta: { layout: 'client', requiresAuth: true }
     },
     {
         path: '/su-kien',
         name: 'client-su-kien',
-        component: () => import('../components/ClientSuKien/index.vue'),
+        component: () => import('../components/Client/SuKien/index.vue'),
         meta: { layout: 'client', requiresAuth: true }
     },
     {
@@ -91,13 +91,13 @@ const routes = [
     {
         path: '/thanh-toan',
         name: 'thanh-toan',
-        component: () => import('../components/ClientThanhToan/MuaGoi.vue'),
+        component: () => import('../components/Client/ThanhToan/MuaGoi.vue'),
         meta: { layout: 'client', requiresAuth: true }
     },
     {
         path: '/dong-gop-quy',
         name: 'dong-gop-quy',
-        component: () => import('../components/ClientThanhToan/DongGopQuy.vue'),
+        component: () => import('../components/Client/ThanhToan/DongGopQuy.vue'),
         meta: { layout: 'client', requiresAuth: true }
     },
     {

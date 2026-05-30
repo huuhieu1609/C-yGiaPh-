@@ -371,7 +371,7 @@
 <script>
 import axios from 'axios';
 import toastr from 'toastr';
-import PhanQuyen from '../DoiTac/PhanQuyen/index.vue';
+import PhanQuyen from '../../DoiTac/PhanQuyen/index.vue';
 
 export default {
   name: 'ClientProfile',
