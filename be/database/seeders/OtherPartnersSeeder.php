@@ -52,7 +52,9 @@ class OtherPartnersSeeder extends Seeder
             'so_tien' => 3000000,
             'ngay_bat_dau' => now(),
             'ngay_ket_thuc' => now()->addYears(3),
-            'trang_thai' => 1,
+            'trang_thai' => 'APPROVED',
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
 
         $chiNhanh2 = ChiNhanh::create([
@@ -1028,7 +1030,9 @@ class OtherPartnersSeeder extends Seeder
             'so_tien' => 1200000,
             'ngay_bat_dau' => now(),
             'ngay_ket_thuc' => now()->addYears(1),
-            'trang_thai' => 1,
+            'trang_thai' => 'APPROVED',
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
 
         $chiNhanh3 = ChiNhanh::create([

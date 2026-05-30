@@ -20,16 +20,16 @@ class DoiTacSeeder extends Seeder
      */
     public function run(): void
     {
-        // 1. Tránh trùng lặp tài khoản và chi nhánh đối tác
-        $existingUser = NguoiDung::where('email', 'doitac@master.com')->first();
+        // 1. Tránh trùng lặp tài khoản và chi nhánh đối tác (bao gồm cả tài khoản đã xóa mềm)
+        $existingUser = NguoiDung::withTrashed()->where('email', 'doitac@master.com')->first();
         if ($existingUser) {
             // Xóa sạch dữ liệu thành viên & chi nhánh cũ của đối tác này để tạo lại sạch sẽ
             $oldBranchIds = ChiNhanh::where('id_nguoi_dung', $existingUser->id)->pluck('id');
             ThanhVien::whereIn('chi_nhanh_id', $oldBranchIds)->delete();
             DoiTocHo::whereIn('chi_nhanh_id', $oldBranchIds)->delete();
             ChiNhanh::where('id_nguoi_dung', $existingUser->id)->delete();
-            DoiTac::where('id_nguoi_dung', $existingUser->id)->delete();
-            $existingUser->delete();
+            DoiTac::withTrashed()->where('id_nguoi_dung', $existingUser->id)->forceDelete();
+            $existingUser->forceDelete();
         }
 
         // 2. Tạo tài khoản đối tác
@@ -51,7 +51,9 @@ class DoiTacSeeder extends Seeder
             'so_tien' => 5000000,
             'ngay_bat_dau' => now(),
             'ngay_ket_thuc' => now()->addYears(5),
-            'trang_thai' => 1,
+            'trang_thai' => 'APPROVED',
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
 
         // 3. Tạo Chi Nhánh (Cây Gia Phả Dòng Họ Nguyễn Đức)
