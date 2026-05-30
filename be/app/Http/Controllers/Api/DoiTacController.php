@@ -192,15 +192,15 @@ class DoiTacController extends Controller
     public function getMyPackages(Request $request): JsonResponse
     {
         $userId = $request->user()->id;
+        $today = now()->startOfDay();
+        $todayStr = $today->toDateString();
 
         // Tất cả gói đã mua, sắp xếp: còn hạn trước, mới mua sau
         $packages = DoiTac::where('id_nguoi_dung', $userId)
             ->where('trang_thai', 'APPROVED')
-            ->orderByRaw("CASE WHEN ngay_ket_thuc IS NULL OR ngay_ket_thuc >= CURDATE() THEN 0 ELSE 1 END")
+            ->orderByRaw("CASE WHEN ngay_ket_thuc IS NULL OR ngay_ket_thuc >= ? THEN 0 ELSE 1 END", [$todayStr])
             ->orderBy('ngay_ket_thuc', 'desc')
             ->get();
-
-        $today = now()->startOfDay();
 
         $packageList = $packages->map(function ($pkg) use ($today) {
             $daysRemaining = $pkg->getDaysRemaining();

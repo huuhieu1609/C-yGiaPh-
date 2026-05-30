@@ -32,6 +32,8 @@ class DoiTac extends Model
         'ngay_ket_thuc' => 'date',
     ];
 
+    public static $isResequencing = false;
+
     // ── Relationships ──────────────────────────────────────────────────────────
 
     public function nguoiDung()
@@ -50,15 +52,84 @@ class DoiTac extends Model
     {
         static::created(function ($doiTac) {
             self::syncUserPartnerStatus($doiTac->id_nguoi_dung);
+            self::resequencePackages($doiTac->id_nguoi_dung);
         });
 
         static::updated(function ($doiTac) {
             self::syncUserPartnerStatus($doiTac->id_nguoi_dung);
+            self::resequencePackages($doiTac->id_nguoi_dung);
         });
 
         static::deleted(function ($doiTac) {
             self::syncUserPartnerStatus($doiTac->id_nguoi_dung);
+            self::resequencePackages($doiTac->id_nguoi_dung);
         });
+    }
+
+    /**
+     * Sắp xếp và nối chuỗi thời gian hoạt động của tất cả gói APPROVED của user.
+     * Gói giàu tính năng nhất sẽ chạy trước, các gói sau nối đuôi tiếp theo.
+     */
+    public static function resequencePackages(int $userId): void
+    {
+        if (self::$isResequencing) return;
+        self::$isResequencing = true;
+
+        try {
+            $packages = self::where('id_nguoi_dung', $userId)
+                ->where('trang_thai', 'APPROVED')
+                ->get();
+
+            if ($packages->isEmpty()) return;
+
+            // Sắp xếp theo số lượng tính năng giảm dần (gói nhiều tính năng nhất xếp trước)
+            $sorted = $packages->sortByDesc(function ($pkg) {
+                return count(self::parseFeatures($pkg->features));
+            })->values();
+
+            // Lấy ngày bắt đầu sớm nhất hiện có làm mốc khởi động, hoặc dùng hôm nay nếu chưa bắt đầu
+            $earliestStart = null;
+            foreach ($sorted as $pkg) {
+                if ($pkg->ngay_bat_dau) {
+                    $start = Carbon::parse($pkg->ngay_bat_dau);
+                    if ($earliestStart === null || $start->lt($earliestStart)) {
+                        $earliestStart = $start;
+                    }
+                }
+            }
+
+            if ($earliestStart === null || $earliestStart->gt(now())) {
+                $currentStart = now()->startOfDay();
+            } else {
+                $currentStart = $earliestStart->startOfDay();
+            }
+
+            foreach ($sorted as $pkg) {
+                // Xác định thời hạn (số tháng)
+                $months = 12;
+                if ($pkg->goiDichVu) {
+                    $months = (int) $pkg->goiDichVu->thoi_han;
+                } else {
+                    if ($pkg->ngay_bat_dau && $pkg->ngay_ket_thuc) {
+                        $months = Carbon::parse($pkg->ngay_bat_dau)->diffInMonths(Carbon::parse($pkg->ngay_ket_thuc));
+                        if ($months <= 0) $months = 12;
+                    }
+                }
+
+                $ngayBatDau = $currentStart->toDateString();
+                $ngayKetThuc = $currentStart->copy()->addMonths($months)->toDateString();
+
+                $pkg->update([
+                    'ngay_bat_dau'  => $ngayBatDau,
+                    'ngay_ket_thuc' => $ngayKetThuc,
+                ]);
+
+                // Gói tiếp theo bắt đầu ngay khi gói hiện tại kết thúc
+                $currentStart = Carbon::parse($ngayKetThuc);
+            }
+        } finally {
+            self::$isResequencing = false;
+        }
     }
 
     /**
