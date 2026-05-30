@@ -569,6 +569,8 @@ const TreeItem = defineComponent({
       ]);
     }
 
+    let children = null;
+
     const getTenDoi = (n) => {
       if (!this.listDoiTocHo || !this.listDoiTocHo.length) return '';
       const d = this.listDoiTocHo.find(x => x.so_doi == n);
@@ -624,16 +626,27 @@ const TreeItem = defineComponent({
     const coupleChildren = [];
     const hasMultipleSpouses = m.spouses && m.spouses.length === 2;
 
+    let kids0 = [];
+    let kids1 = [];
+    if (hasMultipleSpouses) {
+        const spouse0 = m.spouses[0];
+        const spouse1 = m.spouses[1];
+        const parentKey = m.gioi_tinh === 'Nam' ? 'me_id' : 'cha_id';
+        kids1 = (m.children || []).filter(child => child[parentKey] == spouse1.id);
+        const kids1Ids = kids1.map(k => k.id);
+        kids0 = (m.children || []).filter(child => !kids1Ids.includes(child.id));
+    }
+
     if (hasMultipleSpouses) {
       // spouse - connector - main - connector - spouse
       coupleChildren.push(makeCard(m.spouses[0], true, 'spouse-left', 1));
       coupleChildren.push(h('div', { 
-        class: ['tree-connector-h', 'spouse-connector-0'], 
+        class: ['tree-connector-h', 'spouse-connector', 'spouse-connector-0'], 
         style: { order: 2 } 
       }, [ h('i', { class: 'bx bxs-heart connector-heart' }) ]));
       coupleChildren.push(makeCard(m, false, 'main-centered', 3));
       coupleChildren.push(h('div', { 
-        class: ['tree-connector-h', 'spouse-connector-1'], 
+        class: ['tree-connector-h', 'spouse-connector', 'spouse-connector-1'], 
         style: { order: 4 } 
       }, [ h('i', { class: 'bx bxs-heart connector-heart' }) ]));
       coupleChildren.push(makeCard(m.spouses[1], true, 'spouse-right', 5));
@@ -660,11 +673,10 @@ const TreeItem = defineComponent({
           coupleChildren.push(makeCard(s, true));
         });
       }
+      children = hasChildren
+        ? h('ul', { class: 'tree-ul' }, m.children.map(c => h(TreeItem, { key: c.id, member: c, listDoiTocHo: this.listDoiTocHo, onView: x => this.$emit('view', x), onShowQr: x => this.$emit('show-qr', x) })))
+        : null;
     }
-
-    const children = hasChildren
-      ? h('ul', { class: 'tree-ul' }, m.children.map(c => h(TreeItem, { key: c.id, member: c, listDoiTocHo: this.listDoiTocHo, onView: x => this.$emit('view', x), onShowQr: x => this.$emit('show-qr', x) })))
-      : null;
 
     const nodeGroup = h('div', { class: 'tree-node-group' }, [
       h('div', { class: 'couple-wrapper' }, coupleChildren)
@@ -1977,5 +1989,5 @@ export default {
   width: 220px;
   height: 90px;
   visibility: hidden;
-}
+} */
 </style>

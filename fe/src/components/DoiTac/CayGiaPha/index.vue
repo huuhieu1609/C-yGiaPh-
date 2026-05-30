@@ -353,6 +353,8 @@ const TreeItem = defineComponent({
             ) : null;
             return h('li', [nodeGroup, children]);
         }
+
+        let children = null;
         
         // Build main card and spouse cards; if exactly two spouses, place main between them
         const makeMainCard = (order = null, extraClass = '') => h('div', { 
@@ -402,15 +404,26 @@ const TreeItem = defineComponent({
         const coupleChildren = [];
         const hasMultipleSpouses = this.member.spouses && this.member.spouses.length === 2;
 
+        let kids0 = [];
+        let kids1 = [];
+        if (hasMultipleSpouses) {
+            const spouse0 = this.member.spouses[0];
+            const spouse1 = this.member.spouses[1];
+            const parentKey = this.member.gioi_tinh === 'Nam' ? 'me_id' : 'cha_id';
+            kids1 = (this.member.children || []).filter(child => child[parentKey] == spouse1.id);
+            const kids1Ids = kids1.map(k => k.id);
+            kids0 = (this.member.children || []).filter(child => !kids1Ids.includes(child.id));
+        }
+
         if (hasMultipleSpouses) {
             coupleChildren.push(makeSpouseChunk(this.member.spouses[0], 1));
             coupleChildren.push(h('div', { 
-                class: ['tree-connector-h', 'spouse-connector-0'], 
+                class: ['tree-connector-h', 'spouse-connector', 'spouse-connector-0'], 
                 style: { order: 2 } 
             }, [ h('i', { class: 'bx bxs-heart connector-heart' }) ]));
             coupleChildren.push(makeMainCard(3, 'main-centered'));
             coupleChildren.push(h('div', { 
-                class: ['tree-connector-h', 'spouse-connector-1'], 
+                class: ['tree-connector-h', 'spouse-connector', 'spouse-connector-1'], 
                 style: { order: 4 } 
             }, [ h('i', { class: 'bx bxs-heart connector-heart' }) ]));
             coupleChildren.push(makeSpouseChunk(this.member.spouses[1], 5));
@@ -454,19 +467,19 @@ const TreeItem = defineComponent({
                     coupleChildren.push(makeSpouseChunk(sp));
                 });
             }
+            children = hasChildren ? h('ul', 
+                this.member.children.map(child => h(TreeItem, { 
+                    key: child.id,
+                    member: child, 
+                    listDoiTocHo: this.listDoiTocHo, 
+                    searchQuery: this.searchQuery,
+                    onEdit: (m) => this.$emit('edit', m),
+                    onShowQr: (m) => this.$emit('show-qr', m),
+                    onAddChild: (m) => this.$emit('add-child', m),
+                    onAddSpouse: (m) => this.$emit('add-spouse', m)
+                }))
+            ) : null;
         }
-        const children = hasChildren ? h('ul', 
-            this.member.children.map(child => h(TreeItem, { 
-                key: child.id,
-                member: child, 
-                listDoiTocHo: this.listDoiTocHo, 
-                searchQuery: this.searchQuery,
-                onEdit: (m) => this.$emit('edit', m),
-                onShowQr: (m) => this.$emit('show-qr', m),
-                onAddChild: (m) => this.$emit('add-child', m),
-                onAddSpouse: (m) => this.$emit('add-spouse', m)
-            }))
-        ) : null;
 
         const nodeGroup = h('div', { class: 'tree-node-group' }, [ h('div', { class: 'couple-wrapper' }, coupleChildren) ]);
         
@@ -1428,5 +1441,5 @@ export default {
   width: 220px;
   height: 90px;
   visibility: hidden;
-}
+} */
 </style>

@@ -231,6 +231,36 @@ const routes = [
                 name: 'admin-quan-ly-ban-do',
                 component: () => import('../components/Admin/QuanLyBanDo/index.vue'),
                 meta: { permission: 'Quản Lý Mộ Phần' }
+            },
+            {
+                path: 'doi-toc-ho',
+                name: 'admin-doi-toc-ho',
+                component: () => import('../components/Admin/DoiTocHo/index.vue'),
+                meta: { permission: 'Quản Lý Đời Tộc Họ' }
+            },
+            {
+                path: 'chi-nhanh',
+                name: 'admin-chi-nhanh',
+                component: () => import('../components/Admin/ChiNhanh/index.vue'),
+                meta: { permission: 'Quản Lý Chi Nhánh' }
+            },
+            {
+                path: 'nha-tho-ho',
+                name: 'admin-nha-tho-ho',
+                component: () => import('../components/Admin/NhaThoHo/index.vue'),
+                meta: { permission: 'Quản Lý Nhà Thờ Họ' }
+            },
+            {
+                path: 'su-kien',
+                name: 'admin-su-kien',
+                component: () => import('../components/Admin/SuKien/index.vue'),
+                meta: { permission: 'Quản Lý Sự Kiện' }
+            },
+            {
+                path: 'dong-gop',
+                name: 'admin-dong-gop',
+                component: () => import('../components/Admin/DongGop/index.vue'),
+                meta: { permission: 'Quản Lý Đóng Góp' }
             }
         ]
     },

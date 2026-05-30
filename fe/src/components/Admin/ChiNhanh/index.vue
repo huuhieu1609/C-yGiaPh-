@@ -5,42 +5,38 @@
             <div class="card luxury-panel border-0 shadow-sm h-100">
                 <div class="card-header bg-transparent py-4 border-0 border-bottom border-light-subtle d-flex align-items-center">
                     <h5 class="mb-0 fw-bold panel-title text-dark text-gradient-gold">
-                        <i class="bx bx-plus-circle me-2"></i> {{ isEditing ? 'Cập Nhật Đời Họ' : 'Thêm Đời Họ Mới' }}
+                        <i class="bx bx-plus-circle me-2"></i> {{ isEditing ? 'Cập Nhật Dòng Họ' : 'Thêm Dòng Họ Mới' }}
                     </h5>
                 </div>
                 <div class="card-body p-4">
                     <form @submit.prevent="saveData">
                         <div class="mb-4">
-                            <label class="form-label fw-bold text-secondary-custom">Số Đời (Thế Hệ)</label>
-                            <input type="number" class="form-control premium-input radius-10 border-2 shadow-none" placeholder="Nhập số đời (VD: 1, 2, 3...)" v-model="formData.so_doi" required>
+                            <label class="form-label fw-bold text-secondary-custom">Tên Dòng Họ (Chi Nhánh)</label>
+                            <input type="text" class="form-control premium-input radius-10 border-2 shadow-none" placeholder="Nhập tên dòng họ (VD: Chi Nhánh Họ Nguyễn)" v-model="formData.ten_chi" required>
                         </div>
                         <div class="mb-4">
-                            <label class="form-label fw-bold text-secondary-custom">Tên Đời</label>
-                            <input type="text" class="form-control premium-input radius-10 border-2 shadow-none" placeholder="Nhập tên đời (VD: Đời thứ nhất)" v-model="formData.ten_doi" required>
+                            <label class="form-label fw-bold text-secondary-custom">Mô Tả</label>
+                            <textarea class="form-control premium-input radius-10 border-2 shadow-none" rows="4" placeholder="Nhập mô tả chi tiết dòng họ..." v-model="formData.mo_ta" required></textarea>
                         </div>
                         <div class="mb-4">
-                            <label class="form-label fw-bold text-secondary-custom">Dòng Họ (Chi Nhánh)</label>
-                            <select class="form-select premium-input radius-10 border-2 shadow-none" v-model="formData.chi_nhanh_id" required>
-                                <option value="" disabled>-- Chọn Dòng Họ --</option>
-                                <option v-for="cn in chiNhanhList" :key="cn.id" :value="cn.id">
-                                    {{ cn.ten_chi }}
+                            <label class="form-label fw-bold text-secondary-custom">Chủ Sở Hữu (Quản Trị Viên/Đối Tác)</label>
+                            <select class="form-select premium-input radius-10 border-2 shadow-none" v-model="formData.id_nguoi_dung">
+                                <option :value="null">-- Chưa chỉ định (Hệ thống quản lý) --</option>
+                                <option v-for="user in userList" :key="user.id" :value="user.id">
+                                    {{ user.ho_ten }} ({{ user.email || 'Không có email' }})
                                 </option>
                             </select>
                         </div>
                         <div class="mb-4">
-                            <label class="form-label fw-bold text-secondary-custom">Tình Trạng</label>
-                            <select class="form-select premium-input radius-10 border-2 shadow-none" v-model="formData.trang_thai">
-                                <option value="1">Hoạt động</option>
-                                <option value="0">Tạm dừng</option>
+                            <label class="form-label fw-bold text-secondary-custom">Tự Động Duyệt Đề Xuất</label>
+                            <select class="form-select premium-input radius-10 border-2 shadow-none" v-model="formData.is_auto_approve">
+                                <option value="1">Bật (Tự động phê duyệt đề xuất từ thành viên)</option>
+                                <option value="0">Tắt (Trưởng nhánh/Admin duyệt thủ công)</option>
                             </select>
-                        </div>
-                        <div class="mb-4">
-                            <label class="form-label fw-bold text-secondary-custom">Mô Tả</label>
-                            <textarea class="form-control premium-input radius-10 border-2 shadow-none" rows="4" placeholder="Nhập mô tả chi tiết..." v-model="formData.mo_ta"></textarea>
                         </div>
                         <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-5">
                             <button type="button" class="btn btn-outline-secondary radius-30 px-4" v-if="isEditing" @click="resetForm">Hủy</button>
-                            <button type="submit" class="btn btn-filter-submit text-white radius-30 px-4 fw-bold shadow-sm">
+                            <button type="submit" class="btn btn-filter-submit text-white radius-30 px-4 fw-bold shadow-sm" :disabled="saving">
                                 {{ isEditing ? 'Cập Nhật' : 'Thêm Mới' }}
                             </button>
                         </div>
@@ -54,7 +50,7 @@
             <div class="card luxury-panel border-0 shadow-sm h-100">
                 <div class="card-header bg-transparent py-4 border-0 border-bottom border-light-subtle d-flex align-items-center justify-content-between flex-wrap gap-3">
                     <h5 class="mb-0 fw-bold panel-title text-dark">
-                        <i class="bx bx-layer me-2 text-warning"></i> Cấu Trúc Đời Tộc Họ
+                        <i class="bx bx-sitemap me-2 text-warning"></i> Quản Lý Danh Sách Dòng Họ
                     </h5>
                     <button class="btn btn-refresh-premium rounded-circle d-flex align-items-center justify-content-center" @click="loadData" :disabled="isLoading" title="Làm mới dữ liệu">
                         <i class="bx bx-sync fs-5 text-warning" :class="{'bx-spin': isLoading}"></i>
@@ -62,7 +58,7 @@
                 </div>
                 <div class="card-body p-4">
                     <div class="input-group mb-4 radius-10 overflow-hidden border-2 search-box-premium shadow-sm">
-                        <input type="text" class="form-control border-0 shadow-none ps-4 bg-transparent" placeholder="Tìm kiếm đời tộc họ..." v-model="searchQuery">
+                        <input type="text" class="form-control border-0 shadow-none ps-4 bg-transparent" placeholder="Tìm kiếm dòng họ..." v-model="searchQuery">
                         <span class="input-group-text border-0 bg-transparent pe-4"><i class="bx bx-search text-secondary"></i></span>
                     </div>
 
@@ -70,49 +66,45 @@
                         <table class="table modern-table align-middle mb-0">
                             <thead>
                                 <tr>
-                                    <th width="5%" class="text-center">#</th>
-                                    <th width="20%">Dòng Họ</th>
-                                    <th width="18%">Tên Đời</th>
-                                    <th width="12%" class="text-center">Số Đời</th>
-                                    <th width="25%">Mô Tả</th>
-                                    <th width="10%" class="text-center">Tình Trạng</th>
-                                    <th width="10%" class="text-center">Thao tác</th>
+                                    <th width="8%" class="text-center">#</th>
+                                    <th width="25%">Tên Dòng Họ</th>
+                                    <th width="32%">Mô Tả</th>
+                                    <th width="15%" class="text-center">Tự Động Duyệt</th>
+                                    <th width="20%" class="text-center">Thao tác</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr v-if="isLoading">
-                                    <td colspan="7" class="text-center py-5">
+                                    <td colspan="5" class="text-center py-5">
                                         <div class="spinner-border text-warning" role="status">
                                             <span class="visually-hidden">Loading...</span>
                                         </div>
                                     </td>
                                 </tr>
                                 <tr v-else-if="filteredList.length === 0">
-                                    <td colspan="7" class="text-center py-5 text-muted">
+                                    <td colspan="5" class="text-center py-5 text-muted">
                                         <i class="bx bx-folder-open fs-1 mb-2 d-block opacity-50"></i>
-                                        Chưa có cấu hình đời nào
+                                        Chưa có thông tin dòng họ
                                     </td>
                                 </tr>
                                 <tr v-for="(item, index) in filteredList" :key="item.id">
                                     <td class="text-center fw-bold">{{ index + 1 }}</td>
-                                    <td class="fw-bold text-secondary small">{{ item.chi_nhanh?.ten_chi || '---' }}</td>
-                                    <td class="fw-bold text-dark">{{ item.ten_doi }}</td>
+                                    <td class="fw-bold text-dark">{{ item.ten_chi }}</td>
+                                    <td class="text-secondary small">{{ item.mo_ta }}</td>
                                     <td class="text-center">
-                                        <span class="badge bg-warning-soft text-warning border border-warning border-opacity-25 rounded-pill px-3 py-1 fw-bold">
-                                            Đời thứ {{ item.so_doi }}
+                                        <span v-if="item.is_auto_approve == 1" class="badge bg-success-soft text-success border border-success border-opacity-25 rounded-pill px-3 py-1 fw-bold">
+                                            Có
                                         </span>
-                                    </td>
-                                    <td class="text-secondary small">{{ item.mo_ta || '---' }}</td>
-                                    <td class="text-center">
-                                        <span v-if="item.trang_thai == 1" class="badge badge-active rounded-pill px-3 py-1">Hoạt động</span>
-                                        <span v-else class="badge badge-paused rounded-pill px-3 py-1">Tạm dừng</span>
+                                        <span v-else class="badge bg-secondary-soft text-secondary border border-secondary border-opacity-25 rounded-pill px-3 py-1 fw-bold">
+                                            Không
+                                        </span>
                                     </td>
                                     <td class="text-center">
                                         <div class="d-flex justify-content-center gap-2">
                                             <button class="btn btn-action-edit" @click="editItem(item)" title="Sửa">
                                                 <i class="bx bx-edit-alt"></i>
                                             </button>
-                                            <button class="btn btn-action-delete" @click="deleteItem(item.id)" title="Xóa">
+                                            <button class="btn btn-action-delete" @click="deleteItem(item)" title="Xóa">
                                                 <i class="bx bx-trash"></i>
                                             </button>
                                         </div>
@@ -132,21 +124,21 @@ import axios from 'axios';
 import toastr from 'toastr';
 
 export default {
-    name: 'DoiTocHoManagement',
+    name: 'ChiNhanhManagement',
     data() {
         return {
             listData: [],
-            chiNhanhList: [],
+            userList: [],
             formData: {
                 id: null,
-                so_doi: '',
-                ten_doi: '',
-                chi_nhanh_id: '',
+                ten_chi: '',
                 mo_ta: '',
-                trang_thai: 1
+                id_nguoi_dung: null,
+                is_auto_approve: 0
             },
             isEditing: false,
             isLoading: false,
+            saving: false,
             searchQuery: ''
         }
     },
@@ -155,15 +147,14 @@ export default {
             if (!this.searchQuery) return this.listData;
             const q = this.searchQuery.toLowerCase();
             return this.listData.filter(item => 
-                (item.ten_doi && item.ten_doi.toLowerCase().includes(q)) ||
-                (item.so_doi && item.so_doi.toString().includes(q)) ||
+                (item.ten_chi && item.ten_chi.toLowerCase().includes(q)) ||
                 (item.mo_ta && item.mo_ta.toLowerCase().includes(q))
             );
         }
     },
     mounted() {
         this.loadData();
-        this.loadChiNhanh();
+        this.loadUsers();
     },
     methods: {
         getHeaders() {
@@ -175,24 +166,35 @@ export default {
         },
         loadData() {
             this.isLoading = true;
-            axios.get('http://127.0.0.1:8000/api/doi-toc-ho/get-data', this.getHeaders())
+            axios.get('http://127.0.0.1:8000/api/chi-nhanh/get-data', this.getHeaders())
                 .then(res => {
                     if (res.data.status) {
                         this.listData = res.data.data;
                     }
                 })
                 .catch(err => {
-                    toastr.error('Lỗi khi tải danh sách đời tộc họ!');
-                    console.log(err);
+                    toastr.error('Lỗi khi tải danh sách dòng họ!');
                 })
                 .finally(() => {
                     this.isLoading = false;
                 });
         },
+        loadUsers() {
+            axios.get('http://127.0.0.1:8000/api/nguoi-dung/get-data', this.getHeaders())
+                .then(res => {
+                    if (res.data.status) {
+                        this.userList = res.data.data;
+                    }
+                })
+                .catch(err => {
+                    console.log('Lỗi tải danh sách người dùng:', err);
+                });
+        },
         saveData() {
+            this.saving = true;
             const url = this.isEditing 
-                ? 'http://127.0.0.1:8000/api/doi-toc-ho/update'
-                : 'http://127.0.0.1:8000/api/doi-toc-ho/create';
+                ? 'http://127.0.0.1:8000/api/chi-nhanh/update'
+                : 'http://127.0.0.1:8000/api/chi-nhanh/create';
             
             axios.post(url, this.formData, this.getHeaders())
                 .then(res => {
@@ -205,23 +207,25 @@ export default {
                     }
                 })
                 .catch(err => {
-                    toastr.error('Có lỗi xảy ra, vui lòng thử lại!');
+                    toastr.error(err.response?.data?.message || 'Có lỗi xảy ra, vui lòng thử lại!');
+                })
+                .finally(() => {
+                    this.saving = false;
                 });
         },
         editItem(item) {
             this.isEditing = true;
             this.formData = { 
                 id: item.id,
-                so_doi: item.so_doi,
-                ten_doi: item.ten_doi,
-                chi_nhanh_id: item.chi_nhanh_id || '',
+                ten_chi: item.ten_chi,
                 mo_ta: item.mo_ta,
-                trang_thai: item.trang_thai
+                id_nguoi_dung: item.id_nguoi_dung,
+                is_auto_approve: item.is_auto_approve
             };
         },
-        deleteItem(id) {
-            if (confirm('Bạn có chắc chắn muốn xóa đời họ này?')) {
-                axios.post('http://127.0.0.1:8000/api/doi-toc-ho/delete', { id }, this.getHeaders())
+        deleteItem(item) {
+            if (confirm(`Bạn có chắc chắn muốn xóa dòng họ "${item.ten_chi}"?`)) {
+                axios.post('http://127.0.0.1:8000/api/chi-nhanh/delete', { id: item.id }, this.getHeaders())
                     .then(res => {
                         if (res.data.status) {
                             toastr.success(res.data.message);
@@ -231,27 +235,18 @@ export default {
                         }
                     })
                     .catch(err => {
-                        toastr.error('Có lỗi xảy ra!');
+                        toastr.error('Xóa dòng họ thất bại!');
                     });
             }
-        },
-        loadChiNhanh() {
-            axios.get('http://127.0.0.1:8000/api/chi-nhanh/get-data', this.getHeaders())
-                .then(res => {
-                    if (res.data.status) {
-                        this.chiNhanhList = res.data.data;
-                    }
-                });
         },
         resetForm() {
             this.isEditing = false;
             this.formData = {
                 id: null,
-                so_doi: '',
-                ten_doi: '',
-                chi_nhanh_id: '',
+                ten_chi: '',
                 mo_ta: '',
-                trang_thai: 1
+                id_nguoi_dung: null,
+                is_auto_approve: 0
             };
         }
     }
@@ -413,20 +408,10 @@ export default {
     border-color: transparent;
 }
 
-.bg-warning-soft {
-    background: rgba(243, 156, 18, 0.1) !important;
+.bg-success-soft {
+    background: rgba(22, 163, 74, 0.1) !important;
 }
-
-.badge-active {
-    background: #f0fdf4 !important;
-    color: #16a34a !important;
-    border: 1px solid rgba(22, 163, 74, 0.15);
-}
-
-.badge-paused {
-    background: #fef2f2 !important;
-    color: #ef4444 !important;
-    border: 1px solid rgba(239, 68, 68, 0.15);
+.bg-secondary-soft {
+    background: rgba(108, 117, 125, 0.1) !important;
 }
 </style>
-
