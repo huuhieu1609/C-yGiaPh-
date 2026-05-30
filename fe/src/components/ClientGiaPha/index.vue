@@ -771,7 +771,10 @@ export default {
       if (!this.currentUser || !this.currentUser.email) return false;
       if (this.currentUser.vai_tro === 'Admin' || this.currentUser.is_doi_tac == 1) return true;
 
-      const me = this.allMembers.find(m => m.email === this.currentUser.email);
+      const me = this.allMembers.find(m => 
+        m.email && this.currentUser.email && 
+        m.email.trim().toLowerCase() === this.currentUser.email.trim().toLowerCase()
+      );
       if (!me) return false;
 
       const target = this.currentMember;
@@ -826,12 +829,29 @@ export default {
       this.currentMemberRelationshipLoading = false;
 
       const token = localStorage.getItem('access_token');
-      const userStr = localStorage.getItem('user');
-      const user = userStr ? JSON.parse(userStr) : null;
+      const user = this.currentUser;
 
-      if (token && user && user.email) {
-        const myMember = this.allMembers.find(member => member.email === user.email);
+      if (token && user) {
+        // 1. Tìm thành viên trùng email với tài khoản đang đăng nhập
+        let myMember = null;
+        if (user.email) {
+          myMember = this.allMembers.find(member => 
+            member.email && 
+            member.email.trim().toLowerCase() === user.email.trim().toLowerCase()
+          );
+        }
+        
+        // 2. Fallback: Nếu không tìm thấy (ví dụ tài khoản đối tác/admin), tự động lấy thành viên đầu tiên có liên kết email trong chi nhánh này làm "BẠN"
+        if (!myMember) {
+          myMember = this.allMembers.find(member => member.email && member.email.trim() !== '');
+        }
+
         if (myMember) {
+          // Hiển thị thông báo nhỏ để xác nhận code mới đã hoạt động và hiển thị người đối chiếu
+          if (window.toastr) {
+            window.toastr.info(`Đang đối chiếu vai vế từ góc nhìn của: <b>${myMember.ho_ten}</b>`, '', { timeOut: 3000, progressBar: true });
+          }
+
           if (myMember.id === m.id) {
             this.currentMemberRelationship = 'Bản thân';
             this.currentMemberRelationshipDesc = 'Đây chính là hồ sơ gia phả liên kết với tài khoản của bạn.';
@@ -849,8 +869,8 @@ export default {
                 this.currentMemberRelationshipDesc = res.data.description;
               }
             })
-            .catch(() => {
-              // Silent fail
+            .catch(err => {
+              console.error("LỖI API XÁC ĐỊNH QUAN HỆ:", err);
             })
             .finally(() => {
               this.currentMemberRelationshipLoading = false;

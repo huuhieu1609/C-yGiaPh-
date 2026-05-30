@@ -17,6 +17,7 @@ class RelationshipService
         "tiểu",
         "di",
         "diễn",
+        "khống",
     ];
 
     private const DESCENDANTS = [
@@ -29,6 +30,8 @@ class RelationshipService
         "chét",
         "chót",
         "chẹt",
+        "chịt",
+        "chọt",
     ];
 
     protected $graphService;
@@ -335,18 +338,27 @@ class RelationshipService
             } else {
                 return 'em họ';
             }
-        } elseif ($genDiff === 1) {
-            return $genderA === 'Nữ' ? 'cô họ' : 'chú họ';
-        } elseif ($genDiff === 2) {
-            return $genderA === 'Nữ' ? 'bà họ' : 'ông họ';
-        } elseif ($genDiff >= 3) {
-            return $genderA === 'Nữ' ? 'cụ họ' : 'cụ họ';
-        } elseif ($genDiff === -1) {
-            return 'cháu họ';
-        } elseif ($genDiff === -2) {
-            return 'chắt họ';
+        } elseif ($genDiff > 0) {
+            // Vế trên (B là vai dưới của A -> A là vai trên của B: cô họ, chú họ, ông họ, bà họ, cụ họ, kỵ họ, sơ họ...)
+            if ($genDiff === 1) {
+                return $genderA === 'Nữ' ? 'cô họ' : 'chú họ';
+            } elseif ($genDiff === 2) {
+                return $genderA === 'Nữ' ? 'bà họ' : 'ông họ';
+            } else {
+                $base = self::ANCESTORS[$genDiff] ?? 'cụ';
+                return $base . ' họ';
+            }
         } else {
-            return 'họ hàng';
+            // Vế dưới (B là vai trên của A -> A là vai dưới của B: cháu họ, chắt họ, chít họ, chút họ, chét họ...)
+            $absGen = abs($genDiff);
+            if ($absGen === 1) {
+                return 'cháu họ';
+            } elseif ($absGen === 2) {
+                return 'chắt họ';
+            } else {
+                $base = self::DESCENDANTS[$absGen] ?? 'hậu duệ';
+                return $base . ' họ';
+            }
         }
     }
 

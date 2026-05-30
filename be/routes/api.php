@@ -156,9 +156,12 @@ Route::middleware(['auth:sanctum', 'activity'])->group(function () {
         Route::post('/delete', [ThanhVienController::class, 'delete']);
         Route::post('/status', [ThanhVienController::class, 'status']);
         Route::post('/search', [ThanhVienController::class, 'search']);
-        Route::post('/xac-dinh-quan-he', [ThanhVienController::class, 'xacDinhQuanHe']);
-        Route::post('/tra-cuu-quan-he', [ThanhVienController::class, 'traCuuQuanHe']);
     });
+
+    Route::post('/thanh-vien/xac-dinh-quan-he', [ThanhVienController::class, 'xacDinhQuanHe'])
+        ->middleware('phan_quyen:Quản Lý Thành Viên|Cây Gia Phả|Tra Cứu Xưng Hô');
+    Route::post('/thanh-vien/tra-cuu-quan-he', [ThanhVienController::class, 'traCuuQuanHe'])
+        ->middleware('phan_quyen:Quản Lý Thành Viên|Cây Gia Phả|Tra Cứu Xưng Hô');
 
     Route::prefix('/vo-chong')->middleware('phan_quyen:Cây Gia Phả')->group(function () {
         Route::get('/get-data', [VoChongController::class, 'getData']);
