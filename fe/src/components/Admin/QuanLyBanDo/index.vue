@@ -430,6 +430,12 @@ export default {
         }
     },
     mounted() {
+        const saved = localStorage.getItem('selected_admin_partner');
+        if (saved) {
+            const item = JSON.parse(saved);
+            this.selectedPartner = item;
+            this.selectedChiNhanh = item.id_chi_nhanh;
+        }
         this.loadData();
         this.loadStats();
         this.loadPartners();
@@ -447,6 +453,16 @@ export default {
                 .then(res => {
                     if (res.data.status) {
                         this.listPartners = res.data.data;
+                        const saved = localStorage.getItem('selected_admin_partner');
+                        if (saved) {
+                            const item = JSON.parse(saved);
+                            const fresh = this.listPartners.find(p => p.id === item.id);
+                            if (fresh) {
+                                this.selectedPartner = fresh;
+                                this.selectedChiNhanh = fresh.id_chi_nhanh;
+                                localStorage.setItem('selected_admin_partner', JSON.stringify(fresh));
+                            }
+                        }
                     }
                 });
         },
@@ -454,12 +470,14 @@ export default {
             this.selectedPartner = item;
             this.selectedChiNhanh = item.id_chi_nhanh;
             this.showPartnerSelectorModal = false;
+            localStorage.setItem('selected_admin_partner', JSON.stringify(item));
             toastr.success(`Đã chọn đối tác: ${item.nguoi_dung?.ho_ten || item.ten_goi}`);
         },
         clearPartnerSelection() {
             this.selectedPartner = null;
             this.selectedChiNhanh = null;
             this.showPartnerSelectorModal = false;
+            localStorage.removeItem('selected_admin_partner');
             toastr.info('Đã gỡ chọn đối tác.');
         },
         getAvatarInitials(name) {

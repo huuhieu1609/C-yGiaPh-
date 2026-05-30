@@ -1,127 +1,248 @@
 <template>
-    <div class="row g-4">
-        <!-- Left Column: Add/Edit Form -->
-        <div class="col-lg-4 col-md-12">
-            <div class="card luxury-panel border-0 shadow-sm h-100">
-                <div class="card-header bg-transparent py-4 border-0 border-bottom border-light-subtle d-flex align-items-center">
-                    <h5 class="mb-0 fw-bold panel-title text-dark text-gradient-gold">
-                        <i class="bx bx-plus-circle me-2"></i> {{ isEditing ? 'Cập Nhật Nhà Thờ' : 'Thêm Nhà Thờ Mới' }}
-                    </h5>
+    <div class="nha-tho-ho-management-wrapper">
+        <!-- Page Header -->
+        <div class="page-header mb-4 d-flex align-items-center justify-content-between flex-wrap gap-3">
+            <div class="d-flex align-items-center gap-3">
+                <div class="page-icon">
+                    <i class='bx bx-building-house' style="color: #0d9488;"></i>
                 </div>
-                <div class="card-body p-4">
-                    <form @submit.prevent="saveData">
-                        <div class="mb-4">
-                            <label class="form-label fw-bold text-secondary-custom">Tên Nhà Thờ</label>
-                            <input type="text" class="form-control premium-input radius-10 border-2 shadow-none" placeholder="Nhập tên nhà thờ..." v-model="formData.ten_nha_tho" required>
+                <div>
+                    <h4 class="mb-0 fw-bold theme-text-main page-title text-gradient-gold">Nhà Thờ Họ</h4>
+                    <p class="mb-0 text-secondary small mt-1">Quản lý danh sách nhà thờ họ, từ đường và các di tích thờ cúng tổ tiên của dòng họ</p>
+                </div>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <!-- Partner Selector Button -->
+                <button class="btn btn-outline-warning radius-30 px-3 fw-bold d-flex align-items-center gap-2 shadow-sm" style="font-size: 13px; height: 34px; padding-top: 5px; padding-bottom: 5px;" @click="showPartnerSelectorModal = true">
+                    <i class="bx bx-user-circle fs-5"></i>
+                    <span>{{ selectedPartner ? (selectedPartner.nguoi_dung?.ho_ten || selectedPartner.ten_goi) + ' (' + selectedPartner.dong_ho + ')' : 'Chọn Đối Tác' }}</span>
+                </button>
+
+                <button class="btn btn-refresh-premium rounded-circle d-flex align-items-center justify-content-center" @click="refreshAll" :disabled="isLoading" title="Làm mới dữ liệu">
+                    <i class="bx bx-sync fs-5 text-warning" :class="{'bx-spin': isLoading}"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- State 1: No partner chosen yet -->
+        <div v-if="!selectedPartner" class="card shadow-sm border-0 radius-10 p-5 text-center bg-white">
+            <div class="empty-state-icon mb-4">
+                <i class="bx bx-building-house fs-1 text-warning opacity-75 animate__animated animate__pulse animate__infinite" style="font-size: 60px;"></i>
+            </div>
+            <h4 class="fw-bold text-dark mb-3">Chưa Chọn Đối Tác Quản Lý Nhà Thờ</h4>
+            <p class="text-muted small mx-auto mb-4" style="max-width: 480px; font-size: 14px; line-height: 1.6;">
+                Vui lòng lựa chọn một tài khoản đối tác từ danh sách để tải danh sách nhà thờ họ và thực hiện quản lý tương ứng.
+            </p>
+            <div>
+                <button class="btn btn-warning radius-30 px-4 py-2 fw-bold shadow-sm" @click="showPartnerSelectorModal = true">
+                    <i class="bx bx-list-ul me-1"></i> Chọn Đối Tác Ngay
+                </button>
+            </div>
+        </div>
+
+        <!-- State 2: Partner chosen -->
+        <div class="row g-4" v-else>
+            <!-- Left Column: Add/Edit Form -->
+            <div class="col-lg-4 col-md-12">
+                <div class="card luxury-panel border-0 shadow-sm h-100">
+                    <div class="card-header bg-transparent py-4 border-0 border-bottom border-light-subtle d-flex align-items-center">
+                        <h5 class="mb-0 fw-bold panel-title text-dark text-gradient-gold">
+                            <i class="bx bx-plus-circle me-2"></i> {{ isEditing ? 'Cập Nhật Nhà Thờ' : 'Thêm Nhà Thờ Mới' }}
+                        </h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <form @submit.prevent="saveData">
+                            <div class="mb-4">
+                                <label class="form-label fw-bold text-secondary-custom">Tên Nhà Thờ</label>
+                                <input type="text" class="form-control premium-input radius-10 border-2 shadow-none" placeholder="Nhập tên nhà thờ..." v-model="formData.ten_nha_tho" required>
+                            </div>
+                            <div class="mb-4">
+                                <label class="form-label fw-bold text-secondary-custom">Địa Chỉ</label>
+                                <input type="text" class="form-control premium-input radius-10 border-2 shadow-none" placeholder="Nhập địa chỉ..." v-model="formData.dia_chi" required>
+                            </div>
+                            <div class="mb-4">
+                                <label class="form-label fw-bold text-secondary-custom">Năm Xây Dựng</label>
+                                <input type="number" class="form-control premium-input radius-10 border-2 shadow-none" placeholder="Nhập năm xây dựng..." v-model="formData.nam_xay_dung">
+                            </div>
+                            <div class="mb-4">
+                                <label class="form-label fw-bold text-secondary-custom">Thuộc Chi Nhánh (Dòng Họ)</label>
+                                <input type="text" class="form-control premium-input radius-10 border-2 shadow-none" :value="selectedPartner ? selectedPartner.dong_ho : ''" disabled>
+                            </div>
+                            <div class="mb-4">
+                                <label class="form-label fw-bold text-secondary-custom">Trạng Thái</label>
+                                <select class="form-select premium-input radius-10 border-2 shadow-none" v-model="formData.trang_thai">
+                                    <option value="Hoạt động">Hoạt động</option>
+                                    <option value="Khóa">Khóa</option>
+                                </select>
+                            </div>
+                            <div class="mb-4">
+                                <label class="form-label fw-bold text-secondary-custom">Mô Tả</label>
+                                <textarea class="form-control premium-input radius-10 border-2 shadow-none" rows="4" placeholder="Nhập mô tả chi tiết..." v-model="formData.mo_ta"></textarea>
+                            </div>
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-5">
+                                <button type="button" class="btn btn-outline-secondary radius-30 px-4" v-if="isEditing" @click="resetForm">Hủy</button>
+                                <button type="submit" class="btn btn-filter-submit text-white radius-30 px-4 fw-bold shadow-sm">
+                                    {{ isEditing ? 'Cập Nhật' : 'Thêm Mới' }}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Data Table -->
+            <div class="col-lg-8 col-md-12">
+                <div class="card luxury-panel border-0 shadow-sm h-100">
+                    <div class="card-header bg-transparent py-4 border-0 border-bottom border-light-subtle d-flex align-items-center justify-content-between flex-wrap gap-3">
+                        <h5 class="mb-0 fw-bold panel-title text-dark">
+                            <i class="bx bx-building-house me-2 text-warning"></i> Danh Sách Nhà Thờ Họ
+                        </h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="input-group mb-4 radius-10 overflow-hidden border-2 search-box-premium shadow-sm">
+                            <input type="text" class="form-control border-0 shadow-none ps-4 bg-transparent" placeholder="Tìm kiếm nhà thờ..." v-model="searchQuery">
+                            <span class="input-group-text border-0 bg-transparent pe-4"><i class="bx bx-search text-secondary"></i></span>
                         </div>
-                        <div class="mb-4">
-                            <label class="form-label fw-bold text-secondary-custom">Địa Chỉ</label>
-                            <input type="text" class="form-control premium-input radius-10 border-2 shadow-none" placeholder="Nhập địa chỉ..." v-model="formData.dia_chi" required>
+
+                        <div class="table-responsive rounded-3 border border-light-subtle">
+                            <table class="table modern-table align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th width="5%" class="text-center">#</th>
+                                        <th width="25%">Tên Nhà Thờ</th>
+                                        <th width="25%">Địa Chỉ</th>
+                                        <th width="15%" class="text-center">Năm Xây Dựng</th>
+                                        <th width="20%">Chi Nhánh</th>
+                                        <th width="10%" class="text-center">Trạng Thái</th>
+                                        <th width="10%" class="text-center">Hành Động</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-if="isLoading">
+                                        <td colspan="7" class="text-center py-5">
+                                            <div class="spinner-border text-warning" role="status">
+                                                <span class="visually-hidden">Loading...</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr v-else-if="filteredList.length === 0">
+                                        <td colspan="7" class="text-center py-5 text-muted">
+                                            <i class="bx bx-folder-open fs-1 mb-2 d-block opacity-50"></i>
+                                            Chưa có nhà thờ họ nào được thiết lập cho dòng họ này
+                                        </td>
+                                    </tr>
+                                    <tr v-for="(item, index) in filteredList" :key="item.id">
+                                        <td class="text-center fw-bold">{{ index + 1 }}</td>
+                                        <td class="fw-bold text-dark">{{ item.ten_nha_tho }}</td>
+                                        <td class="text-secondary small">{{ item.dia_chi }}</td>
+                                        <td class="text-center text-secondary small fw-bold">{{ item.nam_xay_dung || '---' }}</td>
+                                        <td class="small fw-semibold text-dark">{{ selectedPartner ? selectedPartner.dong_ho : 'Không xác định' }}</td>
+                                        <td class="text-center">
+                                            <button @click="changeStatus(item.id)" :class="item.trang_thai == 'Hoạt động' ? 'btn-status-active' : 'btn-status-locked'" class="btn-status-toggle w-100 fw-bold">
+                                                {{ item.trang_thai || 'Hoạt động' }}
+                                            </button>
+                                        </td>
+                                        <td class="text-center">
+                                            <div class="d-flex justify-content-center gap-2">
+                                                <button class="btn btn-action-edit" @click="editItem(item)" title="Sửa">
+                                                    <i class="bx bx-edit-alt"></i>
+                                                </button>
+                                                <button class="btn btn-action-delete" @click="deleteItem(item.id)" title="Xóa">
+                                                    <i class="bx bx-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
-                        <div class="mb-4">
-                            <label class="form-label fw-bold text-secondary-custom">Năm Xây Dựng</label>
-                            <input type="number" class="form-control premium-input radius-10 border-2 shadow-none" placeholder="Nhập năm xây dựng..." v-model="formData.nam_xay_dung">
-                        </div>
-                        <div class="mb-4">
-                            <label class="form-label fw-bold text-secondary-custom">Thuộc Chi Nhánh (Dòng Họ)</label>
-                            <select class="form-select premium-input radius-10 border-2 shadow-none" v-model="formData.chi_nhanh_id" required>
-                                <option :value="null">-- Chọn Dòng Họ / Chi Nhánh --</option>
-                                <option v-for="cn in listChiNhanh" :key="cn.id" :value="cn.id">
-                                    {{ cn.ten_chi }}
-                                </option>
-                            </select>
-                        </div>
-                        <div class="mb-4">
-                            <label class="form-label fw-bold text-secondary-custom">Trạng Thái</label>
-                            <select class="form-select premium-input radius-10 border-2 shadow-none" v-model="formData.trang_thai">
-                                <option value="Hoạt động">Hoạt động</option>
-                                <option value="Khóa">Khóa</option>
-                            </select>
-                        </div>
-                        <div class="mb-4">
-                            <label class="form-label fw-bold text-secondary-custom">Mô Tả</label>
-                            <textarea class="form-control premium-input radius-10 border-2 shadow-none" rows="4" placeholder="Nhập mô tả chi tiết..." v-model="formData.mo_ta"></textarea>
-                        </div>
-                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-5">
-                            <button type="button" class="btn btn-outline-secondary radius-30 px-4" v-if="isEditing" @click="resetForm">Hủy</button>
-                            <button type="submit" class="btn btn-filter-submit text-white radius-30 px-4 fw-bold shadow-sm">
-                                {{ isEditing ? 'Cập Nhật' : 'Thêm Mới' }}
-                            </button>
-                        </div>
-                    </form>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Right Column: Data Table -->
-        <div class="col-lg-8 col-md-12">
-            <div class="card luxury-panel border-0 shadow-sm h-100">
-                <div class="card-header bg-transparent py-4 border-0 border-bottom border-light-subtle d-flex align-items-center justify-content-between flex-wrap gap-3">
-                    <h5 class="mb-0 fw-bold panel-title text-dark">
-                        <i class="bx bx-building-house me-2 text-warning"></i> Danh Sách Nhà Thờ Họ
-                    </h5>
-                    <button class="btn btn-refresh-premium rounded-circle d-flex align-items-center justify-content-center" @click="loadData" :disabled="isLoading" title="Làm mới dữ liệu">
-                        <i class="bx bx-sync fs-5 text-warning" :class="{'bx-spin': isLoading}"></i>
-                    </button>
-                </div>
-                <div class="card-body p-4">
-                    <div class="input-group mb-4 radius-10 overflow-hidden border-2 search-box-premium shadow-sm">
-                        <input type="text" class="form-control border-0 shadow-none ps-4 bg-transparent" placeholder="Tìm kiếm nhà thờ..." v-model="searchQuery">
-                        <span class="input-group-text border-0 bg-transparent pe-4"><i class="bx bx-search text-secondary"></i></span>
-                    </div>
+        <!-- Modal Chọn Đối Tác -->
+        <div v-if="showPartnerSelectorModal" class="custom-modal-backdrop animate__animated animate__fadeIn" @click.self="showPartnerSelectorModal = false">
+            <div class="custom-modal-content animate__animated animate__zoomIn p-4 rounded-4 shadow-2xl bg-white position-relative" style="max-width: 650px; z-index: 1060;">
+                <button class="btn-close-custom position-absolute top-0 end-0 m-3 border-0 bg-transparent" @click="showPartnerSelectorModal = false">
+                    <i class="bx bx-x fs-2 text-muted"></i>
+                </button>
+                
+                <h5 class="fw-bold mb-1 text-dark d-flex align-items-center gap-2">
+                    <i class="bx bx-user-circle text-warning fs-3"></i> Danh Sách Tài Khoản Đối Tác
+                </h5>
+                <p class="text-muted small mb-4">Lựa chọn đối tác quản lý để hiển thị và biên tập cây gia phả tương ứng.</p>
 
-                    <div class="table-responsive rounded-3 border border-light-subtle">
-                        <table class="table modern-table align-middle mb-0">
-                            <thead>
-                                <tr>
-                                    <th width="5%" class="text-center">#</th>
-                                    <th width="25%">Tên Nhà Thờ</th>
-                                    <th width="25%">Địa Chỉ</th>
-                                    <th width="15%" class="text-center">Năm Xây Dựng</th>
-                                    <th width="20%">Chi Nhánh</th>
-                                    <th width="10%" class="text-center">Trạng Thái</th>
-                                    <th width="10%" class="text-center">Hành Động</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr v-if="isLoading">
-                                    <td colspan="7" class="text-center py-5">
-                                        <div class="spinner-border text-warning" role="status">
-                                            <span class="visually-hidden">Loading...</span>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr v-else-if="filteredList.length === 0">
-                                    <td colspan="7" class="text-center py-5 text-muted">
-                                        <i class="bx bx-folder-open fs-1 mb-2 d-block opacity-50"></i>
-                                        Chưa có nhà thờ họ nào được thiết lập
-                                    </td>
-                                </tr>
-                                <tr v-for="(item, index) in filteredList" :key="item.id">
-                                    <td class="text-center fw-bold">{{ index + 1 }}</td>
-                                    <td class="fw-bold text-dark">{{ item.ten_nha_tho }}</td>
-                                    <td class="text-secondary small">{{ item.dia_chi }}</td>
-                                    <td class="text-center text-secondary small fw-bold">{{ item.nam_xay_dung || '---' }}</td>
-                                    <td class="small fw-semibold text-dark">{{ getChiNhanhName(item.chi_nhanh_id) }}</td>
-                                    <td class="text-center">
-                                        <button @click="changeStatus(item.id)" :class="item.trang_thai == 'Hoạt động' ? 'btn-status-active' : 'btn-status-locked'" class="btn-status-toggle w-100 fw-bold">
-                                            {{ item.trang_thai || 'Hoạt động' }}
-                                        </button>
-                                    </td>
-                                    <td class="text-center">
-                                        <div class="d-flex justify-content-center gap-2">
-                                            <button class="btn btn-action-edit" @click="editItem(item)" title="Sửa">
-                                                <i class="bx bx-edit-alt"></i>
-                                            </button>
-                                            <button class="btn btn-action-delete" @click="deleteItem(item.id)" title="Xóa">
-                                                <i class="bx bx-trash"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                <!-- Search inside modal -->
+                <div class="position-relative mb-3">
+                    <input type="text" class="form-control ps-5 radius-30 border-2 shadow-none" v-model="partnerSearchQuery" placeholder="Tìm kiếm đối tác theo tên, email hoặc dòng họ...">
+                    <span class="position-absolute top-50 translate-middle-y start-0 ms-3 text-secondary"><i class="bx bx-search"></i></span>
+                </div>
+
+                <!-- Partners List Container -->
+                <div class="partner-list-scroll overflow-auto pe-1" style="max-height: 380px;">
+                    <div class="row g-3" v-if="filteredPartners.length">
+                        <div class="col-md-6" v-for="item in filteredPartners" :key="item.id">
+                            <!-- Active Partner (Has Chi Nhanh / Clan Tree) -->
+                            <div v-if="item.id_chi_nhanh" 
+                                 class="partner-select-card p-3 rounded-3 border border-2 cursor-pointer transition-all d-flex align-items-center gap-3 animate__animated animate__fadeIn"
+                                 :class="selectedPartner && selectedPartner.id === item.id ? 'border-warning bg-light-gold' : 'border-light bg-white'"
+                                 @click="selectPartner(item)">
+                                
+                                <div class="partner-avatar-circle d-flex align-items-center justify-content-center text-white font-weight-bold"
+                                     :style="{ background: getAvatarBg(item.nguoi_dung?.ho_ten || item.ten_goi) }">
+                                    {{ getAvatarInitials(item.nguoi_dung?.ho_ten || item.ten_goi) }}
+                                </div>
+                                
+                                <div class="overflow-hidden flex-grow-1">
+                                    <div class="fw-bold text-dark text-truncate">{{ item.nguoi_dung?.ho_ten || item.ten_goi }}</div>
+                                    <div class="text-muted small text-truncate">{{ item.nguoi_dung?.email || 'Chưa liên kết email' }}</div>
+                                    <div class="mt-2">
+                                        <span class="badge badge-gold-soft font-9 px-2 py-1 text-dark animate__animated animate__fadeIn" style="background: rgba(212, 175, 55, 0.15); color: #8a6d1c !important; border: 1px solid rgba(212, 175, 55, 0.25);">
+                                            <i class="bx bx-home-alt me-1"></i>{{ item.dong_ho }}
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                <div v-if="selectedPartner && selectedPartner.id === item.id" class="text-warning">
+                                    <i class="bx bxs-check-circle fs-4 animate__animated animate__scaleIn"></i>
+                                </div>
+                            </div>
+
+                            <!-- Inactive Partner -->
+                            <div v-else 
+                                 class="partner-select-card partner-card-disabled p-3 rounded-3 border border-2 border-dashed border-light-secondary bg-light bg-opacity-70 text-muted d-flex align-items-center gap-3 animate__animated animate__fadeIn"
+                                 style="opacity: 0.65; cursor: not-allowed;"
+                                 title="Đối tác này chưa tạo cây gia phả">
+                                
+                                <div class="partner-avatar-circle d-flex align-items-center justify-content-center text-white font-weight-bold"
+                                     style="background: #94a3b8; filter: grayscale(0.5); box-shadow: none;">
+                                    {{ getAvatarInitials(item.nguoi_dung?.ho_ten || item.ten_goi) }}
+                                </div>
+                                
+                                <div class="overflow-hidden flex-grow-1">
+                                    <div class="fw-bold text-secondary text-truncate" style="text-decoration: line-through; opacity: 0.85;">{{ item.nguoi_dung?.ho_ten || item.ten_goi }}</div>
+                                    <div class="text-muted small text-truncate" style="opacity: 0.85;">{{ item.nguoi_dung?.email || 'Chưa liên kết email' }}</div>
+                                    <div class="mt-2 text-danger small fw-bold d-flex align-items-center gap-1">
+                                        <i class="bx bx-error-circle fs-6"></i>
+                                        <span>Đối tác này chưa tạo cây gia phả</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
+                    
+                    <!-- Search Empty State -->
+                    <div v-else class="text-center py-5">
+                        <i class="bx bx-user-x fs-1 text-muted opacity-25 mb-2"></i>
+                        <h6 class="text-muted fw-bold">Không tìm thấy đối tác nào</h6>
+                        <p class="text-muted small mb-0">Vui lòng thử từ khóa tìm kiếm khác.</p>
+                    </div>
+                </div>
+                
+                <div class="modal-footer border-0 p-0 mt-4 d-flex justify-content-end gap-2">
+                    <button type="button" class="btn btn-outline-secondary radius-30 px-4" @click="showPartnerSelectorModal = false">Đóng</button>
+                    <button v-if="selectedPartner" type="button" class="btn btn-danger radius-30 px-4 text-white" @click="clearPartnerSelection">Bỏ chọn</button>
                 </div>
             </div>
         </div>
@@ -137,7 +258,11 @@ export default {
     data() {
         return {
             listData: [],
-            listChiNhanh: [],
+            listPartners: [],
+            selectedPartner: null,
+            selectedChiNhanh: null,
+            showPartnerSelectorModal: false,
+            partnerSearchQuery: '',
             formData: {
                 id: null,
                 ten_nha_tho: '',
@@ -153,19 +278,42 @@ export default {
         }
     },
     computed: {
+        filteredPartners() {
+            if (!this.partnerSearchQuery) {
+                return this.listPartners;
+            }
+            const q = this.partnerSearchQuery.toLowerCase();
+            return this.listPartners.filter(item => {
+                const partnerName = (item.nguoi_dung?.ho_ten || item.ten_goi || '').toLowerCase();
+                const partnerEmail = (item.nguoi_dung?.email || '').toLowerCase();
+                const clanName = (item.dong_ho || '').toLowerCase();
+                return partnerName.includes(q) || partnerEmail.includes(q) || clanName.includes(q);
+            });
+        },
         filteredList() {
-            if (!this.searchQuery) return this.listData;
+            if (!this.selectedPartner || !this.selectedChiNhanh) return [];
+            
+            // Filter list by selected partner's Chi Nhanh
+            let base = this.listData.filter(item => item.chi_nhanh_id == this.selectedChiNhanh);
+
+            if (!this.searchQuery) return base;
             const q = this.searchQuery.toLowerCase();
-            return this.listData.filter(item => 
+            return base.filter(item => 
                 (item.ten_nha_tho && item.ten_nha_tho.toLowerCase().includes(q)) ||
-                (item.dia_chi && item.dia_chi.toLowerCase().includes(q)) ||
-                (this.getChiNhanhName(item.chi_nhanh_id).toLowerCase().includes(q))
+                (item.dia_chi && item.dia_chi.toLowerCase().includes(q))
             );
         }
     },
     mounted() {
+        const saved = localStorage.getItem('selected_admin_partner');
+        if (saved) {
+            const item = JSON.parse(saved);
+            this.selectedPartner = item;
+            this.selectedChiNhanh = item.id_chi_nhanh;
+            this.formData.chi_nhanh_id = item.id_chi_nhanh;
+        }
         this.loadData();
-        this.loadChiNhanh();
+        this.loadPartners();
     },
     methods: {
         getHeaders() {
@@ -174,6 +322,10 @@ export default {
                     Authorization: 'Bearer ' + localStorage.getItem('access_token')
                 }
             };
+        },
+        refreshAll() {
+            this.loadData();
+            this.loadPartners();
         },
         loadData() {
             this.isLoading = true;
@@ -191,20 +343,74 @@ export default {
                     this.isLoading = false;
                 });
         },
-        loadChiNhanh() {
-            axios.get('http://127.0.0.1:8000/api/chi-nhanh/get-data', this.getHeaders())
+        loadPartners() {
+            axios.get('http://127.0.0.1:8000/api/admin/doi-tac/get-data', this.getHeaders())
                 .then(res => {
                     if (res.data.status) {
-                        this.listChiNhanh = res.data.data;
+                        this.listPartners = res.data.data;
+                        const saved = localStorage.getItem('selected_admin_partner');
+                        if (saved) {
+                            const item = JSON.parse(saved);
+                            const fresh = this.listPartners.find(p => p.id === item.id);
+                            if (fresh) {
+                                this.selectedPartner = fresh;
+                                this.selectedChiNhanh = fresh.id_chi_nhanh;
+                                this.formData.chi_nhanh_id = fresh.id_chi_nhanh;
+                                localStorage.setItem('selected_admin_partner', JSON.stringify(fresh));
+                            }
+                        }
                     }
                 })
                 .catch(err => console.error(err));
         },
-        getChiNhanhName(id) {
-            const cn = this.listChiNhanh.find(c => c.id === id);
-            return cn ? cn.ten_chi : 'Không xác định';
+        selectPartner(item) {
+            this.selectedPartner = item;
+            this.selectedChiNhanh = item.id_chi_nhanh;
+            this.formData.chi_nhanh_id = item.id_chi_nhanh;
+            this.showPartnerSelectorModal = false;
+            localStorage.setItem('selected_admin_partner', JSON.stringify(item));
+            toastr.success(`Đã chọn đối tác: ${item.nguoi_dung?.ho_ten || item.ten_goi}`);
+        },
+        clearPartnerSelection() {
+            this.selectedPartner = null;
+            this.selectedChiNhanh = null;
+            this.formData.chi_nhanh_id = null;
+            this.showPartnerSelectorModal = false;
+            localStorage.removeItem('selected_admin_partner');
+            toastr.info('Đã gỡ chọn đối tác.');
+        },
+        getAvatarInitials(name) {
+            if (!name) return 'DT';
+            const parts = name.trim().split(/\s+/);
+            if (parts.length >= 2) {
+                return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+            }
+            return name.substring(0, 2).toUpperCase();
+        },
+        getAvatarBg(name) {
+            if (!name) return '#d4af37';
+            let hash = 0;
+            for (let i = 0; i < name.length; i++) {
+                hash = name.charCodeAt(i) + ((hash << 5) - hash);
+            }
+            const colors = [
+                'linear-gradient(135deg, #d4af37 0%, #aa8c2c 100%)',
+                'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)',
+                'linear-gradient(135deg, #0f2027 0%, #203a43 100%)',
+                'linear-gradient(135deg, #56ab2f 0%, #a8e063 100%)',
+                'linear-gradient(135deg, #e65c00 0%, #f9d423 100%)',
+                'linear-gradient(135deg, #833ab4 0%, #fd1d1d 100%)'
+            ];
+            const index = Math.abs(hash) % colors.length;
+            return colors[index];
         },
         saveData() {
+            if (!this.selectedPartner) {
+                toastr.warning('Vui lòng chọn đối tác quản lý trước!');
+                return;
+            }
+            this.formData.chi_nhanh_id = this.selectedChiNhanh;
+
             const url = this.isEditing 
                 ? 'http://127.0.0.1:8000/api/nha-tho-ho/update'
                 : 'http://127.0.0.1:8000/api/nha-tho-ho/create';
@@ -259,7 +465,7 @@ export default {
                 ten_nha_tho: '',
                 dia_chi: '',
                 nam_xay_dung: '',
-                chi_nhanh_id: null,
+                chi_nhanh_id: this.selectedChiNhanh,
                 trang_thai: 'Hoạt động',
                 mo_ta: ''
             };
@@ -270,6 +476,19 @@ export default {
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+.nha-tho-ho-management-wrapper {
+    width: 100%;
+}
+
+.page-icon {
+    width: 52px; height: 52px;
+    background: linear-gradient(135deg, #1e2035 0%, #252740 100%);
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+}
 
 .luxury-panel {
     background: #ffffff !important;
@@ -448,5 +667,72 @@ export default {
 }
 .btn-status-locked:hover {
     background: #fee2e2 !important;
+}
+
+/* Custom Vue Modal Styling for Partner Selector */
+.custom-modal-backdrop {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(8px);
+    z-index: 1050;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+.custom-modal-content {
+    width: 100%;
+    max-width: 650px;
+    background: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 15px;
+}
+.btn-close-custom {
+    transition: all 0.2s ease;
+}
+.btn-close-custom:hover {
+    transform: rotate(90deg);
+}
+
+/* Partner Selector Premium Styling */
+.partner-list-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: #d4af37 transparent;
+}
+.partner-list-scroll::-webkit-scrollbar {
+    width: 6px;
+}
+.partner-list-scroll::-webkit-scrollbar-thumb {
+    background-color: #d4af37;
+    border-radius: 10px;
+}
+.partner-select-card {
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.partner-select-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(212, 175, 55, 0.15);
+    border-color: #ffd700 !important;
+}
+.partner-select-card.border-warning {
+    box-shadow: 0 4px 12px rgba(212, 175, 55, 0.25);
+}
+.bg-light-gold {
+    background-color: rgba(212, 175, 55, 0.05) !important;
+}
+.partner-avatar-circle {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    font-size: 16px;
+    font-weight: 700;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    flex-shrink: 0;
+}
+.badge-gold-soft {
+    background: rgba(212, 175, 55, 0.15) !important;
+    color: #8a6d1c !important;
+    border: 1px solid rgba(212, 175, 55, 0.25) !important;
 }
 </style>
