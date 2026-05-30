@@ -21,7 +21,7 @@ class DoiTacSeeder extends Seeder
     public function run(): void
     {
         // 1. Tránh trùng lặp tài khoản và chi nhánh đối tác
-        $existingUser = NguoiDung::where('email', 'doitac@master.com')->first();
+        $existingUser = NguoiDung::withTrashed()->where('email', 'doitac@master.com')->first();
         if ($existingUser) {
             // Xóa sạch dữ liệu thành viên & chi nhánh cũ của đối tác này để tạo lại sạch sẽ
             $oldBranchIds = ChiNhanh::where('id_nguoi_dung', $existingUser->id)->pluck('id');
@@ -29,7 +29,7 @@ class DoiTacSeeder extends Seeder
             DoiTocHo::whereIn('chi_nhanh_id', $oldBranchIds)->delete();
             ChiNhanh::where('id_nguoi_dung', $existingUser->id)->delete();
             DoiTac::where('id_nguoi_dung', $existingUser->id)->delete();
-            $existingUser->delete();
+            $existingUser->forceDelete();
         }
 
         // 2. Tạo tài khoản đối tác
