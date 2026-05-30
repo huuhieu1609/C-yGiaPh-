@@ -845,8 +845,8 @@ export default {
           } else {
             this.currentMemberRelationshipLoading = true;
             axios.post('http://127.0.0.1:8000/api/thanh-vien/xac-dinh-quan-he', {
-              id_a: m.id,
-              id_b: myMember.id
+              id_a: myMember.id,
+              id_b: m.id
             }, {
               headers: { Authorization: `Bearer ${token}` }
             })

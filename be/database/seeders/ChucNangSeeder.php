@@ -44,5 +44,38 @@ class ChucNangSeeder extends Seeder
                 ])
             );
         }
+
+        // ── Cấp quyền mặc định cho chức vụ "Thành Viên" ──────────────────────────
+        // Các chức năng mà thành viên bình thường được phép truy cập
+        $memberPermissions = [
+            'Cây Gia Phả',
+            'Tra Cứu Xưng Hô',
+            'Quản Lý Mộ Phần',
+            'Quản Lý Sự Kiện',
+            'Quỹ & Sự Kiện',
+            'Quản Lý Tài Liệu',
+            'Quản Lý Đóng Góp',
+            'Quản Lý Thông Báo',
+        ];
+
+        $idChucVuThanhVien = DB::table('chuc_vus')
+            ->where('ten_chuc_vu', 'like', '%Thành Viên%')
+            ->value('id');
+
+        if ($idChucVuThanhVien) {
+            foreach ($memberPermissions as $tenChucNang) {
+                $idChucNang = DB::table('chuc_nangs')
+                    ->where('ten_chuc_nang', $tenChucNang)
+                    ->where('trang_thai', 'Hoạt động')
+                    ->value('id');
+
+                if ($idChucNang) {
+                    DB::table('chi_tiet_phan_quyens')->updateOrInsert(
+                        ['chuc_vu_id' => $idChucVuThanhVien, 'chuc_nang_id' => $idChucNang],
+                        ['chuc_vu_id' => $idChucVuThanhVien, 'chuc_nang_id' => $idChucNang, 'updated_at' => now(), 'created_at' => now()]
+                    );
+                }
+            }
+        }
     }
 }
