@@ -14,7 +14,7 @@ class ChucVuSeeder extends Seeder
     {
         $roles = [
             ['ten_chuc_vu' => 'Quản Trị Viên Tổng', 'mo_ta' => 'Toàn quyền hệ thống'],
-            ['ten_chuc_vu' => 'Quản Trị Viên Chi Nhánh', 'mo_ta' => 'Quản lý chi nhánh và dữ liệu nội bộ'],
+            ['ten_chuc_vu' => 'Trưởng Nhánh', 'mo_ta' => 'Quản lý chi nhánh và dữ liệu nội bộ'],
             ['ten_chuc_vu' => 'Thành Viên', 'mo_ta' => 'Thành viên bình thường của dòng họ'],
         ];
 

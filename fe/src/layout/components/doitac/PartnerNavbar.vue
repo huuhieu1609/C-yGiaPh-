@@ -54,37 +54,37 @@
           </router-link>
         </li>
 
-        <li class="section-heading hide-on-collapse">Quản Lý Gia Phả</li>
+        <li class="section-heading hide-on-collapse" v-if="hasPermission('Cây Gia Phả') || hasPermission('Quản Lý Thành Viên') || hasPermission('Tra Cứu Xưng Hô') || hasPermission('Quản Lý Chi Nhánh') || hasPermission('Quản Lý Mộ Phần')">Quản Lý Gia Phả</li>
 
-        <li class="nav-item item-tree">
+        <li class="nav-item item-tree" v-if="hasPermission('Cây Gia Phả')">
           <router-link to="/doi-tac/gia-pha" class="nav-link" active-class="active" title="Cây Gia Phả">
             <span class="nav-icon"><i class="bx bx-git-branch"></i></span>
             <span class="hide-on-collapse nav-label">Cây Gia Phả</span>
             <span class="nav-dot hide-on-collapse"></span>
           </router-link>
         </li>
-        <li class="nav-item item-members">
+        <li class="nav-item item-members" v-if="hasPermission('Quản Lý Thành Viên')">
           <router-link to="/doi-tac/thanh-vien" class="nav-link" active-class="active" title="Thành Viên">
             <span class="nav-icon"><i class="bx bx-group"></i></span>
             <span class="hide-on-collapse nav-label">Thành Viên</span>
             <span class="nav-dot hide-on-collapse"></span>
           </router-link>
         </li>
-        <li class="nav-item item-search">
+        <li class="nav-item item-search" v-if="hasPermission('Tra Cứu Xưng Hô')">
           <router-link to="/doi-tac/tra-cuu" class="nav-link" active-class="active" title="Tra Cứu">
             <span class="nav-icon"><i class="bx bx-search-alt"></i></span>
             <span class="hide-on-collapse nav-label">Tra Cứu</span>
             <span class="nav-dot hide-on-collapse"></span>
           </router-link>
         </li>
-        <li class="nav-item item-clan">
+        <li class="nav-item item-clan" v-if="hasPermission('Quản Lý Chi Nhánh')">
           <router-link to="/doi-tac/dong-ho" class="nav-link" active-class="active" title="Phân Quyền">
             <span class="nav-icon"><i class="bx bx-shield-quarter"></i></span>
             <span class="hide-on-collapse nav-label">Phân Quyền</span>
             <span class="nav-dot hide-on-collapse"></span>
           </router-link>
         </li>
-        <li class="nav-item item-map">
+        <li class="nav-item item-map" v-if="hasPermission('Quản Lý Mộ Phần')">
           <router-link to="/doi-tac/ban-do" class="nav-link" active-class="active" title="Bản Đồ Số">
             <span class="nav-icon"><i class="bx bx-map-alt"></i></span>
             <span class="hide-on-collapse nav-label">Bản Đồ Số</span>
@@ -92,37 +92,37 @@
           </router-link>
         </li>
         
-        <li class="section-heading hide-on-collapse">Công Cụ & Hoạt Động</li>
+        <li class="section-heading hide-on-collapse" v-if="hasPermission('Kiểm Duyệt Đề Xuất') || hasPermission('Quản Lý Sự Kiện') || hasPermission('Quản Lý Thông Báo') || hasPermission('Quản Lý Tài Liệu') || hasPermission('Nhật Ký Thao Tác')">Công Cụ & Hoạt Động</li>
         
-        <li class="nav-item item-proposals">
+        <li class="nav-item item-proposals" v-if="hasPermission('Kiểm Duyệt Đề Xuất')">
           <router-link to="/doi-tac/de-xuat" class="nav-link" active-class="active" title="Kiểm Duyệt Đề Xuất">
             <span class="nav-icon"><i class="bx bx-git-pull-request"></i></span>
             <span class="hide-on-collapse nav-label">Kiểm Duyệt Đề Xuất</span>
             <span class="nav-dot hide-on-collapse"></span>
           </router-link>
         </li>
-        <li class="nav-item item-events">
+        <li class="nav-item item-events" v-if="hasPermission('Quản Lý Sự Kiện')">
           <router-link to="/doi-tac/su-kien" class="nav-link" active-class="active" title="Quản Lý Sự Kiện">
             <span class="nav-icon"><i class="bx bx-calendar-event"></i></span>
             <span class="hide-on-collapse nav-label">Quản Lý Sự Kiện</span>
             <span class="nav-dot hide-on-collapse"></span>
           </router-link>
         </li>
-        <li class="nav-item item-notifs">
+        <li class="nav-item item-notifs" v-if="hasPermission('Quản Lý Thông Báo')">
           <router-link to="/doi-tac/thong-bao" class="nav-link" active-class="active" title="Quản Lý Thông Báo">
             <span class="nav-icon"><i class="bx bx-bell"></i></span>
             <span class="hide-on-collapse nav-label">Quản Lý Thông Báo</span>
             <span class="nav-dot hide-on-collapse"></span>
           </router-link>
         </li>
-        <li class="nav-item item-docs">
+        <li class="nav-item item-docs" v-if="hasPermission('Quản Lý Tài Liệu')">
           <router-link to="/doi-tac/tai-lieu" class="nav-link" active-class="active" title="Thư Viện Tài Liệu">
             <span class="nav-icon"><i class="bx bx-book-open"></i></span>
             <span class="hide-on-collapse nav-label">Thư Viện Tài Liệu</span>
             <span class="nav-dot hide-on-collapse"></span>
           </router-link>
         </li>
-        <li class="nav-item item-logs">
+        <li class="nav-item item-logs" v-if="hasPermission('Nhật Ký Thao Tác')">
           <router-link to="/doi-tac/nhat-ky" class="nav-link" active-class="active" title="Nhật Ký Thao Tác">
             <span class="nav-icon"><i class="bx bx-history"></i></span>
             <span class="hide-on-collapse nav-label">Nhật Ký Thao Tác</span>
@@ -130,9 +130,9 @@
           </router-link>
         </li>
 
-        <li class="section-heading hide-on-collapse">Gói &amp; Thanh Toán</li>
+        <li class="section-heading hide-on-collapse" v-if="hasPermission('Quản Lý Gói Dịch Vụ')">Gói &amp; Thanh Toán</li>
 
-        <li class="nav-item">
+        <li class="nav-item" v-if="hasPermission('Quản Lý Gói Dịch Vụ')">
           <router-link to="/doi-tac/quan-ly-goi" class="nav-link" active-class="active" title="Quản Lý Gói">
             <span class="nav-icon"><i class="bx bx-package"></i></span>
             <span class="hide-on-collapse nav-label">Quản Lý Gói</span>
@@ -233,28 +233,26 @@ export default {
     },
     /**
      * Kiểm tra user có quyền chức năng không.
-     * Master Admin (vai_tro='admin') hoặc Đối Tác không có chức vụ -> hiện tất cả.
+     * Master Admin (vai_tro='admin') -> hiện tất cả.
+     * Tất cả tài khoản đối tác (kể cả chủ sở hữu và phụ) đều đồng bộ theo mảng permissions đã sync realtime.
      */
     hasPermission(chucNang) {
       if (this.isMasterAdmin) return true;
 
-      // Đọc thông tin user từ localStorage để kiểm tra id_chuc_vu
+      // Tất cả tài khoản đối tác (is_doi_tac = 1, kể cả chủ sở hữu có id_chuc_vu = null)
+      // đều bắt buộc phải có tên quyền trong mảng permissions đã được đồng bộ realtime
+      return this.permissions.includes(chucNang);
+    },
+    isOwner() {
+      if (this.isMasterAdmin) return true;
       const userStr = localStorage.getItem('user');
-      let idChucVu = null;
       if (userStr) {
         try {
           const user = JSON.parse(userStr);
-          idChucVu = user?.id_chuc_vu;
+          return user?.id_chuc_vu === null || user?.id_chuc_vu === undefined;
         } catch (e) {}
       }
-
-      // Nếu không có chức vụ (là Đối Tác chính) -> có toàn quyền
-      if (idChucVu === null || idChucVu === undefined) {
-        return true;
-      }
-
-      // Nếu có chức vụ -> bắt buộc phải có tên quyền trong mảng permissions
-      return this.permissions.includes(chucNang);
+      return false;
     },
     toggleTheme() {
       this.isDarkMode = !this.isDarkMode;

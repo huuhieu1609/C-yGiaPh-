@@ -44,12 +44,119 @@ class ThanhToanController extends Controller
         try {
             $nguoiDungId = $request->input('nguoi_dung_id');
             $noiDung     = $request->input('noi_dung');
+            $goiAmount   = (float) $request->input('so_tien', 0);
 
-            if (!$nguoiDungId || !$noiDung) {
+            if (!$nguoiDungId || (!$noiDung && $goiAmount > 0)) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Thiếu thông tin người dùng hoặc nội dung',
                 ]);
+            }
+
+            // ── NẾU LÀ GÓI 0 ĐỒNG (MIỄN PHÍ / DÙNG THỬ) ──
+            if ($goiAmount == 0) {
+                return DB::transaction(function () use ($nguoiDungId, $noiDung, $goiAmount, $request) {
+                    $user = NguoiDung::find($nguoiDungId);
+                    if (!$user) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => 'Không tìm thấy tài khoản người dùng.',
+                        ]);
+                    }
+
+                    $tenGoiInput = $request->input('ten_goi');
+                    $goi = null;
+                    if ($tenGoiInput) {
+                        $goi = GoiDichVu::where('ten_goi', $tenGoiInput)->where('gia_ca', 0)->first();
+                    }
+                    if (!$goi) {
+                        $goi = GoiDichVu::where('gia_ca', 0)->first();
+                    }
+
+                    $tenGoi         = $goi ? $goi->ten_goi         : ($tenGoiInput ?: 'Gói Dùng Thử Miễn Phí');
+                    $thoiHan        = $goi ? (int) $goi->thoi_han  : 1;
+                    $featuresOfGoi  = $goi ? $goi->features        : '';
+                    $maxDoi         = $goi ? (int) $goi->max_doi        : 10;
+                    $maxThanhVien   = $goi ? (int) $goi->max_thanh_vien : 100;
+                    $goiId          = $goi ? $goi->id              : null;
+
+                    $ngayBatDau  = now()->toDateString();
+                    $ngayKetThuc = now()->addMonths($thoiHan)->toDateString();
+
+                    $existingSamePackage = null;
+                    if ($goiId) {
+                        $existingSamePackage = DoiTac::where('id_nguoi_dung', $nguoiDungId)
+                            ->where('trang_thai', 'APPROVED')
+                            ->where('id_goi_dich_vu', $goiId)
+                            ->where('ngay_ket_thuc', '>=', now()->toDateString())
+                            ->first();
+                    }
+
+                    if ($existingSamePackage) {
+                        $newExpiry = Carbon::parse($existingSamePackage->ngay_ket_thuc)
+                            ->addMonths($thoiHan)
+                            ->toDateString();
+
+                        $existingSamePackage->update([
+                            'ngay_ket_thuc' => $newExpiry,
+                            'features'      => $featuresOfGoi,
+                            'max_doi'       => $maxDoi,
+                            'max_thanh_vien'=> $maxThanhVien,
+                        ]);
+
+                        $targetRecord   = $existingSamePackage;
+                        $actionMessage  = "Gia hạn gói miễn phí {$tenGoi} — cộng thêm {$thoiHan} tháng";
+                    } else {
+                        $targetRecord = DoiTac::create([
+                            'id_nguoi_dung'  => $nguoiDungId,
+                            'id_goi_dich_vu' => $goiId,
+                            'ten_goi'        => $tenGoi,
+                            'features'       => $featuresOfGoi,
+                            'max_doi'        => $maxDoi,
+                            'max_thanh_vien' => $maxThanhVien,
+                            'so_tien'        => 0,
+                            'ngay_bat_dau'   => $ngayBatDau,
+                            'ngay_ket_thuc'  => $ngayKetThuc,
+                            'trang_thai'     => 'APPROVED',
+                        ]);
+                        $actionMessage = "Kích hoạt gói miễn phí {$tenGoi}";
+                    }
+
+                    NhatKyHoatDong::ghiLog(
+                        sprintf(
+                            '%s cho người dùng #%d (%s) — Gói: %s — Miễn phí — HH: %s',
+                            $actionMessage,
+                            $nguoiDungId,
+                            $user->ho_ten,
+                            $tenGoi,
+                            $targetRecord->ngay_ket_thuc
+                        ),
+                        [
+                            'id_nguoi_dung'  => $nguoiDungId,
+                            'id_doi_tac'     => $targetRecord->id,
+                            'ten_goi'        => $tenGoi,
+                            'so_tien'        => 0,
+                            'ngay_bat_dau'   => $ngayBatDau,
+                            'ngay_ket_thuc'  => $targetRecord->ngay_ket_thuc,
+                            'auto_approved'  => true,
+                        ],
+                        'Thành công',
+                        null
+                    );
+
+                    return response()->json([
+                        'success'       => true,
+                        'is_partner'    => true,
+                        'auto_approved' => true,
+                        'message'       => sprintf(
+                            'Kích hoạt gói miễn phí "%s" thành công!',
+                            $tenGoi
+                        ),
+                        'ten_goi'       => $tenGoi,
+                        'ngay_ket_thuc' => $targetRecord->ngay_ket_thuc,
+                        'redirect_url'  => '/doi-tac/dashboard',
+                    ]);
+                });
             }
 
             // Trích xuất phần nội dung tìm kiếm, ví dụ: "MUAGOI HIEU97995"

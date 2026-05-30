@@ -28,6 +28,11 @@ class PhanQuyenController extends Controller
         $chuc_vu_id = $request->chuc_vu_id;
         $list_chuc_nang = $request->list_chuc_nang; // Array of IDs
 
+        // Get existing permissions before clear
+        $chucVu = \App\Models\ChucVu::find($chuc_vu_id);
+        $roleName = $chucVu ? $chucVu->ten_chuc_vu : '';
+        $old_chuc_nang_ids = ChiTietPhanQuyen::where('chuc_vu_id', $chuc_vu_id)->pluck('chuc_nang_id')->toArray();
+
         // Clear existing
         ChiTietPhanQuyen::where('chuc_vu_id', $chuc_vu_id)->delete();
 
@@ -37,6 +42,48 @@ class PhanQuyenController extends Controller
                 'chuc_vu_id' => $chuc_vu_id,
                 'chuc_nang_id' => $id_chuc_nang
             ]);
+        }
+
+        // Generate notifications for Trưởng Nhánh (Quản trị viên chi nhánh) role
+        if ($chucVu && (stripos($roleName, 'Trưởng Nhánh') !== false || stripos($roleName, 'Quản trị viên chi nhánh') !== false)) {
+            $turned_off_ids = array_diff($old_chuc_nang_ids, $list_chuc_nang);
+            $turned_on_ids = array_diff($list_chuc_nang, $old_chuc_nang_ids);
+
+            $all_users = \App\Models\NguoiDung::where('trang_thai', 'Hoạt động')->get();
+
+            // Notify turned off functions
+            foreach ($turned_off_ids as $id_chuc_nang) {
+                $chucNang = \App\Models\ChucNang::find($id_chuc_nang);
+                if ($chucNang) {
+                    $ten_chuc_nang = $chucNang->ten_chuc_nang;
+                    foreach ($all_users as $user) {
+                        \App\Models\NotificationCustom::create([
+                            'user_id' => $user->id,
+                            'target_member_id' => null,
+                            'title' => 'Chức năng tạm khóa',
+                            'body' => "Chức năng '{$ten_chuc_nang}' đã bị tạm khóa bởi hệ thống/Admin. Bạn không thể sử dụng chức năng này cho đến khi được bật lại.",
+                            'meta' => ['type' => 'permission_lock', 'chuc_nang_id' => $id_chuc_nang, 'ten_chuc_nang' => $ten_chuc_nang]
+                        ]);
+                    }
+                }
+            }
+
+            // Notify turned on functions
+            foreach ($turned_on_ids as $id_chuc_nang) {
+                $chucNang = \App\Models\ChucNang::find($id_chuc_nang);
+                if ($chucNang) {
+                    $ten_chuc_nang = $chucNang->ten_chuc_nang;
+                    foreach ($all_users as $user) {
+                        \App\Models\NotificationCustom::create([
+                            'user_id' => $user->id,
+                            'target_member_id' => null,
+                            'title' => 'Chức năng mở khóa',
+                            'body' => "Chức năng '{$ten_chuc_nang}' đã được mở khóa. Bạn hiện tại có thể truy cập và sử dụng bình thường.",
+                            'meta' => ['type' => 'permission_unlock', 'chuc_nang_id' => $id_chuc_nang, 'ten_chuc_nang' => $ten_chuc_nang]
+                        ]);
+                    }
+                }
+            }
         }
 
         return response()->json([

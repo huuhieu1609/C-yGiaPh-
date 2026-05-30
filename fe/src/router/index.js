@@ -263,7 +263,7 @@ const routes = [
                 path: 'thanh-vien',
                 name: 'partner-thanh-vien',
                 component: () => import('../components/DoiTac/QuanLyThanhVien/index.vue'),
-                meta: { permission: 'Cây Gia Phả' }
+                meta: { permission: 'Quản Lý Thành Viên' }
             },
             {
                 path: 'tra-cuu',
@@ -299,7 +299,7 @@ const routes = [
                 path: 'de-xuat',
                 name: 'partner-de-xuat',
                 component: () => import('../components/DoiTac/QuanLyDeXuat/index.vue'),
-                meta: { permission: 'Cây Gia Phả' }
+                meta: { permission: 'Kiểm Duyệt Đề Xuất' }
             },
             {
                 path: 'su-kien',
@@ -316,7 +316,8 @@ const routes = [
             {
                 path: 'quan-ly-goi',
                 name: 'partner-quan-ly-goi',
-                component: () => import('../components/DoiTac/QuanLyGoi/index.vue')
+                component: () => import('../components/DoiTac/QuanLyGoi/index.vue'),
+                meta: { permission: 'Quản Lý Gói Dịch Vụ' }
             }
         ]
     }
@@ -392,38 +393,52 @@ router.beforeEach(async (to, from, next) => {
     const requiredPermission = to.meta?.permission;
     if (requiredPermission && !isMasterAdmin) {
         const idChucVu = user?.id_chuc_vu;
-        // Nếu user có chức vụ (idChucVu khác null/undefined) -> bắt buộc kiểm tra quyền
-        if (idChucVu !== null && idChucVu !== undefined) {
-            
-            // Trường hợp 1: localStorage cũ ĐÃ CÓ quyền
-            if (permissions.includes(requiredPermission)) {
-                // Gửi ngầm request cập nhật quyền realtime để phòng trường hợp Admin vừa tắt quyền ở backend
-                axios.get('http://127.0.0.1:8000/api/me', {
-                    headers: { Authorization: 'Bearer ' + token }
-                }).then(response => {
+        if ((idChucVu !== null && idChucVu !== undefined) || user?.is_doi_tac == 1) {
+            let updatedPermissions = permissions;
+
+            // Nếu là Đối Tác, luôn đồng bộ quyền từ server ngay trước khi kiểm tra để áp dụng trực tiếp ngay lập tức
+            if (user?.is_doi_tac == 1) {
+                try {
+                    const response = await axios.get('http://127.0.0.1:8000/api/me', {
+                        headers: { Authorization: 'Bearer ' + token }
+                    });
                     if (response.data && response.data.permissions) {
-                        localStorage.setItem('permissions', JSON.stringify(response.data.permissions));
+                        updatedPermissions = response.data.permissions;
+                        localStorage.setItem('permissions', JSON.stringify(updatedPermissions));
                         localStorage.setItem('user', JSON.stringify(response.data.user || user));
                     }
-                }).catch(() => {});
-                
-                return next();
-            }
-            
-            // Trường hợp 2: localStorage cũ THIẾU quyền -> gọi đồng bộ để check xem Admin có vừa bật lên không
-            let updatedPermissions = [];
-            try {
-                const response = await axios.get('http://127.0.0.1:8000/api/me', {
-                    headers: { Authorization: 'Bearer ' + token }
-                });
-                if (response.data && response.data.permissions) {
-                    updatedPermissions = response.data.permissions;
-                    localStorage.setItem('permissions', JSON.stringify(updatedPermissions));
-                    localStorage.setItem('user', JSON.stringify(response.data.user || user));
+                } catch (error) {
+                    console.error('Realtime permissions fetch failed:', error);
                 }
-            } catch (error) {
-                console.error('Realtime permissions fetch failed:', error);
-                updatedPermissions = permissions;
+            } else {
+                // Với các user khác, sử dụng cơ chế cache cũ để tối ưu hiệu năng
+                if (permissions.includes(requiredPermission)) {
+                    // Gửi ngầm request cập nhật quyền realtime để phòng trường hợp Admin vừa tắt quyền ở backend
+                    axios.get('http://127.0.0.1:8000/api/me', {
+                        headers: { Authorization: 'Bearer ' + token }
+                    }).then(response => {
+                        if (response.data && response.data.permissions) {
+                            localStorage.setItem('permissions', JSON.stringify(response.data.permissions));
+                            localStorage.setItem('user', JSON.stringify(response.data.user || user));
+                        }
+                    }).catch(() => {});
+                    
+                    return next();
+                }
+
+                // Nếu cache thiếu quyền, check xem Admin có vừa bật lên không
+                try {
+                    const response = await axios.get('http://127.0.0.1:8000/api/me', {
+                        headers: { Authorization: 'Bearer ' + token }
+                    });
+                    if (response.data && response.data.permissions) {
+                        updatedPermissions = response.data.permissions;
+                        localStorage.setItem('permissions', JSON.stringify(updatedPermissions));
+                        localStorage.setItem('user', JSON.stringify(response.data.user || user));
+                    }
+                } catch (error) {
+                    console.error('Realtime permissions fetch failed:', error);
+                }
             }
 
             // Kiểm tra lại với danh sách quyền mới nhất vừa cập nhật
@@ -432,20 +447,24 @@ router.beforeEach(async (to, from, next) => {
             }
 
             // Thực sự không có quyền -> Báo lỗi & Chặn
-            const isThanhVien = String(user.id_chuc_vu) === '3' || (user.vai_tro && user.vai_tro.toLowerCase().includes('thành viên'));
             let errorMsg = "Bạn không có quyền với chức năng này";
             
-            if (isThanhVien) {
-                const getMemberFriendlyPermissionName = (name) => {
-                    if (!name) return "chức năng này";
-                    let friendlyName = name.replace(/Quản Lý/g, 'Xem').replace(/quản lý/g, 'xem');
-                    if (name === 'Cây Gia Phả') return 'Xem Cây Gia Phả';
-                    if (name === 'Tra Cứu Xưng Hô') return 'Xem Tra Cứu Xưng Hô';
-                    if (name === 'Quỹ & Sự Kiện') return 'Xem Quỹ & Sự Kiện';
-                    if (name === 'Nhật Ký Thao Tác') return 'Xem Nhật Ký Thao Tác';
-                    return friendlyName;
-                };
-                errorMsg = `Bạn chưa được cấp quyền để xem ${getMemberFriendlyPermissionName(requiredPermission)}`;
+            if (user?.is_doi_tac == 1) {
+                errorMsg = "Bạn không có quyền sử dụng chức năng này. Khi nào bên Admin bật lại thì bạn mới có thể dùng được!";
+            } else {
+                const isThanhVien = String(user.id_chuc_vu) === '3' || (user.vai_tro && user.vai_tro.toLowerCase().includes('thành viên'));
+                if (isThanhVien) {
+                    const getMemberFriendlyPermissionName = (name) => {
+                        if (!name) return "chức năng này";
+                        let friendlyName = name.replace(/Quản Lý/g, 'Xem').replace(/quản lý/g, 'xem');
+                        if (name === 'Cây Gia Phả') return 'Xem Cây Gia Phả';
+                        if (name === 'Tra Cứu Xưng Hô') return 'Xem Tra Cứu Xưng Hô';
+                        if (name === 'Quỹ & Sự Kiện') return 'Xem Quỹ & Sự Kiện';
+                        if (name === 'Nhật Ký Thao Tác') return 'Xem Nhật Ký Thao Tác';
+                        return friendlyName;
+                    };
+                    errorMsg = `Bạn chưa được cấp quyền để xem ${getMemberFriendlyPermissionName(requiredPermission)}`;
+                }
             }
 
             try {
