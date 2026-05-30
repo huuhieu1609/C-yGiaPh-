@@ -2858,7 +2858,8 @@ class DoiTacSeeder extends Seeder
             'noi_sinh' => 'Hà Nội',
             'nghe_nghiep' => 'Kinh doanh',
             'doi_thu' => 5,
-            'loai_quan_he' => 'Phụ',
+            'loai_quan_he' => 'Vợ/Chồng',
+            'spouse_of_id' => $beKhai->id,
             'trang_thai' => 'Còn sống',
             'ghi_chu' => 'Vợ hiền của anh Nguyễn Đức Khải.',
             'avatar' => 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=200'
@@ -2900,7 +2901,8 @@ class DoiTacSeeder extends Seeder
             'noi_sinh' => 'Hà Nội',
             'nghe_nghiep' => 'Giáo viên',
             'doi_thu' => 6,
-            'loai_quan_he' => 'Phụ',
+            'loai_quan_he' => 'Vợ/Chồng',
+            'spouse_of_id' => $beManh->id,
             'trang_thai' => 'Còn sống',
             'ghi_chu' => 'Vợ của anh Nguyễn Đức Mạnh.',
             'avatar' => 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=200'
@@ -2942,7 +2944,8 @@ class DoiTacSeeder extends Seeder
             'noi_sinh' => 'Hà Nội',
             'nghe_nghiep' => 'Bác sĩ',
             'doi_thu' => 7,
-            'loai_quan_he' => 'Phụ',
+            'loai_quan_he' => 'Vợ/Chồng',
+            'spouse_of_id' => $beTuan->id,
             'trang_thai' => 'Còn sống',
             'ghi_chu' => 'Vợ hiền của anh Nguyễn Đức Tuấn.',
             'avatar' => 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=200'
@@ -2984,7 +2987,8 @@ class DoiTacSeeder extends Seeder
             'noi_sinh' => 'Hà Nội',
             'nghe_nghiep' => 'Dược sĩ',
             'doi_thu' => 8,
-            'loai_quan_he' => 'Phụ',
+            'loai_quan_he' => 'Vợ/Chồng',
+            'spouse_of_id' => $beLong->id,
             'trang_thai' => 'Còn sống',
             'ghi_chu' => 'Vợ hiền của anh Nguyễn Đức Long.',
             'avatar' => 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=200'
@@ -3026,7 +3030,8 @@ class DoiTacSeeder extends Seeder
             'noi_sinh' => 'Hà Nội',
             'nghe_nghiep' => 'Kỹ sư sinh học',
             'doi_thu' => 9,
-            'loai_quan_he' => 'Phụ',
+            'loai_quan_he' => 'Vợ/Chồng',
+            'spouse_of_id' => $bePhat->id,
             'trang_thai' => 'Còn sống',
             'ghi_chu' => 'Vợ hiền của anh Nguyễn Đức Phát.',
             'avatar' => 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=200'
