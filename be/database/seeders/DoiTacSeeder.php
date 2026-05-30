@@ -41,6 +41,7 @@ class DoiTacSeeder extends Seeder
             'vai_tro' => 'Thành viên',
             'trang_thai' => 'Hoạt động',
             'is_doi_tac' => 1,
+            'avatar' => 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=200',
             'created_at' => now(),
             'updated_at' => now(),
         ]);

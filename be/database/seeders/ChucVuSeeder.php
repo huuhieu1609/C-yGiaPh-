@@ -30,7 +30,7 @@ class ChucVuSeeder extends Seeder
         }
 
         // Map default permissions for Thành Viên
-        $branchAdminId = DB::table('chuc_vus')->where('ten_chuc_vu', 'Quản Trị Viên Chi Nhánh')->value('id');
+        $branchAdminId = DB::table('chuc_vus')->where('ten_chuc_vu', 'Trưởng Nhánh')->value('id');
         $memberId = DB::table('chuc_vus')->where('ten_chuc_vu', 'Thành Viên')->value('id');
 
         $memberPermissions = [
@@ -71,7 +71,10 @@ class ChucVuSeeder extends Seeder
             'quan-ly-tai-lieu',
             'quan-ly-dong-gop',
             'quan-ly-thong-bao',
-            'nhat-ky-thao-tac'
+            'nhat-ky-thao-tac',
+            'quan-ly-thanh-vien',
+            'kiem-duyet-de-xuat',
+            'quan-ly-goi-dich-vu'
         ];
 
         if ($branchAdminId) {

@@ -18,7 +18,8 @@
 
     <div class="user-greeting d-flex align-items-center gap-3 mb-2" @click="goToProfile" style="cursor: pointer;" title="Xem hồ sơ & đổi mật khẩu">
       <div class="avatar flex-shrink-0">
-        <span>{{ userName.charAt(0).toUpperCase() }}</span>
+        <img v-if="userAvatar && userAvatar !== 'https://dzfullstack.com/assets/images/logo-1.png'" :src="userAvatar" alt="Avatar" class="avatar-img rounded-circle" style="width: 36px; height: 36px; object-fit: cover; border: 1px solid var(--neo-border); display: block;" />
+        <span v-else>{{ userName.charAt(0).toUpperCase() }}</span>
         <div class="avatar-ring"></div>
       </div>
       <div class="d-flex flex-column hide-on-collapse lh-1 text-nowrap">
@@ -181,6 +182,7 @@ export default {
   data() {
     return {
       userName: 'Đối Tác',
+      userAvatar: null,
       isDarkMode: false,
       permissions: [],
       isMasterAdmin: false,
@@ -202,6 +204,9 @@ export default {
           this.userName = user.ho_ten;
         } else if (user && user.username) {
           this.userName = user.username;
+        }
+        if (user && user.avatar) {
+          this.userAvatar = user.avatar;
         }
         // Master Admin luôn có toàn quyền
         this.isMasterAdmin = user?.vai_tro?.toLowerCase() === 'admin';

@@ -22,7 +22,8 @@
     <!-- User Section -->
     <div class="user-greeting d-flex align-items-center gap-3" @click="goToProfile" style="cursor: pointer;" title="Xem hồ sơ & đổi mật khẩu">
       <div class="avatar flex-shrink-0">
-        <span>A</span>
+        <img v-if="userAvatar && userAvatar !== 'https://dzfullstack.com/assets/images/logo-1.png'" :src="userAvatar" alt="Avatar" class="avatar-img rounded-circle" style="width: 36px; height: 36px; object-fit: cover; border: 1px solid var(--neo-border); display: block;" />
+        <span v-else>{{ userName.charAt(0).toUpperCase() }}</span>
         <div class="avatar-ring"></div>
       </div>
       <div class="d-flex flex-column hide-on-collapse lh-1 text-nowrap">
@@ -164,6 +165,7 @@ export default {
   data() {
     return {
       userName: 'Quản Trị Viên',
+      userAvatar: null,
       isDarkMode: false,
       permissions: [],
       isMasterAdmin: false,
@@ -175,7 +177,7 @@ export default {
     const savedTheme = localStorage.getItem('theme') || 'light';
     this.isDarkMode = savedTheme === 'dark';
     document.documentElement.setAttribute('data-theme', savedTheme);
-
+ 
     // Đọc thông tin user
     const userStr = localStorage.getItem('user');
     if (userStr) {
@@ -185,6 +187,9 @@ export default {
           this.userName = user.ho_ten;
         } else if (user && user.username) {
           this.userName = user.username;
+        }
+        if (user && user.avatar) {
+          this.userAvatar = user.avatar;
         }
         // Master Admin luôn có toàn quyền, không bị lọc menu
         this.isMasterAdmin = user?.vai_tro?.toLowerCase() === 'admin';

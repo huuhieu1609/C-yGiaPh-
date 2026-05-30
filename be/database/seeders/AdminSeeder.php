@@ -59,7 +59,6 @@ class AdminSeeder extends Seeder
 
         // 4. Create Admin User
         DB::table('nguoi_dungs')->insert([
-            
             'ho_ten'        => 'Master Admin',
             'email'         => 'admin@master.com',
             'mat_khau'      => Hash::make('123456'),
@@ -67,6 +66,7 @@ class AdminSeeder extends Seeder
             'vai_tro'       => 'Admin',
             'id_chuc_vu'    => $id_chuc_vu,
             'trang_thai'    => 'Hoạt động',
+            'avatar'        => 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&q=80&w=200',
             'created_at'    => now(),
             'updated_at'    => now(),
         ]);
