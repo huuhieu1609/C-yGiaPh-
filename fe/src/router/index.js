@@ -263,7 +263,7 @@ const routes = [
                 path: 'thanh-vien',
                 name: 'partner-thanh-vien',
                 component: () => import('../components/DoiTac/QuanLyThanhVien/index.vue'),
-                meta: { permission: 'Cây Gia Phả' }
+                meta: { permission: 'Quản Lý Thành Viên' }
             },
             {
                 path: 'tra-cuu',
@@ -299,7 +299,7 @@ const routes = [
                 path: 'de-xuat',
                 name: 'partner-de-xuat',
                 component: () => import('../components/DoiTac/QuanLyDeXuat/index.vue'),
-                meta: { permission: 'Cây Gia Phả' }
+                meta: { permission: 'Kiểm Duyệt Đề Xuất' }
             },
             {
                 path: 'su-kien',
@@ -316,7 +316,8 @@ const routes = [
             {
                 path: 'quan-ly-goi',
                 name: 'partner-quan-ly-goi',
-                component: () => import('../components/DoiTac/QuanLyGoi/index.vue')
+                component: () => import('../components/DoiTac/QuanLyGoi/index.vue'),
+                meta: { permission: 'Quản Lý Gói Dịch Vụ' }
             }
         ]
     }

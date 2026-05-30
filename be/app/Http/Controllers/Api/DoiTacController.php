@@ -238,7 +238,7 @@ class DoiTacController extends Controller
                 'effective_features'    => $effectiveFeatures,
                 'effective_max_doi'     => $effectiveLimits['max_doi'],
                 'effective_max_thanh_vien' => $effectiveLimits['max_thanh_vien'],
-                'active_count'          => $packages->where('is_active', true)->count(),
+                'active_count'          => $packageList->where('is_active', true)->count(),
                 'latest_expiry'         => DoiTac::getLatestExpiry($userId),
                 'earliest_expiry'       => DoiTac::getEarliestExpiry($userId),
             ],
@@ -301,7 +301,9 @@ class DoiTacController extends Controller
                     $query->where('is_doi_tac', 1);
                 })
                 ->with(['nguoiDung.chiNhanh'])
-                ->get();
+                ->get()
+                ->unique('id_nguoi_dung')
+                ->values();
             
             // Map each partner to resolve which branch/lineage they manage
             $data->each(function ($item) {

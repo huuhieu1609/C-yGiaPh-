@@ -441,12 +441,12 @@ const TreeItem = defineComponent({
         if (hasMultipleSpouses) {
             coupleChildren.push(makeSpouseChunk(this.member.spouses[0], 1));
             coupleChildren.push(h('div', { 
-                class: ['tree-connector-h', 'spouse-connector-0'], 
+                class: ['tree-connector-h', 'spouse-connector', 'spouse-connector-0'], 
                 style: { order: 2 } 
             }, [ h('i', { class: 'bx bxs-heart connector-heart' }) ]));
             coupleChildren.push(makeMainCard(3, 'main-centered'));
             coupleChildren.push(h('div', { 
-                class: ['tree-connector-h', 'spouse-connector-1'], 
+                class: ['tree-connector-h', 'spouse-connector', 'spouse-connector-1'], 
                 style: { order: 4 } 
             }, [ h('i', { class: 'bx bxs-heart connector-heart' }) ]));
             coupleChildren.push(makeSpouseChunk(this.member.spouses[1], 5));
@@ -1345,7 +1345,7 @@ export default {
   background: #d4af37;
   z-index: 1;
 }
-/* .has-multiple-spouses-li > ul::before {
+.has-multiple-spouses-li > ul::before {
   display: none !important;
 }
 .union-column > ul::before {

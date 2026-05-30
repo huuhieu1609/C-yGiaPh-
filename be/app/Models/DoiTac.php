@@ -280,4 +280,18 @@ class DoiTac extends Model
         $pct = (($total - $elapsed) / $total) * 100;
         return max(0.0, min(100.0, round($pct, 2)));
     }
+
+    /**
+     * Accessor: Xác định gói có đang hoạt động hay không.
+     */
+    public function getIsActiveAttribute(): bool
+    {
+        if ($this->trang_thai !== 'APPROVED' && $this->trang_thai !== '1' && $this->trang_thai !== 1) {
+            return false;
+        }
+        if (!$this->ngay_ket_thuc) {
+            return true;
+        }
+        return $this->ngay_ket_thuc->startOfDay()->gte(now()->startOfDay());
+    }
 }

@@ -143,9 +143,9 @@ export default {
         .catch(err => {
           // fallback if backend is down
           this.listPackages = [
-            { id: 1, ten_goi: 'Gói Khởi Tạo', gia_ca: 100000, thoi_han: 12, max_doi: 5, max_thanh_vien: 100, mo_ta: 'Phù hợp cho chi ngành nhỏ hoặc dòng tộc bắt đầu số hóa phả hệ.', trang_thai: 'Hoạt động' },
-            { id: 2, ten_goi: 'Gói Hưng Thịnh', gia_ca: 250000, thoi_han: 12, max_doi: 10, max_thanh_vien: 500, mo_ta: 'Giải pháp toàn diện cho các dòng tộc quy mô trung bình.', trang_thai: 'Hoạt động' },
-            { id: 3, ten_goi: 'Gói Trường Tồn', gia_ca: 500000, thoi_han: 12, max_doi: 999, max_thanh_vien: 99999, mo_ta: 'Không giới hạn đặc quyền dành cho đại gia tộc lớn nhiều chi nhánh.', trang_thai: 'Hoạt động' }
+            { id: 1, ten_goi: 'Gói Khởi Tạo', gia_ca: 100000, thoi_han: 12, max_doi: 3, max_thanh_vien: 50, mo_ta: 'Phù hợp cho chi ngành nhỏ hoặc dòng tộc bắt đầu số hóa phả hệ.', trang_thai: 'Hoạt động' },
+            { id: 2, ten_goi: 'Gói Hưng Thịnh', gia_ca: 3000000, thoi_han: 12, max_doi: 10, max_thanh_vien: 500, mo_ta: 'Giải pháp toàn diện cho các dòng tộc quy mô trung bình.', trang_thai: 'Hoạt động' },
+            { id: 3, ten_goi: 'Gói Trường Tồn', gia_ca: 5000000, thoi_han: 12, max_doi: 99, max_thanh_vien: 10000, mo_ta: 'Không giới hạn đặc quyền dành cho đại gia tộc lớn nhiều chi nhánh.', trang_thai: 'Hoạt động' }
           ];
         });
     },
@@ -325,6 +325,27 @@ export default {
 .price-duration {
   font-size: 0.9rem;
   margin-left: 5px;
+}
+
+.card-body-custom {
+  max-height: 300px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(212, 175, 55, 0.3) transparent;
+  padding-right: 5px;
+}
+.card-body-custom::-webkit-scrollbar {
+  width: 5px;
+}
+.card-body-custom::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.02);
+}
+.card-body-custom::-webkit-scrollbar-thumb {
+  background: rgba(212, 175, 55, 0.3);
+  border-radius: 4px;
+}
+.card-body-custom::-webkit-scrollbar-thumb:hover {
+  background: rgba(212, 175, 55, 0.6);
 }
 
 .features-list li {

@@ -137,7 +137,6 @@ Route::middleware(['auth:sanctum', 'activity'])->group(function () {
     Route::get('/member/{id}/roles', [MemberRoleController::class, 'list']);
 
     Route::prefix('/goi-dich-vu')->group(function () {
-        Route::get('/get-data', [GoiDichVuController::class, 'getData']);
         Route::post('/create', [GoiDichVuController::class, 'create']);
         Route::post('/update', [GoiDichVuController::class, 'update']);
         Route::post('/delete', [GoiDichVuController::class, 'delete']);
@@ -147,8 +146,10 @@ Route::middleware(['auth:sanctum', 'activity'])->group(function () {
     // =========================================================
     // CÂY GIA PHẢ: Thành Viên, Vợ Chồng, Con Nuôi
     // =========================================================
-    Route::prefix('/thanh-vien')->middleware('phan_quyen:Cây Gia Phả')->group(function () {
-        Route::get('/get-data', [ThanhVienController::class, 'getData']);
+    Route::get('/thanh-vien/get-data', [ThanhVienController::class, 'getData'])
+        ->middleware('phan_quyen:Quản Lý Thành Viên|Cây Gia Phả|Quản Lý Mộ Phần|Quản Lý Sự Kiện|Tra Cứu Xưng Hô');
+
+    Route::prefix('/thanh-vien')->middleware('phan_quyen:Quản Lý Thành Viên')->group(function () {
         Route::get('/chi-nhanh/{chiNhanhId}', [ThanhVienController::class, 'getByChiNhanh']);
         Route::post('/create', [ThanhVienController::class, 'create']);
         Route::post('/update', [ThanhVienController::class, 'update']);
@@ -187,8 +188,10 @@ Route::middleware(['auth:sanctum', 'activity'])->group(function () {
         Route::post('/search', [NguoiDungController::class, 'search']);
     });
 
+    Route::get('/doi-toc-ho/get-data', [DoiTocHoController::class, 'getData'])
+        ->middleware('phan_quyen:Cây Gia Phả|Quản Lý Thành Viên');
+
     Route::prefix('/doi-toc-ho')->middleware('phan_quyen:Cây Gia Phả')->group(function () {
-        Route::get('/get-data', [DoiTocHoController::class, 'getData']);
         Route::post('/create', [DoiTocHoController::class, 'create']);
         Route::post('/update', [DoiTocHoController::class, 'update']);
         Route::post('/delete', [DoiTocHoController::class, 'delete']);
@@ -196,8 +199,10 @@ Route::middleware(['auth:sanctum', 'activity'])->group(function () {
         Route::post('/search', [DoiTocHoController::class, 'search']);
     });
 
+    Route::get('/chi-nhanh/get-data', [ChiNhanhController::class, 'getData'])
+        ->middleware('phan_quyen:Quản Lý Chi Nhánh|Quản Lý Thành Viên|Cây Gia Phả');
+
     Route::prefix('/chi-nhanh')->middleware('phan_quyen:Quản Lý Chi Nhánh')->group(function () {
-        Route::get('/get-data', [ChiNhanhController::class, 'getData']);
         Route::post('/create', [ChiNhanhController::class, 'create']);
         Route::post('/update', [ChiNhanhController::class, 'update']);
         Route::post('/delete', [ChiNhanhController::class, 'delete']);
@@ -208,8 +213,10 @@ Route::middleware(['auth:sanctum', 'activity'])->group(function () {
     // =========================================================
     // NHÀ THỜ HỌ, MỘ PHẦN
     // =========================================================
+    Route::get('/nha-tho-ho/get-data', [NhaThoHoController::class, 'getData'])
+        ->middleware('phan_quyen:Cây Gia Phả|Quản Lý Mộ Phần');
+
     Route::prefix('/nha-tho-ho')->middleware('phan_quyen:Cây Gia Phả')->group(function () {
-        Route::get('/get-data', [NhaThoHoController::class, 'getData']);
         Route::post('/create', [NhaThoHoController::class, 'create']);
         Route::post('/update', [NhaThoHoController::class, 'update']);
         Route::post('/delete', [NhaThoHoController::class, 'delete']);
@@ -276,12 +283,15 @@ Route::middleware(['auth:sanctum', 'activity'])->group(function () {
     });
 
     Route::prefix('/de-xuat')->group(function () {
-        Route::get('/get-data', [DeXuatController::class, 'getData']);
         Route::get('/my-proposals', [DeXuatController::class, 'myProposals']);
         Route::post('/create', [DeXuatController::class, 'create']);
-        Route::post('/approve', [DeXuatController::class, 'approve']);
-        Route::post('/reject', [DeXuatController::class, 'reject']);
-        Route::post('/toggle-auto-approve', [DeXuatController::class, 'toggleAutoApprove']);
+
+        Route::middleware('phan_quyen:Kiểm Duyệt Đề Xuất')->group(function () {
+            Route::get('/get-data', [DeXuatController::class, 'getData']);
+            Route::post('/approve', [DeXuatController::class, 'approve']);
+            Route::post('/reject', [DeXuatController::class, 'reject']);
+            Route::post('/toggle-auto-approve', [DeXuatController::class, 'toggleAutoApprove']);
+        });
     });
 
     Route::prefix('/tham-gia-su-kien')->group(function () {
@@ -321,3 +331,4 @@ Route::prefix('/thanh-toan')->group(function () {
 });
 
 Route::get('/thanh-vien/public-detail/{id}', [ThanhVienController::class, 'getPublicDetail']);
+Route::get('/goi-dich-vu/get-data', [GoiDichVuController::class, 'getData']);

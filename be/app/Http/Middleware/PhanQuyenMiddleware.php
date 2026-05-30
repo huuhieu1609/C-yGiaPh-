@@ -37,19 +37,30 @@ class PhanQuyenMiddleware
             return $next($request);
         }
 
-        // Kiểm tra chức năng này có đang hoạt động không
-        $chucNangRecord = ChucNang::where('ten_chuc_nang', $chucNang)
-            ->where('trang_thai', 'Hoạt động')
-            ->first();
-
-        if (!$chucNangRecord) {
-            // Nếu chức năng không tồn tại trong DB thì bỏ qua kiểm tra (không chặn)
-            return $next($request);
-        }
-
         // Kiểm tra quyền hoạt động thực tế sau khi giao thoa
         $active_permissions = \App\Models\ThanhVienChucNang::getMemberActivePermissions($user);
-        $hasPermission = in_array($chucNangRecord->ten_chuc_nang, $active_permissions);
+
+        // Hỗ trợ nhiều quyền phân tách bởi dấu gạch đứng '|'
+        $required_perms = explode('|', $chucNang);
+        $hasPermission = false;
+
+        foreach ($required_perms as $perm) {
+            $permName = trim($perm);
+            $chucNangRecord = ChucNang::where('ten_chuc_nang', $permName)
+                ->where('trang_thai', 'Hoạt động')
+                ->first();
+
+            // Nếu chức năng không tồn tại trong DB, mặc định cho qua
+            if (!$chucNangRecord) {
+                $hasPermission = true;
+                break;
+            }
+
+            if (in_array($chucNangRecord->ten_chuc_nang, $active_permissions)) {
+                $hasPermission = true;
+                break;
+            }
+        }
 
         if (!$hasPermission) {
             $msg = 'Bạn không có quyền thực hiện chức năng: ' . $chucNang;
