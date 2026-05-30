@@ -399,6 +399,7 @@ const TreeItem = defineComponent({
             ]);
         };
 
+        let children = null;
         const coupleChildren = [];
         const hasMultipleSpouses = this.member.spouses && this.member.spouses.length === 2;
 
@@ -414,6 +415,11 @@ const TreeItem = defineComponent({
                 style: { order: 4 } 
             }, [ h('i', { class: 'bx bxs-heart connector-heart' }) ]));
             coupleChildren.push(makeSpouseChunk(this.member.spouses[1], 5));
+
+            const sp0 = this.member.spouses[0];
+            const sp1 = this.member.spouses[1];
+            const kids0 = hasChildren ? this.member.children.filter(c => c.me_id == sp0.id || c.cha_id == sp0.id) : [];
+            const kids1 = hasChildren ? this.member.children.filter(c => c.me_id == sp1.id || c.cha_id == sp1.id) : [];
 
             const col0 = h('div', { class: ['union-column', 'union-column-0', kids0.length === 0 ? 'union-column-empty' : ''] }, [
                 kids0.length > 0
@@ -454,19 +460,19 @@ const TreeItem = defineComponent({
                     coupleChildren.push(makeSpouseChunk(sp));
                 });
             }
+            children = hasChildren ? h('ul', 
+                this.member.children.map(child => h(TreeItem, { 
+                    key: child.id,
+                    member: child, 
+                    listDoiTocHo: this.listDoiTocHo, 
+                    searchQuery: this.searchQuery,
+                    onEdit: (m) => this.$emit('edit', m),
+                    onShowQr: (m) => this.$emit('show-qr', m),
+                    onAddChild: (m) => this.$emit('add-child', m),
+                    onAddSpouse: (m) => this.$emit('add-spouse', m)
+                }))
+            ) : null;
         }
-        const children = hasChildren ? h('ul', 
-            this.member.children.map(child => h(TreeItem, { 
-                key: child.id,
-                member: child, 
-                listDoiTocHo: this.listDoiTocHo, 
-                searchQuery: this.searchQuery,
-                onEdit: (m) => this.$emit('edit', m),
-                onShowQr: (m) => this.$emit('show-qr', m),
-                onAddChild: (m) => this.$emit('add-child', m),
-                onAddSpouse: (m) => this.$emit('add-spouse', m)
-            }))
-        ) : null;
 
         const nodeGroup = h('div', { class: 'tree-node-group' }, [ h('div', { class: 'couple-wrapper' }, coupleChildren) ]);
         
@@ -1428,5 +1434,5 @@ export default {
   width: 220px;
   height: 90px;
   visibility: hidden;
-}
+} */
 </style>
