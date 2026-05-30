@@ -78,7 +78,7 @@
 
         <div class="row g-4">
             <!-- Left Column: Locations Table & Moderation -->
-            <div class="col-lg-8 col-12">
+            <div class="col-12">
                 <div class="card genealogy-main-card shadow-sm border-0 h-100">
                     <div class="card-header bg-transparent py-3 border-bottom border-light-subtle d-flex align-items-center justify-content-between flex-wrap gap-2">
                         <h6 class="mb-0 fw-bold text-uppercase theme-text-main">
@@ -180,95 +180,6 @@
                                         </tr>
                                     </tbody>
                                 </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Right Column: Map Config & Suggestion Panel -->
-            <div class="col-lg-4 col-12">
-                <div class="d-flex flex-column gap-4">
-                    <!-- Global Configuration Card -->
-                    <div class="card genealogy-main-card shadow-sm border-0">
-                        <div class="card-header bg-transparent py-3 border-bottom border-light-subtle">
-                            <h6 class="mb-0 fw-bold text-uppercase theme-text-main">
-                                <i class="bx bx-cog me-2 text-warning"></i> Cấu Hình Bản Đồ Hệ Thống
-                            </h6>
-                        </div>
-                        <div class="card-body p-4">
-                            <form @submit.prevent="saveConfig">
-                                <div class="mb-3">
-                                    <label class="form-label fw-bold text-secondary small">Map Provider</label>
-                                    <select class="form-select premium-input" v-model="config.provider">
-                                        <option value="mapbox">Mapbox API (Recommended)</option>
-                                        <option value="google">Google Maps Platform</option>
-                                        <option value="openstreetmap">OpenStreetMap (Free)</option>
-                                    </select>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label fw-bold text-secondary small">API Access Token / Key</label>
-                                    <input type="password" class="form-control premium-input" placeholder="pk.eyJ1i..." v-model="config.apiKey">
-                                </div>
-                                <div class="row g-2 mb-3">
-                                    <div class="col-6">
-                                        <label class="form-label fw-bold text-secondary small">Kinh độ Mặc định</label>
-                                        <input type="text" class="form-control premium-input" v-model="config.defaultLng">
-                                    </div>
-                                    <div class="col-6">
-                                        <label class="form-label fw-bold text-secondary small">Vĩ độ Mặc định</label>
-                                        <input type="text" class="form-control premium-input" v-model="config.defaultLat">
-                                    </div>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label fw-bold text-secondary small">Default Zoom Level</label>
-                                    <input type="number" class="form-control premium-input" v-model="config.defaultZoom" min="1" max="20">
-                                </div>
-                                <div class="d-grid mt-4">
-                                    <button type="submit" class="btn btn-gradient-orange text-white radius-30 fw-bold py-2 shadow-sm" :disabled="saving">
-                                        <span v-if="saving" class="spinner-border spinner-border-sm me-2" role="status"></span>
-                                        Lưu Cấu Hình Bản Đồ
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-
-                    <!-- Suggestions Panel -->
-                    <div class="card genealogy-main-card shadow-sm border-0" style="background: linear-gradient(135deg, rgba(249, 115, 22, 0.03) 0%, rgba(255, 215, 0, 0.01) 100%);">
-                        <div class="card-header bg-transparent py-3 border-bottom border-light-subtle">
-                            <h6 class="mb-0 fw-bold text-uppercase theme-text-main text-gradient-gold">
-                                <i class="bx bx-bulb me-2"></i> Gợi Ý Quản Lý Bản Đồ Số
-                            </h6>
-                        </div>
-                        <div class="card-body p-4">
-                            <div class="suggestion-item d-flex gap-3 mb-3">
-                                <div class="sug-num">1</div>
-                                <div>
-                                    <strong class="theme-text-main d-block mb-1" style="font-size: 13.5px;">Tổng Quan Bản Đồ Hệ Thống</strong>
-                                    <span class="text-secondary small">Hiển thị một bản đồ toàn cầu gộp tất cả các tọa độ nhà thờ, mộ phần của đối tác để Admin xem tổng quát sự phân bổ dòng họ.</span>
-                                </div>
-                            </div>
-                            <div class="suggestion-item d-flex gap-3 mb-3">
-                                <div class="sug-num">2</div>
-                                <div>
-                                    <strong class="theme-text-main d-block mb-1" style="font-size: 13.5px;">Phê Duyệt Địa Điểm Công Khai</strong>
-                                    <span class="text-secondary small">Khi đối tác pin một di tích lịch sử dòng họ công khai, Admin sẽ kiểm duyệt độ chính xác thông tin trước khi hiển thị lên bản đồ chung.</span>
-                                </div>
-                            </div>
-                            <div class="suggestion-item d-flex gap-3 mb-3">
-                                <div class="sug-num">3</div>
-                                <div>
-                                    <strong class="theme-text-main d-block mb-1" style="font-size: 13.5px;">Quản Lý Danh Mục Điểm Ghim</strong>
-                                    <span class="text-secondary small">Thiết lập các nhóm điểm ghim (Ví dụ: Chi lăng, Mộ Tổ, Từ Đường, Địa Điểm Họp Mặt) cùng màu sắc và biểu tượng đại diện.</span>
-                                </div>
-                            </div>
-                            <div class="suggestion-item d-flex gap-3">
-                                <div class="sug-num">4</div>
-                                <div>
-                                    <strong class="theme-text-main d-block mb-1" style="font-size: 13.5px;">Thống Kê API & Lưu Trữ</strong>
-                                    <span class="text-secondary small">Theo dõi số lượt gọi API Map, dung lượng lưu trữ hình ảnh mộ phần và báo cáo tranh chấp địa điểm từ người dùng.</span>
-                                </div>
                             </div>
                         </div>
                     </div>
