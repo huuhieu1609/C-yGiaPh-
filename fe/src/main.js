@@ -55,15 +55,23 @@ axios.interceptors.request.use(
   }
 );
 
-// Bắt lỗi 403 Forbidden toàn cục để chặn người dùng đối tác lập tức và hiện thông báo Toastr
 axios.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response && error.response.status === 403) {
-      const user = JSON.parse(localStorage.getItem('user') || '{}');
-      if (user?.is_doi_tac == 1) {
-        toastr.error("Bạn không có quyền sử dụng chức năng này. Khi nào bên Admin bật lại thì bạn mới có thể dùng được!");
-        router.push('/doi-tac/dashboard');
+    if (error.response) {
+      if (error.response.status === 401) {
+        // Token không hợp lệ hoặc đã hết hạn (ví dụ khi refresh database)
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('user');
+        localStorage.removeItem('permissions');
+        toastr.error("Phiên đăng nhập đã hết hạn hoặc cơ sở dữ liệu đã được làm mới. Vui lòng đăng nhập lại!");
+        router.push('/login');
+      } else if (error.response.status === 403) {
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        if (user?.is_doi_tac == 1) {
+          toastr.error("Bạn không có quyền sử dụng chức năng này. Khi nào bên Admin bật lại thì bạn mới có thể dùng được!");
+          router.push('/doi-tac/dashboard');
+        }
       }
     }
     return Promise.reject(error);
