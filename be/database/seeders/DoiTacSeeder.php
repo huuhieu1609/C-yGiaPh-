@@ -69,12 +69,17 @@ class DoiTacSeeder extends Seeder
 
         $cnId = $chiNhanh->id;
 
-        // 4. Tạo các đời tộc họ (Đời 1 đến Đời 5) cho chi nhánh này
+        // 4. Tạo các đời tộc họ (Đời 1 đến Đời 10) cho chi nhánh này
         DoiTocHo::create(['so_doi' => 1, 'ten_doi' => 'Thủy Tổ Khai Sáng', 'mo_ta' => 'Thế hệ đầu tiên định cư tại Thạch Thất', 'chi_nhanh_id' => $cnId]);
         DoiTocHo::create(['so_doi' => 2, 'ten_doi' => 'Thế Hệ Tiếp Bước', 'mo_ta' => 'Giai đoạn kháng chiến cứu nước', 'chi_nhanh_id' => $cnId]);
         DoiTocHo::create(['so_doi' => 3, 'ten_doi' => 'Thế Hệ Đổi Mới', 'mo_ta' => 'Xây dựng và phục hưng dòng họ', 'chi_nhanh_id' => $cnId]);
         DoiTocHo::create(['so_doi' => 4, 'ten_doi' => 'Thế Hệ Hội Nhập', 'mo_ta' => 'Thế hệ hiện đại năng động', 'chi_nhanh_id' => $cnId]);
         DoiTocHo::create(['so_doi' => 5, 'ten_doi' => 'Thế Hệ Tương Lai', 'mo_ta' => 'Ươm mầm tài năng trẻ dòng họ', 'chi_nhanh_id' => $cnId]);
+        DoiTocHo::create(['so_doi' => 6, 'ten_doi' => 'Thế Hệ Vương Giả', 'mo_ta' => 'Giai đoạn phát triển phồn vinh', 'chi_nhanh_id' => $cnId]);
+        DoiTocHo::create(['so_doi' => 7, 'ten_doi' => 'Thế Hệ Vinh Quang', 'mo_ta' => 'Thế hệ thành công vượt bậc', 'chi_nhanh_id' => $cnId]);
+        DoiTocHo::create(['so_doi' => 8, 'ten_doi' => 'Thế Hệ Vững Bền', 'mo_ta' => 'Giai đoạn xây dựng nền tảng vững chắc', 'chi_nhanh_id' => $cnId]);
+        DoiTocHo::create(['so_doi' => 9, 'ten_doi' => 'Thế Hệ Tinh Hoa', 'mo_ta' => 'Sự kết hợp tinh túy của truyền thống và hiện đại', 'chi_nhanh_id' => $cnId]);
+        DoiTocHo::create(['so_doi' => 10, 'ten_doi' => 'Thế Hệ Vạn Đại', 'mo_ta' => 'Con cháu nối đời vững bền trăm năm', 'chi_nhanh_id' => $cnId]);
 
         // 5. Thêm dữ liệu 5 đời thành viên chân thực (Mở rộng quy mô, có nhiều người 2 vợ)
         // ------------------ ĐỜI 1 ------------------
@@ -2840,6 +2845,216 @@ class DoiTacSeeder extends Seeder
             'trang_thai' => 'Còn sống',
             'ghi_chu' => 'Con thứ hai anh Hoàng chị Trang.',
             'avatar' => 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=200'
+        ]);
+
+        // ------------------ ĐỜI 6 ------------------
+        // Vợ của Nguyễn Đức Khải (Đời 5)
+        $chiPhuongKhai = ThanhVien::create([
+            'chi_nhanh_id' => $cnId,
+            'ho_ten' => 'Lê Thị Phương',
+            'ten_goi' => 'Phương (Vợ Khải)',
+            'gioi_tinh' => 'Nữ',
+            'ngay_sinh' => '2018-05-20',
+            'noi_sinh' => 'Hà Nội',
+            'nghe_nghiep' => 'Kinh doanh',
+            'doi_thu' => 5,
+            'loai_quan_he' => 'Phụ',
+            'trang_thai' => 'Còn sống',
+            'ghi_chu' => 'Vợ hiền của anh Nguyễn Đức Khải.',
+            'avatar' => 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=200'
+        ]);
+
+        VoChong::create([
+            'chong_id' => $beKhai->id,
+            'vo_id' => $chiPhuongKhai->id,
+            'ngay_cuoi' => '2039-10-10',
+            'trang_thai' => 'Đang sống'
+        ]);
+
+        // Con trai cả của Khải & Phương
+        $beManh = ThanhVien::create([
+            'chi_nhanh_id' => $cnId,
+            'ho_ten' => 'Nguyễn Đức Mạnh',
+            'ten_goi' => 'Bé Mạnh',
+            'gioi_tinh' => 'Nam',
+            'ngay_sinh' => '2040-05-15',
+            'cha_id' => $beKhai->id,
+            'me_id' => $chiPhuongKhai->id,
+            'noi_sinh' => 'Hà Nội',
+            'nghe_nghiep' => 'Học sinh',
+            'doi_thu' => 6,
+            'loai_quan_he' => 'Chính',
+            'trang_thai' => 'Còn sống',
+            'ghi_chu' => 'Con trai trưởng thế hệ thứ 6 dòng họ Nguyễn Đức.',
+            'avatar' => 'https://images.unsplash.com/photo-1503919545889-aef636e10ad4?auto=format&fit=crop&q=80&w=200'
+        ]);
+
+        // ------------------ ĐỜI 7 ------------------
+        // Vợ của Nguyễn Đức Mạnh (Đời 6)
+        $chiHoaManh = ThanhVien::create([
+            'chi_nhanh_id' => $cnId,
+            'ho_ten' => 'Trần Thị Hoa',
+            'ten_goi' => 'Hoa (Vợ Mạnh)',
+            'gioi_tinh' => 'Nữ',
+            'ngay_sinh' => '2040-03-12',
+            'noi_sinh' => 'Hà Nội',
+            'nghe_nghiep' => 'Giáo viên',
+            'doi_thu' => 6,
+            'loai_quan_he' => 'Phụ',
+            'trang_thai' => 'Còn sống',
+            'ghi_chu' => 'Vợ của anh Nguyễn Đức Mạnh.',
+            'avatar' => 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=200'
+        ]);
+
+        VoChong::create([
+            'chong_id' => $beManh->id,
+            'vo_id' => $chiHoaManh->id,
+            'ngay_cuoi' => '2061-05-20',
+            'trang_thai' => 'Đang sống'
+        ]);
+
+        // Con trai cả của Mạnh & Hoa
+        $beTuan = ThanhVien::create([
+            'chi_nhanh_id' => $cnId,
+            'ho_ten' => 'Nguyễn Đức Tuấn',
+            'ten_goi' => 'Bé Tuấn',
+            'gioi_tinh' => 'Nam',
+            'ngay_sinh' => '2062-08-20',
+            'cha_id' => $beManh->id,
+            'me_id' => $chiHoaManh->id,
+            'noi_sinh' => 'Hà Nội',
+            'nghe_nghiep' => 'Học sinh',
+            'doi_thu' => 7,
+            'loai_quan_he' => 'Chính',
+            'trang_thai' => 'Còn sống',
+            'ghi_chu' => 'Con trai trưởng thế hệ thứ 7 dòng họ Nguyễn Đức.',
+            'avatar' => 'https://images.unsplash.com/photo-1503919545889-aef636e10ad4?auto=format&fit=crop&q=80&w=200'
+        ]);
+
+        // ------------------ ĐỜI 8 ------------------
+        // Vợ của Nguyễn Đức Tuấn (Đời 7)
+        $chiLinhTuan = ThanhVien::create([
+            'chi_nhanh_id' => $cnId,
+            'ho_ten' => 'Phạm Thùy Linh',
+            'ten_goi' => 'Linh (Vợ Tuấn)',
+            'gioi_tinh' => 'Nữ',
+            'ngay_sinh' => '2062-07-15',
+            'noi_sinh' => 'Hà Nội',
+            'nghe_nghiep' => 'Bác sĩ',
+            'doi_thu' => 7,
+            'loai_quan_he' => 'Phụ',
+            'trang_thai' => 'Còn sống',
+            'ghi_chu' => 'Vợ hiền của anh Nguyễn Đức Tuấn.',
+            'avatar' => 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=200'
+        ]);
+
+        VoChong::create([
+            'chong_id' => $beTuan->id,
+            'vo_id' => $chiLinhTuan->id,
+            'ngay_cuoi' => '2083-09-12',
+            'trang_thai' => 'Đang sống'
+        ]);
+
+        // Con trai cả của Tuấn & Linh
+        $beLong = ThanhVien::create([
+            'chi_nhanh_id' => $cnId,
+            'ho_ten' => 'Nguyễn Đức Long',
+            'ten_goi' => 'Bé Long',
+            'gioi_tinh' => 'Nam',
+            'ngay_sinh' => '2084-12-10',
+            'cha_id' => $beTuan->id,
+            'me_id' => $chiLinhTuan->id,
+            'noi_sinh' => 'Hà Nội',
+            'nghe_nghiep' => 'Học sinh',
+            'doi_thu' => 8,
+            'loai_quan_he' => 'Chính',
+            'trang_thai' => 'Còn sống',
+            'ghi_chu' => 'Con trai trưởng thế hệ thứ 8 dòng họ Nguyễn Đức.',
+            'avatar' => 'https://images.unsplash.com/photo-1503919545889-aef636e10ad4?auto=format&fit=crop&q=80&w=200'
+        ]);
+
+        // ------------------ ĐỜI 9 ------------------
+        // Vợ của Nguyễn Đức Long (Đời 8)
+        $chiVyLong = ThanhVien::create([
+            'chi_nhanh_id' => $cnId,
+            'ho_ten' => 'Vũ Hoàng Vy',
+            'ten_goi' => 'Vy (Vợ Long)',
+            'gioi_tinh' => 'Nữ',
+            'ngay_sinh' => '2084-11-05',
+            'noi_sinh' => 'Hà Nội',
+            'nghe_nghiep' => 'Dược sĩ',
+            'doi_thu' => 8,
+            'loai_quan_he' => 'Phụ',
+            'trang_thai' => 'Còn sống',
+            'ghi_chu' => 'Vợ hiền của anh Nguyễn Đức Long.',
+            'avatar' => 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=200'
+        ]);
+
+        VoChong::create([
+            'chong_id' => $beLong->id,
+            'vo_id' => $chiVyLong->id,
+            'ngay_cuoi' => '2105-02-14',
+            'trang_thai' => 'Đang sống'
+        ]);
+
+        // Con trai cả của Long & Vy
+        $bePhat = ThanhVien::create([
+            'chi_nhanh_id' => $cnId,
+            'ho_ten' => 'Nguyễn Đức Phát',
+            'ten_goi' => 'Bé Phát',
+            'gioi_tinh' => 'Nam',
+            'ngay_sinh' => '2106-03-01',
+            'cha_id' => $beLong->id,
+            'me_id' => $chiVyLong->id,
+            'noi_sinh' => 'Hà Nội',
+            'nghe_nghiep' => 'Học sinh',
+            'doi_thu' => 9,
+            'loai_quan_he' => 'Chính',
+            'trang_thai' => 'Còn sống',
+            'ghi_chu' => 'Con trai trưởng thế hệ thứ 9 dòng họ Nguyễn Đức.',
+            'avatar' => 'https://images.unsplash.com/photo-1503919545889-aef636e10ad4?auto=format&fit=crop&q=80&w=200'
+        ]);
+
+        // ------------------ ĐỜI 10 ------------------
+        // Vợ của Nguyễn Đức Phát (Đời 9)
+        $chiMaiPhat = ThanhVien::create([
+            'chi_nhanh_id' => $cnId,
+            'ho_ten' => 'Nguyễn Quỳnh Mai',
+            'ten_goi' => 'Mai (Vợ Phát)',
+            'gioi_tinh' => 'Nữ',
+            'ngay_sinh' => '2106-02-10',
+            'noi_sinh' => 'Hà Nội',
+            'nghe_nghiep' => 'Kỹ sư sinh học',
+            'doi_thu' => 9,
+            'loai_quan_he' => 'Phụ',
+            'trang_thai' => 'Còn sống',
+            'ghi_chu' => 'Vợ hiền của anh Nguyễn Đức Phát.',
+            'avatar' => 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=200'
+        ]);
+
+        VoChong::create([
+            'chong_id' => $bePhat->id,
+            'vo_id' => $chiMaiPhat->id,
+            'ngay_cuoi' => '2127-08-08',
+            'trang_thai' => 'Đang sống'
+        ]);
+
+        // Con trai của Phát & Mai
+        $beThinh = ThanhVien::create([
+            'chi_nhanh_id' => $cnId,
+            'ho_ten' => 'Nguyễn Đức Thịnh',
+            'ten_goi' => 'Bé Thịnh',
+            'gioi_tinh' => 'Nam',
+            'ngay_sinh' => '2128-10-15',
+            'cha_id' => $bePhat->id,
+            'me_id' => $chiMaiPhat->id,
+            'noi_sinh' => 'Hà Nội',
+            'nghe_nghiep' => 'Trẻ em',
+            'doi_thu' => 10,
+            'loai_quan_he' => 'Chính',
+            'trang_thai' => 'Còn sống',
+            'ghi_chu' => 'Con trai trưởng thế hệ thứ 10 dòng họ Nguyễn Đức.',
+            'avatar' => 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200'
         ]);
 
         // 6. Seed một vài dữ liệu thông báo và tài liệu mẫu để test Phase 3 hoàn hảo
