@@ -109,6 +109,13 @@
             <span class="nav-dot hide-on-collapse"></span>
           </router-link>
         </li>
+        <li class="nav-item item-payment" v-if="hasPermission('Quản Lý Sự Kiện')">
+          <router-link to="/doi-tac/dong-gop" class="nav-link" active-class="active" title="Quản Lý Đóng Góp">
+            <span class="nav-icon"><i class="bx bx-gift"></i></span>
+            <span class="hide-on-collapse nav-label">Quản Lý Đóng Góp</span>
+            <span class="nav-dot hide-on-collapse"></span>
+          </router-link>
+        </li>
         <li class="nav-item item-notifs" v-if="hasPermission('Quản Lý Thông Báo')">
           <router-link to="/doi-tac/thong-bao" class="nav-link" active-class="active" title="Quản Lý Thông Báo">
             <span class="nav-icon"><i class="bx bx-bell"></i></span>
@@ -131,12 +138,20 @@
           </router-link>
         </li>
 
-        <li class="section-heading hide-on-collapse" v-if="hasPermission('Quản Lý Gói Dịch Vụ')">Gói &amp; Thanh Toán</li>
+        <li class="section-heading hide-on-collapse" v-if="hasPermission('Quản Lý Gói Dịch Vụ') || hasPermission('Quản Lý Sự Kiện')">Gói &amp; Quỹ Dòng Họ</li>
 
         <li class="nav-item" v-if="hasPermission('Quản Lý Gói Dịch Vụ')">
           <router-link to="/doi-tac/quan-ly-goi" class="nav-link" active-class="active" title="Quản Lý Gói">
             <span class="nav-icon"><i class="bx bx-package"></i></span>
             <span class="hide-on-collapse nav-label">Quản Lý Gói</span>
+            <span class="nav-dot hide-on-collapse"></span>
+          </router-link>
+        </li>
+
+        <li class="nav-item item-home" v-if="hasPermission('Quản Lý Sự Kiện')">
+          <router-link to="/doi-tac/dong-gop" class="nav-link" active-class="active" title="Quản Lý Đóng Góp">
+            <span class="nav-icon"><i class="bx bx-gift"></i></span>
+            <span class="hide-on-collapse nav-label">Quản Lý Đóng Góp</span>
             <span class="nav-dot hide-on-collapse"></span>
           </router-link>
         </li>
@@ -291,6 +306,7 @@ export default {
   --color-members:   #ff7a00;
   --color-search:    #d97706;
   --color-clan:      #ea580c;
+  --color-payment:   #8b5cf6;
 
   --transition-smooth: 0.35s cubic-bezier(0.25, 1, 0.5, 1);
 }
@@ -403,6 +419,7 @@ export default {
 .item-members .nav-dot, .item-members .nav-link.active { --c-active: var(--color-members); }
 .item-search .nav-dot, .item-search .nav-link.active { --c-active: var(--color-search); }
 .item-clan .nav-dot, .item-clan .nav-link.active { --c-active: var(--color-clan); }
+.item-payment .nav-dot, .item-payment .nav-link.active { --c-active: var(--color-payment); }
 
 .nav-link.active {
   color: var(--text-main) !important; background: var(--neo-bg) !important;

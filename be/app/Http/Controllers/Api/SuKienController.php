@@ -21,7 +21,7 @@ class SuKienController extends Controller
                 ], 401);
             }
 
-            if ($user->vai_tro === 'Admin') {
+            if ($user->vai_tro === 'Admin' || $user->isAdminOrSubAdmin()) {
                 $data = SuKien::orderBy('ngay_to_chuc', 'desc')->get();
             } elseif ($user->is_doi_tac == 1) {
                 $chiNhanhIds = \App\Models\ChiNhanh::getManagedBranchIds($user);

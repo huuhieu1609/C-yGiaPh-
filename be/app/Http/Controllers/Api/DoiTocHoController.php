@@ -17,7 +17,7 @@ class DoiTocHoController extends Controller
                 return response()->json(['status' => false, 'message' => 'Bạn cần đăng nhập!'], 401);
             }
 
-            if ($user->vai_tro === 'Admin') {
+            if ($user->vai_tro === 'Admin' || $user->isAdminOrSubAdmin()) {
                 $data = DoiTocHo::with('chiNhanh')->get();
             } elseif ($user->is_doi_tac == 1) {
                 $chiNhanhIds = \App\Models\ChiNhanh::getManagedBranchIds($user);

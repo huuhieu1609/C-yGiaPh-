@@ -769,7 +769,10 @@ export default {
     },
     isDirectRelative() {
       if (!this.currentUser || !this.currentUser.email) return false;
-      if (this.currentUser.vai_tro === 'Admin' || this.currentUser.is_doi_tac == 1) return true;
+      const roleName = this.currentUser.vai_tro?.toLowerCase() || '';
+      const chucVuName = this.currentUser.chuc_vu?.ten_chuc_vu?.toLowerCase() || '';
+      const isSubAdmin = chucVuName.includes('quản trị') || roleName.includes('admin');
+      if (roleName === 'admin' || isSubAdmin || this.currentUser.is_doi_tac == 1) return true;
 
       const me = this.allMembers.find(m => m.email === this.currentUser.email);
       if (!me) return false;

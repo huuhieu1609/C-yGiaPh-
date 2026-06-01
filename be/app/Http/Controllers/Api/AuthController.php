@@ -50,13 +50,17 @@ class AuthController extends Controller
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
+        $user->load('chucVu');
+
         $permissions = \App\Models\ThanhVienChucNang::getMemberActivePermissions($user);
 
         // Mặc định: Tài khoản người dùng thì vào trang người dùng
         $redirect_url = '/nguoi-dung';
 
-        // Tài khoản Admin thì đăng nhập vào trang admin
-        if (strtolower(trim($user->vai_tro)) === 'admin' || $user->email === 'admin@master.com') {
+        // Tài khoản Admin hoặc Quản Trị Viên thì đăng nhập vào trang admin
+        $chucVu = \App\Models\ChucVu::find($user->id_chuc_vu);
+        $roleName = $chucVu ? strtolower($chucVu->ten_chuc_vu) : '';
+        if (strtolower(trim($user->vai_tro)) === 'admin' || $user->email === 'admin@master.com' || str_contains($roleName, 'quản trị') || str_contains($roleName, 'admin')) {
             $redirect_url = '/admin/dashboard';
         }
         // Tài khoản người dùng sau khi mua gói (is_doi_tac = 1) thì vào trang đã mua gói
@@ -139,6 +143,9 @@ class AuthController extends Controller
     public function me(Request $request)
     {
         $user = $request->user();
+        if ($user) {
+            $user->load('chucVu');
+        }
         $permissions = \App\Models\ThanhVienChucNang::getMemberActivePermissions($user);
 
         return response()->json([

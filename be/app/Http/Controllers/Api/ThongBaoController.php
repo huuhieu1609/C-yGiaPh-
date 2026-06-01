@@ -14,7 +14,7 @@ class ThongBaoController extends Controller
         try {
             $user = auth('sanctum')->user();
 
-            if ($user && $user->vai_tro === 'Admin') {
+            if ($user && ($user->vai_tro === 'Admin' || $user->isAdminOrSubAdmin())) {
                 $data = ThongBao::orderBy('created_at', 'desc')->get();
             } elseif ($user && $user->is_doi_tac == 1) {
                 $chiNhanhIds = \App\Models\ChiNhanh::getManagedBranchIds($user);

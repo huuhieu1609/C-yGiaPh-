@@ -193,6 +193,12 @@ const routes = [
                 // Gói dịch vụ không cần phân quyền riêng
             },
             {
+                path: 'dong-gop',
+                name: 'admin-dong-gop',
+                component: () => import('../components/Admin/DongGop/index.vue'),
+                meta: { permission: 'Quản Lý Sự Kiện' }
+            },
+            {
                 path: 'yeu-cau-mua-goi',
                 name: 'admin-yeu-cau-mua-goi',
                 component: () => import('../components/Admin/YeuCauMuaGoi/index.vue'),
@@ -318,6 +324,12 @@ const routes = [
                 name: 'partner-quan-ly-goi',
                 component: () => import('../components/DoiTac/QuanLyGoi/index.vue'),
                 meta: { permission: 'Quản Lý Gói Dịch Vụ' }
+            },
+            {
+                path: 'dong-gop',
+                name: 'partner-dong-gop',
+                component: () => import('../components/DoiTac/QuanLyDongGop/index.vue'),
+                meta: { permission: 'Quản Lý Sự Kiện' }
             }
         ]
     }
@@ -354,7 +366,11 @@ router.beforeEach(async (to, from, next) => {
 
     // ── 2. Chặn truy cập trang admin (không phải login) ──
     if (to.path.startsWith('/admin') && to.path !== '/admin/login') {
-        if (user?.vai_tro?.toLowerCase() !== 'admin') {
+        const roleName = user?.vai_tro?.toLowerCase() || '';
+        const chucVuName = user?.chuc_vu?.ten_chuc_vu?.toLowerCase() || '';
+        // Kiểm tra là Admin hoặc có chức vụ quản trị (dựa trên tên chức vụ, không hard-code ID)
+        const isSubAdmin = chucVuName.includes('quản trị') || roleName.includes('admin');
+        if (roleName !== 'admin' && !isSubAdmin) {
             alert('Bạn không có quyền truy cập!');
             return next('/');
         }
@@ -373,6 +389,7 @@ router.beforeEach(async (to, from, next) => {
                 localStorage.setItem('user', JSON.stringify(updatedUser));
                 if (response.data.permissions) {
                     localStorage.setItem('permissions', JSON.stringify(response.data.permissions));
+                    permissions = response.data.permissions;
                 }
             }
         } catch (error) {
@@ -406,6 +423,7 @@ router.beforeEach(async (to, from, next) => {
                         updatedPermissions = response.data.permissions;
                         localStorage.setItem('permissions', JSON.stringify(updatedPermissions));
                         localStorage.setItem('user', JSON.stringify(response.data.user || user));
+                        permissions = updatedPermissions;
                     }
                 } catch (error) {
                     console.error('Realtime permissions fetch failed:', error);
@@ -481,7 +499,10 @@ router.beforeEach(async (to, from, next) => {
 
     // ── 5. Đã login thì không vào login/register ──
     if ((to.path === '/login' || to.path === '/register') && token) {
-        if (user?.vai_tro?.toLowerCase() === 'admin') {
+        const roleName2 = user?.vai_tro?.toLowerCase() || '';
+        const chucVuName2 = user?.chuc_vu?.ten_chuc_vu?.toLowerCase() || '';
+        const isAdminOrSubAdmin = roleName2 === 'admin' || chucVuName2.includes('quản trị');
+        if (isAdminOrSubAdmin) {
             return next('/admin/dashboard');
         }
         if (user?.is_doi_tac == 1) {

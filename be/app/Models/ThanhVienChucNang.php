@@ -55,9 +55,26 @@ class ThanhVienChucNang extends Model
             ->pluck('chuc_nangs.ten_chuc_nang')
             ->toArray();
 
+        // Tự động cấp quyền Quản Lý Sự Kiện cho Đối Tác để quản lý Quỹ Đóng Góp
+        if (!in_array('Quản Lý Sự Kiện', $truongNhanhPermissions)) {
+            $truongNhanhPermissions[] = 'Quản Lý Sự Kiện';
+        }
+
         // 2. Đối tác tối cao (chủ tài khoản đối tác) không có chức vụ -> đồng bộ với quyền của Trưởng Nhánh
         if ($user->is_doi_tac == 1 && !$user->id_chuc_vu) {
             return $truongNhanhPermissions;
+        }
+
+        // 2.5. Sub-Admin (Quản Trị Viên): trả về quyền từ chi_tiet_phan_quyens cho chức vụ đó
+        if ($user->id_chuc_vu) {
+            $chucVuForCheck = \App\Models\ChucVu::find($user->id_chuc_vu);
+            if ($chucVuForCheck && str_contains(strtolower($chucVuForCheck->ten_chuc_vu), 'quản trị')) {
+                return \App\Models\ChiTietPhanQuyen::join('chuc_nangs', 'chi_tiet_phan_quyens.chuc_nang_id', '=', 'chuc_nangs.id')
+                    ->where('chi_tiet_phan_quyens.chuc_vu_id', $user->id_chuc_vu)
+                    ->where('chuc_nangs.trang_thai', 'Hoạt động')
+                    ->pluck('chuc_nangs.ten_chuc_nang')
+                    ->toArray();
+            }
         }
 
         // 3. Với thành viên bình thường hoặc người dùng có chức vụ:

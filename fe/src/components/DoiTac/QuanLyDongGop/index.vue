@@ -4,9 +4,9 @@
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
       <div>
         <h1 class="h3 fw-bold text-gradient mb-1" id="page-title">
-          <i class="bx bx-gift me-2 text-primary animate-pulse"></i>Hệ Thống Quản Lý Đóng Góp Công Đức
+          <i class="bx bx-gift me-2 text-primary animate-pulse"></i>Quản Lý Đóng Góp Quỹ Dòng Họ
         </h1>
-        <p class="text-muted small mb-0">Quản trị toàn bộ các khoản đóng góp quỹ dòng họ, kiểm duyệt giao dịch chuyển khoản SePay và ghi nhận thủ công cho tất cả chi nhánh.</p>
+        <p class="text-muted small mb-0">Ghi nhận và theo dõi các khoản đóng góp công đức (tiền mặt và chuyển khoản) từ các thành viên trong các chi nhánh dòng tộc của bạn.</p>
       </div>
       <div>
         <button class="btn btn-primary-gradient radius-12 px-4 py-2-5 shadow-sm fw-bold border-0 d-flex align-items-center gap-2 btn-hover-scale"
@@ -20,11 +20,11 @@
     <!-- Overview Widgets Grid -->
     <div class="row g-4 mb-4">
       <!-- Widget 1: Total Approved Fund -->
-      <div class="col-12 col-md-3">
+      <div class="col-12 col-md-4">
         <div class="stat-card p-4 radius-20 shadow-sm border-0 d-flex justify-content-between align-items-center bg-card-glow-purple">
           <div class="lh-1">
             <span class="text-uppercase text-muted-custom fw-semibold font-xs tracking-wider d-block mb-2">Tổng Quỹ Công Đức</span>
-            <span class="fs-3 fw-extrabold text-main d-block mb-1">{{ formatMoney(totalApprovedAmount) }} VNĐ</span>
+            <span class="fs-2 fw-extrabold text-main d-block mb-1">{{ formatMoney(totalApprovedAmount) }} VNĐ</span>
             <span class="badge badge-success-subtle radius-8 font-xs py-1 px-2 d-inline-flex align-items-center gap-1">
               <i class="bx bx-wallet"></i> Quỹ đã duyệt
             </span>
@@ -36,11 +36,11 @@
       </div>
 
       <!-- Widget 2: Cash Fund -->
-      <div class="col-12 col-md-3">
+      <div class="col-12 col-md-4">
         <div class="stat-card p-4 radius-20 shadow-sm border-0 d-flex justify-content-between align-items-center bg-card-glow-teal">
           <div class="lh-1">
             <span class="text-uppercase text-muted-custom fw-semibold font-xs tracking-wider d-block mb-2">Quỹ Tiền Mặt</span>
-            <span class="fs-3 fw-extrabold text-main d-block mb-1">{{ formatMoney(totalCashAmount) }} VNĐ</span>
+            <span class="fs-2 fw-extrabold text-main d-block mb-1">{{ formatMoney(totalCashAmount) }} VNĐ</span>
             <span class="badge badge-teal-subtle radius-8 font-xs py-1 px-2 d-inline-flex align-items-center gap-1">
               <i class="bx bx-money-withdraw"></i> Đóng góp trực tiếp
             </span>
@@ -52,11 +52,11 @@
       </div>
 
       <!-- Widget 3: Bank / QR Fund -->
-      <div class="col-12 col-md-3">
+      <div class="col-12 col-md-4">
         <div class="stat-card p-4 radius-20 shadow-sm border-0 d-flex justify-content-between align-items-center bg-card-glow-blue">
           <div class="lh-1">
             <span class="text-uppercase text-muted-custom fw-semibold font-xs tracking-wider d-block mb-2">Quỹ Chuyển Khoản</span>
-            <span class="fs-3 fw-extrabold text-main d-block mb-1">{{ formatMoney(totalBankAmount) }} VNĐ</span>
+            <span class="fs-2 fw-extrabold text-main d-block mb-1">{{ formatMoney(totalBankAmount) }} VNĐ</span>
             <span class="badge badge-blue-subtle radius-8 font-xs py-1 px-2 d-inline-flex align-items-center gap-1">
               <i class="bx bx-qr-scan"></i> Tự động qua SePay
             </span>
@@ -66,63 +66,32 @@
           </div>
         </div>
       </div>
-
-      <!-- Widget 4: Pending Approvals -->
-      <div class="col-12 col-md-3">
-        <div class="stat-card p-4 radius-20 shadow-sm border-0 d-flex justify-content-between align-items-center bg-card-glow-orange">
-          <div class="lh-1">
-            <span class="text-uppercase text-muted-custom fw-semibold font-xs tracking-wider d-block mb-2">Đang Chờ Duyệt</span>
-            <span class="fs-3 fw-extrabold text-main d-block mb-1">{{ totalPendingCount }} Khoản</span>
-            <span class="badge badge-orange-subtle radius-8 font-xs py-1 px-2 d-inline-flex align-items-center gap-1">
-              <i class="bx bx-time-five"></i> Cần phê duyệt
-            </span>
-          </div>
-          <div class="card-icon-wrap rounded-circle bg-orange-subtle d-flex align-items-center justify-content-center text-orange">
-            <i class="bx bx-time fs-3"></i>
-          </div>
-        </div>
-      </div>
     </div>
 
     <!-- Data List Table -->
     <div class="card shadow-sm border-0 radius-20 bg-card overflow-hidden">
-      <div class="card-header bg-transparent border-0 py-4 px-4 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+      <div class="card-header bg-transparent border-0 py-4 px-4 d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3">
         <h5 class="mb-0 fw-bold text-main d-flex align-items-center gap-2">
-          <i class="bx bx-list-ul text-primary"></i> Danh Sách Ghi Nhận Công Đức & Đóng Góp
+          <i class="bx bx-list-ul text-primary"></i> Sổ Vàng Đóng Góp Chi Nhánh
         </h5>
         
-        <!-- Filter and Search -->
-        <div class="d-flex flex-column flex-sm-row align-items-sm-center gap-3 flex-grow-1 max-w-lg-100 justify-content-md-end">
-          <!-- Clan / Branch Filter -->
-          <div class="branch-filter-wrap">
-            <select class="form-select radius-12 border py-2 shadow-none-focus bg-transparent text-muted-custom" 
-                    v-model="filterBranchId" 
-                    id="filter-branch">
-              <option :value="null">-- Lọc theo Chi Nhánh / Dòng Họ --</option>
-              <option v-for="branch in listBranches" :key="branch.id" :value="branch.id">
-                {{ branch.ten_chi }}
-              </option>
-            </select>
-          </div>
-
-          <!-- Search Box -->
-          <div class="search-wrap flex-grow-1">
-            <div class="input-group radius-12 border overflow-hidden search-input-group shadow-none-focus">
-              <span class="input-group-text bg-transparent border-0 pe-1 text-muted">
-                <i class="bx bx-search fs-5"></i>
-              </span>
-              <input type="text" 
-                     class="form-control border-0 bg-transparent px-2 py-2 fs-6 shadow-none" 
-                     placeholder="Tìm kiếm đóng góp..." 
-                     v-model="searchQuery" 
-                     id="search-input" />
-              <button v-if="searchQuery" 
-                      @click="searchQuery = ''" 
-                      type="button" 
-                      class="btn bg-transparent border-0 text-muted px-2 py-0">
-                <i class="bx bx-x fs-5"></i>
-              </button>
-            </div>
+        <!-- Search and Filter -->
+        <div class="d-flex align-items-center gap-2 flex-grow-1 max-w-sm-100 search-wrap">
+          <div class="input-group radius-12 border overflow-hidden search-input-group shadow-none-focus flex-grow-1">
+            <span class="input-group-text bg-transparent border-0 pe-1 text-muted">
+              <i class="bx bx-search fs-5"></i>
+            </span>
+            <input type="text" 
+                   class="form-control border-0 bg-transparent px-2 py-2 fs-6 shadow-none" 
+                   placeholder="Tìm tên, nội dung..." 
+                   v-model="searchQuery" 
+                   id="search-input" />
+            <button v-if="searchQuery" 
+                    @click="searchQuery = ''" 
+                    type="button" 
+                    class="btn bg-transparent border-0 text-muted px-2 py-0">
+              <i class="bx bx-x fs-5"></i>
+            </button>
           </div>
         </div>
       </div>
@@ -133,20 +102,18 @@
             <thead>
               <tr>
                 <th class="ps-4 text-muted-custom py-3 font-xs text-uppercase tracking-wider" width="5%">#</th>
-                <th class="text-muted-custom py-3 font-xs text-uppercase tracking-wider" width="15%">Chi Nhánh</th>
-                <th class="text-muted-custom py-3 font-xs text-uppercase tracking-wider" width="20%">Thành Viên</th>
-                <th class="text-muted-custom py-3 font-xs text-uppercase tracking-wider" width="13%">Số Tiền</th>
-                <th class="text-muted-custom py-3 font-xs text-uppercase tracking-wider" width="20%">Nội Dung Chi Tiết</th>
-                <th class="text-muted-custom py-3 font-xs text-uppercase tracking-wider text-center" width="10%">Hình Thức</th>
-                <th class="text-muted-custom py-3 font-xs text-uppercase tracking-wider text-center" width="10%">Trạng Thái</th>
-                <th class="text-muted-custom py-3 font-xs text-uppercase tracking-wider" width="12%">Thời Gian</th>
+                <th class="text-muted-custom py-3 font-xs text-uppercase tracking-wider" width="25%">Thành Viên</th>
+                <th class="text-muted-custom py-3 font-xs text-uppercase tracking-wider" width="15%">Số Tiền</th>
+                <th class="text-muted-custom py-3 font-xs text-uppercase tracking-wider" width="25%">Nội Dung Chi Tiết</th>
+                <th class="text-muted-custom py-3 font-xs text-uppercase tracking-wider text-center" width="12%">Hình Thức</th>
+                <th class="text-muted-custom py-3 font-xs text-uppercase tracking-wider" width="13%">Thời Gian</th>
                 <th class="pe-4 text-muted-custom py-3 font-xs text-uppercase tracking-wider text-end" width="10%">Hành Động</th>
               </tr>
             </thead>
             <tbody>
               <!-- Spinner Loading State -->
               <tr v-if="isLoading">
-                <td colspan="9" class="text-center py-5 text-muted bg-transparent">
+                <td colspan="7" class="text-center py-5 text-muted bg-transparent">
                   <div class="spinner-border text-primary" role="status">
                     <span class="visually-hidden">Loading...</span>
                   </div>
@@ -156,21 +123,16 @@
 
               <!-- Empty State -->
               <tr v-else-if="filteredList.length === 0">
-                <td colspan="9" class="text-center py-5 text-muted bg-transparent">
+                <td colspan="7" class="text-center py-5 text-muted bg-transparent">
                   <i class="bx bx-file-blank fs-1 mb-2 text-muted animate-float d-block"></i>
                   <span class="font-medium text-main">Không tìm thấy khoản đóng góp nào</span>
-                  <span class="d-block small text-muted-custom mt-1">Vui lòng chọn bộ lọc khác hoặc ghi nhận mới.</span>
+                  <span class="d-block small text-muted-custom mt-1">Vui lòng thử lại với từ khóa khác hoặc ghi nhận mới.</span>
                 </td>
               </tr>
 
               <!-- Items Rows -->
               <tr v-for="(item, index) in filteredList" :key="item.id" class="table-row-hover">
                 <td class="ps-4 fw-bold text-muted-custom font-sm">{{ index + 1 }}</td>
-                <td>
-                  <span class="badge badge-purple-subtle radius-8 font-xs py-1 px-2.5 fw-semibold">
-                    {{ item.nguoi_dung?.chi_nhanh?.ten_chi || 'Không xác định' }}
-                  </span>
-                </td>
                 <td>
                   <div class="d-flex align-items-center gap-3">
                     <div class="avatar-container position-relative">
@@ -200,17 +162,9 @@
                     <i class="bx bx-money fs-6"></i> Tiền mặt
                   </span>
                   <span v-else 
-                        class="badge badge-blue-subtle radius-8 font-xs py-1.5 px-2.5 fw-bold d-inline-flex align-items-center gap-1 shadow-sm-hover animate-all">
+                        class="badge badge-purple-subtle radius-8 font-xs py-1.5 px-2.5 fw-bold d-inline-flex align-items-center gap-1 shadow-sm-hover animate-all">
                     <i class="bx bx-qr-scan fs-6"></i> Chuyển khoản
                   </span>
-                </td>
-                <td class="text-center">
-                  <button @click="changeStatus(item.id)"
-                          :class="item.trang_thai === 'Đã duyệt' ? 'badge badge-success-btn' : 'badge badge-warning-btn text-dark'"
-                          class="btn-badge py-1.5 px-2.5 border-0 radius-8 fw-bold d-inline-flex align-items-center gap-1 shadow-sm">
-                    <span class="dot-indicator" :class="item.trang_thai === 'Đã duyệt' ? 'bg-white' : 'bg-dark'"></span>
-                    {{ item.trang_thai }}
-                  </button>
                 </td>
                 <td class="font-sm text-muted-custom">
                   {{ formatDate(item.created_at) }}
@@ -254,31 +208,15 @@
           <!-- Modal Body -->
           <form @submit.prevent="saveData">
             <div class="modal-body p-4">
-              <!-- Select Branch -->
-              <div class="mb-4">
-                <label class="form-label fw-bold text-main font-sm mb-2" for="modal-branch">Chọn Chi Nhánh / Dòng Họ <span class="text-danger">*</span></label>
-                <select class="form-select radius-12 border-2 py-2-5 shadow-none-focus"
-                        id="modal-branch"
-                        v-model="tempBranchId"
-                        @change="onBranchChange"
-                        required>
-                  <option :value="null">-- Chọn chi nhánh dòng họ để lấy thành viên --</option>
-                  <option v-for="branch in listBranches" :key="branch.id" :value="branch.id">
-                    {{ branch.ten_chi }}
-                  </option>
-                </select>
-              </div>
-
               <!-- Select Contributor -->
               <div class="mb-4">
                 <label class="form-label fw-bold text-main font-sm mb-2" for="select-user">Người Đóng Góp <span class="text-danger">*</span></label>
                 <select class="form-select radius-12 border-2 py-2-5 shadow-none-focus"
                         id="select-user"
                         v-model="formData.nguoi_dung_id"
-                        :disabled="!tempBranchId"
                         required>
-                  <option :value="null">-- {{ tempBranchId ? 'Chọn thành viên trong chi nhánh' : 'Vui lòng chọn chi nhánh trước' }} --</option>
-                  <option v-for="user in listMembers" :key="user.id" :value="user.id">
+                  <option :value="null">-- Chọn thành viên thuộc chi nhánh --</option>
+                  <option v-for="user in listUsers" :key="user.id" :value="user.id">
                     {{ user.ho_ten }} ({{ user.email || 'Không có email' }})
                   </option>
                 </select>
@@ -312,18 +250,6 @@
                 <div class="small text-primary mt-1 fw-semibold font-xs" v-if="tempAmount">
                   Bằng chữ: {{ formatAmountInWords(tempAmount) }}
                 </div>
-              </div>
-
-              <!-- Select Status -->
-              <div class="mb-4">
-                <label class="form-label fw-bold text-main font-sm mb-2" for="select-status">Trạng Thái Phê Duyệt <span class="text-danger">*</span></label>
-                <select class="form-select radius-12 border-2 py-2-5 shadow-none-focus"
-                        id="select-status"
-                        v-model="formData.trang_thai"
-                        required>
-                  <option value="Đã duyệt">Đã duyệt (Approved)</option>
-                  <option value="Chờ duyệt">Chờ duyệt (Pending)</option>
-                </select>
               </div>
 
               <!-- Notes Textarea -->
@@ -360,20 +286,18 @@ import axios from 'axios';
 import toastr from 'toastr';
 
 export default {
-  name: 'AdminQuanLyDongGop',
+  name: 'PartnerQuanLyDongGop',
   data() {
     return {
       listData: [],
-      listBranches: [],
-      listMembers: [],
+      listUsers: [],
       formData: {
         id: null,
         nguoi_dung_id: null,
         noi_dung: '',
-        trang_thai: 'Đã duyệt'
+        trang_thai: 'Đã duyệt' // Luôn luôn đã duyệt đối với ghi nhận của đối tác
       },
-      filterBranchId: null,
-      tempBranchId: null,
+      // Các biến tạm để hỗ trợ tạo giao diện modal ghi nhận thông minh
       tempAmount: null,
       tempType: 'Tiền mặt',
       tempNotes: '',
@@ -384,52 +308,45 @@ export default {
     };
   },
   computed: {
-    // Lọc danh sách đóng góp theo tìm kiếm từ khóa và chi nhánh chọn
+    // Lọc danh sách đóng góp theo tìm kiếm từ khóa
     filteredList() {
-      let data = this.listData;
-      
-      if (this.filterBranchId) {
-        data = data.filter(item => item.nguoi_dung?.chi_nhanh_id === this.filterBranchId);
-      }
-
-      if (!this.searchQuery) return data;
+      if (!this.searchQuery) return this.listData;
       const q = this.searchQuery.toLowerCase();
-      return data.filter(item => {
+      return this.listData.filter(item => {
         const userName = (item.nguoi_dung?.ho_ten || 'Hệ thống').toLowerCase();
         const email = (item.nguoi_dung?.email || '').toLowerCase();
         const content = (item.noi_dung || '').toLowerCase();
-        const branchName = (item.nguoi_dung?.chi_nhanh?.ten_chi || '').toLowerCase();
-        return userName.includes(q) || email.includes(q) || content.includes(q) || branchName.includes(q);
+        return userName.includes(q) || email.includes(q) || content.includes(q);
       });
     },
 
     // Tổng số tiền đóng góp đã duyệt (được trích xuất từ cột nội dung bằng regex)
     totalApprovedAmount() {
       return this.listData
-        .reduce((sum, item) => sum + (item.trang_thai === 'Đã duyệt' ? this.getAmountFromContent(item.noi_dung) : 0), 0);
+        .reduce((sum, item) => sum + this.getAmountFromContent(item.noi_dung), 0);
     },
 
     // Tổng số tiền đóng góp qua Tiền mặt
     totalCashAmount() {
       return this.listData
-        .reduce((sum, item) => sum + (item.trang_thai === 'Đã duyệt' && this.getPaymentType(item.noi_dung) === 'Tiền mặt' ? this.getAmountFromContent(item.noi_dung) : 0), 0);
+        .reduce((sum, item) => sum + (this.getPaymentType(item.noi_dung) === 'Tiền mặt' ? this.getAmountFromContent(item.noi_dung) : 0), 0);
     },
 
     // Tổng số tiền đóng góp qua Chuyển khoản (SePay)
     totalBankAmount() {
       return this.listData
-        .reduce((sum, item) => sum + (item.trang_thai === 'Đã duyệt' && this.getPaymentType(item.noi_dung) === 'Chuyển khoản' ? this.getAmountFromContent(item.noi_dung) : 0), 0);
+        .reduce((sum, item) => sum + (this.getPaymentType(item.noi_dung) === 'Chuyển khoản' ? this.getAmountFromContent(item.noi_dung) : 0), 0);
     },
 
-    // Tổng số lượng giao dịch chờ phê duyệt
-    totalPendingCount() {
-      return this.listData.filter(item => item.trang_thai === 'Chờ duyệt').length;
+    // Tổng số thành viên đóng góp duy nhất
+    uniqueContributorsCount() {
+      const uniqueIds = new Set(this.listData.map(item => item.nguoi_dung_id).filter(id => id));
+      return uniqueIds.size;
     }
   },
   mounted() {
     this.loadData();
-    this.loadBranches();
-    
+    this.loadUsers();
     // Khởi tạo Bootstrap Modal
     const modalEl = document.getElementById('contributionModal');
     if (modalEl && window.bootstrap) {
@@ -437,7 +354,7 @@ export default {
     }
   },
   methods: {
-    // Tải toàn bộ danh sách đóng góp
+    // Tải danh sách đóng góp từ API (tự động phân quyền cấp chi nhánh từ backend)
     loadData() {
       this.isLoading = true;
       axios.get('http://127.0.0.1:8000/api/dong-gop/get-data', {
@@ -452,47 +369,27 @@ export default {
       })
       .catch(err => {
         console.error(err);
-        toastr.error('Không thể tải dữ liệu đóng góp từ máy chủ!');
+        toastr.error('Không thể kết nối đến máy chủ để tải dữ liệu đóng góp!');
       })
       .finally(() => {
         this.isLoading = false;
       });
     },
 
-    // Tải tất cả chi nhánh
-    loadBranches() {
-      axios.get('http://127.0.0.1:8000/api/chi-nhanh/get-data', {
+    // Tải danh sách thành viên trong các chi nhánh mà đối tác này quản lý
+    loadUsers() {
+      axios.get('http://127.0.0.1:8000/api/thanh-vien/get-data', {
         headers: {
           Authorization: 'Bearer ' + localStorage.getItem('access_token')
         }
       })
       .then(res => {
         if (res.data.status) {
-          this.listBranches = res.data.data || [];
-        }
-      })
-      .catch(err => console.error(err));
-    },
-
-    // Tải thành viên thuộc chi nhánh được chọn trong modal
-    onBranchChange() {
-      this.listMembers = [];
-      this.formData.nguoi_dung_id = null;
-      if (!this.tempBranchId) return;
-
-      axios.get(`http://127.0.0.1:8000/api/thanh-vien/chi-nhanh/${this.tempBranchId}`, {
-        headers: {
-          Authorization: 'Bearer ' + localStorage.getItem('access_token')
-        }
-      })
-      .then(res => {
-        if (res.data.status) {
-          this.listMembers = res.data.data || [];
+          this.listUsers = res.data.data || [];
         }
       })
       .catch(err => {
         console.error(err);
-        toastr.error('Không thể tải danh sách thành viên thuộc chi nhánh này!');
       });
     },
 
@@ -506,26 +403,11 @@ export default {
     },
 
     // Mở modal chỉnh sửa và tự động trích xuất các thông tin từ `noi_dung`
-    async editItem(item) {
+    editItem(item) {
       this.isEditing = true;
-      this.tempBranchId = item.nguoi_dung?.chi_nhanh_id || null;
 
-      // 1. Tải danh sách thành viên thuộc chi nhánh tương ứng trước
-      if (this.tempBranchId) {
-        try {
-          const res = await axios.get(`http://127.0.0.1:8000/api/thanh-vien/chi-nhanh/${this.tempBranchId}`, {
-            headers: { Authorization: 'Bearer ' + localStorage.getItem('access_token') }
-          });
-          if (res.data.status) {
-            this.listMembers = res.data.data || [];
-          }
-        } catch (e) {
-          console.error(e);
-        }
-      }
-
-      // 2. Tìm thành viên gia phả tương ứng dựa theo email hoặc tên
-      const matchedMember = this.listMembers.find(u => {
+      // Tìm thành viên tương ứng từ listUsers (chứa các ThanhVien)
+      const matchedMember = this.listUsers.find(u => {
         if (item.nguoi_dung?.email) {
           return u.email === item.nguoi_dung.email;
         }
@@ -536,10 +418,10 @@ export default {
         id: item.id,
         nguoi_dung_id: matchedMember ? matchedMember.id : null,
         noi_dung: item.noi_dung,
-        trang_thai: item.trang_thai || 'Đã duyệt'
+        trang_thai: 'Đã duyệt' // Luôn luôn đã duyệt
       };
       
-      // Trích xuất thông tin
+      // Trích xuất số tiền, hình thức và ghi chú từ nội dung lưu trữ để điền vào form
       this.tempAmount = this.getAmountFromContent(item.noi_dung) || null;
       this.tempType = this.getPaymentType(item.noi_dung);
       this.tempNotes = this.cleanContent(item.noi_dung);
@@ -551,10 +433,6 @@ export default {
 
     // Lưu dữ liệu (Thêm mới hoặc cập nhật đóng góp)
     saveData() {
-      if (!this.tempBranchId) {
-        toastr.warning('Vui lòng chọn chi nhánh dòng họ!');
-        return;
-      }
       if (!this.formData.nguoi_dung_id) {
         toastr.warning('Vui lòng chọn người đóng góp!');
         return;
@@ -569,13 +447,14 @@ export default {
       }
 
       // Tự động lắp ráp noi_dung theo quy tắc để regex client trích xuất chính xác
-      const targetUser = this.listMembers.find(u => u.id === this.formData.nguoi_dung_id);
+      const targetUser = this.listUsers.find(u => u.id === this.formData.nguoi_dung_id);
       const userCode = targetUser ? targetUser.ho_ten.split(' ').pop().toUpperCase() + targetUser.id : 'MEMBER';
       this.formData.noi_dung = `DONGGOP ${userCode} | Số tiền: ${this.formatMoney(this.tempAmount)} VNĐ | Hình thức: ${this.tempType} | Ghi chú: ${this.tempNotes.trim()}`;
+      this.formData.trang_thai = 'Đã duyệt'; // Đảm bảo luôn được duyệt khi Đối Tác tự ghi nhận
 
       const payload = {
         id: this.formData.id,
-        thanh_vien_id: this.formData.nguoi_dung_id, // Gửi thanh_vien_id để tự động tìm/tạo NguoiDung
+        thanh_vien_id: this.formData.nguoi_dung_id, // Gửi thanh_vien_id lên backend để tạo/tìm shadow NguoiDung tương ứng
         noi_dung: this.formData.noi_dung,
         trang_thai: this.formData.trang_thai
       };
@@ -627,7 +506,7 @@ export default {
       }
     },
 
-    // Duyệt Nhanh 1-Click
+    // Duyệt Nhanh (Click chuyển đổi trạng thái lập tức với micro-animations)
     changeStatus(id) {
       axios.post('http://127.0.0.1:8000/api/dong-gop/status', { id }, {
         headers: {
@@ -636,7 +515,7 @@ export default {
       })
       .then(res => {
         if (res.data.status) {
-          toastr.success('Cập nhật trạng thái thành công!');
+          toastr.success(res.data.message);
           this.loadData();
         }
       })
@@ -656,8 +535,6 @@ export default {
 
     resetForm() {
       this.isEditing = false;
-      this.tempBranchId = null;
-      this.listMembers = [];
       this.formData = {
         id: null,
         nguoi_dung_id: null,
@@ -706,12 +583,13 @@ export default {
       if (!content) return 'Tiền mặt';
       if (content.toLowerCase().includes('tiền mặt')) return 'Tiền mặt';
       if (content.toLowerCase().includes('chuyển khoản') || content.toLowerCase().includes('qr công đức') || content.toLowerCase().includes('sepay')) return 'Chuyển khoản';
-      return 'Chuyển khoản';
+      return 'Chuyển khoản'; // Mặc định từ webhook SePay
     },
 
     // Tinh giản nội dung để loại bỏ phần mã giao dịch và số tiền, chỉ hiển thị ghi chú cốt lõi
     cleanContent(content) {
       if (!content) return '';
+      // Ví dụ: 'DONGGOP HIEU | Số tiền: 500.000 VNĐ | Hình thức: Tiền mặt | Ghi chú: Đóng góp xây nhà thờ tổ'
       const parts = content.split('|');
       for (let part of parts) {
         if (part.toLowerCase().includes('ghi chú:') || part.toLowerCase().includes('nội dung:')) {
@@ -868,10 +746,6 @@ div, h1, h5, p, table, button, label, select, input {
   background: linear-gradient(135deg, #ffffff 0%, #f5f9ff 100%);
   border-left: 5px solid #3b82f6 !important;
 }
-.bg-card-glow-orange {
-  background: linear-gradient(135deg, #ffffff 0%, #fffbf5 100%);
-  border-left: 5px solid #f97316 !important;
-}
 
 .bg-card {
   background: #ffffff;
@@ -891,9 +765,6 @@ div, h1, h5, p, table, button, label, select, input {
 }
 [data-theme='dark'] .bg-card-glow-blue {
   background: linear-gradient(135deg, #1e1e2d 0%, #1c263c 100%);
-}
-[data-theme='dark'] .bg-card-glow-orange {
-  background: linear-gradient(135deg, #1e1e2d 0%, #2e241c 100%);
 }
 [data-theme='dark'] .text-main {
   color: #f3f4f6 !important;
@@ -944,7 +815,6 @@ div, h1, h5, p, table, button, label, select, input {
 .badge-teal-subtle { background-color: rgba(13, 148, 136, 0.1); color: #0d9488; }
 .badge-purple-subtle { background-color: rgba(139, 92, 246, 0.1); color: #8b5cf6; }
 .badge-blue-subtle { background-color: rgba(59, 130, 246, 0.1); color: #3b82f6; }
-.badge-orange-subtle { background-color: rgba(249, 115, 22, 0.1); color: #f97316; }
 
 .card-icon-wrap {
   width: 48px;
@@ -957,20 +827,6 @@ div, h1, h5, p, table, button, label, select, input {
 .text-teal { color: #0d9488; }
 .bg-blue-subtle { background-color: rgba(59, 130, 246, 0.12); }
 .text-blue { color: #3b82f6; }
-.bg-orange-subtle { background-color: rgba(249, 115, 22, 0.12); }
-.text-orange { color: #f97316; }
-
-/* Filter dropdown select */
-.branch-filter-wrap select {
-  border-color: rgba(0, 0, 0, 0.08);
-  background-color: rgba(0, 0, 0, 0.02);
-  min-width: 240px;
-}
-.branch-filter-wrap select:focus {
-  border-color: #8b5cf6 !important;
-  background-color: #ffffff;
-  box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.15) !important;
-}
 
 /* Interactive Search Bar */
 .search-wrap {
@@ -1037,33 +893,19 @@ div, h1, h5, p, table, button, label, select, input {
   white-space: normal;
 }
 
-/* Interactive Status Badges */
+/* Badges action button quick change */
 .btn-badge {
   cursor: pointer;
   outline: none;
   font-size: 11px;
   transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
 }
 .btn-badge:hover {
   transform: scale(1.05);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08) !important;
 }
 .btn-badge:active {
   transform: scale(0.95);
 }
-
-.badge-success-btn {
-  background-color: #10b981;
-  color: #ffffff;
-}
-.badge-warning-btn {
-  background-color: #f59e0b;
-  color: #1f2937;
-}
-
 .dot-indicator {
   width: 6px;
   height: 6px;
@@ -1109,6 +951,15 @@ div, h1, h5, p, table, button, label, select, input {
   box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.15) !important;
 }
 
+/* Custom Radio style */
+.custom-radio-btn .form-check-input {
+  cursor: pointer;
+}
+.custom-radio-btn .form-check-input:checked {
+  background-color: #8b5cf6;
+  border-color: #8b5cf6;
+}
+
 /* Micro-animations */
 .animate-all {
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
@@ -1142,9 +993,9 @@ div, h1, h5, p, table, button, label, select, input {
   animation: float 3s infinite ease-in-out;
 }
 
-/* Responsive Grid and layouts */
-@media (max-width: 768px) {
-  .search-wrap, .branch-filter-wrap {
+/* Responsive Table */
+@media (max-width: 576px) {
+  .search-wrap {
     max-width: 100% !important;
     width: 100%;
   }

@@ -53,8 +53,16 @@ class ThanhToanController extends Controller
                 ]);
             }
 
+            // Kiểm tra xem có phải giao dịch đóng góp (DONGGOP) không
+            $isDongGop = false;
+            if ($noiDung) {
+                $parts = explode('|', $noiDung);
+                $expectedContent = trim($parts[0]);
+                $isDongGop = stripos($expectedContent, 'DONGGOP') !== false;
+            }
+
             // ── NẾU LÀ GÓI 0 ĐỒNG (MIỄN PHÍ / DÙNG THỬ) ──
-            if ($goiAmount == 0) {
+            if (!$isDongGop && $goiAmount == 0) {
                 return DB::transaction(function () use ($nguoiDungId, $noiDung, $goiAmount, $request) {
                     $user = NguoiDung::find($nguoiDungId);
                     if (!$user) {
@@ -224,6 +232,57 @@ class ThanhToanController extends Controller
                     ]);
                 }
 
+                // Kiểm tra xem đây có phải là giao dịch đóng góp không
+                $isDongGop = stripos($expectedContent, 'DONGGOP') !== false
+                            || stripos($matchedTx['transaction_content'] ?? '', 'DONGGOP') !== false;
+
+                if ($isDongGop) {
+                    $displayNoiDung = $noiDung;
+                    if (stripos($displayNoiDung, 'Số tiền:') === false) {
+                        $displayNoiDung .= " | Số tiền: " . number_format($amountIn, 0, ',', '.') . " VNĐ";
+                    }
+
+                    // Tạo hoặc cập nhật trạng thái đóng góp thành Đã duyệt
+                    $dongGop = \App\Models\DongGop::updateOrCreate(
+                        [
+                            'nguoi_dung_id' => $nguoiDungId,
+                            'noi_dung'      => $displayNoiDung,
+                        ],
+                        [
+                            'trang_thai'    => 'Đã duyệt',
+                        ]
+                    );
+
+                    // Ghi nhật ký hoạt động
+                    NhatKyHoatDong::ghiLog(
+                        sprintf(
+                            'Tự động duyệt đóng góp công đức cho người dùng #%d (%s) — Số tiền: %s VNĐ',
+                            $nguoiDungId,
+                            $user->ho_ten,
+                            number_format($amountIn, 0, ',', '.')
+                        ),
+                        [
+                            'id_nguoi_dung'  => $nguoiDungId,
+                            'dong_gop_id'    => $dongGop->id,
+                            'so_tien'        => $amountIn,
+                            'noi_dung'       => $displayNoiDung,
+                            'auto_approved'  => true,
+                            'transaction_id' => $matchedTx['id'] ?? null,
+                        ],
+                        'Thành công',
+                        null
+                    );
+
+                    return response()->json([
+                        'success'     => true,
+                        'is_donation' => true,
+                        'message'     => sprintf(
+                            'Chúc mừng! Đóng góp %s VNĐ đã được xác nhận thành công. Hệ thống đã ghi danh Bảng Vàng.',
+                            number_format($amountIn, 0, ',', '.')
+                        ),
+                    ]);
+                }
+
                 // ── Xác định gói dịch vụ theo số tiền ──────────────────────────
                 $goiAmount = (float) $request->input('so_tien', 0);
                 if ($goiAmount <= 0) {
@@ -246,7 +305,7 @@ class ThanhToanController extends Controller
                     ], 400);
                 }
 
-                // ── Kiểm tra là lệnh mua gói ────────────────────────────────────
+                // ── Kiểm tra là lệnh mua gói ──
                 $isMuaGoi = stripos($expectedContent, 'MUAGOI') !== false
                             || stripos($matchedTx['transaction_content'] ?? '', 'MUAGOI') !== false;
 

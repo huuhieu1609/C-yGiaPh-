@@ -12,7 +12,24 @@ class DongGopController extends Controller
     public function getData()
     {
         try {
-            $data = DongGop::all();
+            $user = auth('sanctum')->user();
+
+            if ($user && strtolower(trim($user->vai_tro)) === 'admin') {
+                $data = DongGop::with(['nguoiDung.chiNhanh'])->get();
+            } else if ($user && $user->is_doi_tac == 1) {
+                $branchIds = \App\Models\ChiNhanh::getManagedBranchIds($user);
+                $data = DongGop::with('nguoiDung')
+                    ->where('trang_thai', 'Đã duyệt')
+                    ->whereHas('nguoiDung', function ($q) use ($branchIds) {
+                        $q->whereIn('chi_nhanh_id', $branchIds);
+                    })->get();
+            } else if ($user && $user->chi_nhanh_id) {
+                $data = DongGop::with('nguoiDung')->whereHas('nguoiDung', function ($q) use ($user) {
+                    $q->where('chi_nhanh_id', $user->chi_nhanh_id);
+                })->get();
+            } else {
+                $data = [];
+            }
 
             return response()->json([
                 'status' => true,
@@ -30,7 +47,49 @@ class DongGopController extends Controller
     public function create(Request $request)
     {
         try {
-            $data = $request->only(['nguoi_dung_id', 'noi_dung', 'trang_thai']);
+            $thanhVienId = $request->input('thanh_vien_id');
+            $nguoiDungId = $request->input('nguoi_dung_id');
+
+            if ($thanhVienId) {
+                $thanhVien = \App\Models\ThanhVien::find($thanhVienId);
+                if ($thanhVien) {
+                    $nguoiDung = null;
+                    if ($thanhVien->email) {
+                        $nguoiDung = \App\Models\NguoiDung::where('email', $thanhVien->email)->first();
+                    }
+                    if (!$nguoiDung) {
+                        $dummyEmail = "tv.{$thanhVien->id}@dongho.com";
+                        $nguoiDung = \App\Models\NguoiDung::where('email', $dummyEmail)->first();
+                        
+                        if (!$nguoiDung) {
+                            $nguoiDung = \App\Models\NguoiDung::create([
+                                'ho_ten' => $thanhVien->ho_ten,
+                                'email' => $thanhVien->email ?: $dummyEmail,
+                                'mat_khau' => bcrypt('123456'),
+                                'chi_nhanh_id' => $thanhVien->chi_nhanh_id,
+                                'vai_tro' => 'Thành viên',
+                                'trang_thai' => 'Hoạt động',
+                                'is_doi_tac' => 0,
+                            ]);
+                        }
+                    }
+                    $nguoiDungId = $nguoiDung->id;
+                }
+            }
+
+            if (!$nguoiDungId) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Không tìm thấy tài khoản người dùng hoặc thành viên đóng góp!',
+                ], 400);
+            }
+
+            $data = [
+                'nguoi_dung_id' => $nguoiDungId,
+                'noi_dung' => $request->input('noi_dung'),
+                'trang_thai' => $request->input('trang_thai', 'Đã duyệt'),
+            ];
+
             $item = DongGop::create($data);
 
             return response()->json([
@@ -50,7 +109,50 @@ class DongGopController extends Controller
     {
         try {
             $item = DongGop::findOrFail($request->id);
-            $data = $request->only(['nguoi_dung_id', 'noi_dung', 'trang_thai']);
+            
+            $thanhVienId = $request->input('thanh_vien_id');
+            $nguoiDungId = $request->input('nguoi_dung_id');
+
+            if ($thanhVienId) {
+                $thanhVien = \App\Models\ThanhVien::find($thanhVienId);
+                if ($thanhVien) {
+                    $nguoiDung = null;
+                    if ($thanhVien->email) {
+                        $nguoiDung = \App\Models\NguoiDung::where('email', $thanhVien->email)->first();
+                    }
+                    if (!$nguoiDung) {
+                        $dummyEmail = "tv.{$thanhVien->id}@dongho.com";
+                        $nguoiDung = \App\Models\NguoiDung::where('email', $dummyEmail)->first();
+                        
+                        if (!$nguoiDung) {
+                            $nguoiDung = \App\Models\NguoiDung::create([
+                                'ho_ten' => $thanhVien->ho_ten,
+                                'email' => $thanhVien->email ?: $dummyEmail,
+                                'mat_khau' => bcrypt('123456'),
+                                'chi_nhanh_id' => $thanhVien->chi_nhanh_id,
+                                'vai_tro' => 'Thành viên',
+                                'trang_thai' => 'Hoạt động',
+                                'is_doi_tac' => 0,
+                            ]);
+                        }
+                    }
+                    $nguoiDungId = $nguoiDung->id;
+                }
+            }
+
+            if (!$nguoiDungId) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Không tìm thấy tài khoản người dùng hoặc thành viên đóng góp!',
+                ], 400);
+            }
+
+            $data = [
+                'nguoi_dung_id' => $nguoiDungId,
+                'noi_dung' => $request->input('noi_dung'),
+                'trang_thai' => $request->input('trang_thai', 'Đã duyệt'),
+            ];
+
             $item->update($data);
 
             return response()->json([

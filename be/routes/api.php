@@ -68,8 +68,8 @@ Route::middleware(['auth:sanctum', 'activity'])->group(function () {
         Route::get('/my-packages', [DoiTacController::class, 'getMyPackages']);
     });
 
+    Route::get('/admin/doi-tac/get-data', [DoiTacController::class, 'adminGetData'])->middleware('phan_quyen:Quản Lý Đối Tác|Cây Gia Phả');
     Route::prefix('/admin/doi-tac')->middleware('phan_quyen:Quản Lý Đối Tác')->group(function () {
-        Route::get('/get-data', [DoiTacController::class, 'adminGetData']);
         Route::post('/create', [DoiTacController::class, 'adminCreate']);
         Route::post('/update', [DoiTacController::class, 'adminUpdate']);
         Route::post('/delete', [DoiTacController::class, 'adminDelete']);
@@ -151,7 +151,7 @@ Route::middleware(['auth:sanctum', 'activity'])->group(function () {
 
     Route::post('/thanh-vien/upload-avatar', [ThanhVienController::class, 'uploadAvatar']);
 
-    Route::prefix('/thanh-vien')->middleware('phan_quyen:Quản Lý Thành Viên')->group(function () {
+    Route::prefix('/thanh-vien')->middleware('phan_quyen:Quản Lý Thành Viên|Cây Gia Phả')->group(function () {
         Route::get('/chi-nhanh/{chiNhanhId}', [ThanhVienController::class, 'getByChiNhanh']);
         Route::post('/create', [ThanhVienController::class, 'create']);
         Route::post('/update', [ThanhVienController::class, 'update']);
@@ -181,7 +181,7 @@ Route::middleware(['auth:sanctum', 'activity'])->group(function () {
     // =========================================================
     // DÒNG HỌ, CHI NHÁNH, ĐỜI TỘC HỌ
     // =========================================================
-    Route::prefix('/nguoi-dung')->middleware('phan_quyen:Quản Lý Người Dùng')->group(function () {
+    Route::prefix('/nguoi-dung')->middleware('phan_quyen:Quản Lý Người Dùng|Quản Lý Thành Viên|Quản Lý Sự Kiện')->group(function () {
         Route::get('/get-data', [NguoiDungController::class, 'getData']);
         Route::post('/create', [NguoiDungController::class, 'create']);
         Route::post('/update', [NguoiDungController::class, 'update']);

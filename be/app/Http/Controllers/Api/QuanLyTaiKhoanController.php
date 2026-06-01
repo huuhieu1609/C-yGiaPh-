@@ -18,7 +18,7 @@ class QuanLyTaiKhoanController extends Controller
 {
     // ── Shared select columns (giảm dữ liệu trả về, tránh load toàn bộ) ──
     private const ACCOUNT_COLUMNS = [
-        'id', 'ho_ten', 'email', 'so_dien_thoai', 'vai_tro',
+        'id', 'ho_ten', 'email', 'so_dien_thoai', 'vai_tro', 'id_chuc_vu',
         'trang_thai', 'is_doi_tac', 'avatar', 'created_at', 'deleted_at'
     ];
 
@@ -64,7 +64,10 @@ class QuanLyTaiKhoanController extends Controller
     {
         try {
             $query = NguoiDung::select(self::ACCOUNT_COLUMNS)
-                ->with(['doiTac:id,id_nguoi_dung,ten_goi,so_tien,ngay_bat_dau,ngay_ket_thuc,trang_thai'])
+                ->with([
+                    'doiTac:id,id_nguoi_dung,ten_goi,so_tien,ngay_bat_dau,ngay_ket_thuc,trang_thai',
+                    'chucVu:id,ten_chuc_vu',
+                ])
                 ->withTrashed();
 
             // Search realtime (dùng orWhere đúng cú pháp)
@@ -137,7 +140,10 @@ class QuanLyTaiKhoanController extends Controller
     public function getAccountDetail($id): JsonResponse
     {
         try {
-            $account = NguoiDung::with(['doiTac'])->withTrashed()->findOrFail($id);
+            $account = NguoiDung::with([
+                'doiTac',
+                'chucVu:id,ten_chuc_vu',
+            ])->withTrashed()->findOrFail($id);
 
             $logs = NhatKyHoatDong::where('nguoi_dung_id', $id)
                 ->orderBy('thoi_gian', 'desc')
@@ -207,7 +213,7 @@ class QuanLyTaiKhoanController extends Controller
                     $newIsDoiTac = (int)$request->input('is_doi_tac');
                     if ($user->is_doi_tac !== $newIsDoiTac) {
                         $changes['is_doi_tac'] = ['from' => $user->is_doi_tac, 'to' => $newIsDoiTac];
-                        
+
                         if ($newIsDoiTac === 1) {
                             // Nâng cấp lên Trưởng Nhánh
                             $doiTac = DoiTac::where('id_nguoi_dung', $user->id)->first();
@@ -229,7 +235,7 @@ class QuanLyTaiKhoanController extends Controller
                                 ]);
                             }
                             $user->is_doi_tac = 1;
-                            
+
                             // Tự động gán chi_nhanh_id theo email thành viên nếu có
                             if (!$user->chi_nhanh_id) {
                                 $linkedMember = \App\Models\ThanhVien::where('email', $user->email)
@@ -433,7 +439,7 @@ class QuanLyTaiKhoanController extends Controller
 
                 // Sync is_doi_tac (DoiTac model booted hook handles it too)
                 $user->is_doi_tac = 1;
-                
+
                 // Nếu user chưa có chi_nhanh_id, tự động liên kết với chi_nhanh_id của thành viên có cùng email
                 if (!$user->chi_nhanh_id) {
                     $linkedMember = \App\Models\ThanhVien::where('email', $user->email)

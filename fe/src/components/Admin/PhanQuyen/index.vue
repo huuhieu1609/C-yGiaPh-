@@ -295,12 +295,31 @@ export default {
     },
     computed: {
         filteredRoles() {
+            // Đọc thông tin user đang đăng nhập
+            const userStr = localStorage.getItem('user');
+            let currentUser = null;
+            if (userStr) {
+                try {
+                    currentUser = JSON.parse(userStr);
+                } catch(e) {}
+            }
+
             // Lọc bỏ "Quản Trị Viên Tổng" (Admin hệ thống gốc), chỉ hiển thị chức vụ đối tác và thành viên dòng họ
             let baseList = this.listRoles.filter(r => 
                 r.id !== 1 && 
                 !r.ten_chuc_vu.toLowerCase().includes('tổng') && 
                 !r.mo_ta?.toLowerCase().includes('toàn quyền hệ thống')
             );
+
+            // Nếu người dùng đăng nhập là Quản trị viên (Sub-Admin), chỉ cho phép phân quyền cho Trưởng Nhánh và Thành Viên
+            const chucVuName = currentUser?.chuc_vu?.ten_chuc_vu?.toLowerCase() || '';
+            const isSubAdmin = chucVuName.includes('quản trị');
+            if (isSubAdmin) {
+                baseList = baseList.filter(r => 
+                    r.ten_chuc_vu.toLowerCase().includes('nhánh') || 
+                    r.ten_chuc_vu.toLowerCase().includes('thành viên')
+                );
+            }
             
             if (!this.searchRole) return baseList;
             const term = this.searchRole.toLowerCase();
@@ -483,17 +502,25 @@ export default {
                 let friendlyName = name.replace(/Quản Lý/g, 'Xem').replace(/quản lý/g, 'xem');
                 
                 // Các trường hợp đặc biệt không chứa từ "Quản Lý" nhưng nên đổi sang "Xem..."
-                if (name === 'Cây Gia Phả') return 'Xem Cây Gia Phả';
+                if (name === 'Cây Gia Phả') return 'Xem Gia Phả Hệ';
                 if (name === 'Tra Cứu Xưng Hô') return 'Xem Tra Cứu Xưng Hô';
                 if (name === 'Quỹ & Sự Kiện') return 'Xem Quỹ & Sự Kiện';
                 if (name === 'Nhật Ký Thao Tác') return 'Xem Nhật Ký Thao Tác';
                 
                 return friendlyName;
             }
+
+            if (name === 'Cây Gia Phả') {
+                return 'Quản Lý Gia Phả Hệ';
+            }
+
             return name;
         },
         getFriendlyDesc(cn) {
             let desc = cn.mo_ta || ('Cho phép truy cập ' + cn.ten_chuc_nang);
+            if (cn.ten_chuc_nang === 'Cây Gia Phả') {
+                desc = 'Quản lý, xem và chỉnh sửa cây gia phả hệ thống';
+            }
             if (this.selectedRole) {
                 const roleName = (this.selectedRole.ten_chuc_vu || '').toString().toLowerCase().normalize('NFC');
                 const isThanhVien = roleName.includes('thành viên') || 
@@ -502,7 +529,7 @@ export default {
                                     
                 if (isThanhVien) {
                     // Đổi "Quản lý" / "quản lý" thành "Xem" / "xem"
-                    return desc.replace(/Quản lý/g, 'Xem').replace(/quản lý/g, 'xem');
+                    return desc.replace(/Quản lý/g, 'Xem').replace(/quản lý/g, 'xem').replace(/chỉnh sửa/g, 'xem');
                 }
             }
             return desc;
