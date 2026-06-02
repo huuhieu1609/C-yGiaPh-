@@ -15,6 +15,7 @@ class DatabaseSeeder extends Seeder
             AdminSeeder::class,
             ChucNangSeeder::class,
             ChucVuSeeder::class,
+            GrantThanhVienPermissionsSeeder::class,
             ChiNhanhSeeder::class,
             NguoiDungSeeder::class,
             ThanhVienSeeder::class,

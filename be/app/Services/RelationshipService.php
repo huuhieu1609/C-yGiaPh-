@@ -351,6 +351,131 @@ class RelationshipService
     }
 
     /**
+     * Chuyển đổi từ danh xưng quan hệ chi tiết sang danh xưng gọi bậc/xưng hô tự nhiên cho cả 10 đời.
+     *
+     * @param string $relationshipName
+     * @return string
+     */
+    public function getConversationalTerm(string $relationshipName): string
+    {
+        $term = mb_strtolower(trim($relationshipName), 'UTF-8');
+
+        // Đời con: con trai, con gái, con dâu, con rể -> con
+        if (str_contains($term, 'con trai') || str_contains($term, 'con gái') || str_contains($term, 'con dâu') || str_contains($term, 'con rể')) {
+            return 'con';
+        }
+
+        // Đời chắt
+        if (str_contains($term, 'chắt')) {
+            return 'chắt';
+        }
+
+        // Đời chít
+        if (str_contains($term, 'chít')) {
+            return 'chít';
+        }
+
+        // Đời chút
+        if (str_contains($term, 'chút')) {
+            return 'chút';
+        }
+
+        // Đời chét
+        if (str_contains($term, 'chét')) {
+            return 'chét';
+        }
+
+        // Đời chót
+        if (str_contains($term, 'chót')) {
+            return 'chót';
+        }
+
+        // Đời chẹt
+        if (str_contains($term, 'chẹt')) {
+            return 'chẹt';
+        }
+
+        // Đời cháu: cháu nội, cháu ngoại, cháu họ -> cháu
+        if (str_contains($term, 'cháu')) {
+            return 'cháu';
+        }
+
+        // Anh chị em: anh họ, anh trai, anh rể, anh vợ, anh chồng -> anh
+        if (str_contains($term, 'anh trai') || str_contains($term, 'anh họ') || str_contains($term, 'anh rể') || str_contains($term, 'anh vợ') || str_contains($term, 'anh chồng')) {
+            return 'anh';
+        }
+
+        // Chị gái, chị họ, chị dâu, chị vợ, chị chồng -> chị
+        if (str_contains($term, 'chị gái') || str_contains($term, 'chị họ') || str_contains($term, 'chị dâu') || str_contains($term, 'chị vợ') || str_contains($term, 'chị chồng')) {
+            return 'chị';
+        }
+
+        // Em gái, em trai, em họ, em rể, em dâu, em vợ, em chồng -> em
+        if (str_contains($term, 'em gái') || str_contains($term, 'em trai') || str_contains($term, 'em họ') || str_contains($term, 'em rể') || str_contains($term, 'em dâu') || str_contains($term, 'em vợ') || str_contains($term, 'em chồng')) {
+            return 'em';
+        }
+
+        // Ông nội, ông ngoại, ông họ -> ông
+        if (str_contains($term, 'ông nội') || str_contains($term, 'ông ngoại') || str_contains($term, 'ông họ')) {
+            return 'ông';
+        }
+
+        // Bà nội, bà ngoại, bà họ -> bà
+        if (str_contains($term, 'bà nội') || str_contains($term, 'bà ngoại') || str_contains($term, 'bà họ')) {
+            return 'bà';
+        }
+
+        // Bố chồng, bố vợ -> cha
+        if (str_contains($term, 'bố chồng') || str_contains($term, 'bố vợ') || $term === 'bố/mẹ') {
+            return 'cha';
+        }
+
+        // Mẹ chồng, mẹ vợ -> mẹ
+        if (str_contains($term, 'mẹ chồng') || str_contains($term, 'mẹ vợ')) {
+            return 'mẹ';
+        }
+
+        // Cụ: cụ ông, cụ bà, cụ họ -> cụ
+        if (str_contains($term, 'cụ')) {
+            return 'cụ';
+        }
+
+        // Kỵ: kỵ ông, kỵ bà, kỵ họ -> kỵ
+        if (str_contains($term, 'kỵ')) {
+            return 'kỵ';
+        }
+
+        // Sơ: sơ ông, sơ bà, sơ họ -> sơ
+        if (str_contains($term, 'sơ')) {
+            return 'sơ';
+        }
+
+        // Tiệm: tiệm họ -> tiệm
+        if (str_contains($term, 'tiệm')) {
+            return 'tiệm';
+        }
+
+        // Tiểu: tiểu họ -> tiểu
+        if (str_contains($term, 'tiểu')) {
+            return 'tiểu';
+        }
+
+        // Di: di họ -> di
+        if (str_contains($term, 'di')) {
+            if ($term !== 'dì') {
+                return 'di';
+            }
+        }
+
+        // Diễn: diễn họ -> diễn
+        if (str_contains($term, 'diễn')) {
+            return 'diễn';
+        }
+
+        return $relationshipName;
+    }
+
+    /**
      * So sánh vai vế (Seniority) lớn/nhỏ dựa trên ngày sinh.
      * Trả về 'senior' (vai vế lớn hơn - sinh trước) hoặc 'junior' (vai vế nhỏ hơn - sinh sau).
      */

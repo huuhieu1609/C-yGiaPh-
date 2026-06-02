@@ -569,6 +569,8 @@ const TreeItem = defineComponent({
       ]);
     }
 
+    let children = null;
+
     const getTenDoi = (n) => {
       if (!this.listDoiTocHo || !this.listDoiTocHo.length) return '';
       const d = this.listDoiTocHo.find(x => x.so_doi == n);
@@ -624,6 +626,17 @@ const TreeItem = defineComponent({
     // Arrange couple cards. Lay out spouses sequentially (husband - wife 1 - wife 2)
     const coupleChildren = [];
     const hasMultipleSpouses = m.spouses && m.spouses.length === 2;
+
+    let kids0 = [];
+    let kids1 = [];
+    if (hasMultipleSpouses) {
+        const spouse0 = m.spouses[0];
+        const spouse1 = m.spouses[1];
+        const parentKey = m.gioi_tinh === 'Nam' ? 'me_id' : 'cha_id';
+        kids1 = (m.children || []).filter(child => child[parentKey] == spouse1.id);
+        const kids1Ids = kids1.map(k => k.id);
+        kids0 = (m.children || []).filter(child => !kids1Ids.includes(child.id));
+    }
 
     if (hasMultipleSpouses) {
       // spouse - connector - main - connector - spouse
@@ -841,8 +854,8 @@ export default {
           } else {
             this.currentMemberRelationshipLoading = true;
             axios.post('http://127.0.0.1:8000/api/thanh-vien/xac-dinh-quan-he', {
-              id_a: m.id,
-              id_b: myMember.id
+              id_a: myMember.id,
+              id_b: m.id
             }, {
               headers: { Authorization: `Bearer ${token}` }
             })
@@ -1985,5 +1998,5 @@ export default {
   width: 220px;
   height: 90px;
   visibility: hidden;
-}
+} */
 </style>

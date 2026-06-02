@@ -8,12 +8,20 @@
                             <h5 class="mb-0 fw-bold text-dark"><i class="bx bx-git-branch text-primary"></i> Quản Lý Cây Gia Phả</h5>
                         </div>
                         <div class="col-md-9 text-md-end d-flex align-items-center justify-content-end gap-3 flex-wrap">
-                            <!-- Partner Filter -->
+                            <!-- Partner Filter Select -->
                             <div class="d-flex align-items-center gap-2">
-                                <button class="btn btn-outline-warning radius-30 px-3 fw-bold d-flex align-items-center gap-2 shadow-sm" @click="showPartnerSelectorModal = true">
-                                    <i class="bx bx-user-circle fs-5"></i>
-                                    <span>{{ selectedPartner ? (selectedPartner.nguoi_dung?.ho_ten || selectedPartner.ten_goi) + ' (' + selectedPartner.dong_ho + ')' : 'Chọn Đối Tác' }}</span>
-                                </button>
+                                <div class="position-relative">
+                                    <select class="form-select radius-30 border-2 px-4 pe-5 fw-bold text-dark shadow-sm select-partner-premium"
+                                            ref="partnerSelect"
+                                            :value="selectedPartner ? selectedPartner.id : ''"
+                                            @change="onPartnerChange"
+                                            style="height: 40px; min-width: 250px; cursor: pointer; border-color: #ffc107;">
+                                        <option value="">-- Chọn Đối Tác --</option>
+                                        <option v-for="item in listPartners" :key="item.id" :value="item.id" :disabled="!item.id_chi_nhanh">
+                                            {{ item.nguoi_dung?.ho_ten || item.ten_goi }} - {{ item.dong_ho || 'Chưa thiết lập' }} {{ !item.id_chi_nhanh ? '(Chưa tạo cây)' : '' }}
+                                        </option>
+                                    </select>
+                                </div>
                             </div>
 
                             <!-- Search Bar -->
@@ -57,7 +65,7 @@
                                 <p class="text-muted small mx-auto" style="max-width: 450px;">
                                     Vui lòng lựa chọn một tài khoản đối tác từ danh sách để tải dữ liệu cây gia phả và thực hiện quản lý thành viên dòng họ.
                                 </p>
-                                <button class="btn btn-warning radius-30 px-4 mt-3 fw-bold shadow-sm" @click="showPartnerSelectorModal = true">
+                                <button class="btn btn-warning radius-30 px-4 mt-3 fw-bold shadow-sm" @click="$refs.partnerSelect.focus()">
                                     <i class="bx bx-list-ul me-1"></i> Chọn Đối Tác Ngay
                                 </button>
                             </div>
@@ -282,91 +290,7 @@
             </div>
         </div>
 
-        <!-- Modal Chọn Đối Tác -->
-        <div v-if="showPartnerSelectorModal" class="custom-modal-backdrop animate__animated animate__fadeIn" @click.self="showPartnerSelectorModal = false">
-            <div class="custom-modal-content animate__animated animate__zoomIn p-4 rounded-4 shadow-2xl bg-white position-relative" style="max-width: 650px; z-index: 1060;">
-                <button class="btn-close-custom position-absolute top-0 end-0 m-3 border-0 bg-transparent" @click="showPartnerSelectorModal = false">
-                    <i class="bx bx-x fs-2 text-muted"></i>
-                </button>
-                
-                <h5 class="fw-bold mb-1 text-dark d-flex align-items-center gap-2">
-                    <i class="bx bx-user-circle text-warning fs-3"></i> Danh Sách Tài Khoản Đối Tác
-                </h5>
-                <p class="text-muted small mb-4">Lựa chọn đối tác quản lý để hiển thị và biên tập cây gia phả tương ứng.</p>
 
-                <!-- Search inside modal -->
-                <div class="position-relative mb-3">
-                    <input type="text" class="form-control ps-5 radius-30 border-2 shadow-none" v-model="partnerSearchQuery" placeholder="Tìm kiếm đối tác theo tên, email hoặc dòng họ...">
-                    <span class="position-absolute top-50 translate-middle-y start-0 ms-3 text-secondary"><i class="bx bx-search"></i></span>
-                </div>
-
-                <!-- Partners List Container -->
-                <div class="partner-list-scroll overflow-auto pe-1" style="max-height: 380px;">
-                    <div class="row g-3" v-if="filteredPartners.length">
-                        <div class="col-md-6" v-for="item in filteredPartners" :key="item.id">
-                            <!-- Active Partner (Has Chi Nhanh / Clan Tree) -->
-                            <div v-if="item.id_chi_nhanh" 
-                                 class="partner-select-card p-3 rounded-3 border border-2 cursor-pointer transition-all d-flex align-items-center gap-3 animate__animated animate__fadeIn"
-                                 :class="selectedPartner && selectedPartner.id === item.id ? 'border-warning bg-light-gold' : 'border-light bg-white'"
-                                 @click="selectPartner(item)">
-                                
-                                <div class="partner-avatar-circle d-flex align-items-center justify-content-center text-white font-weight-bold"
-                                     :style="{ background: getAvatarBg(item.nguoi_dung?.ho_ten || item.ten_goi) }">
-                                    {{ getAvatarInitials(item.nguoi_dung?.ho_ten || item.ten_goi) }}
-                                </div>
-                                
-                                <div class="overflow-hidden flex-grow-1">
-                                    <div class="fw-bold text-dark text-truncate">{{ item.nguoi_dung?.ho_ten || item.ten_goi }}</div>
-                                    <div class="text-muted small text-truncate">{{ item.nguoi_dung?.email || 'Chưa liên kết email' }}</div>
-                                    <div class="mt-2">
-                                        <span class="badge badge-gold-soft font-9 px-2 py-1 text-dark animate__animated animate__fadeIn" style="background: rgba(212, 175, 55, 0.15); color: #8a6d1c !important; border: 1px solid rgba(212, 175, 55, 0.25);">
-                                            <i class="bx bx-home-alt me-1"></i>{{ item.dong_ho }}
-                                        </span>
-                                    </div>
-                                </div>
-                                
-                                <div v-if="selectedPartner && selectedPartner.id === item.id" class="text-warning">
-                                    <i class="bx bxs-check-circle fs-4 animate__animated animate__scaleIn"></i>
-                                </div>
-                            </div>
-
-                            <!-- Inactive Partner (Has NOT created Chi Nhanh / Clan Tree yet) -->
-                            <div v-else 
-                                 class="partner-select-card partner-card-disabled p-3 rounded-3 border border-2 border-dashed border-light-secondary bg-light bg-opacity-70 text-muted d-flex align-items-center gap-3 animate__animated animate__fadeIn"
-                                 style="opacity: 0.65; cursor: not-allowed;"
-                                 title="Đối tác này chưa tạo cây gia phả">
-                                
-                                <div class="partner-avatar-circle d-flex align-items-center justify-content-center text-white font-weight-bold"
-                                     style="background: #94a3b8; filter: grayscale(0.5); box-shadow: none;">
-                                    {{ getAvatarInitials(item.nguoi_dung?.ho_ten || item.ten_goi) }}
-                                </div>
-                                
-                                <div class="overflow-hidden flex-grow-1">
-                                    <div class="fw-bold text-secondary text-truncate" style="text-decoration: line-through; opacity: 0.85;">{{ item.nguoi_dung?.ho_ten || item.ten_goi }}</div>
-                                    <div class="text-muted small text-truncate" style="opacity: 0.85;">{{ item.nguoi_dung?.email || 'Chưa liên kết email' }}</div>
-                                    <div class="mt-2 text-danger small fw-bold d-flex align-items-center gap-1">
-                                        <i class="bx bx-error-circle fs-6"></i>
-                                        <span>Đối tác này chưa tạo cây gia phả</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Search Empty State -->
-                    <div v-else class="text-center py-5">
-                        <i class="bx bx-user-x fs-1 text-muted opacity-25 mb-2"></i>
-                        <h6 class="text-muted fw-bold">Không tìm thấy đối tác nào</h6>
-                        <p class="text-muted small mb-0">Vui lòng thử từ khóa tìm kiếm khác.</p>
-                    </div>
-                </div>
-                
-                <div class="modal-footer border-0 p-0 mt-4 d-flex justify-content-end gap-2">
-                    <button type="button" class="btn btn-outline-secondary radius-30 px-4" @click="showPartnerSelectorModal = false">Đóng</button>
-                    <button v-if="selectedPartner" type="button" class="btn btn-danger radius-30 px-4 text-white" @click="clearPartnerSelection">Bỏ chọn</button>
-                </div>
-            </div>
-        </div>
     </div>
 </template>
 
@@ -418,6 +342,7 @@ const TreeItem = defineComponent({
             return h('li', [nodeGroup, children]);
         }
 
+        let children = null;
         const generationClass = `gen-${(this.member.doi_thu % 5) + 1}`;
         const isHighlighted = this.searchQuery && this.member.ho_ten.toLowerCase().includes(this.searchQuery.toLowerCase());
         
@@ -437,6 +362,17 @@ const TreeItem = defineComponent({
         let children = null;
         const coupleChildren = [];
         const hasMultipleSpouses = this.member.spouses && this.member.spouses.length === 2;
+
+        let kids0 = [];
+        let kids1 = [];
+        if (hasMultipleSpouses) {
+            const spouse0 = this.member.spouses[0];
+            const spouse1 = this.member.spouses[1];
+            const parentKey = this.member.gioi_tinh === 'Nam' ? 'me_id' : 'cha_id';
+            kids1 = (this.member.children || []).filter(child => child[parentKey] == spouse1.id);
+            const kids1Ids = kids1.map(k => k.id);
+            kids0 = (this.member.children || []).filter(child => !kids1Ids.includes(child.id));
+        }
 
         if (hasMultipleSpouses) {
             coupleChildren.push(makeSpouseChunk(this.member.spouses[0], 1));
@@ -639,17 +575,26 @@ export default {
                     }
                 });
         },
+        onPartnerChange(event) {
+            const partnerId = event.target.value;
+            if (!partnerId) {
+                this.clearPartnerSelection();
+                return;
+            }
+            const partner = this.listPartners.find(p => p.id == partnerId);
+            if (partner) {
+                this.selectPartner(partner);
+            }
+        },
         selectPartner(item) {
             this.selectedPartner = item;
             this.selectedChiNhanh = item.id_chi_nhanh;
-            this.showPartnerSelectorModal = false;
             this.filterTree();
             toastr.success(`Đã chọn đối tác: ${item.nguoi_dung?.ho_ten || item.ten_goi}`);
         },
         clearPartnerSelection() {
             this.selectedPartner = null;
             this.selectedChiNhanh = null;
-            this.showPartnerSelectorModal = false;
             this.filterTree();
             toastr.info('Đã gỡ chọn đối tác.');
         },

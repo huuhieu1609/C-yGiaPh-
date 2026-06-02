@@ -93,7 +93,51 @@
           </router-link>
         </li>
 
+<<<<<<< HEAD
+        <li class="nav-item item-partner" v-if="hasPermission('Quản Lý Chi Nhánh')">
+          <router-link to="/admin/chi-nhanh" class="nav-link" active-class="active" title="Quản Lý Dòng Họ">
+            <span class="nav-icon"><i class="bx bx-sitemap"></i></span>
+            <span class="hide-on-collapse nav-label">Quản Lý Dòng Họ</span>
+            <span class="nav-dot hide-on-collapse"></span>
+          </router-link>
+        </li>
+
+        <li class="nav-item item-user" v-if="hasPermission('Quản Lý Đời Tộc Họ')">
+          <router-link to="/admin/doi-toc-ho" class="nav-link" active-class="active" title="Quản Lý Đời Họ">
+            <span class="nav-icon"><i class="bx bx-layer"></i></span>
+            <span class="hide-on-collapse nav-label">Quản Lý Đời Họ</span>
+            <span class="nav-dot hide-on-collapse"></span>
+          </router-link>
+        </li>
+
+        <li class="nav-item item-home" v-if="hasPermission('Quản Lý Nhà Thờ Họ')">
+          <router-link to="/admin/nha-tho-ho" class="nav-link" active-class="active" title="Nhà Thờ Họ">
+            <span class="nav-icon"><i class="bx bx-building-house"></i></span>
+            <span class="hide-on-collapse nav-label">Nhà Thờ Họ</span>
+            <span class="nav-dot hide-on-collapse"></span>
+          </router-link>
+        </li>
+
+        <li class="nav-item item-payment" v-if="hasPermission('Quản Lý Sự Kiện')">
+          <router-link to="/admin/su-kien" class="nav-link" active-class="active" title="Quản Lý Sự Kiện">
+            <span class="nav-icon"><i class="bx bx-calendar-event"></i></span>
+            <span class="hide-on-collapse nav-label">Quản Lý Sự Kiện</span>
+            <span class="nav-dot hide-on-collapse"></span>
+          </router-link>
+        </li>
+
+        <li class="nav-item item-members" v-if="hasPermission('Quản Lý Đóng Góp')">
+          <router-link to="/admin/dong-gop" class="nav-link" active-class="active" title="Quản Lý Đóng Góp">
+            <span class="nav-icon"><i class="bx bx-wallet"></i></span>
+            <span class="hide-on-collapse nav-label">Quản Lý Đóng Góp</span>
+            <span class="nav-dot hide-on-collapse"></span>
+          </router-link>
+        </li>
+
+        <li class="section-heading hide-on-collapse">Gói & Thanh Toán</li>
+=======
         <li class="section-heading hide-on-collapse" v-if="hasPermission('Quản Lý Đối Tác') || hasPermission('Quản Lý Sự Kiện')">Gói &amp; Quỹ Dòng Họ</li>
+>>>>>>> 8b26db9214b53f9db8841ab68a7f9814e47fb6cc
 
         <li class="nav-item item-payment" v-if="hasPermission('Quản Lý Đối Tác')">
           <router-link to="/admin/goi-dich-vu" class="nav-link" active-class="active" title="Quản Lý Gói Dịch Vụ">

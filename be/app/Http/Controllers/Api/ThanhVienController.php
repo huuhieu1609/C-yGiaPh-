@@ -271,7 +271,8 @@ class ThanhVienController extends Controller
             $nguoi2 = ThanhVien::findOrFail($request->nguoi_2);
 
             $result = $relationshipService->resolveDetailed($nguoi1, $nguoi2);
-            $term = $relationshipService->resolve($nguoi1, $nguoi2) ?? 'quan hệ';
+            $rawTerm = $relationshipService->resolve($nguoi2, $nguoi1) ?? 'quan hệ';
+            $term = $relationshipService->getConversationalTerm($rawTerm);
 
             // Bổ sung đầy đủ các bộ key để tương thích đồng thời cả Web và Mobile
             return response()->json([
@@ -328,8 +329,9 @@ class ThanhVienController extends Controller
             if ($user) {
                 $me = ThanhVien::where('email', $user->email)->whereNotNull('email')->first();
                 if ($me && $me->id != $id) {
-                    $term = $relationshipService->resolve($member, $me);
-                    if ($term) {
+                    $rawTerm = $relationshipService->resolve($member, $me);
+                    if ($rawTerm) {
+                        $term = $relationshipService->getConversationalTerm($rawTerm);
                         $detailed = $relationshipService->resolveDetailed($member, $me);
                         $relationshipData = [
                             'term' => $term,

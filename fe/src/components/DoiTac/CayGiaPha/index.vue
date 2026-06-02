@@ -353,6 +353,8 @@ const TreeItem = defineComponent({
             ) : null;
             return h('li', [nodeGroup, children]);
         }
+
+        let children = null;
         
         // Build main card and spouse cards; if exactly two spouses, place main between them
         const makeMainCard = (order = null, extraClass = '') => h('div', { 
@@ -402,6 +404,17 @@ const TreeItem = defineComponent({
         let children = null;
         const coupleChildren = [];
         const hasMultipleSpouses = this.member.spouses && this.member.spouses.length === 2;
+
+        let kids0 = [];
+        let kids1 = [];
+        if (hasMultipleSpouses) {
+            const spouse0 = this.member.spouses[0];
+            const spouse1 = this.member.spouses[1];
+            const parentKey = this.member.gioi_tinh === 'Nam' ? 'me_id' : 'cha_id';
+            kids1 = (this.member.children || []).filter(child => child[parentKey] == spouse1.id);
+            const kids1Ids = kids1.map(k => k.id);
+            kids0 = (this.member.children || []).filter(child => !kids1Ids.includes(child.id));
+        }
 
         if (hasMultipleSpouses) {
             coupleChildren.push(makeSpouseChunk(this.member.spouses[0], 1));
@@ -1434,5 +1447,5 @@ export default {
   width: 220px;
   height: 90px;
   visibility: hidden;
-}
+} */
 </style>
