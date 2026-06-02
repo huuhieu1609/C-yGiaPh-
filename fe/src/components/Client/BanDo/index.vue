@@ -285,7 +285,8 @@ export default {
 
       // Default focal center is Vietnam center
       this.map = window.L.map('leaflet-clan-map', {
-        zoomControl: false // Move zoom control to bottom right later
+        zoomControl: false, // Move zoom control to bottom right later
+        attributionControl: false
       }).setView([16.047079, 108.206230], 6);
 
       // Add elegant zoom control at bottom right
@@ -296,8 +297,7 @@ export default {
       const openMapUrl = `${NDA_MAP_STYLE}?apikey=${openMapKey}`;
 
       const glLayer = window.L.maplibreGL({
-        style: openMapUrl,
-        attribution: '&copy; <a href="https://openmap.vn" target="_blank">OpenMap.vn</a> contributors'
+        style: openMapUrl
       });
 
       glLayer.addTo(this.map);

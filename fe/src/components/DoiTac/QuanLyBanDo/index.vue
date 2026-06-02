@@ -477,15 +477,16 @@ export default {
     initMap() {
       if (!this.leafletLoaded || this.map) return;
 
-      this.map = window.L.map('leaflet-manager-map').setView([16.047079, 108.206230], 6);
+      this.map = window.L.map('leaflet-manager-map', {
+        attributionControl: false
+      }).setView([16.047079, 108.206230], 6);
 
       // Configure enterprise OpenMap.vn layer with MapLibre GL Vector 'day-v1' style
       const openMapKey = NDA_API_KEY;
       const openMapUrl = `${NDA_MAP_STYLE}?apikey=${openMapKey}`;
 
       const glLayer = window.L.maplibreGL({
-        style: openMapUrl,
-        attribution: '&copy; <a href="https://openmap.vn" target="_blank">OpenMap.vn</a> contributors'
+        style: openMapUrl
       });
 
       glLayer.addTo(this.map);

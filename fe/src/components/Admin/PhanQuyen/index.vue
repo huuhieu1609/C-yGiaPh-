@@ -311,9 +311,11 @@ export default {
                 !r.mo_ta?.toLowerCase().includes('toàn quyền hệ thống')
             );
 
-            // Nếu người dùng đăng nhập là Quản trị viên (Sub-Admin), chỉ cho phép phân quyền cho Trưởng Nhánh và Thành Viên
+            // Nếu người dùng đăng nhập là Quản trị viên phụ tá (Sub-Admin), chỉ cho phép phân quyền cho Trưởng Nhánh và Thành Viên
             const chucVuName = currentUser?.chuc_vu?.ten_chuc_vu?.toLowerCase() || '';
-            const isSubAdmin = chucVuName.includes('quản trị');
+            const roleName = currentUser?.vai_tro?.toLowerCase() || '';
+            const isMasterAdmin = roleName === 'admin' || currentUser?.email === 'admin@master.com' || chucVuName.includes('tổng');
+            const isSubAdmin = chucVuName.includes('quản trị') && !isMasterAdmin;
             if (isSubAdmin) {
                 baseList = baseList.filter(r => 
                     r.ten_chuc_vu.toLowerCase().includes('nhánh') || 
@@ -335,8 +337,9 @@ export default {
             
             // Lọc theo chức vụ được chọn
             let baseList = this.listChucNang;
-            if (this.selectedRole.id === 1 || this.selectedRole.ten_chuc_vu.toLowerCase().includes('admin') || this.selectedRole.ten_chuc_vu.toLowerCase().includes('tổng')) {
-                // Chức vụ Admin tổng -> Chỉ hiện các chức năng admin hệ thống
+            const tenChucVu = (this.selectedRole.ten_chuc_vu || '').toLowerCase();
+            if (this.selectedRole.id === 1 || tenChucVu.includes('admin') || tenChucVu.includes('tổng') || tenChucVu.includes('quản trị')) {
+                // Chức vụ Admin tổng hoặc Quản trị viên -> Chỉ hiện các chức năng admin hệ thống
                 baseList = this.listChucNang.filter(cn => adminFuncs.includes(cn.ten_chuc_nang));
             } else {
                 // Chức vụ của đối tác và thành viên -> KHÔNG hiện các chức năng admin hệ thống

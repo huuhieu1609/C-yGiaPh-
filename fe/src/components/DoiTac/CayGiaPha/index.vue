@@ -401,7 +401,6 @@ const TreeItem = defineComponent({
             ]);
         };
 
-        let children = null;
         const coupleChildren = [];
         const hasMultipleSpouses = this.member.spouses && this.member.spouses.length === 2;
 
@@ -1447,5 +1446,5 @@ export default {
   width: 220px;
   height: 90px;
   visibility: hidden;
-} */
+}
 </style>

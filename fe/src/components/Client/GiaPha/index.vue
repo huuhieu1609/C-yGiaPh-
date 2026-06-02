@@ -622,7 +622,6 @@ const TreeItem = defineComponent({
       ]);
     };
 
-    let children = null;
     // Arrange couple cards. Lay out spouses sequentially (husband - wife 1 - wife 2)
     const coupleChildren = [];
     const hasMultipleSpouses = m.spouses && m.spouses.length === 2;
@@ -1998,5 +1997,5 @@ export default {
   width: 220px;
   height: 90px;
   visibility: hidden;
-} */
+}
 </style>

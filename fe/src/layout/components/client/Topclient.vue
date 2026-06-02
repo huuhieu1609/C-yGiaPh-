@@ -1,5 +1,5 @@
 <template>
-  <header class="top-client" :class="{ 'scrolled': isScrolled }">
+  <header class="top-client" :class="{ 'scrolled': isScrolled || $route.path !== '/' }">
     <div class="container">
       <nav class="navbar">
         <div class="logo">
@@ -531,7 +531,7 @@ export default {
 }
 
 .top-client.scrolled .logo a {
-  color: #1a1a1a;
+  color: #111827;
 }
 
 .logo span {
@@ -550,6 +550,7 @@ export default {
 }
 
 .nav-links a {
+  position: relative;
   text-decoration: none;
   color: #ffffff;
   font-size: 14px;
@@ -558,16 +559,34 @@ export default {
   text-transform: uppercase;
   transition: all 0.3s ease;
   opacity: 0.9;
+  padding-bottom: 4px;
+}
+
+.nav-links a::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background-color: #d4af37;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateX(-50%);
 }
 
 .top-client.scrolled .nav-links a {
-  color: #1a1a1a;
+  color: #1e293b;
 }
 
 .nav-links a:hover,
 .nav-links a.router-link-active {
   color: #d4af37 !important;
   opacity: 1;
+}
+
+.nav-links a:hover::after,
+.nav-links a.router-link-active::after {
+  width: 100%;
 }
 
 .nav-actions {
@@ -586,7 +605,7 @@ export default {
 }
 
 .top-client.scrolled .btn-login {
-  color: #1a1a1a;
+  color: #1e293b;
 }
 
 .btn-start {
@@ -620,7 +639,7 @@ export default {
 }
 
 .top-client.scrolled .user-info {
-  color: #1a1a1a;
+  color: #1e293b;
 }
 
 .user-avatar {
@@ -699,7 +718,7 @@ export default {
 }
 
 .top-client.scrolled .mobile-toggle {
-  color: #1a1a1a;
+  color: #1e293b;
 }
 
 /* Mobile Menu */
@@ -803,7 +822,7 @@ export default {
 .top-client.scrolled .bell-trigger {
   background: rgba(0, 0, 0, 0.03);
   border-color: rgba(0, 0, 0, 0.06);
-  color: #1a1a1a;
+  color: #1e293b;
 }
 .bell-trigger:hover {
   background: rgba(212, 175, 55, 0.1);

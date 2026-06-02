@@ -93,7 +93,6 @@
           </router-link>
         </li>
 
-<<<<<<< HEAD
         <li class="nav-item item-partner" v-if="hasPermission('Quản Lý Chi Nhánh')">
           <router-link to="/admin/chi-nhanh" class="nav-link" active-class="active" title="Quản Lý Dòng Họ">
             <span class="nav-icon"><i class="bx bx-sitemap"></i></span>
@@ -134,10 +133,7 @@
           </router-link>
         </li>
 
-        <li class="section-heading hide-on-collapse">Gói & Thanh Toán</li>
-=======
         <li class="section-heading hide-on-collapse" v-if="hasPermission('Quản Lý Đối Tác') || hasPermission('Quản Lý Sự Kiện')">Gói &amp; Quỹ Dòng Họ</li>
->>>>>>> 8b26db9214b53f9db8841ab68a7f9814e47fb6cc
 
         <li class="nav-item item-payment" v-if="hasPermission('Quản Lý Đối Tác')">
           <router-link to="/admin/goi-dich-vu" class="nav-link" active-class="active" title="Quản Lý Gói Dịch Vụ">
@@ -256,6 +252,22 @@ export default {
       this.permissions = permsStr ? JSON.parse(permsStr) : [];
     } catch (e) {
       this.permissions = [];
+    }
+
+    // Đồng bộ realtime permissions từ server khi load sidebar để tránh lệch cache
+    const token = localStorage.getItem('access_token');
+    if (token) {
+      axios.get('http://127.0.0.1:8000/api/me', {
+        headers: { Authorization: 'Bearer ' + token }
+      }).then(res => {
+        if (res.data && res.data.permissions) {
+          this.permissions = res.data.permissions;
+          localStorage.setItem('permissions', JSON.stringify(res.data.permissions));
+          if (res.data.user) {
+            localStorage.setItem('user', JSON.stringify(res.data.user));
+          }
+        }
+      }).catch(() => {});
     }
 
     // Tải danh sách menu Coming Soon động
