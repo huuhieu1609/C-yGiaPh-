@@ -422,7 +422,6 @@ export default {
     // Tổng số lượng giao dịch chờ phê duyệt
     totalPendingCount() {
       return this.listData.filter(item => item.trang_thai === 'Chờ duyệt').length;
->>>>>>> 8b26db9214b53f9db8841ab68a7f9814e47fb6cc
     }
   },
   mounted() {
@@ -1191,6 +1190,5 @@ div, h1, h5, p, table, button, label, select, input {
     max-width: 100% !important;
     width: 100%;
   }
->>>>>>> 8b26db9214b53f9db8841ab68a7f9814e47fb6cc
 }
 </style>

@@ -172,7 +172,7 @@ const routes = [
                 path: 'gia-pha',
                 name: 'admin-gia-pha',
                 component: () => import('../components/Admin/GiaPha/index.vue'),
-                meta: { permission: 'Cây Gia Phả' }
+                meta: { permission: 'Quản Lý Gia Phả Hệ' }
             },
             {
                 path: 'nguoi-dung',
@@ -196,7 +196,7 @@ const routes = [
                 path: 'dong-gop',
                 name: 'admin-dong-gop',
                 component: () => import('../components/Admin/DongGop/index.vue'),
-                meta: { permission: 'Quản Lý Sự Kiện' }
+                meta: { permission: 'Quản Lý Đóng Góp Hệ Thống' }
             },
             {
                 path: 'yeu-cau-mua-goi',
@@ -224,7 +224,8 @@ const routes = [
             {
                 path: 'nhat-ky-hoat-dong',
                 name: 'admin-nhat-ky-hoat-dong',
-                component: () => import('../components/Admin/NhatKyHoatDong/index.vue')
+                component: () => import('../components/Admin/NhatKyHoatDong/index.vue'),
+                meta: { permission: 'Quản Lý Nhật Ký Hoạt Động' }
             },
 
             {
@@ -236,7 +237,7 @@ const routes = [
                 path: 'quan-ly-ban-do',
                 name: 'admin-quan-ly-ban-do',
                 component: () => import('../components/Admin/QuanLyBanDo/index.vue'),
-                meta: { permission: 'Quản Lý Mộ Phần' }
+                meta: { permission: 'Quản Lý Bản Đồ Hệ Thống' }
             },
             {
                 path: 'doi-toc-ho',
@@ -248,7 +249,7 @@ const routes = [
                 path: 'chi-nhanh',
                 name: 'admin-chi-nhanh',
                 component: () => import('../components/Admin/ChiNhanh/index.vue'),
-                meta: { permission: 'Quản Lý Chi Nhánh' }
+                meta: { permission: 'Quản Lý Dòng Họ Hệ Thống' }
             },
             {
                 path: 'nha-tho-ho',
@@ -260,13 +261,13 @@ const routes = [
                 path: 'su-kien',
                 name: 'admin-su-kien',
                 component: () => import('../components/Admin/SuKien/index.vue'),
-                meta: { permission: 'Quản Lý Sự Kiện' }
+                meta: { permission: 'Quản Lý Sự Kiện Hệ Thống' }
             },
             {
                 path: 'dong-gop',
                 name: 'admin-dong-gop',
                 component: () => import('../components/Admin/DongGop/index.vue'),
-                meta: { permission: 'Quản Lý Đóng Góp' }
+                meta: { permission: 'Quản Lý Đóng Góp Hệ Thống' }
             }
         ]
     },

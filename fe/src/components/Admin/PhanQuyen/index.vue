@@ -333,7 +333,20 @@ export default {
         filteredChucNang() {
             if (!this.selectedRole) return [];
             
-            const adminFuncs = ['Admin Dashboard', 'Quản Lý Đối Tác', 'Quản Lý Người Dùng', 'Quản Lý Chức Vụ', 'Quản Lý Chức Năng', 'Hệ Thống'];
+            const adminFuncs = [
+                'Admin Dashboard',
+                'Quản Lý Gia Phả Hệ',
+                'Quản Lý Bản Đồ Hệ Thống',
+                'Quản Lý Dòng Họ Hệ Thống',
+                'Quản Lý Sự Kiện Hệ Thống',
+                'Quản Lý Đóng Góp Hệ Thống',
+                'Quản Lý Nhật Ký Hoạt Động',
+                'Quản Lý Đối Tác',
+                'Quản Lý Người Dùng',
+                'Quản Lý Chức Vụ',
+                'Quản Lý Chức Năng',
+                'Hệ Thống'
+            ];
             
             // Lọc theo chức vụ được chọn
             let baseList = this.listChucNang;
@@ -513,17 +526,11 @@ export default {
                 return friendlyName;
             }
 
-            if (name === 'Cây Gia Phả') {
-                return 'Quản Lý Gia Phả Hệ';
-            }
-
             return name;
         },
         getFriendlyDesc(cn) {
             let desc = cn.mo_ta || ('Cho phép truy cập ' + cn.ten_chuc_nang);
-            if (cn.ten_chuc_nang === 'Cây Gia Phả') {
-                desc = 'Quản lý, xem và chỉnh sửa cây gia phả hệ thống';
-            }
+            // Giữ nguyên mô tả gốc cho Cây Gia Phả của đối tác/thành viên
             if (this.selectedRole) {
                 const roleName = (this.selectedRole.ten_chuc_vu || '').toString().toLowerCase().normalize('NFC');
                 const isThanhVien = roleName.includes('thành viên') || 

@@ -14,6 +14,12 @@ class ChucNangSeeder extends Seeder
     {
         $permissions = [
             ['ten_chuc_nang' => 'Admin Dashboard', 'ten_slug' => 'admin-dashboard', 'url' => '/admin/dashboard', 'mo_ta' => 'Xem trang tổng quan'],
+            ['ten_chuc_nang' => 'Quản Lý Gia Phả Hệ', 'ten_slug' => 'quan-ly-gia-pha-he', 'url' => '/admin/gia-pha', 'mo_ta' => 'Quản lý, xem và chỉnh sửa các cây gia phả hệ thống'],
+            ['ten_chuc_nang' => 'Quản Lý Bản Đồ Hệ Thống', 'ten_slug' => 'quan-ly-ban-do-he-thong', 'url' => '/admin/quan-ly-ban-do', 'mo_ta' => 'Quản lý sơ đồ, bản đồ mộ phần và vị trí dòng họ trong hệ thống'],
+            ['ten_chuc_nang' => 'Quản Lý Dòng Họ Hệ Thống', 'ten_slug' => 'quan-ly-dong-ho-he-thong', 'url' => '/admin/chi-nhanh', 'mo_ta' => 'Quản lý thông tin dòng họ, chi nhánh dòng họ hệ thống'],
+            ['ten_chuc_nang' => 'Quản Lý Sự Kiện Hệ Thống', 'ten_slug' => 'quan-ly-su-kien-he-thong', 'url' => '/admin/su-kien', 'mo_ta' => 'Quản lý, tổ chức và thiết lập các sự kiện lớn nhỏ trong hệ thống'],
+            ['ten_chuc_nang' => 'Quản Lý Đóng Góp Hệ Thống', 'ten_slug' => 'quan-ly-dong-gop-he-thong', 'url' => '/admin/dong-gop', 'mo_ta' => 'Quản lý và thống kê quỹ, các khoản đóng góp tự nguyện hệ thống'],
+            ['ten_chuc_nang' => 'Quản Lý Nhật Ký Hoạt Động', 'ten_slug' => 'quan-ly-nhat-ky-hoat-dong', 'url' => '/admin/nhat-ky-hoat-dong', 'mo_ta' => 'Xem và theo dõi nhật ký hoạt động, thao tác của người dùng trên hệ thống'],
             ['ten_chuc_nang' => 'Cây Gia Phả', 'ten_slug' => 'cay-gia-pha', 'url' => '/cay-gia-pha', 'mo_ta' => 'Quản lý cây gia phả hệ thống'],
             ['ten_chuc_nang' => 'Tra Cứu Xưng Hô', 'ten_slug' => 'tra-cuu-xung-ho', 'url' => '/tra-cuu-xung-ho', 'mo_ta' => 'Sử dụng công cụ tra cứu xưng hô'],
             ['ten_chuc_nang' => 'Quản Lý Chi Nhánh', 'ten_slug' => 'quan-ly-chi-nhanh', 'url' => '/chi-nhanh', 'mo_ta' => 'Quản lý chi nhánh dòng họ'],
