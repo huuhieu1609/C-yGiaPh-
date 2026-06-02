@@ -622,6 +622,7 @@ const TreeItem = defineComponent({
       ]);
     };
 
+    let children = null;
     // Arrange couple cards. Lay out spouses sequentially (husband - wife 1 - wife 2)
     const coupleChildren = [];
     const hasMultipleSpouses = m.spouses && m.spouses.length === 2;
@@ -650,6 +651,11 @@ const TreeItem = defineComponent({
         style: { order: 4 } 
       }, [ h('i', { class: 'bx bxs-heart connector-heart' }) ]));
       coupleChildren.push(makeCard(m.spouses[1], true, 'spouse-right', 5));
+
+      const sp0 = m.spouses[0];
+      const sp1 = m.spouses[1];
+      const kids0 = hasChildren ? m.children.filter(c => c.me_id == sp0.id || c.cha_id == sp0.id) : [];
+      const kids1 = hasChildren ? m.children.filter(c => c.me_id == sp1.id || c.cha_id == sp1.id) : [];
 
       const col0 = h('div', { class: ['union-column', 'union-column-0', kids0.length === 0 ? 'union-column-empty' : ''] }, [
         kids0.length > 0
@@ -776,7 +782,10 @@ export default {
     },
     isDirectRelative() {
       if (!this.currentUser || !this.currentUser.email) return false;
-      if (this.currentUser.vai_tro === 'Admin' || this.currentUser.is_doi_tac == 1) return true;
+      const roleName = this.currentUser.vai_tro?.toLowerCase() || '';
+      const chucVuName = this.currentUser.chuc_vu?.ten_chuc_vu?.toLowerCase() || '';
+      const isSubAdmin = chucVuName.includes('quản trị') || roleName.includes('admin');
+      if (roleName === 'admin' || isSubAdmin || this.currentUser.is_doi_tac == 1) return true;
 
       const me = this.allMembers.find(m => m.email === this.currentUser.email);
       if (!me) return false;
@@ -1972,7 +1981,7 @@ export default {
   background: #d4af37;
   z-index: 1;
 }
-/* .has-multiple-spouses-li > .tree-ul::before {
+.has-multiple-spouses-li > .tree-ul::before {
   display: none !important;
 }
 .union-column > .tree-ul::before {

@@ -55,7 +55,7 @@ class ThanhVienController extends Controller
             }
 
             // Kiểm tra quyền truy cập chi nhánh
-            if ($user->vai_tro === 'Admin') {
+            if ($user->vai_tro === 'Admin' || $user->isAdminOrSubAdmin()) {
                 $thanhViens = ThanhVien::where('chi_nhanh_id', $chiNhanhId)->get();
             } elseif ($user->is_doi_tac == 1) {
                 // Đối tác phải sở hữu hoặc có quyền quản lý chi nhánh này
@@ -93,7 +93,7 @@ class ThanhVienController extends Controller
                 return response()->json(['status' => false, 'message' => 'Bạn cần đăng nhập!'], 401);
             }
 
-            if ($user->vai_tro === 'Admin') {
+            if ($user->vai_tro === 'Admin' || $user->isAdminOrSubAdmin()) {
                 $data = ThanhVien::all();
             } elseif ($user->is_doi_tac == 1) {
                 $chiNhanhIds = \App\Models\ChiNhanh::getManagedBranchIds($user);
@@ -413,7 +413,7 @@ class ThanhVienController extends Controller
 
             // Kiểm tra quan hệ thân nhân hoặc là Admin / Đối tác
             $isAllowed = false;
-            if ($user->vai_tro === 'Admin' || $user->is_doi_tac == 1) {
+            if ($user->vai_tro === 'Admin' || $user->isAdminOrSubAdmin() || $user->is_doi_tac == 1) {
                 $isAllowed = true;
             } else {
                 $me = ThanhVien::where('email', $user->email)->whereNotNull('email')->first();

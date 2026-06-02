@@ -20,7 +20,7 @@ class MoPhanController extends Controller
                 return response()->json(['status' => false, 'message' => 'Bạn cần đăng nhập!'], 401);
             }
 
-            if ($user->vai_tro === 'Admin') {
+            if ($user->vai_tro === 'Admin' || $user->isAdminOrSubAdmin()) {
                 $data = MoPhan::with(['thanhVien'])->get();
             } elseif ($user->is_doi_tac == 1) {
                 $chiNhanhIds = ChiNhanh::getManagedBranchIds($user);
@@ -103,7 +103,7 @@ class MoPhanController extends Controller
             $query = MoPhan::nearby($lat, $lng, $radius)->with(['thanhVien']);
 
             // Phân quyền
-            if ($user && $user->vai_tro !== 'Admin') {
+            if ($user && $user->vai_tro !== 'Admin' && !$user->isAdminOrSubAdmin()) {
                 if ($user->is_doi_tac == 1) {
                     $chiNhanhIds = ChiNhanh::getManagedBranchIds($user);
                     $query->whereHas('thanhVien', function ($q) use ($chiNhanhIds) {

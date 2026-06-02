@@ -69,12 +69,28 @@ class MemberRoleController extends Controller
             return response()->json(['status' => false, 'message' => 'Unauthenticated'], 401);
         }
 
-        // Nếu là Admin hoặc Đối tác
-        if ($user->vai_tro === 'Admin' || $user->is_doi_tac == 1) {
+        $chucVu = \App\Models\ChucVu::find($user->id_chuc_vu);
+        $roleName = $chucVu ? strtolower($chucVu->ten_chuc_vu) : '';
+        $isSubAdmin = str_contains($roleName, 'quản trị') || str_contains($roleName, 'admin') || strtolower($user->vai_tro) === 'admin';
+
+        // Nếu là Admin hoặc Đối tác hoặc Quản Trị Viên (Sub-Admin)
+        if ($user->vai_tro === 'Admin' || $user->is_doi_tac == 1 || $isSubAdmin) {
+            $displayName = 'Đối tác';
+            if ($user->vai_tro === 'Admin') {
+                $displayName = 'Master Admin';
+            } elseif ($chucVu) {
+                $displayName = $chucVu->ten_chuc_vu;
+            }
+
             return response()->json([
                 'status' => true,
                 'is_admin_or_partner' => true,
-                'roles' => ['admin_or_partner'],
+                'roles' => [
+                    [
+                        'name' => $roleName ?: 'admin',
+                        'display_name' => $displayName
+                    ]
+                ],
                 'permissions' => ['assign_roles', 'edit_members', 'view_members']
             ]);
         }

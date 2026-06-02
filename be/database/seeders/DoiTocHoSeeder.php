@@ -3,7 +3,8 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
+use App\Models\ChiNhanh;
+use App\Models\DoiTocHo;
 use Illuminate\Support\Facades\Schema;
 
 class DoiTocHoSeeder extends Seeder
@@ -15,16 +16,8 @@ class DoiTocHoSeeder extends Seeder
     {
         // Vô hiệu hóa ràng buộc khóa ngoại để truncate bảng an toàn
         Schema::disableForeignKeyConstraints();
-        DB::table('doi_toc_hos')->truncate();
+        DoiTocHo::truncate();
         Schema::enableForeignKeyConstraints();
-
-        // 4 Chi nhánh tương ứng với 4 dòng họ chính
-        $branches = [
-            1 => 'Họ Nguyễn',
-            2 => 'Họ Trần',
-            3 => 'Họ Lê',
-            4 => 'Họ Phạm'
-        ];
 
         // Tên các đời từ 1 đến 10
         $generationNames = [
@@ -54,33 +47,30 @@ class DoiTocHoSeeder extends Seeder
             10 => 'Thế hệ trẻ tương lai, niềm hy vọng mới của gia tộc.',
         ];
 
-        // Gieo dữ liệu cho từng Chi Nhánh cụ thể
-        foreach ($branches as $branchId => $branchName) {
+        // Gieo dữ liệu cho từng Chi Nhánh cụ thể đang có trong database
+        $branches = ChiNhanh::all();
+        foreach ($branches as $branch) {
+            $branchName = str_replace('Chi Nhánh ', '', $branch->ten_chi);
             for ($i = 1; $i <= 10; $i++) {
-                DB::table('doi_toc_hos')->insert([
-                    'chi_nhanh_id' => $branchId,
+                DoiTocHo::create([
+                    'chi_nhanh_id' => $branch->id,
                     'so_doi' => $i,
                     'ten_doi' => 'Đời thứ ' . $i . ' (' . $generationNames[$i] . ' - ' . $branchName . ')',
                     'mo_ta' => $generationDescriptions[$i] . ' Thuộc ' . $branchName . '.',
                     'trang_thai' => 1,
-                    'created_at' => now(),
-                    'updated_at' => now(),
                 ]);
             }
         }
 
         // Gieo dữ liệu chung/mặc định (không gán chi_nhanh_id) làm dữ liệu gốc
         for ($i = 1; $i <= 10; $i++) {
-            DB::table('doi_toc_hos')->insert([
+            DoiTocHo::create([
                 'chi_nhanh_id' => null,
                 'so_doi' => $i,
                 'ten_doi' => 'Đời thứ ' . $i . ' (' . $generationNames[$i] . ')',
                 'mo_ta' => $generationDescriptions[$i],
                 'trang_thai' => 1,
-                'created_at' => now(),
-                'updated_at' => now(),
             ]);
         }
     }
 }
-

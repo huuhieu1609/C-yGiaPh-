@@ -24,14 +24,14 @@ class OtherPartnersSeeder extends Seeder
         // ==========================================
 
         // Avoid duplicate partner 2
-        $existingUser2 = NguoiDung::where('email', 'doitac2@master.com')->first();
+        $existingUser2 = NguoiDung::withTrashed()->where('email', 'doitac2@master.com')->first();
         if ($existingUser2) {
             $oldBranchIds2 = ChiNhanh::where('id_nguoi_dung', $existingUser2->id)->pluck('id');
             ThanhVien::whereIn('chi_nhanh_id', $oldBranchIds2)->delete();
             DoiTocHo::whereIn('chi_nhanh_id', $oldBranchIds2)->delete();
             ChiNhanh::where('id_nguoi_dung', $existingUser2->id)->delete();
             DoiTac::where('id_nguoi_dung', $existingUser2->id)->delete();
-            $existingUser2->delete();
+            $existingUser2->forceDelete();
         }
 
         $userId2 = DB::table('nguoi_dungs')->insertGetId([
@@ -1014,14 +1014,14 @@ class OtherPartnersSeeder extends Seeder
         // ==========================================
 
         // Avoid duplicate partner 3
-        $existingUser3 = NguoiDung::where('email', 'doitac3@master.com')->first();
+        $existingUser3 = NguoiDung::withTrashed()->where('email', 'doitac3@master.com')->first();
         if ($existingUser3) {
             $oldBranchIds3 = ChiNhanh::where('id_nguoi_dung', $existingUser3->id)->pluck('id');
             ThanhVien::whereIn('chi_nhanh_id', $oldBranchIds3)->delete();
             DoiTocHo::whereIn('chi_nhanh_id', $oldBranchIds3)->delete();
             ChiNhanh::where('id_nguoi_dung', $existingUser3->id)->delete();
             DoiTac::where('id_nguoi_dung', $existingUser3->id)->delete();
-            $existingUser3->delete();
+            $existingUser3->forceDelete();
         }
 
         $userId3 = DB::table('nguoi_dungs')->insertGetId([

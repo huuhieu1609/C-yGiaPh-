@@ -192,15 +192,15 @@ class DoiTacController extends Controller
     public function getMyPackages(Request $request): JsonResponse
     {
         $userId = $request->user()->id;
+        $today = now()->startOfDay();
+        $todayStr = $today->toDateString();
 
         // Tất cả gói đã mua, sắp xếp: còn hạn trước, mới mua sau
         $packages = DoiTac::where('id_nguoi_dung', $userId)
             ->where('trang_thai', 'APPROVED')
-            ->orderByRaw("CASE WHEN ngay_ket_thuc IS NULL OR ngay_ket_thuc >= CURDATE() THEN 0 ELSE 1 END")
+            ->orderByRaw("CASE WHEN ngay_ket_thuc IS NULL OR ngay_ket_thuc >= ? THEN 0 ELSE 1 END", [$todayStr])
             ->orderBy('ngay_ket_thuc', 'desc')
             ->get();
-
-        $today = now()->startOfDay();
 
         $packageList = $packages->map(function ($pkg) use ($today) {
             $daysRemaining = $pkg->getDaysRemaining();
@@ -238,7 +238,7 @@ class DoiTacController extends Controller
                 'effective_features'    => $effectiveFeatures,
                 'effective_max_doi'     => $effectiveLimits['max_doi'],
                 'effective_max_thanh_vien' => $effectiveLimits['max_thanh_vien'],
-                'active_count'          => $packages->where('is_active', true)->count(),
+                'active_count'          => $packageList->where('is_active', true)->count(),
                 'latest_expiry'         => DoiTac::getLatestExpiry($userId),
                 'earliest_expiry'       => DoiTac::getEarliestExpiry($userId),
             ],
@@ -301,7 +301,9 @@ class DoiTacController extends Controller
                     $query->where('is_doi_tac', 1);
                 })
                 ->with(['nguoiDung.chiNhanh'])
-                ->get();
+                ->get()
+                ->unique('id_nguoi_dung')
+                ->values();
             
             // Map each partner to resolve which branch/lineage they manage
             $data->each(function ($item) {

@@ -39,16 +39,15 @@
               <ul class="features-list list-unstyled mb-0">
                 <li><i class="bx bx-check-circle text-success me-2"></i>Tối đa <strong>{{ pkg.max_doi >= 999 ? 'Không giới hạn' : pkg.max_doi + ' đời' }}</strong></li>
                 <li><i class="bx bx-check-circle text-success me-2"></i>Tối đa <strong>{{ pkg.max_thanh_vien >= 99999 ? 'Không giới hạn' : pkg.max_thanh_vien + ' thành viên' }}</strong></li>
-                <li><i class="bx bx-check-circle text-success me-2"></i>Sơ đồ cây phả hệ tương tác</li>
-                <li><i class="bx bx-check-circle text-success me-2"></i>Tủ sách tài liệu & Quản lý</li>
-                <li :class="{'disabled': !pkg.ten_goi.includes('Hưng Thịnh') && !pkg.ten_goi.includes('Trường Tồn')}">
-                  <i :class="pkg.ten_goi.includes('Hưng Thịnh') || pkg.ten_goi.includes('Trường Tồn') ? 'bx bx-check-circle text-success' : 'bx bx-x-circle text-danger'" class="me-2"></i>
-                  Nhật ký hoạt động bảo mật
-                </li>
-                <li :class="{'disabled': !pkg.ten_goi.includes('Trường Tồn')}">
-                  <i :class="pkg.ten_goi.includes('Trường Tồn') ? 'bx bx-check-circle text-success' : 'bx bx-x-circle text-danger'" class="me-2"></i>
-                  Thông báo tự động & VIP hỗ trợ
-                </li>
+                
+                <template v-if="getItemFeatures(pkg).length > 0">
+                  <li v-for="feat in getItemFeatures(pkg)" :key="feat.key">
+                    <i :class="feat.icon || 'bx bx-check-circle'" class="text-success me-2"></i>{{ feat.label }}
+                  </li>
+                </template>
+                <template v-else>
+                  <li class="disabled"><i class="bx bx-x-circle text-danger me-2"></i>Chưa cấu hình tính năng</li>
+                </template>
               </ul>
             </div>
             
@@ -84,6 +83,36 @@
 <script>
 import axios from 'axios';
 
+const FEATURE_MAP = {
+  tao_cay_gia_pha:     { label: 'Tạo Cây Gia Phả',       icon: 'bx bx-sitemap' },
+  them_thanh_vien:     { label: 'Thêm Thành Viên',        icon: 'bx bx-user-plus' },
+  sua_xoa_thanh_vien:  { label: 'Sửa/Xóa Thành Viên',    icon: 'bx bx-edit' },
+  quan_ly_vo_chong:    { label: 'Quản Lý Vợ/Chồng',      icon: 'bx bx-heart' },
+  quan_ly_con_nuoi:    { label: 'Quản Lý Con Nuôi',       icon: 'bx bx-user' },
+  xuat_pdf:            { label: 'Xuất PDF Gia Phả',       icon: 'bx bx-file-pdf' },
+  phe_duyet_de_xuat:   { label: 'Phê Duyệt Đề Xuất',     icon: 'bx bx-check-circle' },
+  tu_dong_phe_duyet:   { label: 'Tự Động Phê Duyệt',     icon: 'bx bx-check-double' },
+  quan_ly_chi_nhanh:   { label: 'Quản Lý Chi Nhánh',     icon: 'bx bx-git-branch' },
+  phan_quyen_thanh_vien:{ label: 'Phân Quyền Thành Viên', icon: 'bx bx-shield' },
+  nhat_ky_hoat_dong:   { label: 'Nhật Ký Hoạt Động',     icon: 'bx bx-history' },
+  quan_ly_su_kien:     { label: 'Quản Lý Sự Kiện',       icon: 'bx bx-calendar' },
+  dang_ky_su_kien:     { label: 'Đăng Ký Sự Kiện',       icon: 'bx bx-calendar-check' },
+  tuong_niem:          { label: 'Tưởng Niệm',             icon: 'bx bx-moon' },
+  nhac_gio_tu:         { label: 'Nhắc Ngày Giỗ Tự',      icon: 'bx bx-bell' },
+  quan_ly_tai_lieu:    { label: 'Tủ Sách Tài Liệu',      icon: 'bx bx-folder' },
+  upload_hinh_anh:     { label: 'Upload Hình Ảnh',        icon: 'bx bx-image' },
+  album_gia_dinh:      { label: 'Album Gia Đình',         icon: 'bx bx-images' },
+  ban_do_mo_phan:      { label: 'Bản Đồ Mộ Phần',        icon: 'bx bx-map-pin' },
+  ban_do_nha_tho:      { label: 'Bản Đồ Nhà Thờ Họ',     icon: 'bx bx-map' },
+  tra_cuu_ban_do:      { label: 'Tra Cứu Bản Đồ',        icon: 'bx bx-search-alt' },
+  quan_ly_dong_gop:    { label: 'Quản Lý Đóng Góp',      icon: 'bx bx-donate-heart' },
+  bao_cao_tai_chinh:   { label: 'Báo Cáo Tài Chính',     icon: 'bx bx-bar-chart' },
+  tra_cuu_quan_he:     { label: 'Tra Cứu Quan Hệ',       icon: 'bx bx-search' },
+  xuat_csv:            { label: 'Xuất Dữ Liệu CSV',      icon: 'bx bx-spreadsheet' },
+  thong_ke_nang_cao:   { label: 'Thống Kê Nâng Cao',     icon: 'bx bx-analyse' },
+  api_tich_hop:        { label: 'API Tích Hợp',           icon: 'bx bx-code-alt' }
+};
+
 export default {
   name: 'DichVuGoi',
   data() {
@@ -95,6 +124,15 @@ export default {
     this.loadPackages();
   },
   methods: {
+    getItemFeatures(pkg) {
+      const feats = pkg.features || '';
+      if (!feats) return [];
+      const keys = typeof feats === 'string' ? feats.split(',').map(s => s.trim()) : feats;
+      return keys.map(k => {
+        const item = FEATURE_MAP[k];
+        return item ? { key: k, ...item } : null;
+      }).filter(Boolean);
+    },
     loadPackages() {
       axios.get('http://127.0.0.1:8000/api/goi-dich-vu/get-data')
         .then(res => {
@@ -105,9 +143,9 @@ export default {
         .catch(err => {
           // fallback if backend is down
           this.listPackages = [
-            { id: 1, ten_goi: 'Gói Khởi Tạo', gia_ca: 100000, thoi_han: 12, max_doi: 5, max_thanh_vien: 100, mo_ta: 'Phù hợp cho chi ngành nhỏ hoặc dòng tộc bắt đầu số hóa phả hệ.', trang_thai: 'Hoạt động' },
-            { id: 2, ten_goi: 'Gói Hưng Thịnh', gia_ca: 250000, thoi_han: 12, max_doi: 10, max_thanh_vien: 500, mo_ta: 'Giải pháp toàn diện cho các dòng tộc quy mô trung bình.', trang_thai: 'Hoạt động' },
-            { id: 3, ten_goi: 'Gói Trường Tồn', gia_ca: 500000, thoi_han: 12, max_doi: 999, max_thanh_vien: 99999, mo_ta: 'Không giới hạn đặc quyền dành cho đại gia tộc lớn nhiều chi nhánh.', trang_thai: 'Hoạt động' }
+            { id: 1, ten_goi: 'Gói Khởi Tạo', gia_ca: 100000, thoi_han: 12, max_doi: 3, max_thanh_vien: 50, mo_ta: 'Phù hợp cho chi ngành nhỏ hoặc dòng tộc bắt đầu số hóa phả hệ.', trang_thai: 'Hoạt động' },
+            { id: 2, ten_goi: 'Gói Hưng Thịnh', gia_ca: 3000000, thoi_han: 12, max_doi: 10, max_thanh_vien: 500, mo_ta: 'Giải pháp toàn diện cho các dòng tộc quy mô trung bình.', trang_thai: 'Hoạt động' },
+            { id: 3, ten_goi: 'Gói Trường Tồn', gia_ca: 5000000, thoi_han: 12, max_doi: 99, max_thanh_vien: 10000, mo_ta: 'Không giới hạn đặc quyền dành cho đại gia tộc lớn nhiều chi nhánh.', trang_thai: 'Hoạt động' }
           ];
         });
     },
@@ -287,6 +325,27 @@ export default {
 .price-duration {
   font-size: 0.9rem;
   margin-left: 5px;
+}
+
+.card-body-custom {
+  max-height: 300px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(212, 175, 55, 0.3) transparent;
+  padding-right: 5px;
+}
+.card-body-custom::-webkit-scrollbar {
+  width: 5px;
+}
+.card-body-custom::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.02);
+}
+.card-body-custom::-webkit-scrollbar-thumb {
+  background: rgba(212, 175, 55, 0.3);
+  border-radius: 4px;
+}
+.card-body-custom::-webkit-scrollbar-thumb:hover {
+  background: rgba(212, 175, 55, 0.6);
 }
 
 .features-list li {

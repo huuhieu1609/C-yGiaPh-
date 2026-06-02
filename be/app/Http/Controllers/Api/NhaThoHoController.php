@@ -17,7 +17,7 @@ class NhaThoHoController extends Controller
                 return response()->json(['status' => false, 'message' => 'Bạn cần đăng nhập!'], 401);
             }
 
-            if ($user->vai_tro === 'Admin') {
+            if ($user->vai_tro === 'Admin' || $user->isAdminOrSubAdmin()) {
                 $data = NhaThoHo::with('chiNhanh')->get();
             } else {
                 $cnId = $user->chi_nhanh_id;

@@ -25,11 +25,13 @@
                   </div>
                   <div class="info-row">
                     <span>Thời gian sử dụng:</span>
-                    <strong class="text-white">01 Năm (Tự động cộng dồn khi gia hạn)</strong>
+                    <strong class="text-white">
+                      {{ currentPkg ? currentPkg.thoi_han + ' tháng' : '12 tháng' }} (Tự động cộng dồn khi gia hạn)
+                    </strong>
                   </div>
                   <div class="info-row border-0">
                     <span>Số tiền thanh toán:</span>
-                    <strong class="text-gold fs-4">{{ form.so_tien ? form.so_tien.toLocaleString() : '100,000' }} VNĐ</strong>
+                    <strong class="text-gold fs-4">{{ form.so_tien !== null && form.so_tien !== undefined ? form.so_tien.toLocaleString() : '100,000' }} VNĐ</strong>
                   </div>
                 </div>
 
@@ -42,34 +44,57 @@
                   </div>
                 </div>
 
-                <div class="benefits-list mt-4">
-                  <h6 class="text-white-50 small fw-bold text-uppercase mb-3">Quyền lợi đặc quyền Trưởng chi</h6>
-                  <div class="benefit-item mb-3 d-flex align-items-start">
-                    <i class="bx bxs-check-shield text-warning me-2 fs-5 mt-1"></i>
-                    <div>
-                      <strong class="text-white d-block">Quyền Trưởng tộc / Quản trị viên</strong>
-                      <span class="text-white-50 small">Khởi tạo và toàn quyền thiết lập sơ đồ cây gia phả số dòng họ.</span>
+                <div class="benefits-list mt-4 flex-grow-1 d-flex flex-column" style="max-height: 400px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: rgba(212, 175, 55, 0.3) transparent; padding-right: 5px;">
+                  <h6 class="text-white-50 small fw-bold text-uppercase mb-3">Tính Năng Đặc Quyền Gói {{ ten_goi }}</h6>
+                  
+                  <!-- Loading state -->
+                  <div v-if="isLoadingPackages" class="text-center py-4">
+                    <div class="spinner-border spinner-border-sm text-warning" role="status"></div>
+                    <span class="text-white-50 small ms-2">Đang tải tính năng gói...</span>
+                  </div>
+
+                  <!-- Dynamic features list -->
+                  <div v-else-if="currentPkg" class="pe-1">
+                    <div class="benefit-item mb-3 d-flex align-items-start animate__animated animate__fadeIn">
+                      <i class="bx bx-check-circle text-success me-2 fs-5 mt-0.5"></i>
+                      <div>
+                        <strong class="text-white d-block">Giới hạn thế hệ (Đời)</strong>
+                        <span class="text-white-50 small">Tối đa <strong>{{ currentPkg.max_doi >= 999 ? 'Không giới hạn' : currentPkg.max_doi + ' đời' }}</strong></span>
+                      </div>
+                    </div>
+
+                    <div class="benefit-item mb-3 d-flex align-items-start animate__animated animate__fadeIn">
+                      <i class="bx bx-check-circle text-success me-2 fs-5 mt-0.5"></i>
+                      <div>
+                        <strong class="text-white d-block">Giới hạn thành viên</strong>
+                        <span class="text-white-50 small">Tối đa <strong>{{ currentPkg.max_thanh_vien >= 99999 ? 'Không giới hạn' : currentPkg.max_thanh_vien + ' thành viên' }}</strong></span>
+                      </div>
+                    </div>
+
+                    <div v-for="feat in getItemFeatures(currentPkg)" :key="feat.key" class="benefit-item mb-3 d-flex align-items-start animate__animated animate__fadeIn">
+                      <i :class="feat.icon || 'bx bx-check-circle'" class="text-success me-2 fs-5 mt-0.5"></i>
+                      <div>
+                        <strong class="text-white d-block">{{ feat.label }}</strong>
+                        <span class="text-white-50 small">Tính năng đã được kích hoạt trong gói.</span>
+                      </div>
                     </div>
                   </div>
-                  <div class="benefit-item mb-3 d-flex align-items-start">
-                    <i class="bx bx-check-circle text-success me-2 fs-5 mt-1"></i>
-                    <div>
-                      <strong class="text-white d-block">Thành viên Không Giới Hạn</strong>
-                      <span class="text-white-50 small">Thêm mới, sửa đổi không giới hạn số đời và số lượng con cháu.</span>
+
+                  <!-- Fallback static features if not found -->
+                  <div v-else class="pe-1">
+                    <div class="benefit-item mb-3 d-flex align-items-start">
+                      <i class="bx bxs-check-shield text-warning me-2 fs-5 mt-0.5"></i>
+                      <div>
+                        <strong class="text-white d-block">Quyền Trưởng tộc / Quản trị viên</strong>
+                        <span class="text-white-50 small">Khởi tạo và toàn quyền thiết lập sơ đồ cây gia phả số dòng họ.</span>
+                      </div>
                     </div>
-                  </div>
-                  <div class="benefit-item mb-3 d-flex align-items-start">
-                    <i class="bx bx-check-circle text-success me-2 fs-5 mt-1"></i>
-                    <div>
-                      <strong class="text-white d-block">Phê duyệt Đề xuất Nhanh</strong>
-                      <span class="text-white-50 small">Tiếp nhận và phê duyệt nhanh các cập nhật thông tin do con cháu đề xuất.</span>
-                    </div>
-                  </div>
-                  <div class="benefit-item mb-3 d-flex align-items-start">
-                    <i class="bx bx-check-circle text-success me-2 fs-5 mt-1"></i>
-                    <div>
-                      <strong class="text-white d-block">Bộ Công cụ Quản trị Cao cấp</strong>
-                      <span class="text-white-50 small">Kích hoạt Nhật ký thao tác bảo mật, Tủ sách tài liệu dòng họ và Quản lý sự kiện.</span>
+                    <div class="benefit-item mb-3 d-flex align-items-start">
+                      <i class="bx bx-check-circle text-success me-2 fs-5 mt-0.5"></i>
+                      <div>
+                        <strong class="text-white d-block">Thành viên Không Giới Hạn</strong>
+                        <span class="text-white-50 small">Thêm mới, sửa đổi không giới hạn số đời và số lượng con cháu.</span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -128,7 +153,7 @@
                   <div class="glass-info p-3 rounded-2xl border border-danger/20 text-start mb-4">
                     <div class="info-row">
                       <span>Số tiền gói:</span>
-                      <strong class="text-white">{{ form.so_tien ? form.so_tien.toLocaleString() : '' }} VNĐ</strong>
+                      <strong class="text-white">{{ form.so_tien !== null && form.so_tien !== undefined ? form.so_tien.toLocaleString() : '' }} VNĐ</strong>
                     </div>
                     <div class="info-row border-0">
                       <span>Nội dung CK:</span>
@@ -145,42 +170,64 @@
                 </div>
               </div>
 
-              <!-- 📱 QR Payment Form (mặc định) -->
+              <!-- 📱 QR Payment Form or Free Activation (mặc định) -->
               <div class="payment-section" v-else>
-                <h4 class="text-gold mb-4 fw-bold"><i class="bx bx-qr-scan me-2"></i>Thanh toán nhanh qua mã QR</h4>
-
-                <div class="qr-payment-section text-center p-4 rounded-3xl mb-4">
-                  <div class="qr-image-wrapper mx-auto mb-4">
-                    <img :src="qrUrl" alt="QR Code" class="img-fluid rounded-2xl border-2 border-white/10 p-2 bg-white shadow-glow" v-if="form.so_tien">
-                    <div v-else class="qr-placeholder rounded-2xl border-2 border-dashed border-white/20 d-flex align-items-center justify-content-center bg-white/5">
-                      <span class="text-white-50">Đang tải mã QR thanh toán...</span>
-                    </div>
+                <!-- TH luồng Gói Dùng Thử 0đ -->
+                <div v-if="form.so_tien === 0" class="free-activation-section text-center p-4 rounded-3xl">
+                  <h4 class="text-gold mb-3 fw-bold"><i class="bx bx-gift me-2"></i>Kích Hoạt Gói Dùng Thử Miễn Phí</h4>
+                  
+                  <div class="glass-info p-4 rounded-2xl border border-white/10 text-start mb-4">
+                    <p class="text-white-50 mb-0 small">
+                      Gói dịch vụ này hoàn toàn <strong>Miễn phí / Dùng thử</strong>. Bạn không cần thực hiện bất kỳ giao dịch chuyển khoản nào. 
+                      Hãy bấm nút bên dưới để hệ thống tự động kích hoạt và mở khóa quyền đối tác cho bạn ngay lập tức!
+                    </p>
                   </div>
 
-                  <div class="bank-details text-start glass-info p-4 rounded-2xl border border-white/10">
-                    <div class="info-row"><span>Ngân hàng thụ hưởng:</span><strong>MB Bank (Quân Đội)</strong></div>
-                    <div class="info-row"><span>Số tài khoản:</span><strong class="text-gold">0342211914</strong></div>
-                    <div class="info-row"><span>Chủ tài khoản:</span><strong>TRAN HUU HIEU</strong></div>
-                    <div class="info-row border-0">
-                      <span>Nội dung chuyển khoản:</span>
-                      <strong class="text-warning">{{ transferContent }}</strong>
-                      <button type="button" class="btn-copy ms-2" @click="copyContent">
-                        <i class="bx bx-copy"></i>
-                      </button>
-                    </div>
-                  </div>
+                  <form @submit.prevent="submitPayment">
+                    <button type="submit" class="btn-gradient-submit w-100" :disabled="isSubmitting">
+                      <span v-if="!isSubmitting"><i class="bx bx-rocket me-2"></i> KÍCH HOẠT GÓI MIỄN PHÍ NGAY</span>
+                      <span v-else><i class="bx bx-loader-alt bx-spin me-2"></i> ĐANG XỬ LÝ...</span>
+                    </button>
+                  </form>
                 </div>
 
-                <form @submit.prevent="submitPayment">
-                  <button type="submit" class="btn-gradient-submit w-100" :disabled="isSubmitting || !form.so_tien">
-                    <span v-if="!isSubmitting"><i class="bx bx-check-circle me-2"></i> XÁC NHẬN ĐÃ CHUYỂN KHOẢN THANH TOÁN</span>
-                    <span v-else><i class="bx bx-loader-alt bx-spin me-2"></i> ĐANG KIỂM TRA GIAO DỊCH...</span>
-                  </button>
-                </form>
+                <!-- TH luồng Gói Trả Phí (> 0) -->
+                <div v-else>
+                  <h4 class="text-gold mb-4 fw-bold"><i class="bx bx-qr-scan me-2"></i>Thanh toán nhanh qua mã QR</h4>
 
-                <div class="auto-verify-note text-center mt-3 p-3 rounded-2xl">
-                  <i class="bx bx-bolt-circle text-success me-1"></i>
-                  <span class="text-white-50 small">Hệ thống sẽ <strong class="text-success">tự động kiểm tra</strong> và kích hoạt tài khoản ngay sau khi xác nhận giao dịch đủ tiền.</span>
+                  <div class="qr-payment-section text-center p-4 rounded-3xl mb-4">
+                    <div class="qr-image-wrapper mx-auto mb-4">
+                      <img :src="qrUrl" alt="QR Code" class="img-fluid rounded-2xl border-2 border-white/10 p-2 bg-white shadow-glow" v-if="form.so_tien">
+                      <div v-else class="qr-placeholder rounded-2xl border-2 border-dashed border-white/20 d-flex align-items-center justify-content-center bg-white/5">
+                        <span class="text-white-50">Đang tải mã QR thanh toán...</span>
+                      </div>
+                    </div>
+
+                    <div class="bank-details text-start glass-info p-4 rounded-2xl border border-white/10">
+                      <div class="info-row"><span>Ngân hàng thụ hưởng:</span><strong>MB Bank (Quân Đội)</strong></div>
+                      <div class="info-row"><span>Số tài khoản:</span><strong class="text-gold">0342211914</strong></div>
+                      <div class="info-row"><span>Chủ tài khoản:</span><strong>TRAN HUU HIEU</strong></div>
+                      <div class="info-row border-0">
+                        <span>Nội dung chuyển khoản:</span>
+                        <strong class="text-warning">{{ transferContent }}</strong>
+                        <button type="button" class="btn-copy ms-2" @click="copyContent">
+                          <i class="bx bx-copy"></i>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <form @submit.prevent="submitPayment">
+                    <button type="submit" class="btn-gradient-submit w-100" :disabled="isSubmitting || !form.so_tien">
+                      <span v-if="!isSubmitting"><i class="bx bx-check-circle me-2"></i> XÁC NHẬN ĐÃ CHUYỂN KHOẢN THANH TOÁN</span>
+                      <span v-else><i class="bx bx-loader-alt bx-spin me-2"></i> ĐANG KIỂM TRA GIAO DỊCH...</span>
+                    </button>
+                  </form>
+
+                  <div class="auto-verify-note text-center mt-3 p-3 rounded-2xl">
+                    <i class="bx bx-bolt-circle text-success me-1"></i>
+                    <span class="text-white-50 small">Hệ thống sẽ <strong class="text-success">tự động kiểm tra</strong> và kích hoạt tài khoản ngay sau khi xác nhận giao dịch đủ tiền.</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -202,6 +249,36 @@
 <script>
 import axios from 'axios';
 import toastr from 'toastr';
+
+const FEATURE_MAP = {
+  tao_cay_gia_pha:     { label: 'Tạo Cây Gia Phả',       icon: 'bx bx-sitemap' },
+  them_thanh_vien:     { label: 'Thêm Thành Viên',        icon: 'bx bx-user-plus' },
+  sua_xoa_thanh_vien:  { label: 'Sửa/Xóa Thành Viên',    icon: 'bx bx-edit' },
+  quan_ly_vo_chong:    { label: 'Quản Lý Vợ/Chồng',      icon: 'bx bx-heart' },
+  quan_ly_con_nuoi:    { label: 'Quản Lý Con Nuôi',       icon: 'bx bx-user' },
+  xuat_pdf:            { label: 'Xuất PDF Gia Phả',       icon: 'bx bx-file-pdf' },
+  phe_duyet_de_xuat:   { label: 'Phê Duyệt Đề Xuất',     icon: 'bx bx-check-circle' },
+  tu_dong_phe_duyet:   { label: 'Tự Động Phê Duyệt',     icon: 'bx bx-check-double' },
+  quan_ly_chi_nhanh:   { label: 'Quản Lý Chi Nhánh',     icon: 'bx bx-git-branch' },
+  phan_quyen_thanh_vien:{ label: 'Phân Quyền Thành Viên', icon: 'bx bx-shield' },
+  nhat_ky_hoat_dong:   { label: 'Nhật Ký Hoạt Động',     icon: 'bx bx-history' },
+  quan_ly_su_kien:     { label: 'Quản Lý Sự Kiện',       icon: 'bx bx-calendar' },
+  dang_ky_su_kien:     { label: 'Đăng Ký Sự Kiện',       icon: 'bx bx-calendar-check' },
+  tuong_niem:          { label: 'Tưởng Niệm',             icon: 'bx bx-moon' },
+  nhac_gio_tu:         { label: 'Nhắc Ngày Giỗ Tự',      icon: 'bx bx-bell' },
+  quan_ly_tai_lieu:    { label: 'Tủ Sách Tài Liệu',      icon: 'bx bx-folder' },
+  upload_hinh_anh:     { label: 'Upload Hình Ảnh',        icon: 'bx bx-image' },
+  album_gia_dinh:      { label: 'Album Gia Đình',         icon: 'bx bx-images' },
+  ban_do_mo_phan:      { label: 'Bản Đồ Mộ Phần',        icon: 'bx bx-map-pin' },
+  ban_do_nha_tho:      { label: 'Bản Đồ Nhà Thờ Họ',     icon: 'bx bx-map' },
+  tra_cuu_ban_do:      { label: 'Tra Cứu Bản Đồ',        icon: 'bx bx-search-alt' },
+  quan_ly_dong_gop:    { label: 'Quản Lý Đóng Góp',      icon: 'bx bx-donate-heart' },
+  bao_cao_tai_chinh:   { label: 'Báo Cáo Tài Chính',     icon: 'bx bx-bar-chart' },
+  tra_cuu_quan_he:     { label: 'Tra Cứu Quan Hệ',       icon: 'bx bx-search' },
+  xuat_csv:            { label: 'Xuất Dữ Liệu CSV',      icon: 'bx bx-spreadsheet' },
+  thong_ke_nang_cao:   { label: 'Thống Kê Nâng Cao',     icon: 'bx bx-analyse' },
+  api_tich_hop:        { label: 'API Tích Hợp',           icon: 'bx bx-code-alt' }
+};
 
 export default {
   name: 'MuaGoi',
@@ -225,6 +302,10 @@ export default {
       countdownSec: 5,
       countdownPct: 100,
       countdownTimer: null,
+      
+      // Dynamic packages
+      listPackages: [],
+      isLoadingPackages: false
     };
   },
   computed: {
@@ -245,6 +326,9 @@ export default {
       const amount = this.cleanAmount;
       const desc = encodeURIComponent(this.transferContent);
       return `https://qr.sepay.vn/img?bank=MBBank&acc=0342211914&template=compact&amount=${amount}&des=${desc}`;
+    },
+    currentPkg() {
+      return this.listPackages.find(p => p.ten_goi === this.ten_goi);
     }
   },
 
@@ -270,11 +354,14 @@ export default {
       this.ten_goi = this.$route.query.ten_goi;
     }
 
-    // Kiểm tra nếu đã là đối tác rồi thì redirect luôn
-    if (userData && (parseInt(userData.is_doi_tac) === 1)) {
+    // Kiểm tra nếu đã là đối tác rồi và không có ý định mua gói mới thì mới redirect
+    if (userData && (parseInt(userData.is_doi_tac) === 1) && !this.$route.query.ten_goi) {
       this.$router.replace('/doi-tac/dashboard');
       return;
     }
+
+    // Tải thông tin các gói dịch vụ để hiển thị động
+    this.loadPackages();
 
     // Bắt đầu auto-check mỗi 8 giây (kiểm tra silent)
     this.startAutoCheck();
@@ -284,6 +371,34 @@ export default {
     this.stopCountdown();
   },
   methods: {
+    getItemFeatures(pkg) {
+      const feats = pkg.features || '';
+      if (!feats) return [];
+      const keys = typeof feats === 'string' ? feats.split(',').map(s => s.trim()) : feats;
+      return keys.map(k => {
+        const item = FEATURE_MAP[k];
+        return item ? { key: k, ...item } : null;
+      }).filter(Boolean);
+    },
+    loadPackages() {
+      this.isLoadingPackages = true;
+      axios.get('http://127.0.0.1:8000/api/goi-dich-vu/get-data')
+        .then(res => {
+          if (res.data.status) {
+            this.listPackages = res.data.data.filter(p => p.trang_thai === 'Hoạt động');
+          }
+        })
+        .catch(err => {
+          this.listPackages = [
+            { id: 1, ten_goi: 'Gói Khởi Tạo', gia_ca: 100000, thoi_han: 12, max_doi: 3, max_thanh_vien: 50, mo_ta: 'Phù hợp cho chi ngành nhỏ hoặc dòng tộc bắt đầu số hóa phả hệ.', trang_thai: 'Hoạt động', features: 'tao_cay_gia_pha,them_thanh_vien,sua_xoa_thanh_vien,quan_ly_vo_chong,quan_ly_con_nuoi,quan_ly_tai_lieu,upload_hinh_anh' },
+            { id: 2, ten_goi: 'Gói Hưng Thịnh', gia_ca: 3000000, thoi_han: 12, max_doi: 10, max_thanh_vien: 500, mo_ta: 'Giải pháp toàn diện cho các dòng tộc quy mô trung bình.', trang_thai: 'Hoạt động', features: 'tao_cay_gia_pha,them_thanh_vien,sua_xoa_thanh_vien,quan_ly_vo_chong,quan_ly_con_nuoi,quan_ly_tai_lieu,upload_hinh_anh,xuat_pdf,phe_duyet_de_xuat,quan_ly_chi_nhanh,nhat_ky_hoat_dong,quan_ly_su_kien,dang_ky_su_kien,tuong_niem,nhac_gio_tu,album_gia_dinh,ban_do_mo_phan,ban_do_nha_tho,tra_cuu_ban_do,quan_ly_dong_gop,bao_cao_tai_chinh,tra_cuu_quan_he' },
+            { id: 3, ten_goi: 'Gói Trường Tồn', gia_ca: 5000000, thoi_han: 12, max_doi: 99, max_thanh_vien: 10000, mo_ta: 'Không giới hạn đặc quyền dành cho đại gia tộc lớn nhiều chi nhánh.', trang_thai: 'Hoạt động', features: 'tao_cay_gia_pha,them_thanh_vien,sua_xoa_thanh_vien,quan_ly_vo_chong,quan_ly_con_nuoi,quan_ly_tai_lieu,upload_hinh_anh,xuat_pdf,phe_duyet_de_xuat,quan_ly_chi_nhanh,nhat_ky_hoat_dong,quan_ly_su_kien,dang_ky_su_kien,tuong_niem,nhac_gio_tu,album_gia_dinh,ban_do_mo_phan,ban_do_nha_tho,tra_cuu_ban_do,quan_ly_dong_gop,bao_cao_tai_chinh,tra_cuu_quan_he,xuat_csv,thong_ke_nang_cao,api_tich_hop,tu_dong_phe_duyet,phan_quyen_thanh_vien' }
+          ];
+        })
+        .finally(() => {
+          this.isLoadingPackages = false;
+        });
+    },
     getHeaders() {
       return { headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` } };
     },
@@ -311,7 +426,8 @@ export default {
       axios.post('http://127.0.0.1:8000/api/thanh-toan/xac-nhan-thanh-toan', {
         nguoi_dung_id: userId,
         noi_dung: this.transferContent + ' | Mua gói dịch vụ: ' + this.form.so_tien + ' VNĐ | QR Đối Tác',
-        so_tien: this.form.so_tien
+        so_tien: this.form.so_tien,
+        ten_goi: this.ten_goi
       }, this.getHeaders())
       .then(res => {
         if (res.data.success && res.data.is_partner) {
@@ -328,7 +444,7 @@ export default {
     },
 
     submitPayment() {
-      if (!this.cleanAmount) {
+      if (this.form.so_tien !== 0 && !this.cleanAmount) {
         toastr.warning('Vui lòng nhập số tiền hợp lệ!');
         return;
       }
@@ -350,7 +466,8 @@ export default {
       axios.post('http://127.0.0.1:8000/api/thanh-toan/xac-nhan-thanh-toan', {
         nguoi_dung_id: userId,
         noi_dung: this.transferContent + ' | Mua gói dịch vụ: ' + this.form.so_tien + ' VNĐ | QR Đối Tác',
-        so_tien: this.form.so_tien
+        so_tien: this.form.so_tien,
+        ten_goi: this.ten_goi
       }, this.getHeaders())
       .then(res => {
         if (res.data.success && res.data.is_partner) {

@@ -4,16 +4,20 @@ $app = require_once 'bootstrap/app.php';
 $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
 $kernel->bootstrap();
 
-echo "Users count: " . \App\Models\NguoiDung::count() . PHP_EOL;
-echo "DoiTac count: " . \App\Models\DoiTac::count() . PHP_EOL;
-echo "ChiNhanh count: " . \App\Models\ChiNhanh::count() . PHP_EOL;
-echo "ThanhVien count: " . \App\Models\ThanhVien::count() . PHP_EOL;
-
-$dt = \App\Models\DoiTac::first();
-if ($dt) {
-    echo "DoiTac first record: " . json_encode($dt) . PHP_EOL;
+$chucNangs = \App\Models\ChucNang::all();
+echo "TOTAL SYSTEM CHUC NANGS: " . count($chucNangs) . PHP_EOL;
+foreach ($chucNangs as $cn) {
+    echo "- ID: {$cn->id} | Name: {$cn->ten_chuc_nang} | Display For: {$cn->hien_thi_cho}" . PHP_EOL;
 }
-$cn = \App\Models\ChiNhanh::first();
-if ($cn) {
-    echo "ChiNhanh first record: " . json_encode($cn) . PHP_EOL;
+
+$tn = \Illuminate\Support\Facades\DB::table('chuc_vus')->where('ten_chuc_vu', 'Trưởng Nhánh')->first();
+if ($tn) {
+    $tnPerms = \App\Models\ChiTietPhanQuyen::join('chuc_nangs', 'chi_tiet_phan_quyens.chuc_nang_id', '=', 'chuc_nangs.id')
+        ->where('chi_tiet_phan_quyens.chuc_vu_id', $tn->id)
+        ->select('chuc_nangs.id', 'chuc_nangs.ten_chuc_nang', 'chuc_nangs.hien_thi_cho')
+        ->get();
+    echo PHP_EOL . "TRUONG NHANH ACTIVE PERMISSIONS COUNT: " . count($tnPerms) . PHP_EOL;
+    foreach ($tnPerms as $p) {
+        echo "- ID: {$p->id} | Name: {$p->ten_chuc_nang} | Display For: {$p->hien_thi_cho}" . PHP_EOL;
+    }
 }

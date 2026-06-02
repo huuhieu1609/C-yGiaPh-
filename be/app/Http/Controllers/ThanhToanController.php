@@ -44,12 +44,127 @@ class ThanhToanController extends Controller
         try {
             $nguoiDungId = $request->input('nguoi_dung_id');
             $noiDung     = $request->input('noi_dung');
+            $goiAmount   = (float) $request->input('so_tien', 0);
 
-            if (!$nguoiDungId || !$noiDung) {
+            if (!$nguoiDungId || (!$noiDung && $goiAmount > 0)) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Thiếu thông tin người dùng hoặc nội dung',
                 ]);
+            }
+
+            // Kiểm tra xem có phải giao dịch đóng góp (DONGGOP) không
+            $isDongGop = false;
+            if ($noiDung) {
+                $parts = explode('|', $noiDung);
+                $expectedContent = trim($parts[0]);
+                $isDongGop = stripos($expectedContent, 'DONGGOP') !== false;
+            }
+
+            // ── NẾU LÀ GÓI 0 ĐỒNG (MIỄN PHÍ / DÙNG THỬ) ──
+            if (!$isDongGop && $goiAmount == 0) {
+                return DB::transaction(function () use ($nguoiDungId, $noiDung, $goiAmount, $request) {
+                    $user = NguoiDung::find($nguoiDungId);
+                    if (!$user) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => 'Không tìm thấy tài khoản người dùng.',
+                        ]);
+                    }
+
+                    $tenGoiInput = $request->input('ten_goi');
+                    $goi = null;
+                    if ($tenGoiInput) {
+                        $goi = GoiDichVu::where('ten_goi', $tenGoiInput)->where('gia_ca', 0)->first();
+                    }
+                    if (!$goi) {
+                        $goi = GoiDichVu::where('gia_ca', 0)->first();
+                    }
+
+                    $tenGoi         = $goi ? $goi->ten_goi         : ($tenGoiInput ?: 'Gói Dùng Thử Miễn Phí');
+                    $thoiHan        = $goi ? (int) $goi->thoi_han  : 1;
+                    $featuresOfGoi  = $goi ? $goi->features        : '';
+                    $maxDoi         = $goi ? (int) $goi->max_doi        : 10;
+                    $maxThanhVien   = $goi ? (int) $goi->max_thanh_vien : 100;
+                    $goiId          = $goi ? $goi->id              : null;
+
+                    $ngayBatDau  = now()->toDateString();
+                    $ngayKetThuc = now()->addMonths($thoiHan)->toDateString();
+
+                    $existingSamePackage = null;
+                    if ($goiId) {
+                        $existingSamePackage = DoiTac::where('id_nguoi_dung', $nguoiDungId)
+                            ->where('trang_thai', 'APPROVED')
+                            ->where('id_goi_dich_vu', $goiId)
+                            ->where('ngay_ket_thuc', '>=', now()->toDateString())
+                            ->first();
+                    }
+
+                    if ($existingSamePackage) {
+                        $newExpiry = Carbon::parse($existingSamePackage->ngay_ket_thuc)
+                            ->addMonths($thoiHan)
+                            ->toDateString();
+
+                        $existingSamePackage->update([
+                            'ngay_ket_thuc' => $newExpiry,
+                            'features'      => $featuresOfGoi,
+                            'max_doi'       => $maxDoi,
+                            'max_thanh_vien'=> $maxThanhVien,
+                        ]);
+
+                        $targetRecord   = $existingSamePackage;
+                        $actionMessage  = "Gia hạn gói miễn phí {$tenGoi} — cộng thêm {$thoiHan} tháng";
+                    } else {
+                        $targetRecord = DoiTac::create([
+                            'id_nguoi_dung'  => $nguoiDungId,
+                            'id_goi_dich_vu' => $goiId,
+                            'ten_goi'        => $tenGoi,
+                            'features'       => $featuresOfGoi,
+                            'max_doi'        => $maxDoi,
+                            'max_thanh_vien' => $maxThanhVien,
+                            'so_tien'        => 0,
+                            'ngay_bat_dau'   => $ngayBatDau,
+                            'ngay_ket_thuc'  => $ngayKetThuc,
+                            'trang_thai'     => 'APPROVED',
+                        ]);
+                        $actionMessage = "Kích hoạt gói miễn phí {$tenGoi}";
+                    }
+
+                    NhatKyHoatDong::ghiLog(
+                        sprintf(
+                            '%s cho người dùng #%d (%s) — Gói: %s — Miễn phí — HH: %s',
+                            $actionMessage,
+                            $nguoiDungId,
+                            $user->ho_ten,
+                            $tenGoi,
+                            $targetRecord->ngay_ket_thuc
+                        ),
+                        [
+                            'id_nguoi_dung'  => $nguoiDungId,
+                            'id_doi_tac'     => $targetRecord->id,
+                            'ten_goi'        => $tenGoi,
+                            'so_tien'        => 0,
+                            'ngay_bat_dau'   => $ngayBatDau,
+                            'ngay_ket_thuc'  => $targetRecord->ngay_ket_thuc,
+                            'auto_approved'  => true,
+                        ],
+                        'Thành công',
+                        null
+                    );
+
+                    return response()->json([
+                        'success'       => true,
+                        'is_partner'    => true,
+                        'auto_approved' => true,
+                        'message'       => sprintf(
+                            'Kích hoạt gói miễn phí "%s" thành công!',
+                            $tenGoi
+                        ),
+                        'ten_goi'       => $tenGoi,
+                        'ngay_ket_thuc' => $targetRecord->ngay_ket_thuc,
+                        'redirect_url'  => '/doi-tac/dashboard',
+                    ]);
+                });
             }
 
             // Trích xuất phần nội dung tìm kiếm, ví dụ: "MUAGOI HIEU97995"
@@ -117,6 +232,57 @@ class ThanhToanController extends Controller
                     ]);
                 }
 
+                // Kiểm tra xem đây có phải là giao dịch đóng góp không
+                $isDongGop = stripos($expectedContent, 'DONGGOP') !== false
+                            || stripos($matchedTx['transaction_content'] ?? '', 'DONGGOP') !== false;
+
+                if ($isDongGop) {
+                    $displayNoiDung = $noiDung;
+                    if (stripos($displayNoiDung, 'Số tiền:') === false) {
+                        $displayNoiDung .= " | Số tiền: " . number_format($amountIn, 0, ',', '.') . " VNĐ";
+                    }
+
+                    // Tạo hoặc cập nhật trạng thái đóng góp thành Đã duyệt
+                    $dongGop = \App\Models\DongGop::updateOrCreate(
+                        [
+                            'nguoi_dung_id' => $nguoiDungId,
+                            'noi_dung'      => $displayNoiDung,
+                        ],
+                        [
+                            'trang_thai'    => 'Đã duyệt',
+                        ]
+                    );
+
+                    // Ghi nhật ký hoạt động
+                    NhatKyHoatDong::ghiLog(
+                        sprintf(
+                            'Tự động duyệt đóng góp công đức cho người dùng #%d (%s) — Số tiền: %s VNĐ',
+                            $nguoiDungId,
+                            $user->ho_ten,
+                            number_format($amountIn, 0, ',', '.')
+                        ),
+                        [
+                            'id_nguoi_dung'  => $nguoiDungId,
+                            'dong_gop_id'    => $dongGop->id,
+                            'so_tien'        => $amountIn,
+                            'noi_dung'       => $displayNoiDung,
+                            'auto_approved'  => true,
+                            'transaction_id' => $matchedTx['id'] ?? null,
+                        ],
+                        'Thành công',
+                        null
+                    );
+
+                    return response()->json([
+                        'success'     => true,
+                        'is_donation' => true,
+                        'message'     => sprintf(
+                            'Chúc mừng! Đóng góp %s VNĐ đã được xác nhận thành công. Hệ thống đã ghi danh Bảng Vàng.',
+                            number_format($amountIn, 0, ',', '.')
+                        ),
+                    ]);
+                }
+
                 // ── Xác định gói dịch vụ theo số tiền ──────────────────────────
                 $goiAmount = (float) $request->input('so_tien', 0);
                 if ($goiAmount <= 0) {
@@ -139,7 +305,7 @@ class ThanhToanController extends Controller
                     ], 400);
                 }
 
-                // ── Kiểm tra là lệnh mua gói ────────────────────────────────────
+                // ── Kiểm tra là lệnh mua gói ──
                 $isMuaGoi = stripos($expectedContent, 'MUAGOI') !== false
                             || stripos($matchedTx['transaction_content'] ?? '', 'MUAGOI') !== false;
 

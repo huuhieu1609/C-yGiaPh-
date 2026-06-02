@@ -29,9 +29,18 @@
                         <div class="mb-4">
                             <label class="form-label fw-bold text-secondary-custom">Chức Vụ</label>
                             <select class="form-select premium-input radius-10 border-2 shadow-none" v-model="formData.id_chuc_vu">
-                                <option :value="null">-- Chọn Chức Vụ --</option>
+                                <option :value="null">-- Không có chức vụ (Thành viên thường) --</option>
                                 <option v-for="cv in listChucVu" :key="cv.id" :value="cv.id">{{ cv.ten_chuc_vu }}</option>
                             </select>
+                            <!-- Hiển thị badge khi chọn Quản Trị Viên -->
+                            <div v-if="selectedChucVuName" class="mt-2">
+                                <span :class="getChucVuBadgeClass(selectedChucVuName)" class="badge px-3 py-2 fw-bold">
+                                    <i class="bx bx-shield-quarter me-1"></i>{{ selectedChucVuName }}
+                                </span>
+                                <small v-if="isSubAdminRole" class="text-muted d-block mt-1">
+                                    <i class="bx bx-info-circle me-1"></i>Tài khoản này sẽ có quyền truy cập trang quản trị
+                                </small>
+                            </div>
                         </div>
                         <div class="mb-4">
                             <label class="form-label fw-bold text-secondary-custom">Chi Nhánh</label>
@@ -39,6 +48,11 @@
                                 <option :value="null">-- Không liên kết --</option>
                                 <option v-for="cn in listChiNhanh" :key="cn.id" :value="cn.id">{{ cn.ten_chi }}</option>
                             </select>
+                        </div>
+                        <!-- Đổi mật khẩu khi Edit -->
+                        <div class="mb-4" v-if="isEditing">
+                            <label class="form-label fw-bold text-secondary-custom">Đổi Mật Khẩu <small class="text-muted fw-normal">(để trống nếu không đổi)</small></label>
+                            <input type="password" class="form-control premium-input radius-10 border-2 shadow-none" placeholder="Nhập mật khẩu mới..." v-model="formData.mat_khau">
                         </div>
                         <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-5">
                             <button type="button" class="btn btn-outline-secondary radius-30 px-4" v-if="isEditing" @click="resetForm">Hủy</button>
@@ -95,10 +109,13 @@
                                     <td class="fw-bold text-dark">{{ item.ho_ten }}</td>
                                     <td class="text-secondary small">{{ item.email }}</td>
                                     <td class="text-center">
-                                        <span class="badge badge-chucvu px-3 py-1.5 fw-bold">{{ getTenChucVu(item.id_chuc_vu) }}</span>
+                                        <span :class="getChucVuBadgeClass(getTenChucVu(item.id_chuc_vu))" class="badge px-3 fw-bold">
+                                            <i v-if="isSubAdminChucVu(item.id_chuc_vu)" class="bx bx-shield-quarter me-1"></i>
+                                            {{ getTenChucVu(item.id_chuc_vu) }}
+                                        </span>
                                     </td>
                                     <td class="text-center">
-                                        <span class="badge badge-chinhanh px-3 py-1.5 fw-bold">{{ getTenChiNhanh(item.chi_nhanh_id) }}</span>
+                                        <span class="badge badge-chinhanh px-3 fw-bold">{{ getTenChiNhanh(item.chi_nhanh_id) }}</span>
                                     </td>
                                     <td class="text-center">
                                         <button @click="changeStatus(item.id)" :class="item.trang_thai == 'Hoạt động' ? 'btn-status-active' : 'btn-status-locked'" class="btn-status-toggle w-100 fw-bold">
@@ -150,6 +167,17 @@ export default {
             isLoading: false
         }
     },
+    computed: {
+        selectedChucVuName() {
+            if (!this.formData.id_chuc_vu) return null;
+            const cv = this.listChucVu.find(c => c.id === this.formData.id_chuc_vu);
+            return cv ? cv.ten_chuc_vu : null;
+        },
+        isSubAdminRole() {
+            const name = (this.selectedChucVuName || '').toLowerCase();
+            return name.includes('quản trị');
+        }
+    },
     mounted() {
         this.loadData();
         this.loadChucVu();
@@ -196,19 +224,40 @@ export default {
                 });
         },
         getTenChucVu(id) {
+            if (!id) return 'Chưa gán';
             const cv = this.listChucVu.find(c => c.id === id);
             return cv ? cv.ten_chuc_vu : 'Chưa gán';
+        },
+        isSubAdminChucVu(id) {
+            const name = this.getTenChucVu(id).toLowerCase();
+            return name.includes('quản trị');
+        },
+        getChucVuBadgeClass(tenChucVu) {
+            const name = (tenChucVu || '').toLowerCase();
+            if (name.includes('quản trị viên tổng') || name.includes('admin tổng')) {
+                return 'badge-quan-tri-tong';
+            }
+            if (name.includes('quản trị')) {
+                return 'badge-quan-tri';
+            }
+            return 'badge-chucvu';
         },
         getTenChiNhanh(id) {
             const cn = this.listChiNhanh.find(c => c.id === id);
             return cn ? cn.ten_chi : 'Không liên kết';
         },
         saveData() {
-            const url = this.isEditing 
+            const url = this.isEditing
                 ? 'http://127.0.0.1:8000/api/nguoi-dung/update'
                 : 'http://127.0.0.1:8000/api/nguoi-dung/create';
-            
-            axios.post(url, this.formData, this.getHeaders())
+
+            // Khi edit mà không đổi mật khẩu, xóa key ra khỏi payload
+            const payload = { ...this.formData };
+            if (this.isEditing && !payload.mat_khau) {
+                delete payload.mat_khau;
+            }
+
+            axios.post(url, payload, this.getHeaders())
                 .then(res => {
                     if (res.data.status) {
                         toastr.success(res.data.message);
@@ -219,7 +268,10 @@ export default {
                     }
                 })
                 .catch(err => {
-                    toastr.error('Có lỗi xảy ra, vui lòng thử lại!');
+                    const msg = err.response?.data?.message || err.response?.data?.errors
+                        ? Object.values(err.response.data.errors || {}).flat().join(' | ')
+                        : 'Có lỗi xảy ra, vui lòng thử lại!';
+                    toastr.error(msg);
                 });
         },
         editItem(item) {
@@ -417,6 +469,24 @@ export default {
     color: #4f46e5 !important;
     border: 1px solid rgba(79, 70, 229, 0.15);
     border-radius: 30px;
+}
+
+/* Badge đặc biệt cho Quản Trị Viên */
+.badge-quan-tri {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.12), rgba(220, 38, 38, 0.08)) !important;
+    color: #dc2626 !important;
+    border: 1px solid rgba(239, 68, 68, 0.25);
+    border-radius: 30px;
+    font-size: 11.5px;
+}
+
+/* Badge cho Quản Trị Viên Tổng */
+.badge-quan-tri-tong {
+    background: linear-gradient(135deg, rgba(212, 175, 55, 0.15), rgba(180, 140, 20, 0.1)) !important;
+    color: #b45309 !important;
+    border: 1px solid rgba(212, 175, 55, 0.35);
+    border-radius: 30px;
+    font-size: 11.5px;
 }
 
 .badge-chinhanh {

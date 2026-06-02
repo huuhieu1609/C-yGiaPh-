@@ -111,7 +111,7 @@ class TuongNiemController extends Controller
             }
 
             // Lấy danh sách chi nhánh được phân quyền của user
-            if ($user->vai_tro === 'Admin') {
+            if ($user->vai_tro === 'Admin' || $user->isAdminOrSubAdmin()) {
                 $chiNhanhIds = ChiNhanh::pluck('id');
             } elseif ($user->is_doi_tac == 1) {
                 $chiNhanhIds = ChiNhanh::getManagedBranchIds($user);

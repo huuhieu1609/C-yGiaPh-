@@ -3,7 +3,9 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
+use App\Models\ThanhVien;
+use App\Models\ConNuoi;
+use Illuminate\Support\Facades\Schema;
 
 class ConNuoiSeeder extends Seeder
 {
@@ -12,29 +14,27 @@ class ConNuoiSeeder extends Seeder
      */
     public function run(): void
     {
-        DB::table('con_nuois')->truncate();
+        Schema::disableForeignKeyConstraints();
+        ConNuoi::truncate();
+        Schema::enableForeignKeyConstraints();
 
-        $chaId = DB::table('thanh_viens')->where('ho_ten', 'Nguyễn Văn Trung')->value('id');
-        $meId = DB::table('thanh_viens')->where('ho_ten', 'Đỗ Thu Trang')->value('id');
-        $conId = DB::table('thanh_viens')->where('ho_ten', 'Nguyễn Hoài Nam')->value('id');
+        $cha = ThanhVien::where('ho_ten', 'Nguyễn Văn Trung')->first();
+        $me = ThanhVien::where('ho_ten', 'Đỗ Thu Trang')->first();
+        $con = ThanhVien::where('ho_ten', 'Nguyễn Hoài Nam')->first();
 
-        if ($conId) {
-            if ($chaId) {
-                DB::table('con_nuois')->insert([
-                    'cha_me_id' => $chaId,
-                    'con_id' => $conId,
+        if ($con) {
+            if ($cha) {
+                ConNuoi::create([
+                    'cha_me_id' => $cha->id,
+                    'con_id' => $con->id,
                     'ghi_chu' => 'Nguyễn Hoài Nam là con nuôi của Nguyễn Văn Trung.',
-                    'created_at' => now(),
-                    'updated_at' => now(),
                 ]);
             }
-            if ($meId) {
-                DB::table('con_nuois')->insert([
-                    'cha_me_id' => $meId,
-                    'con_id' => $conId,
+            if ($me) {
+                ConNuoi::create([
+                    'cha_me_id' => $me->id,
+                    'con_id' => $con->id,
                     'ghi_chu' => 'Nguyễn Hoài Nam là con nuôi của Đỗ Thu Trang.',
-                    'created_at' => now(),
-                    'updated_at' => now(),
                 ]);
             }
         }

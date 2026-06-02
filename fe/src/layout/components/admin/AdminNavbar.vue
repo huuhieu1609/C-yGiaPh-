@@ -22,7 +22,8 @@
     <!-- User Section -->
     <div class="user-greeting d-flex align-items-center gap-3" @click="goToProfile" style="cursor: pointer;" title="Xem hồ sơ & đổi mật khẩu">
       <div class="avatar flex-shrink-0">
-        <span>A</span>
+        <img v-if="userAvatar && userAvatar !== 'https://dzfullstack.com/assets/images/logo-1.png'" :src="userAvatar" alt="Avatar" class="avatar-img rounded-circle" style="width: 36px; height: 36px; object-fit: cover; border: 1px solid var(--neo-border); display: block;" />
+        <span v-else>{{ userName.charAt(0).toUpperCase() }}</span>
         <div class="avatar-ring"></div>
       </div>
       <div class="d-flex flex-column hide-on-collapse lh-1 text-nowrap">
@@ -51,7 +52,7 @@
     <div class="sidebar-body overflow-auto flex-grow-1">
       <ul class="nav flex-column gap-1">
         
-        <li class="nav-item item-home">
+        <li class="nav-item item-home" v-if="hasPermission('Admin Dashboard')">
           <router-link to="/admin/dashboard" class="nav-link" active-class="active" title="Tổng Quan">
             <span class="nav-icon"><i class="bx bx-home-circle"></i></span>
             <span class="hide-on-collapse nav-label">Tổng Quan</span>
@@ -59,9 +60,9 @@
           </router-link>
         </li>
 
-        <li class="section-heading hide-on-collapse">Quản Lý Gia Phả</li>
+        <li class="section-heading hide-on-collapse" v-if="hasPermission('Cây Gia Phả') || hasPermission('Quản Lý Đối Tác') || hasPermission('Quản Lý Người Dùng') || hasPermission('Quản Lý Mộ Phần')">Quản Lý Gia Phả</li>
 
-        <li class="nav-item item-tree">
+        <li class="nav-item item-tree" v-if="hasPermission('Cây Gia Phả')">
           <router-link to="/admin/gia-pha" class="nav-link" active-class="active" title="Quản Lý Gia Phả">
             <span class="nav-icon"><i class="bx bx-git-branch"></i></span>
             <span class="hide-on-collapse nav-label">Gia Phả Hệ</span>
@@ -69,7 +70,7 @@
           </router-link>
         </li>
 
-        <li class="nav-item item-members">
+        <li class="nav-item item-members" v-if="hasPermission('Quản Lý Đối Tác')">
           <router-link to="/admin/yeu-cau-mua-goi" class="nav-link" active-class="active" title="Yêu Cầu Mua Gói">
             <span class="nav-icon"><i class="bx bx-receipt"></i></span>
             <span class="hide-on-collapse nav-label">Yêu Cầu Mua Gói</span>
@@ -77,14 +78,14 @@
           </router-link>
         </li>
 
-        <li class="nav-item item-clan">
+        <li class="nav-item item-clan" v-if="hasPermission('Quản Lý Người Dùng')">
           <router-link to="/admin/quan-ly-tai-khoan" class="nav-link" active-class="active" title="Quản Lý Tài Khoản">
             <span class="nav-icon"><i class="bx bx-user-check"></i></span>
             <span class="hide-on-collapse nav-label">Quản Lý Tài Khoản</span>
             <span class="nav-dot hide-on-collapse"></span>
           </router-link>
         </li>
-        <li class="nav-item item-map">
+        <li class="nav-item item-map" v-if="hasPermission('Quản Lý Mộ Phần')">
           <router-link to="/admin/quan-ly-ban-do" class="nav-link" active-class="active" title="Quản Lý Bản Đồ">
             <span class="nav-icon"><i class="bx bx-map-alt"></i></span>
             <span class="hide-on-collapse nav-label">Quản Lý Bản Đồ</span>
@@ -92,6 +93,7 @@
           </router-link>
         </li>
 
+<<<<<<< HEAD
         <li class="nav-item item-partner" v-if="hasPermission('Quản Lý Chi Nhánh')">
           <router-link to="/admin/chi-nhanh" class="nav-link" active-class="active" title="Quản Lý Dòng Họ">
             <span class="nav-icon"><i class="bx bx-sitemap"></i></span>
@@ -133,8 +135,11 @@
         </li>
 
         <li class="section-heading hide-on-collapse">Gói & Thanh Toán</li>
+=======
+        <li class="section-heading hide-on-collapse" v-if="hasPermission('Quản Lý Đối Tác') || hasPermission('Quản Lý Sự Kiện')">Gói &amp; Quỹ Dòng Họ</li>
+>>>>>>> 8b26db9214b53f9db8841ab68a7f9814e47fb6cc
 
-        <li class="nav-item item-payment">
+        <li class="nav-item item-payment" v-if="hasPermission('Quản Lý Đối Tác')">
           <router-link to="/admin/goi-dich-vu" class="nav-link" active-class="active" title="Quản Lý Gói Dịch Vụ">
             <span class="nav-icon"><i class="bx bx-package"></i></span>
             <span class="hide-on-collapse nav-label">Quản Lý Gói Dịch Vụ</span>
@@ -142,9 +147,17 @@
           </router-link>
         </li>
 
-        <li class="section-heading hide-on-collapse">Hệ Thống & Bảo Mật</li>
+        <li class="nav-item item-payment" v-if="hasPermission('Quản Lý Sự Kiện')">
+          <router-link to="/admin/dong-gop" class="nav-link" active-class="active" title="Quản Lý Đóng Góp">
+            <span class="nav-icon"><i class="bx bx-gift"></i></span>
+            <span class="hide-on-collapse nav-label">Quản Lý Đóng Góp</span>
+            <span class="nav-dot hide-on-collapse"></span>
+          </router-link>
+        </li>
 
-        <li class="nav-item item-security">
+        <li class="section-heading hide-on-collapse" v-if="hasPermission('Quản Lý Chức Vụ') || hasPermission('Hệ Thống')">Hệ Thống & Bảo Mật</li>
+
+        <li class="nav-item item-security" v-if="hasPermission('Quản Lý Chức Vụ')">
           <router-link to="/admin/phan-quyen" class="nav-link" active-class="active" title="Phân Quyền">
             <span class="nav-icon"><i class="bx bx-shield-quarter"></i></span>
             <span class="hide-on-collapse nav-label">Phân Quyền</span>
@@ -152,7 +165,7 @@
           </router-link>
         </li>
 
-        <li class="nav-item item-security" v-for="menu in comingSoonMenus" :key="'cs'+menu.id">
+        <li class="nav-item item-security" v-for="menu in comingSoonMenus" :key="'cs'+menu.id" v-if="hasPermission('Hệ Thống')">
           <router-link :to="'/coming-soon?name=' + encodeURIComponent(menu.ten_chuc_nang)" class="nav-link" active-class="active" :title="menu.ten_chuc_nang">
             <span class="nav-icon"><i class="bx bx-crown text-warning"></i></span>
             <span class="hide-on-collapse nav-label text-gradient-gold-sidebar">{{ menu.ten_chuc_nang }}</span>
@@ -160,7 +173,7 @@
           </router-link>
         </li>
 
-        <li class="nav-item item-security">
+        <li class="nav-item item-security" v-if="hasPermission('Hệ Thống')">
           <router-link to="/admin/nhat-ky-hoat-dong" class="nav-link" active-class="active" title="Nhật Ký Hoạt Động">
             <span class="nav-icon"><i class="bx bx-history"></i></span>
             <span class="hide-on-collapse nav-label">Nhật Ký Hoạt Động</span>
@@ -204,6 +217,7 @@ export default {
   data() {
     return {
       userName: 'Quản Trị Viên',
+      userAvatar: null,
       isDarkMode: false,
       permissions: [],
       isMasterAdmin: false,
@@ -215,7 +229,7 @@ export default {
     const savedTheme = localStorage.getItem('theme') || 'light';
     this.isDarkMode = savedTheme === 'dark';
     document.documentElement.setAttribute('data-theme', savedTheme);
-
+ 
     // Đọc thông tin user
     const userStr = localStorage.getItem('user');
     if (userStr) {
@@ -225,6 +239,9 @@ export default {
           this.userName = user.ho_ten;
         } else if (user && user.username) {
           this.userName = user.username;
+        }
+        if (user && user.avatar) {
+          this.userAvatar = user.avatar;
         }
         // Master Admin luôn có toàn quyền, không bị lọc menu
         this.isMasterAdmin = user?.vai_tro?.toLowerCase() === 'admin';

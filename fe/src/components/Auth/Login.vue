@@ -79,12 +79,18 @@ export default {
                         const user = res.data.user;
 
                         // 3. Chủ động điều hướng dựa trên vai trò thực tế của User
-                        if (user && user.vai_tro?.toLowerCase() === 'admin') {
-                            this.$router.push('/admin/dashboard');
-                        } else if (user && user.is_doi_tac == 1) {
-                            this.$router.push('/doi-tac/dashboard');
+                        if (res.data.redirect_url) {
+                            this.$router.push(res.data.redirect_url);
                         } else {
-                            this.$router.push('/gia-pha');
+                            const chucVuName = user?.chuc_vu?.ten_chuc_vu?.toLowerCase() || '';
+                            const isSubAdmin = chucVuName.includes('quản trị') || user?.vai_tro?.toLowerCase() === 'admin';
+                            if (isSubAdmin) {
+                                this.$router.push('/admin/dashboard');
+                            } else if (user && user.is_doi_tac == 1) {
+                                this.$router.push('/doi-tac/dashboard');
+                            } else {
+                                this.$router.push('/gia-pha');
+                            }
                         }
                     } else {
                         toastr.error(res.data.message);

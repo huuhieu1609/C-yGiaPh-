@@ -264,7 +264,11 @@ export default {
         this.isLoggedIn = true;
         const user = userData.user || userData;
         this.userName = user.ho_ten;
-        this.isAdmin = user.vai_tro === 'Admin';
+        const roleName = user.vai_tro?.toLowerCase() || '';
+        const chucVuName = user.chuc_vu?.ten_chuc_vu?.toLowerCase() || '';
+        // Nhận diện sub-admin qua tên chức vụ (không hard-code ID)
+        const isSubAdmin = chucVuName.includes('quản trị') || roleName.includes('admin');
+        this.isAdmin = roleName === 'admin' || isSubAdmin;
         this.isDoiTac = user.is_doi_tac == 1 || user.is_doi_tac === true || user.vai_tro === 'Đối tác';
         const avatar = user.avatar;
         if (avatar && avatar !== 'https://dzfullstack.com/assets/images/logo-1.png') {

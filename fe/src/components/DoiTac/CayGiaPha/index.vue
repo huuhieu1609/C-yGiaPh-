@@ -401,6 +401,7 @@ const TreeItem = defineComponent({
             ]);
         };
 
+        let children = null;
         const coupleChildren = [];
         const hasMultipleSpouses = this.member.spouses && this.member.spouses.length === 2;
 
@@ -427,6 +428,11 @@ const TreeItem = defineComponent({
                 style: { order: 4 } 
             }, [ h('i', { class: 'bx bxs-heart connector-heart' }) ]));
             coupleChildren.push(makeSpouseChunk(this.member.spouses[1], 5));
+
+            const sp0 = this.member.spouses[0];
+            const sp1 = this.member.spouses[1];
+            const kids0 = hasChildren ? this.member.children.filter(c => c.me_id == sp0.id || c.cha_id == sp0.id) : [];
+            const kids1 = hasChildren ? this.member.children.filter(c => c.me_id == sp1.id || c.cha_id == sp1.id) : [];
 
             const col0 = h('div', { class: ['union-column', 'union-column-0', kids0.length === 0 ? 'union-column-empty' : ''] }, [
                 kids0.length > 0
@@ -1424,7 +1430,7 @@ export default {
   background: #d4af37;
   z-index: 1;
 }
-/* .has-multiple-spouses-li > ul::before {
+.has-multiple-spouses-li > ul::before {
   display: none !important;
 }
 .union-column > ul::before {

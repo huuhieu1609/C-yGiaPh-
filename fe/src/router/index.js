@@ -37,49 +37,49 @@ const routes = [
     {
         path: '/profile',
         name: 'profile',
-        component: () => import('../components/ClientProfile/index.vue'),
+        component: () => import('../components/Client/Profile/index.vue'),
         meta: { layout: 'client', requiresAuth: true }
     },
     {
         path: '/gia-pha',
         name: 'gia-pha',
-        component: () => import('../components/ClientGiaPha/index.vue'),
+        component: () => import('../components/Client/GiaPha/index.vue'),
         meta: { layout: 'client', requiresAuth: true }
     },
     {
         path: '/ban-do',
         name: 'client-ban-do',
-        component: () => import('../components/ClientBanDo/index.vue'),
+        component: () => import('../components/Client/BanDo/index.vue'),
         meta: { layout: 'client', requiresAuth: true }
     },
     {
         path: '/tuong-niem',
         name: 'client-tuong-niem',
-        component: () => import('../components/ClientTuongNiem/index.vue'),
+        component: () => import('../components/Client/TuongNiem/index.vue'),
         meta: { layout: 'client', requiresAuth: true }
     },
     {
         path: '/tra-cuu',
         name: 'client-tra-cuu',
-        component: () => import('../components/ClientTraCuu/index.vue'),
+        component: () => import('../components/Client/TraCuu/index.vue'),
         meta: { layout: 'client', requiresAuth: true }
     },
     {
         path: '/thanh-vien/detail/:id',
         name: 'client-thanh-vien-detail',
-        component: () => import('../components/ClientTraCuu/PublicDetail.vue'),
+        component: () => import('../components/Client/TraCuu/PublicDetail.vue'),
         meta: { layout: 'client' }
     },
     {
         path: '/de-xuat',
         name: 'client-de-xuat',
-        component: () => import('../components/ClientDeXuat/index.vue'),
+        component: () => import('../components/Client/DeXuat/index.vue'),
         meta: { layout: 'client', requiresAuth: true }
     },
     {
         path: '/su-kien',
         name: 'client-su-kien',
-        component: () => import('../components/ClientSuKien/index.vue'),
+        component: () => import('../components/Client/SuKien/index.vue'),
         meta: { layout: 'client', requiresAuth: true }
     },
     {
@@ -91,13 +91,13 @@ const routes = [
     {
         path: '/thanh-toan',
         name: 'thanh-toan',
-        component: () => import('../components/ClientThanhToan/MuaGoi.vue'),
+        component: () => import('../components/Client/ThanhToan/MuaGoi.vue'),
         meta: { layout: 'client', requiresAuth: true }
     },
     {
         path: '/dong-gop-quy',
         name: 'dong-gop-quy',
-        component: () => import('../components/ClientThanhToan/DongGopQuy.vue'),
+        component: () => import('../components/Client/ThanhToan/DongGopQuy.vue'),
         meta: { layout: 'client', requiresAuth: true }
     },
     {
@@ -191,6 +191,12 @@ const routes = [
                 name: 'admin-goi-dich-vu',
                 component: () => import('../components/Admin/GoiDichVu/index.vue')
                 // Gói dịch vụ không cần phân quyền riêng
+            },
+            {
+                path: 'dong-gop',
+                name: 'admin-dong-gop',
+                component: () => import('../components/Admin/DongGop/index.vue'),
+                meta: { permission: 'Quản Lý Sự Kiện' }
             },
             {
                 path: 'yeu-cau-mua-goi',
@@ -293,7 +299,7 @@ const routes = [
                 path: 'thanh-vien',
                 name: 'partner-thanh-vien',
                 component: () => import('../components/DoiTac/QuanLyThanhVien/index.vue'),
-                meta: { permission: 'Cây Gia Phả' }
+                meta: { permission: 'Quản Lý Thành Viên' }
             },
             {
                 path: 'tra-cuu',
@@ -329,7 +335,7 @@ const routes = [
                 path: 'de-xuat',
                 name: 'partner-de-xuat',
                 component: () => import('../components/DoiTac/QuanLyDeXuat/index.vue'),
-                meta: { permission: 'Cây Gia Phả' }
+                meta: { permission: 'Kiểm Duyệt Đề Xuất' }
             },
             {
                 path: 'su-kien',
@@ -346,7 +352,14 @@ const routes = [
             {
                 path: 'quan-ly-goi',
                 name: 'partner-quan-ly-goi',
-                component: () => import('../components/DoiTac/QuanLyGoi/index.vue')
+                component: () => import('../components/DoiTac/QuanLyGoi/index.vue'),
+                meta: { permission: 'Quản Lý Gói Dịch Vụ' }
+            },
+            {
+                path: 'dong-gop',
+                name: 'partner-dong-gop',
+                component: () => import('../components/DoiTac/QuanLyDongGop/index.vue'),
+                meta: { permission: 'Quản Lý Sự Kiện' }
             }
         ]
     }
@@ -383,7 +396,11 @@ router.beforeEach(async (to, from, next) => {
 
     // ── 2. Chặn truy cập trang admin (không phải login) ──
     if (to.path.startsWith('/admin') && to.path !== '/admin/login') {
-        if (user?.vai_tro?.toLowerCase() !== 'admin') {
+        const roleName = user?.vai_tro?.toLowerCase() || '';
+        const chucVuName = user?.chuc_vu?.ten_chuc_vu?.toLowerCase() || '';
+        // Kiểm tra là Admin hoặc có chức vụ quản trị (dựa trên tên chức vụ, không hard-code ID)
+        const isSubAdmin = chucVuName.includes('quản trị') || roleName.includes('admin');
+        if (roleName !== 'admin' && !isSubAdmin) {
             alert('Bạn không có quyền truy cập!');
             return next('/');
         }
@@ -402,6 +419,7 @@ router.beforeEach(async (to, from, next) => {
                 localStorage.setItem('user', JSON.stringify(updatedUser));
                 if (response.data.permissions) {
                     localStorage.setItem('permissions', JSON.stringify(response.data.permissions));
+                    permissions = response.data.permissions;
                 }
             }
         } catch (error) {
@@ -422,38 +440,53 @@ router.beforeEach(async (to, from, next) => {
     const requiredPermission = to.meta?.permission;
     if (requiredPermission && !isMasterAdmin) {
         const idChucVu = user?.id_chuc_vu;
-        // Nếu user có chức vụ (idChucVu khác null/undefined) -> bắt buộc kiểm tra quyền
-        if (idChucVu !== null && idChucVu !== undefined) {
-            
-            // Trường hợp 1: localStorage cũ ĐÃ CÓ quyền
-            if (permissions.includes(requiredPermission)) {
-                // Gửi ngầm request cập nhật quyền realtime để phòng trường hợp Admin vừa tắt quyền ở backend
-                axios.get('http://127.0.0.1:8000/api/me', {
-                    headers: { Authorization: 'Bearer ' + token }
-                }).then(response => {
+        if ((idChucVu !== null && idChucVu !== undefined) || user?.is_doi_tac == 1) {
+            let updatedPermissions = permissions;
+
+            // Nếu là Đối Tác, luôn đồng bộ quyền từ server ngay trước khi kiểm tra để áp dụng trực tiếp ngay lập tức
+            if (user?.is_doi_tac == 1) {
+                try {
+                    const response = await axios.get('http://127.0.0.1:8000/api/me', {
+                        headers: { Authorization: 'Bearer ' + token }
+                    });
                     if (response.data && response.data.permissions) {
-                        localStorage.setItem('permissions', JSON.stringify(response.data.permissions));
+                        updatedPermissions = response.data.permissions;
+                        localStorage.setItem('permissions', JSON.stringify(updatedPermissions));
+                        localStorage.setItem('user', JSON.stringify(response.data.user || user));
+                        permissions = updatedPermissions;
+                    }
+                } catch (error) {
+                    console.error('Realtime permissions fetch failed:', error);
+                }
+            } else {
+                // Với các user khác, sử dụng cơ chế cache cũ để tối ưu hiệu năng
+                if (permissions.includes(requiredPermission)) {
+                    // Gửi ngầm request cập nhật quyền realtime để phòng trường hợp Admin vừa tắt quyền ở backend
+                    axios.get('http://127.0.0.1:8000/api/me', {
+                        headers: { Authorization: 'Bearer ' + token }
+                    }).then(response => {
+                        if (response.data && response.data.permissions) {
+                            localStorage.setItem('permissions', JSON.stringify(response.data.permissions));
+                            localStorage.setItem('user', JSON.stringify(response.data.user || user));
+                        }
+                    }).catch(() => {});
+                    
+                    return next();
+                }
+
+                // Nếu cache thiếu quyền, check xem Admin có vừa bật lên không
+                try {
+                    const response = await axios.get('http://127.0.0.1:8000/api/me', {
+                        headers: { Authorization: 'Bearer ' + token }
+                    });
+                    if (response.data && response.data.permissions) {
+                        updatedPermissions = response.data.permissions;
+                        localStorage.setItem('permissions', JSON.stringify(updatedPermissions));
                         localStorage.setItem('user', JSON.stringify(response.data.user || user));
                     }
-                }).catch(() => {});
-                
-                return next();
-            }
-            
-            // Trường hợp 2: localStorage cũ THIẾU quyền -> gọi đồng bộ để check xem Admin có vừa bật lên không
-            let updatedPermissions = [];
-            try {
-                const response = await axios.get('http://127.0.0.1:8000/api/me', {
-                    headers: { Authorization: 'Bearer ' + token }
-                });
-                if (response.data && response.data.permissions) {
-                    updatedPermissions = response.data.permissions;
-                    localStorage.setItem('permissions', JSON.stringify(updatedPermissions));
-                    localStorage.setItem('user', JSON.stringify(response.data.user || user));
+                } catch (error) {
+                    console.error('Realtime permissions fetch failed:', error);
                 }
-            } catch (error) {
-                console.error('Realtime permissions fetch failed:', error);
-                updatedPermissions = permissions;
             }
 
             // Kiểm tra lại với danh sách quyền mới nhất vừa cập nhật
@@ -462,20 +495,24 @@ router.beforeEach(async (to, from, next) => {
             }
 
             // Thực sự không có quyền -> Báo lỗi & Chặn
-            const isThanhVien = String(user.id_chuc_vu) === '3' || (user.vai_tro && user.vai_tro.toLowerCase().includes('thành viên'));
             let errorMsg = "Bạn không có quyền với chức năng này";
             
-            if (isThanhVien) {
-                const getMemberFriendlyPermissionName = (name) => {
-                    if (!name) return "chức năng này";
-                    let friendlyName = name.replace(/Quản Lý/g, 'Xem').replace(/quản lý/g, 'xem');
-                    if (name === 'Cây Gia Phả') return 'Xem Cây Gia Phả';
-                    if (name === 'Tra Cứu Xưng Hô') return 'Xem Tra Cứu Xưng Hô';
-                    if (name === 'Quỹ & Sự Kiện') return 'Xem Quỹ & Sự Kiện';
-                    if (name === 'Nhật Ký Thao Tác') return 'Xem Nhật Ký Thao Tác';
-                    return friendlyName;
-                };
-                errorMsg = `Bạn chưa được cấp quyền để xem ${getMemberFriendlyPermissionName(requiredPermission)}`;
+            if (user?.is_doi_tac == 1) {
+                errorMsg = "Bạn không có quyền sử dụng chức năng này. Khi nào bên Admin bật lại thì bạn mới có thể dùng được!";
+            } else {
+                const isThanhVien = String(user.id_chuc_vu) === '3' || (user.vai_tro && user.vai_tro.toLowerCase().includes('thành viên'));
+                if (isThanhVien) {
+                    const getMemberFriendlyPermissionName = (name) => {
+                        if (!name) return "chức năng này";
+                        let friendlyName = name.replace(/Quản Lý/g, 'Xem').replace(/quản lý/g, 'xem');
+                        if (name === 'Cây Gia Phả') return 'Xem Cây Gia Phả';
+                        if (name === 'Tra Cứu Xưng Hô') return 'Xem Tra Cứu Xưng Hô';
+                        if (name === 'Quỹ & Sự Kiện') return 'Xem Quỹ & Sự Kiện';
+                        if (name === 'Nhật Ký Thao Tác') return 'Xem Nhật Ký Thao Tác';
+                        return friendlyName;
+                    };
+                    errorMsg = `Bạn chưa được cấp quyền để xem ${getMemberFriendlyPermissionName(requiredPermission)}`;
+                }
             }
 
             try {
@@ -492,7 +529,10 @@ router.beforeEach(async (to, from, next) => {
 
     // ── 5. Đã login thì không vào login/register ──
     if ((to.path === '/login' || to.path === '/register') && token) {
-        if (user?.vai_tro?.toLowerCase() === 'admin') {
+        const roleName2 = user?.vai_tro?.toLowerCase() || '';
+        const chucVuName2 = user?.chuc_vu?.ten_chuc_vu?.toLowerCase() || '';
+        const isAdminOrSubAdmin = roleName2 === 'admin' || chucVuName2.includes('quản trị');
+        if (isAdminOrSubAdmin) {
             return next('/admin/dashboard');
         }
         if (user?.is_doi_tac == 1) {

@@ -44,11 +44,37 @@ class ThanhVienChucNang extends Model
                 ->toArray();
         }
 
-        // 2. Đối tác tối cao (chủ tài khoản đối tác) không có chức vụ -> có toàn quyền đối tác
+        // Lấy danh sách quyền được Admin cấp cho vai trò "Trưởng Nhánh" (dành cho đối tác)
+        $truongNhanhId = \Illuminate\Support\Facades\DB::table('chuc_vus')
+            ->where('ten_chuc_vu', 'Trưởng Nhánh')
+            ->value('id') ?? 2;
+
+        $truongNhanhPermissions = ChiTietPhanQuyen::join('chuc_nangs', 'chi_tiet_phan_quyens.chuc_nang_id', '=', 'chuc_nangs.id')
+            ->where('chi_tiet_phan_quyens.chuc_vu_id', $truongNhanhId)
+            ->where('chuc_nangs.trang_thai', 'Hoạt động')
+            ->pluck('chuc_nangs.ten_chuc_nang')
+            ->toArray();
+
+        // Tự động cấp quyền Quản Lý Sự Kiện cho Đối Tác để quản lý Quỹ Đóng Góp
+        if (!in_array('Quản Lý Sự Kiện', $truongNhanhPermissions)) {
+            $truongNhanhPermissions[] = 'Quản Lý Sự Kiện';
+        }
+
+        // 2. Đối tác tối cao (chủ tài khoản đối tác) không có chức vụ -> đồng bộ với quyền của Trưởng Nhánh
         if ($user->is_doi_tac == 1 && !$user->id_chuc_vu) {
-            return \App\Models\ChucNang::where('trang_thai', 'Hoạt động')
-                ->pluck('ten_chuc_nang')
-                ->toArray();
+            return $truongNhanhPermissions;
+        }
+
+        // 2.5. Sub-Admin (Quản Trị Viên): trả về quyền từ chi_tiet_phan_quyens cho chức vụ đó
+        if ($user->id_chuc_vu) {
+            $chucVuForCheck = \App\Models\ChucVu::find($user->id_chuc_vu);
+            if ($chucVuForCheck && str_contains(strtolower($chucVuForCheck->ten_chuc_vu), 'quản trị')) {
+                return \App\Models\ChiTietPhanQuyen::join('chuc_nangs', 'chi_tiet_phan_quyens.chuc_nang_id', '=', 'chuc_nangs.id')
+                    ->where('chi_tiet_phan_quyens.chuc_vu_id', $user->id_chuc_vu)
+                    ->where('chuc_nangs.trang_thai', 'Hoạt động')
+                    ->pluck('chuc_nangs.ten_chuc_nang')
+                    ->toArray();
+            }
         }
 
         // 3. Với thành viên bình thường hoặc người dùng có chức vụ:
@@ -66,6 +92,8 @@ class ThanhVienChucNang extends Model
             ->pluck('chuc_nangs.ten_chuc_nang')
             ->toArray();
 
+        $result_permissions = $admin_permissions;
+
         // Tìm thành viên tương ứng qua email
         $thanhVien = \App\Models\ThanhVien::where('email', $user->email)->whereNotNull('email')->first();
         if ($thanhVien) {
@@ -81,10 +109,15 @@ class ThanhVienChucNang extends Model
                     ->toArray();
 
                 // Thực hiện giao thoa (intersection)
-                return array_values(array_intersect($admin_permissions, $partner_enabled));
+                $result_permissions = array_values(array_intersect($admin_permissions, $partner_enabled));
             }
         }
 
-        return $admin_permissions;
+        // Nếu tài khoản này thuộc đối tác, phải đồng bộ giới hạn bởi quyền của Trưởng Nhánh
+        if ($user->is_doi_tac == 1) {
+            return array_values(array_intersect($result_permissions, $truongNhanhPermissions));
+        }
+
+        return $result_permissions;
     }
 }
