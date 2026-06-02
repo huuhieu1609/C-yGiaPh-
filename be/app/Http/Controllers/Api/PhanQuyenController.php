@@ -27,12 +27,39 @@ class PhanQuyenController extends Controller
             }
         }
 
-        // 2. Nếu không phải Admin tối cao, chỉ trả về các chức năng mà người dùng hiện tại đang sở hữu
+        // 2. Nếu không phải Admin tối cao, phân loại để cho phép Sub-Admin phân các quyền thành viên
         if (!$isMasterAdmin) {
-            $my_permission_names = \App\Models\ThanhVienChucNang::getMemberActivePermissions($user);
-            $list_chuc_nang = ChucNang::where('trang_thai', 'Hoạt động')
-                ->whereIn('ten_chuc_nang', $my_permission_names)
-                ->get();
+            $adminFuncs = [
+                'Admin Dashboard', 
+                'Quản Lý Gia Phả Hệ', 
+                'Quản Lý Bản Đồ Hệ Thống', 
+                'Quản Lý Dòng Họ Hệ Thống', 
+                'Quản Lý Sự Kiện Hệ Thống', 
+                'Quản Lý Đóng Góp Hệ Thống', 
+                'Quản Lý Nhật Ký Hoạt Động', 
+                'Quản Lý Đối Tác', 
+                'Quản Lý Người Dùng', 
+                'Quản Lý Chức Vụ', 
+                'Quản Lý Chức Năng', 
+                'Hệ Thống'
+            ];
+
+            $targetName = $targetChucVu ? strtolower($targetChucVu->ten_chuc_vu) : '';
+            $isTargetAdmin = (str_contains($targetName, 'admin') || str_contains($targetName, 'tổng') || str_contains($targetName, 'quản trị'));
+            
+            if ($isTargetAdmin) {
+                // Đối tượng là Admin/Quản trị viên -> Chỉ trả về các quyền admin mà người phân quyền đang có
+                $my_permission_names = \App\Models\ThanhVienChucNang::getMemberActivePermissions($user);
+                $list_chuc_nang = ChucNang::where('trang_thai', 'Hoạt động')
+                    ->whereIn('ten_chuc_nang', $my_permission_names)
+                    ->whereIn('ten_chuc_nang', $adminFuncs)
+                    ->get();
+            } else {
+                // Đối tượng là đối tác/thành viên -> Sub-Admin được phép phân tất cả các quyền thành viên
+                $list_chuc_nang = ChucNang::where('trang_thai', 'Hoạt động')
+                    ->whereNotIn('ten_chuc_nang', $adminFuncs)
+                    ->get();
+            }
         } else {
             $list_chuc_nang = ChucNang::where('trang_thai', 'Hoạt động')->get();
         }
@@ -65,11 +92,39 @@ class PhanQuyenController extends Controller
             }
         }
 
-        // 2. Chốt chặn bảo mật chống leo thang đặc quyền: Quản trị viên chỉ được cấp những quyền họ đang sở hữu
+        // 2. Chốt chặn bảo mật chống leo thang đặc quyền
         if (!$isMasterAdmin) {
-            $my_permission_names = \App\Models\ThanhVienChucNang::getMemberActivePermissions($user);
-            $my_chuc_nang_ids = ChucNang::whereIn('ten_chuc_nang', $my_permission_names)->pluck('id')->toArray();
-            $list_chuc_nang = array_values(array_intersect($list_chuc_nang, $my_chuc_nang_ids));
+            $adminFuncs = [
+                'Admin Dashboard', 
+                'Quản Lý Gia Phả Hệ', 
+                'Quản Lý Bản Đồ Hệ Thống', 
+                'Quản Lý Dòng Họ Hệ Thống', 
+                'Quản Lý Sự Kiện Hệ Thống', 
+                'Quản Lý Đóng Góp Hệ Thống', 
+                'Quản Lý Nhật Ký Hoạt Động', 
+                'Quản Lý Đối Tác', 
+                'Quản Lý Người Dùng', 
+                'Quản Lý Chức Vụ', 
+                'Quản Lý Chức Năng', 
+                'Hệ Thống'
+            ];
+
+            $targetName = $chucVu ? strtolower($chucVu->ten_chuc_vu) : '';
+            $isTargetAdmin = (str_contains($targetName, 'admin') || str_contains($targetName, 'tổng') || str_contains($targetName, 'quản trị'));
+            
+            if ($isTargetAdmin) {
+                // Chỉ cho phép cấp các quyền admin mà người phân quyền đang sở hữu
+                $my_permission_names = \App\Models\ThanhVienChucNang::getMemberActivePermissions($user);
+                $my_chuc_nang_ids = ChucNang::whereIn('ten_chuc_nang', $my_permission_names)
+                    ->whereIn('ten_chuc_nang', $adminFuncs)
+                    ->pluck('id')
+                    ->toArray();
+                $list_chuc_nang = array_values(array_intersect($list_chuc_nang, $my_chuc_nang_ids));
+            } else {
+                // Chỉ cho phép cấp các quyền thành viên (các quyền không thuộc adminFuncs)
+                $my_chuc_nang_ids = ChucNang::whereNotIn('ten_chuc_nang', $adminFuncs)->pluck('id')->toArray();
+                $list_chuc_nang = array_values(array_intersect($list_chuc_nang, $my_chuc_nang_ids));
+            }
         }
 
         $roleName = $chucVu ? $chucVu->ten_chuc_vu : '';
