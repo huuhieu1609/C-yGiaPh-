@@ -15,6 +15,27 @@ class AuthController extends Controller
 {
     public function register(Request $request)
     {
+        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
+            'ho_ten' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:nguoi_dungs,email',
+            'mat_khau' => 'required|string|min:6',
+            'so_dien_thoai' => 'nullable|string|max:20',
+        ], [
+            'ho_ten.required' => 'Vui lòng nhập họ và tên!',
+            'email.required' => 'Vui lòng nhập địa chỉ email!',
+            'email.email' => 'Địa chỉ email không đúng định dạng!',
+            'email.unique' => 'Địa chỉ email này đã được sử dụng bởi một tài khoản khác!',
+            'mat_khau.required' => 'Vui lòng nhập mật khẩu!',
+            'mat_khau.min' => 'Mật khẩu phải từ 6 ký tự trở lên!',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => $validator->errors()->first(),
+            ], 400);
+        }
+
         try {
             $user = NguoiDung::create([
                 'ho_ten' => $request->ho_ten,
