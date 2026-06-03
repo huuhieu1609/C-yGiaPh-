@@ -169,6 +169,26 @@ export default {
     }
   },
   mounted() {
+    // Đọc trước dữ liệu từ cache LocalStorage để điền vào Form ngay lập tức tránh màn hình trống
+    const cachedUserStr = localStorage.getItem('user');
+    if (cachedUserStr) {
+      try {
+        const cachedUser = JSON.parse(cachedUserStr);
+        const userObj = cachedUser.user || cachedUser;
+        if (userObj) {
+          this.profile = {
+            ho_ten: userObj.ho_ten || '',
+            email: userObj.email || '',
+            so_dien_thoai: userObj.so_dien_thoai || '',
+            avatar: userObj.avatar || '',
+            vai_tro: userObj.vai_tro || '',
+            chuc_vu: userObj.chuc_vu || null
+          };
+        }
+      } catch (e) {
+        console.error("Lỗi parse cache user:", e);
+      }
+    }
     this.loadUserProfile();
     this.loadTransactions();
   },

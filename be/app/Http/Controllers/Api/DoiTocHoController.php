@@ -22,6 +22,10 @@ class DoiTocHoController extends Controller
             } elseif ($user->is_doi_tac == 1) {
                 $chiNhanhIds = \App\Models\ChiNhanh::getManagedBranchIds($user);
                 $data = DoiTocHo::whereIn('chi_nhanh_id', $chiNhanhIds)->with('chiNhanh')->get();
+                if ($data->isEmpty()) {
+                    // Fallback sang các thế hệ mặc định (chi_nhanh_id = null)
+                    $data = DoiTocHo::whereNull('chi_nhanh_id')->get();
+                }
             } else {
                 // Thành viên bình thường chỉ thấy các đời của chi nhánh mình thuộc về
                 $myMember = \App\Models\ThanhVien::where('email', $user->email)->whereNotNull('email')->first();

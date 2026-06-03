@@ -189,6 +189,7 @@ export default {
     window.addEventListener('scroll', this.handleScroll);
     window.addEventListener('profile-updated', this.checkLogin);
     this.checkLogin();
+    this.syncUserProfile();
     this.loadComingSoonMenus();
   },
   unmounted() {
@@ -284,6 +285,25 @@ export default {
         this.isDoiTac = false;
         this.notifications = [];
       }
+    },
+    syncUserProfile() {
+      const token = localStorage.getItem('access_token');
+      if (!token) return;
+      axios.get('http://127.0.0.1:8000/api/me', {
+        headers: { Authorization: 'Bearer ' + token }
+      })
+      .then(res => {
+        if (res.data && res.data.user) {
+          localStorage.setItem('user', JSON.stringify(res.data.user));
+          if (res.data.permissions) {
+            localStorage.setItem('permissions', JSON.stringify(res.data.permissions));
+          }
+          this.checkLogin();
+        }
+      })
+      .catch(err => {
+        console.error("Topclient sync profile failed:", err);
+      });
     },
     closeDropdown() {
       this.isDropdownOpen = false;
