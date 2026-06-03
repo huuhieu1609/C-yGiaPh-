@@ -183,6 +183,11 @@
                                 <label class="form-label fw-bold">Ngày mất (Dương lịch)</label>
                                 <input type="date" class="form-control radius-8 border-2 shadow-none" v-model="currentMember.ngay_mat">
                             </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Ảnh đại diện (Tải từ máy)</label>
+                                <input type="file" :key="avatarResetKey" class="form-control radius-8 border-2 shadow-none" @change="onAvatarChange" accept="image/*">
+                            </div>
                             
                             <!-- Ngày mất Âm lịch -->
                             <div class="col-md-12" v-if="currentMember.trang_thai === 'Đã mất'">
@@ -546,6 +551,7 @@ export default {
     data() {
         return {
             defaultAvatar: DEFAULT_AVATAR,
+            avatarResetKey: 0,
             allMembers: [],
             listChiNhanh: [],
             selectedChiNhanhId: null,
@@ -862,6 +868,7 @@ export default {
             };
             this.avatarFile = null;
             this.avatarPreview = null;
+            this.avatarResetKey++;
             if (this.modal) this.modal.show();
         },
         onAddChild(parentMember) {
@@ -874,6 +881,7 @@ export default {
             };
             this.avatarFile = null;
             this.avatarPreview = null;
+            this.avatarResetKey++;
             if (this.modal) this.modal.show();
         },
         onAddSpouse(mainMember) {
@@ -886,6 +894,7 @@ export default {
             };
             this.avatarFile = null;
             this.avatarPreview = null;
+            this.avatarResetKey++;
             if (this.modal) this.modal.show();
         },
         onEdit(member) {
@@ -893,6 +902,7 @@ export default {
             this.currentMember = { ...member };
             this.avatarFile = null;
             this.avatarPreview = null;
+            this.avatarResetKey++;
             this.modal.show();
         },
         onAvatarChange(e) {

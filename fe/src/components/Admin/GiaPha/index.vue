@@ -187,6 +187,11 @@
                             </div>
 
                             <div class="col-md-6">
+                                <label class="form-label fw-bold">Ảnh đại diện (Tải từ máy)</label>
+                                <input type="file" :key="avatarResetKey" class="form-control radius-8 border-2 shadow-none" @change="onAvatarChange" accept="image/*">
+                            </div>
+
+                            <div class="col-md-6">
                                 <label class="form-label fw-bold">Quan hệ với dòng họ</label>
                                 <select class="form-select radius-8 border-2 shadow-none" v-model="currentMember.loai_quan_he">
                                     <option value="Chính">Thành viên chính (Con cháu)</option>
@@ -463,6 +468,7 @@ export default {
             },
             avatarPreview: null,
             isEditing: false,
+            avatarResetKey: 0,
             modal: null,
             searchQuery: '',
             showQRModal: false,
@@ -682,6 +688,7 @@ export default {
             };
             this.avatarFile = null;
             this.avatarPreview = null;
+            this.avatarResetKey++;
             this.modal.show();
         },
         onEdit(member) {
@@ -689,6 +696,7 @@ export default {
             this.currentMember = { ...member };
             this.avatarFile = null;
             this.avatarPreview = null;
+            this.avatarResetKey++;
             this.modal.show();
         },
         onAvatarChange(e) {

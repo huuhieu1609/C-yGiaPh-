@@ -173,6 +173,11 @@
                                 <input type="date" class="form-control premium-input border-danger border-opacity-50" v-model="currentMember.ngay_mat">
                             </div>
 
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-secondary">Ảnh đại diện (Tải lên từ máy)</label>
+                                <input type="file" :key="avatarResetKey" class="form-control premium-input" @change="onAvatarChange" accept="image/*">
+                            </div>
+
                             <!-- Ngày mất Âm lịch -->
                             <div class="col-md-12" v-if="currentMember.trang_thai === 'Đã mất'">
                                 <div class="card bg-light border border-dashed p-3 radius-8 mb-2">
@@ -317,6 +322,7 @@ export default {
             sortKey: 'ho_ten',
             sortOrder: 'asc',
             isEditing: false,
+            avatarResetKey: 0,
             modal: null,
             currentMember: {
                 id: null, ho_ten: '', email: '', doi_thu: 1, cha_id: null, gioi_tinh: 'Nam', chi_nhanh_id: null,
@@ -429,6 +435,7 @@ export default {
             };
             this.avatarFile = null;
             this.avatarPreview = null;
+            this.avatarResetKey++;
             this.modal.show();
         },
         onEdit(member) {
@@ -436,6 +443,7 @@ export default {
             this.currentMember = { ...member };
             this.avatarFile = null;
             this.avatarPreview = null;
+            this.avatarResetKey++;
             this.modal.show();
         },
         onAvatarChange(e) {
