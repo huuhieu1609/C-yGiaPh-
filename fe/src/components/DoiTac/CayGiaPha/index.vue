@@ -157,6 +157,11 @@
                             </div>
 
                             <div class="col-md-6">
+                                <label class="form-label fw-bold">Email nhận thông báo</label>
+                                <input type="email" class="form-control radius-8 border-2 shadow-none" v-model="currentMember.email" placeholder="example@gmail.com">
+                            </div>
+
+                            <div class="col-md-6">
                                 <label class="form-label fw-bold">Ngày sinh</label>
                                 <input type="date" class="form-control radius-8 border-2 shadow-none" v-model="currentMember.ngay_sinh">
                             </div>
@@ -850,7 +855,7 @@ export default {
             }
             this.isEditing = false;
             this.currentMember = {
-                id: null, ho_ten: '', doi_thu: 1, cha_id: null, me_id: null, gioi_tinh: 'Nam',
+                id: null, ho_ten: '', email: '', doi_thu: 1, cha_id: null, me_id: null, gioi_tinh: 'Nam',
                 loai_quan_he: 'Chính', spouse_of_id: null, trang_thai: 'Còn sống', ngay_mat: null, ngay_sinh: null, ghi_chu: '', avatar: null,
                 chi_nhanh_id: this.selectedChiNhanhId,
                 ngay_mat_al_ngay: null, ngay_mat_al_thang: null, ngay_mat_al_nam: null, ngay_mat_al_nhuan: 0
@@ -862,7 +867,7 @@ export default {
         onAddChild(parentMember) {
             this.isEditing = false;
             this.currentMember = {
-                id: null, ho_ten: '', doi_thu: parentMember.doi_thu + 1, cha_id: parentMember.id, me_id: null, gioi_tinh: 'Nam',
+                id: null, ho_ten: '', email: '', doi_thu: parentMember.doi_thu + 1, cha_id: parentMember.id, me_id: null, gioi_tinh: 'Nam',
                 loai_quan_he: 'Chính', spouse_of_id: null, trang_thai: 'Còn sống', ngay_mat: null, ngay_sinh: null, ghi_chu: '', avatar: null,
                 chi_nhanh_id: this.selectedChiNhanhId,
                 ngay_mat_al_ngay: null, ngay_mat_al_thang: null, ngay_mat_al_nam: null, ngay_mat_al_nhuan: 0
@@ -874,7 +879,7 @@ export default {
         onAddSpouse(mainMember) {
             this.isEditing = false;
             this.currentMember = {
-                id: null, ho_ten: '', doi_thu: mainMember.doi_thu, cha_id: null, me_id: null, gioi_tinh: mainMember.gioi_tinh === 'Nam' ? 'Nữ' : 'Nam',
+                id: null, ho_ten: '', email: '', doi_thu: mainMember.doi_thu, cha_id: null, me_id: null, gioi_tinh: mainMember.gioi_tinh === 'Nam' ? 'Nữ' : 'Nam',
                 loai_quan_he: 'Vợ/Chồng', spouse_of_id: mainMember.id, trang_thai: 'Còn sống', ngay_mat: null, ngay_sinh: null, ghi_chu: '', avatar: null,
                 chi_nhanh_id: this.selectedChiNhanhId,
                 ngay_mat_al_ngay: null, ngay_mat_al_thang: null, ngay_mat_al_nam: null, ngay_mat_al_nhuan: 0

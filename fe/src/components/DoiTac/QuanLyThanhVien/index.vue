@@ -148,6 +148,10 @@
                                 </select>
                             </div>
                             <div class="col-md-6">
+                                <label class="form-label fw-bold text-secondary">Email nhận thông báo</label>
+                                <input type="email" class="form-control premium-input" v-model="currentMember.email" placeholder="example@gmail.com">
+                            </div>
+                            <div class="col-md-6">
                                 <label class="form-label fw-bold text-secondary">Ngày sinh</label>
                                 <input type="date" class="form-control premium-input" v-model="currentMember.ngay_sinh">
                             </div>
@@ -315,7 +319,7 @@ export default {
             isEditing: false,
             modal: null,
             currentMember: {
-                id: null, ho_ten: '', doi_thu: 1, cha_id: null, gioi_tinh: 'Nam', chi_nhanh_id: null,
+                id: null, ho_ten: '', email: '', doi_thu: 1, cha_id: null, gioi_tinh: 'Nam', chi_nhanh_id: null,
                 loai_quan_he: 'Chính', spouse_of_id: null, trang_thai: 'Còn sống', ngay_mat: null, ngay_sinh: null, ghi_chu: '', avatar: null,
                 ngay_mat_al_ngay: null, ngay_mat_al_thang: null, ngay_mat_al_nam: null, ngay_mat_al_nhuan: 0
             },
@@ -419,7 +423,7 @@ export default {
         openAddModal() {
             this.isEditing = false;
             this.currentMember = {
-                id: null, ho_ten: '', doi_thu: 1, cha_id: null, gioi_tinh: 'Nam', chi_nhanh_id: null,
+                id: null, ho_ten: '', email: '', doi_thu: 1, cha_id: null, gioi_tinh: 'Nam', chi_nhanh_id: null,
                 loai_quan_he: 'Chính', spouse_of_id: null, trang_thai: 'Còn sống', ngay_mat: null, ngay_sinh: null, ghi_chu: '', avatar: null,
                 ngay_mat_al_ngay: null, ngay_mat_al_thang: null, ngay_mat_al_nam: null, ngay_mat_al_nhuan: 0
             };

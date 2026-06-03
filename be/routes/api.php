@@ -68,7 +68,7 @@ Route::middleware(['auth:sanctum', 'activity'])->group(function () {
         Route::get('/my-packages', [DoiTacController::class, 'getMyPackages']);
     });
 
-    Route::get('/admin/doi-tac/get-data', [DoiTacController::class, 'adminGetData'])->middleware('phan_quyen:Quản Lý Đối Tác|Cây Gia Phả');
+    Route::get('/admin/doi-tac/get-data', [DoiTacController::class, 'adminGetData'])->middleware('phan_quyen:Quản Lý Đối Tác|Cây Gia Phả|Quản Lý Gia Phả Hệ');
     Route::prefix('/admin/doi-tac')->middleware('phan_quyen:Quản Lý Đối Tác')->group(function () {
         Route::post('/create', [DoiTacController::class, 'adminCreate']);
         Route::post('/update', [DoiTacController::class, 'adminUpdate']);
@@ -147,11 +147,11 @@ Route::middleware(['auth:sanctum', 'activity'])->group(function () {
     // CÂY GIA PHẢ: Thành Viên, Vợ Chồng, Con Nuôi
     // =========================================================
     Route::get('/thanh-vien/get-data', [ThanhVienController::class, 'getData'])
-        ->middleware('phan_quyen:Quản Lý Thành Viên|Cây Gia Phả|Quản Lý Mộ Phần|Quản Lý Sự Kiện|Tra Cứu Xưng Hô');
+        ->middleware('phan_quyen:Quản Lý Thành Viên|Cây Gia Phả|Quản Lý Mộ Phần|Quản Lý Sự Kiện|Tra Cứu Xưng Hô|Quản Lý Gia Phả Hệ');
 
     Route::post('/thanh-vien/upload-avatar', [ThanhVienController::class, 'uploadAvatar']);
 
-    Route::prefix('/thanh-vien')->middleware('phan_quyen:Quản Lý Thành Viên|Cây Gia Phả')->group(function () {
+    Route::prefix('/thanh-vien')->middleware('phan_quyen:Quản Lý Thành Viên|Cây Gia Phả|Quản Lý Gia Phả Hệ')->group(function () {
         Route::get('/chi-nhanh/{chiNhanhId}', [ThanhVienController::class, 'getByChiNhanh']);
         Route::post('/create', [ThanhVienController::class, 'create']);
         Route::post('/update', [ThanhVienController::class, 'update']);
@@ -162,7 +162,7 @@ Route::middleware(['auth:sanctum', 'activity'])->group(function () {
         Route::post('/tra-cuu-quan-he', [ThanhVienController::class, 'traCuuQuanHe']);
     });
 
-    Route::prefix('/vo-chong')->middleware('phan_quyen:Cây Gia Phả')->group(function () {
+    Route::prefix('/vo-chong')->middleware('phan_quyen:Cây Gia Phả|Quản Lý Gia Phả Hệ')->group(function () {
         Route::get('/get-data', [VoChongController::class, 'getData']);
         Route::post('/create', [VoChongController::class, 'create']);
         Route::post('/update', [VoChongController::class, 'update']);
@@ -170,7 +170,7 @@ Route::middleware(['auth:sanctum', 'activity'])->group(function () {
         Route::post('/status', [VoChongController::class, 'status']);
     });
 
-    Route::prefix('/con-nuoi')->middleware('phan_quyen:Cây Gia Phả')->group(function () {
+    Route::prefix('/con-nuoi')->middleware('phan_quyen:Cây Gia Phả|Quản Lý Gia Phả Hệ')->group(function () {
         Route::get('/get-data', [ConNuoiController::class, 'getData']);
         Route::post('/create', [ConNuoiController::class, 'create']);
         Route::post('/update', [ConNuoiController::class, 'update']);
@@ -191,9 +191,9 @@ Route::middleware(['auth:sanctum', 'activity'])->group(function () {
     });
 
     Route::get('/doi-toc-ho/get-data', [DoiTocHoController::class, 'getData'])
-        ->middleware('phan_quyen:Cây Gia Phả|Quản Lý Thành Viên');
+        ->middleware('phan_quyen:Cây Gia Phả|Quản Lý Thành Viên|Quản Lý Gia Phả Hệ');
 
-    Route::prefix('/doi-toc-ho')->middleware('phan_quyen:Cây Gia Phả')->group(function () {
+    Route::prefix('/doi-toc-ho')->middleware('phan_quyen:Cây Gia Phả|Quản Lý Gia Phả Hệ')->group(function () {
         Route::post('/create', [DoiTocHoController::class, 'create']);
         Route::post('/update', [DoiTocHoController::class, 'update']);
         Route::post('/delete', [DoiTocHoController::class, 'delete']);
@@ -202,7 +202,7 @@ Route::middleware(['auth:sanctum', 'activity'])->group(function () {
     });
 
     Route::get('/chi-nhanh/get-data', [ChiNhanhController::class, 'getData'])
-        ->middleware('phan_quyen:Quản Lý Chi Nhánh|Quản Lý Thành Viên|Cây Gia Phả');
+        ->middleware('phan_quyen:Quản Lý Chi Nhánh|Quản Lý Thành Viên|Cây Gia Phả|Quản Lý Gia Phả Hệ');
 
     Route::prefix('/chi-nhanh')->middleware('phan_quyen:Quản Lý Chi Nhánh')->group(function () {
         Route::post('/create', [ChiNhanhController::class, 'create']);
@@ -216,9 +216,9 @@ Route::middleware(['auth:sanctum', 'activity'])->group(function () {
     // NHÀ THỜ HỌ, MỘ PHẦN
     // =========================================================
     Route::get('/nha-tho-ho/get-data', [NhaThoHoController::class, 'getData'])
-        ->middleware('phan_quyen:Cây Gia Phả|Quản Lý Mộ Phần');
+        ->middleware('phan_quyen:Cây Gia Phả|Quản Lý Mộ Phần|Quản Lý Gia Phả Hệ');
 
-    Route::prefix('/nha-tho-ho')->middleware('phan_quyen:Cây Gia Phả')->group(function () {
+    Route::prefix('/nha-tho-ho')->middleware('phan_quyen:Cây Gia Phả|Quản Lý Gia Phả Hệ')->group(function () {
         Route::post('/create', [NhaThoHoController::class, 'create']);
         Route::post('/update', [NhaThoHoController::class, 'update']);
         Route::post('/delete', [NhaThoHoController::class, 'delete']);

@@ -44,13 +44,13 @@ const routes = [
         path: '/gia-pha',
         name: 'gia-pha',
         component: () => import('../components/Client/GiaPha/index.vue'),
-        meta: { layout: 'client' }
+        meta: { layout: 'client', permission: 'Cây Gia Phả' }
     },
     {
         path: '/ban-do',
         name: 'client-ban-do',
         component: () => import('../components/Client/BanDo/index.vue'),
-        meta: { layout: 'client', requiresAuth: true }
+        meta: { layout: 'client', requiresAuth: true, permission: 'Quản Lý Mộ Phần' }
     },
     {
         path: '/tuong-niem',
@@ -62,7 +62,7 @@ const routes = [
         path: '/tra-cuu',
         name: 'client-tra-cuu',
         component: () => import('../components/Client/TraCuu/index.vue'),
-        meta: { layout: 'client' }
+        meta: { layout: 'client', permission: 'Tra Cứu Xưng Hô' }
     },
     {
         path: '/thanh-vien/detail/:id',
@@ -80,7 +80,7 @@ const routes = [
         path: '/su-kien',
         name: 'client-su-kien',
         component: () => import('../components/Client/SuKien/index.vue'),
-        meta: { layout: 'client', requiresAuth: true }
+        meta: { layout: 'client', requiresAuth: true, permission: 'Quản Lý Sự Kiện' }
     },
     {
         path: '/dich-vu-goi/chi-tiet',
@@ -440,54 +440,22 @@ router.beforeEach(async (to, from, next) => {
     // (Bỏ qua nếu là Master Admin)
     const requiredPermission = to.meta?.permission;
     if (requiredPermission && !isMasterAdmin) {
-        const idChucVu = user?.id_chuc_vu;
-        if ((idChucVu !== null && idChucVu !== undefined) || user?.is_doi_tac == 1) {
+        if (token) {
             let updatedPermissions = permissions;
 
-            // Nếu là Đối Tác, luôn đồng bộ quyền từ server ngay trước khi kiểm tra để áp dụng trực tiếp ngay lập tức
-            if (user?.is_doi_tac == 1) {
-                try {
-                    const response = await axios.get('http://127.0.0.1:8000/api/me', {
-                        headers: { Authorization: 'Bearer ' + token }
-                    });
-                    if (response.data && response.data.permissions) {
-                        updatedPermissions = response.data.permissions;
-                        localStorage.setItem('permissions', JSON.stringify(updatedPermissions));
-                        localStorage.setItem('user', JSON.stringify(response.data.user || user));
-                        permissions = updatedPermissions;
-                    }
-                } catch (error) {
-                    console.error('Realtime permissions fetch failed:', error);
+            // Luôn đồng bộ quyền từ server thời gian thực trước khi kiểm tra để áp dụng thay đổi trực tiếp ngay lập tức
+            try {
+                const response = await axios.get('http://127.0.0.1:8000/api/me', {
+                    headers: { Authorization: 'Bearer ' + token }
+                });
+                if (response.data && response.data.permissions) {
+                    updatedPermissions = response.data.permissions;
+                    localStorage.setItem('permissions', JSON.stringify(updatedPermissions));
+                    localStorage.setItem('user', JSON.stringify(response.data.user || user));
+                    permissions = updatedPermissions;
                 }
-            } else {
-                // Với các user khác, sử dụng cơ chế cache cũ để tối ưu hiệu năng
-                if (permissions.includes(requiredPermission)) {
-                    // Gửi ngầm request cập nhật quyền realtime để phòng trường hợp Admin vừa tắt quyền ở backend
-                    axios.get('http://127.0.0.1:8000/api/me', {
-                        headers: { Authorization: 'Bearer ' + token }
-                    }).then(response => {
-                        if (response.data && response.data.permissions) {
-                            localStorage.setItem('permissions', JSON.stringify(response.data.permissions));
-                            localStorage.setItem('user', JSON.stringify(response.data.user || user));
-                        }
-                    }).catch(() => {});
-                    
-                    return next();
-                }
-
-                // Nếu cache thiếu quyền, check xem Admin có vừa bật lên không
-                try {
-                    const response = await axios.get('http://127.0.0.1:8000/api/me', {
-                        headers: { Authorization: 'Bearer ' + token }
-                    });
-                    if (response.data && response.data.permissions) {
-                        updatedPermissions = response.data.permissions;
-                        localStorage.setItem('permissions', JSON.stringify(updatedPermissions));
-                        localStorage.setItem('user', JSON.stringify(response.data.user || user));
-                    }
-                } catch (error) {
-                    console.error('Realtime permissions fetch failed:', error);
-                }
+            } catch (error) {
+                console.error('Realtime permissions fetch failed:', error);
             }
 
             // Kiểm tra lại với danh sách quyền mới nhất vừa cập nhật
@@ -501,7 +469,9 @@ router.beforeEach(async (to, from, next) => {
             if (user?.is_doi_tac == 1) {
                 errorMsg = "Bạn không có quyền sử dụng chức năng này. Khi nào bên Admin bật lại thì bạn mới có thể dùng được!";
             } else {
-                const isThanhVien = String(user.id_chuc_vu) === '3' || (user.vai_tro && user.vai_tro.toLowerCase().includes('thành viên'));
+                const isThanhVien = String(user.id_chuc_vu) === '3' || 
+                                    (user.vai_tro && user.vai_tro.toLowerCase().includes('thành viên')) ||
+                                    (!user.id_chuc_vu && !user.is_doi_tac);
                 if (isThanhVien) {
                     const getMemberFriendlyPermissionName = (name) => {
                         if (!name) return "chức năng này";
@@ -524,7 +494,14 @@ router.beforeEach(async (to, from, next) => {
             if (to.path.startsWith('/doi-tac')) {
                 return next('/doi-tac/dashboard');
             }
-            return next('/admin/dashboard');
+            
+            const roleName = user?.vai_tro?.toLowerCase() || '';
+            const chucVuName = user?.chuc_vu?.ten_chuc_vu?.toLowerCase() || '';
+            const isSubAdmin = chucVuName.includes('quản trị') || roleName.includes('admin');
+            if (roleName === 'admin' || isSubAdmin) {
+                return next('/admin/dashboard');
+            }
+            return next('/');
         }
     }
 
