@@ -20,13 +20,13 @@
           <p class="text-white-50 mt-3">Đang tải danh sách sự kiện...</p>
         </div>
 
-        <div v-else-if="!events.length" class="empty-state text-center py-5">
+        <div v-else-if="!combinedEvents.length" class="empty-state text-center py-5">
           <i class="bx bx-calendar-event text-white-50" style="font-size: 4rem;"></i>
-          <p class="text-white-50 mt-3">Chưa có sự kiện nào được lên lịch.</p>
+          <p class="text-white-50 mt-3">Chưa có sự kiện hoặc ngày giỗ nào được lên lịch.</p>
         </div>
 
         <div v-else class="row g-4">
-          <div v-for="ev in events" :key="ev.id" class="col-lg-6">
+          <div v-for="ev in combinedEvents" :key="ev.id" class="col-lg-6">
             <div class="event-card glass-panel h-100 d-flex flex-column justify-content-between">
               <div>
                 <div class="d-flex justify-content-between align-items-start gap-2 mb-3">
@@ -60,7 +60,7 @@
                 <hr class="border-white/10 my-3" />
 
                 <!-- Đã đăng ký -->
-                <div class="mb-3" v-if="participantsMap[ev.id] && participantsMap[ev.id].length">
+                <div class="mb-3" v-if="!ev.is_anniversary && participantsMap[ev.id] && participantsMap[ev.id].length">
                   <span class="text-white-50 small d-block mb-2">Thành viên tham gia ({{ participantsMap[ev.id].length }}):</span>
                   <div class="d-flex flex-wrap gap-2">
                     <span v-for="p in participantsMap[ev.id].slice(0, 5)" :key="p.id" class="badge bg-white/5 border border-white/10 text-white rounded-pill px-3 py-2 d-flex align-items-center gap-2">
@@ -75,9 +75,12 @@
                 </div>
 
                 <div class="d-flex gap-2">
-                  <button class="btn btn-warning w-100 radius-10 fw-bold py-2.5" @click="openRegisterModal(ev)">
+                  <button class="btn btn-warning w-100 radius-10 fw-bold py-2.5" @click="openRegisterModal(ev)" v-if="!ev.is_anniversary">
                     <i class="bx bx-check-double me-1"></i> Đăng Ký Tham Gia
                   </button>
+                  <router-link to="/tuong-niem" class="btn btn-outline-warning w-100 radius-10 fw-bold py-2.5 d-flex align-items-center justify-content-center gap-1" v-else>
+                    <i class="bx bx-history"></i> Xem Dòng Lịch Sử
+                  </router-link>
                 </div>
               </div>
             </div>
@@ -143,6 +146,7 @@
 <script>
 import axios from 'axios';
 import toastr from 'toastr';
+import { lunarToSolar } from '@/utils/lunar.js';
 
 export default {
   name: 'ClientSuKien',
@@ -165,6 +169,60 @@ export default {
       if (!this.searchQuery) return this.allMembers;
       const q = this.searchQuery.toLowerCase();
       return this.allMembers.filter(m => m.ho_ten.toLowerCase().includes(q));
+    },
+    combinedEvents() {
+      const list = [...this.events];
+      const todayStr = new Date().toISOString().substring(0, 10);
+      const currentYear = new Date().getFullYear();
+      
+      this.allMembers.forEach(member => {
+        if (member.trang_thai === 'Đã mất') {
+          let solarDate = null;
+          let note = '';
+          
+          if (member.ngay_mat_al_ngay && member.ngay_mat_al_thang) {
+            solarDate = lunarToSolar(currentYear, member.ngay_mat_al_thang, member.ngay_mat_al_ngay, member.ngay_mat_al_nhuan === 1);
+            if (solarDate && solarDate < todayStr) {
+              solarDate = lunarToSolar(currentYear + 1, member.ngay_mat_al_thang, member.ngay_mat_al_ngay, member.ngay_mat_al_nhuan === 1);
+            }
+            note = `Ngày giỗ Âm lịch: Ngày ${member.ngay_mat_al_ngay} tháng ${member.ngay_mat_al_thang} (AL)${member.ngay_mat_al_nhuan ? ' (tháng nhuận)' : ''}.`;
+            if (member.ngay_mat_al_nam) {
+              note += ` Mất năm ${member.ngay_mat_al_nam}.`;
+            }
+          } else if (member.ngay_mat) {
+            const dMat = new Date(member.ngay_mat);
+            if (!isNaN(dMat.getTime())) {
+              const mm = dMat.getMonth() + 1;
+              const dd = dMat.getDate();
+              const mmStr = mm < 10 ? '0' + mm : mm;
+              const ddStr = dd < 10 ? '0' + dd : dd;
+              solarDate = `${currentYear}-${mmStr}-${ddStr}`;
+              if (solarDate < todayStr) {
+                solarDate = `${currentYear + 1}-${mmStr}-${ddStr}`;
+              }
+              note = `Ngày giỗ Dương lịch: Ngày ${dd} tháng ${mm}.`;
+            }
+          }
+          
+          if (solarDate) {
+            list.push({
+              id: `anniversary_${member.id}`,
+              tieu_de: `Giỗ chạp: ${member.ho_ten}`,
+              loai: 'Giỗ chạp',
+              ngay_to_chuc: `${solarDate} 08:00:00`,
+              dia_diem: member.ghi_chu || 'Tại gia đình / Nhà thờ họ',
+              noi_dung: `${member.ho_ten} (Đời thứ ${member.doi_thu}). ${note}`,
+              is_anniversary: true
+            });
+          }
+        }
+      });
+      
+      return list.sort((a, b) => {
+        const timeA = new Date(a.ngay_to_chuc).getTime() || 0;
+        const timeB = new Date(b.ngay_to_chuc).getTime() || 0;
+        return timeA - timeB;
+      });
     }
   },
   mounted() {
@@ -306,7 +364,7 @@ export default {
       return dt.toLocaleDateString('vi-VN') + ' ' + dt.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
     },
     evTypeClass(type) {
-      if (type === 'Giỗ tổ') return 'bg-gold-badge text-gold border border-gold/30';
+      if (type === 'Giỗ tổ' || type === 'Giỗ chạp') return 'bg-gold-badge text-gold border border-gold/30';
       if (type === 'Họp họ') return 'bg-blue-badge text-blue-custom border border-blue/30';
       if (type === 'Cưới hỏi') return 'bg-pink-badge text-pink-custom border border-pink/30';
       return 'bg-gray-badge text-gray-custom border border-gray/30';

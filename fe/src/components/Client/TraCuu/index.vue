@@ -12,6 +12,18 @@
         </div>
 
         <div class="container pb-5 mt-n5-custom">
+            <!-- Demo Mode Alert Banner -->
+            <div v-if="!isLoggedIn" class="demo-alert-banner mb-4 text-center animate__animated animate__fadeInDown">
+                <div class="demo-banner-content">
+                    <i class="bx bx-info-circle demo-icon animate-ring"></i>
+                    <span class="demo-text">Bạn đang trải nghiệm <strong>Tra Cứu Xưng Hô (Demo)</strong> dành cho khách vãng lai.</span>
+                    <div class="demo-action-buttons">
+                        <router-link to="/login" class="btn btn-sm btn-login-demo">Đăng Nhập</router-link>
+                        <router-link to="/register" class="btn btn-sm btn-register-demo">Khởi Tạo Gia Phả</router-link>
+                    </div>
+                </div>
+            </div>
+
             <div class="main-card shadow-2xl rounded-5 bg-white border-0 overflow-hidden">
                 <div class="p-4 p-lg-5">
                     <!-- Section Header with QR Upload Button -->
@@ -258,6 +270,530 @@
 import axios from 'axios';
 import toastr from 'toastr';
 
+const mockMembers = [
+  {
+    id: 1,
+    ho_ten: 'Nguyễn Đức Long',
+    gioi_tinh: 'Nam',
+    doi_thu: 1,
+    ngay_sinh: '1920-05-15',
+    ngay_mat: '2005-10-20',
+    trang_thai: 'Đã mất',
+    tinh_trang_hon_nhan: 'Đã kết hôn',
+    ghi_chu: 'Cụ tổ sáng lập dòng họ Nguyễn Đức. Từng tham gia kháng chiến chống Pháp, tính tình hiền lành, đức độ, chăm lo cho gia tộc.',
+    avatar: '',
+    loai_quan_he: 'Chính',
+    spouse_of_id: null,
+    cha_id: null,
+    me_id: null
+  },
+  {
+    id: 101,
+    ho_ten: 'Lê Thị Hoa',
+    gioi_tinh: 'Nữ',
+    doi_thu: 1,
+    ngay_sinh: '1923-08-12',
+    ngay_mat: '2010-04-18',
+    trang_thai: 'Đã mất',
+    tinh_trang_hon_nhan: 'Đã kết hôn',
+    ghi_chu: 'Cụ bà tần tảo, một đời vì chồng vì con. Nữ công gia chánh xuất sắc.',
+    avatar: '',
+    loai_quan_he: 'Vợ/Chồng',
+    spouse_of_id: 1,
+    cha_id: null,
+    me_id: null
+  },
+  {
+    id: 2,
+    ho_ten: 'Nguyễn Đức Cường',
+    gioi_tinh: 'Nam',
+    doi_thu: 2,
+    ngay_sinh: '1948-02-10',
+    ngay_mat: null,
+    trang_thai: 'Còn sống',
+    tinh_trang_hon_nhan: 'Đã kết hôn',
+    ghi_chu: 'Nguyên trưởng tộc đời thứ 2 dòng họ Nguyễn Đức. Nhà giáo ưu tú đã về hưu.',
+    avatar: '',
+    loai_quan_he: 'Chính',
+    spouse_of_id: null,
+    cha_id: 1,
+    me_id: 101
+  },
+  {
+    id: 102,
+    ho_ten: 'Trần Thị Lan',
+    gioi_tinh: 'Nữ',
+    doi_thu: 2,
+    ngay_sinh: '1952-11-20',
+    ngay_mat: null,
+    trang_thai: 'Còn sống',
+    tinh_trang_hon_nhan: 'Đã kết hôn',
+    ghi_chu: 'Người vợ hiền hậu, chăm sóc gia đình chu đáo. Cựu bác sĩ bệnh viện tỉnh.',
+    avatar: '',
+    loai_quan_he: 'Vợ/Chồng',
+    spouse_of_id: 2,
+    cha_id: null,
+    me_id: null
+  },
+  {
+    id: 3,
+    ho_ten: 'Nguyễn Đức Thịnh',
+    gioi_tinh: 'Nam',
+    doi_thu: 2,
+    ngay_sinh: '1952-09-05',
+    ngay_mat: null,
+    trang_thai: 'Còn sống',
+    tinh_trang_hon_nhan: 'Đã kết hôn',
+    ghi_chu: 'Kỹ sư nông nghiệp kỳ cựu, đóng góp lớn cho phong trào cải tạo đồng ruộng địa phương.',
+    avatar: '',
+    loai_quan_he: 'Chính',
+    spouse_of_id: null,
+    cha_id: 1,
+    me_id: 101
+  },
+  {
+    id: 103,
+    ho_ten: 'Phạm Thị Hồng',
+    gioi_tinh: 'Nữ',
+    doi_thu: 2,
+    ngay_sinh: '1955-04-14',
+    ngay_mat: null,
+    trang_thai: 'Còn sống',
+    tinh_trang_hon_nhan: 'Đã kết hôn',
+    ghi_chu: 'Nữ doanh nhân kinh doanh hàng tiêu dùng, tính tình xởi lởi, nhiệt tình với công việc gia tộc.',
+    avatar: '',
+    loai_quan_he: 'Vợ/Chồng',
+    spouse_of_id: 3,
+    cha_id: null,
+    me_id: null
+  },
+  {
+    id: 4,
+    ho_ten: 'Nguyễn Đức Anh',
+    gioi_tinh: 'Nam',
+    doi_thu: 3,
+    ngay_sinh: '1975-06-25',
+    ngay_mat: null,
+    trang_thai: 'Còn sống',
+    tinh_trang_hon_nhan: 'Đã kết hôn',
+    ghi_chu: 'Thạc sĩ Công nghệ thông tin, đang công tác tại tập đoàn viễn thông quốc gia.',
+    avatar: '',
+    loai_quan_he: 'Chính',
+    spouse_of_id: null,
+    cha_id: 2,
+    me_id: 102
+  },
+  {
+    id: 104,
+    ho_ten: 'Hoàng Thị Bích',
+    gioi_tinh: 'Nữ',
+    doi_thu: 3,
+    ngay_sinh: '1978-03-30',
+    ngay_mat: null,
+    trang_thai: 'Còn sống',
+    tinh_trang_hon_nhan: 'Đã kết hôn',
+    ghi_chu: 'Giáo viên trung học phổ thông môn Ngữ Văn, yêu cái đẹp và văn hóa truyền thống.',
+    avatar: '',
+    loai_quan_he: 'Vợ/Chồng',
+    spouse_of_id: 4,
+    cha_id: null,
+    me_id: null
+  },
+  {
+    id: 5,
+    ho_ten: 'Nguyễn Thị Mai',
+    gioi_tinh: 'Nữ',
+    doi_thu: 3,
+    ngay_sinh: '1980-12-08',
+    ngay_mat: null,
+    trang_thai: 'Còn sống',
+    tinh_trang_hon_nhan: 'Đã kết hôn',
+    ghi_chu: 'Kiến trúc sư thiết kế nội thất, yêu thích nghệ thuật cắm hoa.',
+    avatar: '',
+    loai_quan_he: 'Chính',
+    spouse_of_id: null,
+    cha_id: 2,
+    me_id: 102
+  },
+  {
+    id: 105,
+    ho_ten: 'Trần Văn Hải',
+    gioi_tinh: 'Nam',
+    doi_thu: 3,
+    ngay_sinh: '1978-01-15',
+    ngay_mat: null,
+    trang_thai: 'Còn sống',
+    tinh_trang_hon_nhan: 'Đã kết hôn',
+    ghi_chu: 'Phó giám đốc công ty logistics lớn, người con rể hiền lành, biết đối nhân xử thế.',
+    avatar: '',
+    loai_quan_he: 'Vợ/Chồng',
+    spouse_of_id: 5,
+    cha_id: null,
+    me_id: null
+  },
+  {
+    id: 6,
+    ho_ten: 'Nguyễn Đức Tuấn',
+    gioi_tinh: 'Nam',
+    doi_thu: 3,
+    ngay_sinh: '1982-10-18',
+    ngay_mat: null,
+    trang_thai: 'Còn sống',
+    tinh_trang_hon_nhan: 'Đã kết hôn',
+    ghi_chu: 'Tiến sĩ Y khoa, hiện là trưởng khoa ngoại chấn thương chỉnh hình bệnh viện trung ương.',
+    avatar: '',
+    loai_quan_he: 'Chính',
+    spouse_of_id: null,
+    cha_id: 3,
+    me_id: 103
+  },
+  {
+    id: 106,
+    ho_ten: 'Lê Thị Thu',
+    gioi_tinh: 'Nữ',
+    doi_thu: 3,
+    ngay_sinh: '1985-05-20',
+    ngay_mat: null,
+    trang_thai: 'Còn sống',
+    tinh_trang_hon_nhan: 'Đã kết hôn',
+    ghi_chu: 'Thạc sĩ dược học, hiện đang quản lý chuỗi nhà thuốc gia đình.',
+    avatar: '',
+    loai_quan_he: 'Vợ/Chồng',
+    spouse_of_id: 6,
+    cha_id: null,
+    me_id: null
+  },
+  {
+    id: 7,
+    ho_ten: 'Nguyễn Đức Minh',
+    gioi_tinh: 'Nam',
+    doi_thu: 4,
+    ngay_sinh: '2002-04-20',
+    ngay_mat: null,
+    trang_thai: 'Còn sống',
+    tinh_trang_hon_nhan: 'Độc thân',
+    ghi_chu: 'Sinh viên năm cuối ngành Khoa học máy tính, đạt nhiều giải thưởng học thuật xuất sắc.',
+    avatar: '',
+    loai_quan_he: 'Chính',
+    spouse_of_id: null,
+    cha_id: 4,
+    me_id: 104
+  },
+  {
+    id: 8,
+    ho_ten: 'Nguyễn Ngọc Linh',
+    gioi_tinh: 'Nữ',
+    doi_thu: 4,
+    ngay_sinh: '2006-08-30',
+    ngay_mat: null,
+    trang_thai: 'Còn sống',
+    tinh_trang_hon_nhan: 'Độc thân',
+    ghi_chu: 'Sinh viên năm nhất ngành Ngoại thương, năng động và đam mê hoạt động ngoại khóa.',
+    avatar: '',
+    loai_quan_he: 'Chính',
+    spouse_of_id: null,
+    cha_id: 4,
+    me_id: 104
+  },
+  {
+    id: 9,
+    ho_ten: 'Nguyễn Đức Hải',
+    gioi_tinh: 'Nam',
+    doi_thu: 4,
+    ngay_sinh: '2012-07-15',
+    ngay_mat: null,
+    trang_thai: 'Còn sống',
+    tinh_trang_hon_nhan: 'Độc thân',
+    ghi_chu: 'Học sinh trung học cơ sở, đạt thành tích cao môn Toán học cấp thành phố.',
+    avatar: '',
+    loai_quan_he: 'Chính',
+    spouse_of_id: null,
+    cha_id: 6,
+    me_id: 106
+  }
+];
+
+function localCompareSeniority(a, b) {
+  if (a.id === b.id) return 'equal';
+  if (a.ngay_sinh && b.ngay_sinh) {
+    const timeA = new Date(a.ngay_sinh).getTime();
+    const timeB = new Date(b.ngay_sinh).getTime();
+    if (timeA < timeB) return 'senior';
+    if (timeA > timeB) return 'junior';
+  }
+  return a.id < b.id ? 'senior' : 'junior';
+}
+
+function localResolveDetailed(nguoi1Id, nguoi2Id, members) {
+  const adj = {};
+  const memberMap = {};
+  members.forEach(m => {
+    memberMap[m.id] = m;
+    adj[m.id] = [];
+  });
+
+  members.forEach(m => {
+    if (m.loai_quan_he === 'Vợ/Chồng' && m.spouse_of_id) {
+      if (adj[m.id]) adj[m.id].push({ to: m.spouse_of_id, type: 'spouse' });
+      if (adj[m.spouse_of_id]) adj[m.spouse_of_id].push({ to: m.id, type: 'spouse' });
+    }
+    if (m.cha_id) {
+      if (adj[m.id]) adj[m.id].push({ to: m.cha_id, type: 'parent' });
+      if (adj[m.cha_id]) adj[m.cha_id].push({ to: m.id, type: 'child' });
+    }
+    if (m.me_id) {
+      if (adj[m.id]) adj[m.id].push({ to: m.me_id, type: 'parent' });
+      if (adj[m.me_id]) adj[m.me_id].push({ to: m.id, type: 'child' });
+    }
+  });
+
+  members.forEach(m1 => {
+    members.forEach(m2 => {
+      if (m1.id !== m2.id && m1.loai_quan_he === 'Chính' && m2.loai_quan_he === 'Chính') {
+        if ((m1.cha_id && m1.cha_id === m2.cha_id) || (m1.me_id && m1.me_id === m2.me_id)) {
+          if (adj[m1.id]) adj[m1.id].push({ to: m2.id, type: 'sibling' });
+        }
+      }
+    });
+  });
+
+  const queue = [[nguoi1Id]];
+  const visited = new Set([nguoi1Id]);
+  const parentStep = {};
+
+  let foundPath = null;
+  while (queue.length > 0) {
+    const path = queue.shift();
+    const curr = path[path.length - 1];
+
+    if (curr === nguoi2Id) {
+      foundPath = path;
+      break;
+    }
+
+    if (!adj[curr]) continue;
+    for (const edge of adj[curr]) {
+      if (!visited.has(edge.to)) {
+        visited.add(edge.to);
+        parentStep[edge.to] = { parentId: curr, type: edge.type };
+        queue.push([...path, edge.to]);
+      }
+    }
+  }
+
+  if (!foundPath) return null;
+
+  const formattedPath = [{ id: nguoi1Id, type: 'start' }];
+  for (let i = 1; i < foundPath.length; i++) {
+    const node = foundPath[i];
+    const step = parentStep[node];
+    formattedPath.push({ id: node, type: step.type });
+  }
+
+  return formattedPath;
+}
+
+function localResolvePathToRelationship(path, memberMap) {
+  const types = [];
+  for (let i = 1; i < path.length; i++) {
+    types.push(path[i].type);
+  }
+
+  const personA = memberMap[path[0].id];
+  const personB = memberMap[path[path.length - 1].id];
+  
+  const genderA = personA.gioi_tinh;
+  const genderB = personB.gioi_tinh;
+
+  const matchTypes = (arr) => {
+    if (arr.length !== types.length) return false;
+    for (let i = 0; i < arr.length; i++) {
+      if (arr[i] !== types[i]) return false;
+    }
+    return true;
+  };
+
+  if (matchTypes(['spouse'])) {
+    return genderA === 'Nữ' ? 'vợ' : 'chồng';
+  }
+  if (matchTypes(['parent'])) {
+    return genderA === 'Nữ' ? 'con gái' : 'con trai';
+  }
+  if (matchTypes(['child'])) {
+    return genderA === 'Nữ' ? 'mẹ' : 'cha';
+  }
+  if (matchTypes(['sibling'])) {
+    const isAOlder = localCompareSeniority(personA, personB) === 'senior';
+    if (isAOlder) {
+      return genderA === 'Nữ' ? 'chị gái' : 'anh trai';
+    } else {
+      return genderA === 'Nữ' ? 'em gái' : 'em trai';
+    }
+  }
+  if (matchTypes(['parent', 'parent'])) {
+    const parentOfA = memberMap[path[1].id];
+    const isPaternal = parentOfA.gioi_tinh === 'Nam';
+    return isPaternal ? 'cháu nội' : 'cháu ngoại';
+  }
+  if (matchTypes(['child', 'child'])) {
+    const childOfA = memberMap[path[1].id];
+    const isPaternal = childOfA.gioi_tinh === 'Nam';
+    if (isPaternal) {
+      return genderA === 'Nữ' ? 'bà nội' : 'ông nội';
+    } else {
+      return genderA === 'Nữ' ? 'bà ngoại' : 'ông ngoại';
+    }
+  }
+  if (matchTypes(['parent', 'sibling'])) {
+    return 'cháu';
+  }
+  if (matchTypes(['sibling', 'child'])) {
+    const siblingOfA = memberMap[path[1].id];
+    const isPaternalSide = siblingOfA.gioi_tinh === 'Nam';
+    if (isPaternalSide) {
+      if (genderA === 'Nữ') {
+        return 'cô';
+      } else {
+        const isAOlder = localCompareSeniority(personA, siblingOfA) === 'senior';
+        return isAOlder ? 'bác' : 'chú';
+      }
+    } else {
+      return genderA === 'Nữ' ? 'dì' : 'cậu';
+    }
+  }
+  if (matchTypes(['spouse', 'parent'])) {
+    return genderA === 'Nữ' ? 'con dâu' : 'con rể';
+  }
+  if (matchTypes(['child', 'spouse'])) {
+    const childOfA = memberMap[path[1].id];
+    if (childOfA.gioi_tinh === 'Nam') {
+      return genderA === 'Nữ' ? 'mẹ chồng' : 'bố chồng';
+    } else {
+      return genderA === 'Nữ' ? 'mẹ vợ' : 'bố vợ';
+    }
+  }
+  if (matchTypes(['spouse', 'sibling'])) {
+    const spouseOfA = memberMap[path[1].id];
+    const isSpouseOlderThanB = localCompareSeniority(spouseOfA, personB) === 'senior';
+    if (isSpouseOlderThanB) {
+      return genderA === 'Nữ' ? 'chị dâu' : 'anh rể';
+    } else {
+      return genderA === 'Nữ' ? 'em dâu' : 'em rể';
+    }
+  }
+  if (matchTypes(['sibling', 'spouse'])) {
+    const siblingOfA = memberMap[path[1].id];
+    const isAOlderThanSibling = localCompareSeniority(personA, siblingOfA) === 'senior';
+    if (genderB === 'Nam') {
+      if (genderA === 'Nam') return isAOlderThanSibling ? 'anh vợ' : 'em vợ';
+      return isAOlderThanSibling ? 'chị vợ' : 'em vợ';
+    } else {
+      if (genderA === 'Nam') return isAOlderThanSibling ? 'anh chồng' : 'em chồng';
+      return isAOlderThanSibling ? 'chị chồng' : 'em chồng';
+    }
+  }
+  if (matchTypes(['parent', 'parent', 'parent'])) {
+    const parentOfA = memberMap[path[1].id];
+    const isPaternal = parentOfA.gioi_tinh === 'Nam';
+    return isPaternal ? 'chắt nội' : 'chắt ngoại';
+  }
+  if (matchTypes(['child', 'child', 'child'])) {
+    const childOfA = memberMap[path[1].id];
+    const isPaternal = childOfA.gioi_tinh === 'Nam';
+    if (isPaternal) {
+      return genderA === 'Nữ' ? 'cụ bà (bà cố nội)' : 'cụ ông (ông cố nội)';
+    } else {
+      return genderA === 'Nữ' ? 'cụ bà (bà cố ngoại)' : 'cụ ông (ông cố ngoại)';
+    }
+  }
+  if (matchTypes(['parent', 'sibling', 'child'])) {
+    const parentOfA = memberMap[path[1].id];
+    const parentOfB = memberMap[path[2].id];
+    const isParentAOlder = localCompareSeniority(parentOfA, parentOfB) === 'senior';
+    if (isParentAOlder) {
+      return genderA === 'Nữ' ? 'chị họ' : 'anh họ';
+    } else {
+      return 'em họ';
+    }
+  }
+
+  let genDiff = 0;
+  for (let i = 1; i < path.length; i++) {
+    const type = path[i].type;
+    if (type === 'parent') genDiff--;
+    else if (type === 'child') genDiff++;
+  }
+
+  if (genDiff === 0) {
+    const seniority = localCompareSeniority(personA, personB);
+    if (seniority === 'senior') {
+      return genderA === 'Nữ' ? 'chị họ' : 'anh họ';
+    } else {
+      return 'em họ';
+    }
+  } else if (genDiff === 1) {
+    return genderA === 'Nữ' ? 'cô họ' : 'chú họ';
+  } else if (genDiff === 2) {
+    return genderA === 'Nữ' ? 'bà họ' : 'ông họ';
+  } else if (genDiff >= 3) {
+    return 'cụ họ';
+  } else if (genDiff === -1) {
+    return 'cháu họ';
+  } else if (genDiff === -2) {
+    return 'chắt họ';
+  }
+  return 'họ hàng';
+}
+
+function localGetConversationalTerm(relationshipName) {
+  const term = relationshipName.toLowerCase().trim();
+
+  if (term.includes('con trai') || term.includes('con gái') || term.includes('con dâu') || term.includes('con rể')) {
+    return 'con';
+  }
+  if (term.includes('chắt')) return 'chắt';
+  if (term.includes('chít')) return 'chít';
+  if (term.includes('chút')) return 'chút';
+  if (term.includes('chét')) return 'chét';
+  if (term.includes('chót')) return 'chót';
+  if (term.includes('chẹt')) return 'chẹt';
+  if (term.includes('cháu')) return 'cháu';
+
+  if (term.includes('anh trai') || term.includes('anh họ') || term.includes('anh rể') || term.includes('anh vợ') || term.includes('anh chồng')) {
+    return 'anh';
+  }
+  if (term.includes('chị gái') || term.includes('chị họ') || term.includes('chị dâu') || term.includes('chị vợ') || term.includes('chị chồng')) {
+    return 'chị';
+  }
+  if (term.includes('em gái') || term.includes('em trai') || term.includes('em họ') || term.includes('em rể') || term.includes('em dâu') || term.includes('em vợ') || term.includes('em chồng')) {
+    return 'em';
+  }
+
+  if (term.includes('ông nội') || term.includes('ông ngoại') || term.includes('ông họ')) {
+    return 'ông';
+  }
+  if (term.includes('bà nội') || term.includes('bà ngoại') || term.includes('bà họ')) {
+    return 'bà';
+  }
+
+  if (term.includes('bố chồng') || term.includes('bố vợ') || term === 'bố/mẹ') {
+    return 'cha';
+  }
+  if (term.includes('mẹ chồng') || term.includes('mẹ vợ')) {
+    return 'mẹ';
+  }
+
+  if (term.includes('cụ')) return 'cụ';
+  if (term.includes('kỵ')) return 'kỵ';
+  if (term.includes('sơ')) return 'sơ';
+  if (term.includes('tiệm')) return 'tiệm';
+  if (term.includes('tiểu')) return 'tiểu';
+  if (term.includes('di') && term !== 'dì') return 'di';
+  if (term.includes('diễn')) return 'diễn';
+
+  return relationshipName;
+}
+
 export default {
     name: 'ClientTraCuuHarmonious',
     data() {
@@ -271,7 +807,8 @@ export default {
             isScanning: false,
             scanError: null,
             qrFile: null,
-            qrPreview: null
+            qrPreview: null,
+            isLoggedIn: !!localStorage.getItem('access_token')
         }
     },
     computed: {
@@ -279,10 +816,15 @@ export default {
         personB() { return this.allMembers.find(m => m.id === this.idB); }
     },
     mounted() {
+        this.isLoggedIn = !!localStorage.getItem('access_token');
         this.loadData();
     },
     methods: {
         loadData() {
+            if (!this.isLoggedIn) {
+                this.allMembers = mockMembers;
+                return;
+            }
             axios.get('http://127.0.0.1:8000/api/thanh-vien/get-data')
                 .then(res => {
                     if (res.data.status) {
@@ -301,16 +843,59 @@ export default {
                 return;
             }
 
+            if (!this.isLoggedIn) {
+                const path = localResolveDetailed(this.idA, this.idB, this.allMembers);
+                if (!path) {
+                    toastr.error('Không tìm thấy mối quan hệ giữa hai thành viên!');
+                    return;
+                }
+                const term = localResolvePathToRelationship(path, this.allMembers.reduce((map, m) => { map[m.id] = m; return map; }, {}));
+                const conversationalTerm = localGetConversationalTerm(term);
+                
+                const pathNodes = [];
+                const memberMap = this.allMembers.reduce((map, m) => { map[m.id] = m; return map; }, {});
+                for (let i = 0; i < path.length; i++) {
+                    const step = path[i];
+                    const member = { ...memberMap[step.id] };
+                    if (step.type === 'spouse') member.relation_label = 'Vợ/Chồng';
+                    else if (step.type === 'parent') member.relation_label = 'Bố/Mẹ';
+                    else if (step.type === 'child') member.relation_label = 'Con';
+                    else if (step.type === 'sibling') member.relation_label = 'Anh/Chị/Em';
+                    else member.relation_label = '';
+                    pathNodes.push(member);
+                }
+
+                this.result = {
+                    term: conversationalTerm,
+                    description: `${memberMap[this.idA].ho_ten} là ${term} của ${memberMap[this.idB].ho_ten}.`,
+                    path: pathNodes
+                };
+                return;
+            }
+
             axios.post('http://127.0.0.1:8000/api/thanh-vien/xac-dinh-quan-he', {
                 id_a: this.idA,
                 id_b: this.idB
             })
             .then(res => {
                 if (res.data.status) {
+                    const pathNodes = [];
+                    const members = res.data.members || [];
+                    const steps = res.data.path || [];
+                    for (let i = 0; i < members.length; i++) {
+                        const member = { ...members[i] };
+                        const stepType = steps[i] || 'start';
+                        if (stepType === 'spouse') member.relation_label = 'Vợ/Chồng';
+                        else if (stepType === 'parent') member.relation_label = 'Bố/Mẹ';
+                        else if (stepType === 'child') member.relation_label = 'Con';
+                        else if (stepType === 'sibling') member.relation_label = 'Anh/Chị/Em';
+                        else member.relation_label = '';
+                        pathNodes.push(member);
+                    }
                     this.result = {
                         term: res.data.term,
                         description: res.data.description,
-                        path: res.data.path
+                        path: pathNodes
                     };
                 } else {
                     toastr.error(res.data.message || 'Lỗi xác định mối quan hệ!');
@@ -702,5 +1287,64 @@ export default {
 }
 .btn-refresh-premium:active {
   transform: scale(0.95);
+}
+
+/* ─── DEMO MODE ALERT BANNER ─── */
+.demo-alert-banner {
+  background: rgba(212, 175, 55, 0.08);
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  border-radius: 12px;
+  padding: 15px 20px;
+  color: #fff;
+  max-width: 800px;
+  margin: 0 auto;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+}
+.demo-banner-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+.demo-icon {
+  font-size: 1.5rem;
+  color: #d4af37;
+}
+.demo-text {
+  font-size: 0.95rem;
+  color: #f3f4f6;
+}
+.demo-action-buttons {
+  display: flex;
+  gap: 10px;
+}
+.btn-login-demo {
+  background: transparent;
+  color: #d4af37;
+  border: 1px solid #d4af37;
+  font-weight: 700;
+  border-radius: 8px;
+  padding: 6px 15px;
+  transition: all 0.3s;
+}
+.btn-login-demo:hover {
+  background: #d4af37;
+  color: #0b1120;
+}
+.btn-register-demo {
+  background: #d4af37;
+  color: #0b1120;
+  border: 1px solid #d4af37;
+  font-weight: 700;
+  border-radius: 8px;
+  padding: 6px 15px;
+  transition: all 0.3s;
+}
+.btn-register-demo:hover {
+  background: #c4a030;
+  border-color: #c4a030;
+  transform: translateY(-1px);
 }
 </style>

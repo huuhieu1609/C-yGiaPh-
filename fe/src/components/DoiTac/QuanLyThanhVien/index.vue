@@ -165,8 +165,43 @@
                                 </div>
                             </div>
                             <div class="col-md-6" v-if="currentMember.trang_thai === 'Đã mất'">
-                                <label class="form-label fw-bold text-danger">Ngày mất</label>
+                                <label class="form-label fw-bold text-danger">Ngày mất (Dương lịch)</label>
                                 <input type="date" class="form-control premium-input border-danger border-opacity-50" v-model="currentMember.ngay_mat">
+                            </div>
+
+                            <!-- Ngày mất Âm lịch -->
+                            <div class="col-md-12" v-if="currentMember.trang_thai === 'Đã mất'">
+                                <div class="card bg-light border border-dashed p-3 radius-8 mb-2">
+                                    <h6 class="fw-bold mb-3 text-dark d-flex align-items-center gap-1">
+                                        <i class="bx bx-calendar-event text-warning fs-5"></i> Ngày mất Âm lịch
+                                    </h6>
+                                    <div class="row g-2">
+                                        <div class="col-md-3 col-6">
+                                            <label class="form-label small text-muted mb-1">Ngày AL</label>
+                                            <select class="form-select radius-8 border-2 shadow-none" v-model="currentMember.ngay_mat_al_ngay">
+                                                <option :value="null">--</option>
+                                                <option v-for="d in 30" :key="d" :value="d">{{ d }}</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-3 col-6">
+                                            <label class="form-label small text-muted mb-1">Tháng AL</label>
+                                            <select class="form-select radius-8 border-2 shadow-none" v-model="currentMember.ngay_mat_al_thang">
+                                                <option :value="null">--</option>
+                                                <option v-for="m in 12" :key="m" :value="m">Tháng {{ m }}</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-3 col-6">
+                                            <label class="form-label small text-muted mb-1">Năm AL</label>
+                                            <input type="number" class="form-control radius-8 border-2 shadow-none" v-model="currentMember.ngay_mat_al_nam" placeholder="Ví dụ: 2026">
+                                        </div>
+                                        <div class="col-md-3 col-6 d-flex align-items-end">
+                                            <div class="form-check mb-2 ms-2">
+                                                <input class="form-check-input" type="checkbox" id="nhuan_mat" v-model="currentMember.ngay_mat_al_nhuan" :true-value="1" :false-value="0">
+                                                <label class="form-check-label fw-semibold text-dark" for="nhuan_mat">Tháng nhuận</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-bold text-secondary">Quan hệ với dòng họ</label>

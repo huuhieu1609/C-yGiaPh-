@@ -44,7 +44,7 @@ const routes = [
         path: '/gia-pha',
         name: 'gia-pha',
         component: () => import('../components/Client/GiaPha/index.vue'),
-        meta: { layout: 'client', requiresAuth: true }
+        meta: { layout: 'client' }
     },
     {
         path: '/ban-do',
@@ -62,7 +62,7 @@ const routes = [
         path: '/tra-cuu',
         name: 'client-tra-cuu',
         component: () => import('../components/Client/TraCuu/index.vue'),
-        meta: { layout: 'client', requiresAuth: true }
+        meta: { layout: 'client' }
     },
     {
         path: '/thanh-vien/detail/:id',

@@ -11,6 +11,18 @@
         <p class="text-white-50 mb-0">Sơ đồ phả hệ các thế hệ dòng họ</p>
       </div>
 
+      <!-- Demo Mode Alert Banner -->
+      <div v-if="!isLoggedIn" class="demo-alert-banner mb-4 text-center animate__animated animate__fadeInDown">
+        <div class="demo-banner-content">
+          <i class="bx bx-info-circle demo-icon animate-ring"></i>
+          <span class="demo-text">Bạn đang trải nghiệm <strong>Cây Gia Phả Mẫu (Demo)</strong> dành cho khách vãng lai.</span>
+          <div class="demo-action-buttons">
+            <router-link to="/login" class="btn btn-sm btn-login-demo">Đăng Nhập</router-link>
+            <router-link to="/register" class="btn btn-sm btn-register-demo">Khởi Tạo Gia Phả</router-link>
+          </div>
+        </div>
+      </div>
+
       <div class="tree-card-wrapper">
         <div class="card-toolbar">
           <div class="toolbar-left">
@@ -691,6 +703,256 @@ const TreeItem = defineComponent({
   }
 });
 
+const mockDoiTocHo = [
+  { so_doi: 1, ten_doi: 'Đời 1' },
+  { so_doi: 2, ten_doi: 'Đời 2' },
+  { so_doi: 3, ten_doi: 'Đời 3' },
+  { so_doi: 4, ten_doi: 'Đời 4' }
+];
+
+const mockMembers = [
+  {
+    id: 1,
+    ho_ten: 'Nguyễn Đức Long',
+    gioi_tinh: 'Nam',
+    doi_thu: 1,
+    ngay_sinh: '1920-05-15',
+    ngay_mat: '2005-10-20',
+    trang_thai: 'Đã mất',
+    tinh_trang_hon_nhan: 'Đã kết hôn',
+    ghi_chu: 'Cụ tổ sáng lập dòng họ Nguyễn Đức. Từng tham gia kháng chiến chống Pháp, tính tình hiền lành, đức độ, chăm lo cho gia tộc.',
+    avatar: '',
+    loai_quan_he: 'Chính',
+    spouse_of_id: null,
+    cha_id: null,
+    me_id: null
+  },
+  {
+    id: 101,
+    ho_ten: 'Lê Thị Hoa',
+    gioi_tinh: 'Nữ',
+    doi_thu: 1,
+    ngay_sinh: '1923-08-12',
+    ngay_mat: '2010-04-18',
+    trang_thai: 'Đã mất',
+    tinh_trang_hon_nhan: 'Đã kết hôn',
+    ghi_chu: 'Cụ bà tần tảo, một đời vì chồng vì con. Nữ công gia chánh xuất sắc.',
+    avatar: '',
+    loai_quan_he: 'Vợ/Chồng',
+    spouse_of_id: 1,
+    cha_id: null,
+    me_id: null
+  },
+  {
+    id: 2,
+    ho_ten: 'Nguyễn Đức Cường',
+    gioi_tinh: 'Nam',
+    doi_thu: 2,
+    ngay_sinh: '1948-02-10',
+    ngay_mat: null,
+    trang_thai: 'Còn sống',
+    tinh_trang_hon_nhan: 'Đã kết hôn',
+    ghi_chu: 'Nguyên trưởng tộc đời thứ 2 dòng họ Nguyễn Đức. Nhà giáo ưu tú đã về hưu.',
+    avatar: '',
+    loai_quan_he: 'Chính',
+    spouse_of_id: null,
+    cha_id: 1,
+    me_id: 101
+  },
+  {
+    id: 102,
+    ho_ten: 'Trần Thị Lan',
+    gioi_tinh: 'Nữ',
+    doi_thu: 2,
+    ngay_sinh: '1952-11-20',
+    ngay_mat: null,
+    trang_thai: 'Còn sống',
+    tinh_trang_hon_nhan: 'Đã kết hôn',
+    ghi_chu: 'Người vợ hiền hậu, chăm sóc gia đình chu đáo. Cựu bác sĩ bệnh viện tỉnh.',
+    avatar: '',
+    loai_quan_he: 'Vợ/Chồng',
+    spouse_of_id: 2,
+    cha_id: null,
+    me_id: null
+  },
+  {
+    id: 3,
+    ho_ten: 'Nguyễn Đức Thịnh',
+    gioi_tinh: 'Nam',
+    doi_thu: 2,
+    ngay_sinh: '1952-09-05',
+    ngay_mat: null,
+    trang_thai: 'Còn sống',
+    tinh_trang_hon_nhan: 'Đã kết hôn',
+    ghi_chu: 'Kỹ sư nông nghiệp kỳ cựu, đóng góp lớn cho phong trào cải tạo đồng ruộng địa phương.',
+    avatar: '',
+    loai_quan_he: 'Chính',
+    spouse_of_id: null,
+    cha_id: 1,
+    me_id: 101
+  },
+  {
+    id: 103,
+    ho_ten: 'Phạm Thị Hồng',
+    gioi_tinh: 'Nữ',
+    doi_thu: 2,
+    ngay_sinh: '1955-04-14',
+    ngay_mat: null,
+    trang_thai: 'Còn sống',
+    tinh_trang_hon_nhan: 'Đã kết hôn',
+    ghi_chu: 'Nữ doanh nhân kinh doanh hàng tiêu dùng, tính tình xởi lởi, nhiệt tình với công việc gia tộc.',
+    avatar: '',
+    loai_quan_he: 'Vợ/Chồng',
+    spouse_of_id: 3,
+    cha_id: null,
+    me_id: null
+  },
+  {
+    id: 4,
+    ho_ten: 'Nguyễn Đức Anh',
+    gioi_tinh: 'Nam',
+    doi_thu: 3,
+    ngay_sinh: '1975-06-25',
+    ngay_mat: null,
+    trang_thai: 'Còn sống',
+    tinh_trang_hon_nhan: 'Đã kết hôn',
+    ghi_chu: 'Thạc sĩ Công nghệ thông tin, đang công tác tại tập đoàn viễn thông quốc gia.',
+    avatar: '',
+    loai_quan_he: 'Chính',
+    spouse_of_id: null,
+    cha_id: 2,
+    me_id: 102
+  },
+  {
+    id: 104,
+    ho_ten: 'Hoàng Thị Bích',
+    gioi_tinh: 'Nữ',
+    doi_thu: 3,
+    ngay_sinh: '1978-03-30',
+    ngay_mat: null,
+    trang_thai: 'Còn sống',
+    tinh_trang_hon_nhan: 'Đã kết hôn',
+    ghi_chu: 'Giáo viên trung học phổ thông môn Ngữ Văn, yêu cái đẹp và văn hóa truyền thống.',
+    avatar: '',
+    loai_quan_he: 'Vợ/Chồng',
+    spouse_of_id: 4,
+    cha_id: null,
+    me_id: null
+  },
+  {
+    id: 5,
+    ho_ten: 'Nguyễn Thị Mai',
+    gioi_tinh: 'Nữ',
+    doi_thu: 3,
+    ngay_sinh: '1980-12-08',
+    ngay_mat: null,
+    trang_thai: 'Còn sống',
+    tinh_trang_hon_nhan: 'Đã kết hôn',
+    ghi_chu: 'Kiến trúc sư thiết kế nội thất, yêu thích nghệ thuật cắm hoa.',
+    avatar: '',
+    loai_quan_he: 'Chính',
+    spouse_of_id: null,
+    cha_id: 2,
+    me_id: 102
+  },
+  {
+    id: 105,
+    ho_ten: 'Trần Văn Hải',
+    gioi_tinh: 'Nam',
+    doi_thu: 3,
+    ngay_sinh: '1978-01-15',
+    ngay_mat: null,
+    trang_thai: 'Còn sống',
+    tinh_trang_hon_nhan: 'Đã kết hôn',
+    ghi_chu: 'Phó giám đốc công ty logistics lớn, người con rể hiền lành, biết đối nhân xử thế.',
+    avatar: '',
+    loai_quan_he: 'Vợ/Chồng',
+    spouse_of_id: 5,
+    cha_id: null,
+    me_id: null
+  },
+  {
+    id: 6,
+    ho_ten: 'Nguyễn Đức Tuấn',
+    gioi_tinh: 'Nam',
+    doi_thu: 3,
+    ngay_sinh: '1982-10-18',
+    ngay_mat: null,
+    trang_thai: 'Còn sống',
+    tinh_trang_hon_nhan: 'Đã kết hôn',
+    ghi_chu: 'Tiến sĩ Y khoa, hiện là trưởng khoa ngoại chấn thương chỉnh hình bệnh viện trung ương.',
+    avatar: '',
+    loai_quan_he: 'Chính',
+    spouse_of_id: null,
+    cha_id: 3,
+    me_id: 103
+  },
+  {
+    id: 106,
+    ho_ten: 'Lê Thị Thu',
+    gioi_tinh: 'Nữ',
+    doi_thu: 3,
+    ngay_sinh: '1985-05-20',
+    ngay_mat: null,
+    trang_thai: 'Còn sống',
+    tinh_trang_hon_nhan: 'Đã kết hôn',
+    ghi_chu: 'Thạc sĩ dược học, hiện đang quản lý chuỗi nhà thuốc gia đình.',
+    avatar: '',
+    loai_quan_he: 'Vợ/Chồng',
+    spouse_of_id: 6,
+    cha_id: null,
+    me_id: null
+  },
+  {
+    id: 7,
+    ho_ten: 'Nguyễn Đức Minh',
+    gioi_tinh: 'Nam',
+    doi_thu: 4,
+    ngay_sinh: '2002-04-20',
+    ngay_mat: null,
+    trang_thai: 'Còn sống',
+    tinh_trang_hon_nhan: 'Độc thân',
+    ghi_chu: 'Sinh viên năm cuối ngành Khoa học máy tính, đạt nhiều giải thưởng học thuật xuất sắc.',
+    avatar: '',
+    loai_quan_he: 'Chính',
+    spouse_of_id: null,
+    cha_id: 4,
+    me_id: 104
+  },
+  {
+    id: 8,
+    ho_ten: 'Nguyễn Ngọc Linh',
+    gioi_tinh: 'Nữ',
+    doi_thu: 4,
+    ngay_sinh: '2006-08-30',
+    ngay_mat: null,
+    trang_thai: 'Còn sống',
+    tinh_trang_hon_nhan: 'Độc thân',
+    ghi_chu: 'Sinh viên năm nhất ngành Ngoại thương, năng động và đam mê hoạt động ngoại khóa.',
+    avatar: '',
+    loai_quan_he: 'Chính',
+    spouse_of_id: null,
+    cha_id: 4,
+    me_id: 104
+  },
+  {
+    id: 9,
+    ho_ten: 'Nguyễn Đức Hải',
+    gioi_tinh: 'Nam',
+    doi_thu: 4,
+    ngay_sinh: '2012-07-15',
+    ngay_mat: null,
+    trang_thai: 'Còn sống',
+    tinh_trang_hon_nhan: 'Độc thân',
+    ghi_chu: 'Học sinh trung học cơ sở, đạt thành tích cao môn Toán học cấp thành phố.',
+    avatar: '',
+    loai_quan_he: 'Chính',
+    spouse_of_id: null,
+    cha_id: 6,
+    me_id: 106
+  }
+];
+
 export default {
   name: 'ClientGiaPha',
   components: { TreeItem },
@@ -816,6 +1078,7 @@ export default {
         console.error(e);
       }
     }
+    this.isLoggedIn = !!localStorage.getItem('access_token');
     this.loadDoiTocHo();
     this.loadData();
   },
@@ -825,11 +1088,20 @@ export default {
       return { headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` } };
     },
     loadDoiTocHo() {
+      if (!this.isLoggedIn) {
+        this.listDoiTocHo = mockDoiTocHo;
+        return;
+      }
       axios.get('http://127.0.0.1:8000/api/doi-toc-ho/get-data', this.getHeaders())
         .then(r => { if (r.data.status) this.listDoiTocHo = r.data.data.sort((a,b)=>a.so_doi-b.so_doi); });
     },
     loadData() {
       this.isLoading = true;
+      if (!this.isLoggedIn) {
+        this.allMembers = mockMembers;
+        this.isLoading = false;
+        return;
+      }
       axios.get('http://127.0.0.1:8000/api/thanh-vien/get-data', this.getHeaders())
         .then(r => { if (r.data.status) this.allMembers = r.data.data; })
         .finally(() => { this.isLoading = false; });
@@ -893,6 +1165,10 @@ export default {
     },
     endPan() { this.isPanning = false; },
     openProposal(type) {
+      if (!this.isLoggedIn) {
+        toastr.info('Vui lòng đăng nhập để gửi đề xuất thay đổi gia phả!');
+        return;
+      }
       this.proposalType = type;
       if (type === 'edit') {
         this.proposalTitle = `Đề Xuất Chỉnh Sửa Thông Tin - ${this.currentMember.ho_ten}`;
@@ -996,6 +1272,10 @@ export default {
       }
     },
     openDeleteProposal() {
+      if (!this.isLoggedIn) {
+        toastr.info('Vui lòng đăng nhập để gửi đề xuất xóa thành viên!');
+        return;
+      }
       if (this.modal) this.modal.hide();
       this.deleteProposalReason = '';
       this.showDeleteProposalModal = true;
@@ -1206,6 +1486,10 @@ export default {
         });
     },
     openProposalsHistoryModal() {
+      if (!this.isLoggedIn) {
+        toastr.info('Vui lòng đăng nhập để xem lịch sử đề xuất!');
+        return;
+      }
       if (this.proposalsHistoryModal) this.proposalsHistoryModal.show();
       const token = localStorage.getItem('access_token');
       if (!token) return;
@@ -1251,6 +1535,10 @@ export default {
       return 'Đề xuất Thêm Vợ/Chồng';
     },
     openLifeStatusModal() {
+      if (!this.isLoggedIn) {
+        toastr.info('Vui lòng đăng nhập để cập nhật trạng thái sống/mất!');
+        return;
+      }
       this.lifeStatusForm = {
         trang_thai: this.currentMember.trang_thai || 'Còn sống',
         ngay_mat: this.currentMember.ngay_mat ? this.currentMember.ngay_mat.substring(0, 10) : ''
@@ -1997,5 +2285,64 @@ export default {
   width: 220px;
   height: 90px;
   visibility: hidden;
+}
+
+/* ─── DEMO MODE ALERT BANNER ─── */
+.demo-alert-banner {
+  background: rgba(212, 175, 55, 0.08);
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  border-radius: 12px;
+  padding: 15px 20px;
+  color: #fff;
+  max-width: 800px;
+  margin: 0 auto;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+}
+.demo-banner-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+.demo-icon {
+  font-size: 1.5rem;
+  color: #d4af37;
+}
+.demo-text {
+  font-size: 0.95rem;
+  color: #f3f4f6;
+}
+.demo-action-buttons {
+  display: flex;
+  gap: 10px;
+}
+.btn-login-demo {
+  background: transparent;
+  color: #d4af37;
+  border: 1px solid #d4af37;
+  font-weight: 700;
+  border-radius: 8px;
+  padding: 6px 15px;
+  transition: all 0.3s;
+}
+.btn-login-demo:hover {
+  background: #d4af37;
+  color: #0b1120;
+}
+.btn-register-demo {
+  background: #d4af37;
+  color: #0b1120;
+  border: 1px solid #d4af37;
+  font-weight: 700;
+  border-radius: 8px;
+  padding: 6px 15px;
+  transition: all 0.3s;
+}
+.btn-register-demo:hover {
+  background: #c4a030;
+  border-color: #c4a030;
+  transform: translateY(-1px);
 }
 </style>

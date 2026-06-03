@@ -70,12 +70,31 @@ class SuKienController extends Controller
             $data = $request->validate([
                 'tieu_de' => 'required|string|max:255',
                 'noi_dung' => 'nullable|string',
-                'ngay_to_chuc' => 'required|date',
+                'ngay_to_chuc' => 'nullable|required_without:is_lunar|date',
                 'dia_diem' => 'nullable|string|max:255',
-                'chi_nhanh_id' => 'nullable|exists:chi_nhanhs,id',
                 'loai' => 'required|in:Giỗ tổ,Họp họ,Cưới hỏi,Tang lễ',
                 'chi_nhanh_id' => 'nullable|integer|exists:chi_nhanhs,id',
+                'is_lunar' => 'nullable|boolean',
+                'ngay_al_ngay' => 'nullable|integer|min:1|max:30',
+                'ngay_al_thang' => 'nullable|integer|min:1|max:12',
+                'ngay_al_nam' => 'nullable|integer',
+                'ngay_al_nhuan' => 'nullable|boolean',
             ]);
+
+            // Handle lunar to solar date conversion
+            if ($request->is_lunar) {
+                $currentYear = (int)date('Y');
+                $solarDate = \App\Utils\LunarHelper::lunarToSolar($currentYear, (int)$request->ngay_al_thang, (int)$request->ngay_al_ngay, (bool)$request->ngay_al_nhuan);
+                if ($solarDate && $solarDate < date('Y-m-d')) {
+                    // If it has already passed this year, schedule for next year
+                    $solarDate = \App\Utils\LunarHelper::lunarToSolar($currentYear + 1, (int)$request->ngay_al_thang, (int)$request->ngay_al_ngay, (bool)$request->ngay_al_nhuan);
+                }
+                if ($solarDate) {
+                    $data['ngay_to_chuc'] = $solarDate;
+                } else {
+                    return response()->json(['status' => false, 'message' => 'Ngày Âm lịch không hợp lệ.'], 422);
+                }
+            }
 
             $user = auth('sanctum')->user();
 
@@ -116,12 +135,30 @@ class SuKienController extends Controller
             $data = $request->validate([
                 'tieu_de' => 'required|string|max:255',
                 'noi_dung' => 'nullable|string',
-                'ngay_to_chuc' => 'required|date',
+                'ngay_to_chuc' => 'nullable|required_without:is_lunar|date',
                 'dia_diem' => 'nullable|string|max:255',
-                'chi_nhanh_id' => 'nullable|exists:chi_nhanhs,id',
                 'loai' => 'required|in:Giỗ tổ,Họp họ,Cưới hỏi,Tang lễ',
                 'chi_nhanh_id' => 'nullable|integer|exists:chi_nhanhs,id',
+                'is_lunar' => 'nullable|boolean',
+                'ngay_al_ngay' => 'nullable|integer|min:1|max:30',
+                'ngay_al_thang' => 'nullable|integer|min:1|max:12',
+                'ngay_al_nam' => 'nullable|integer',
+                'ngay_al_nhuan' => 'nullable|boolean',
             ]);
+
+            // Handle lunar to solar date conversion
+            if ($request->is_lunar) {
+                $currentYear = (int)date('Y');
+                $solarDate = \App\Utils\LunarHelper::lunarToSolar($currentYear, (int)$request->ngay_al_thang, (int)$request->ngay_al_ngay, (bool)$request->ngay_al_nhuan);
+                if ($solarDate && $solarDate < date('Y-m-d')) {
+                    $solarDate = \App\Utils\LunarHelper::lunarToSolar($currentYear + 1, (int)$request->ngay_al_thang, (int)$request->ngay_al_ngay, (bool)$request->ngay_al_nhuan);
+                }
+                if ($solarDate) {
+                    $data['ngay_to_chuc'] = $solarDate;
+                } else {
+                    return response()->json(['status' => false, 'message' => 'Ngày Âm lịch không hợp lệ.'], 422);
+                }
+            }
 
             $user = auth('sanctum')->user();
             if (isset($data['chi_nhanh_id']) && $data['chi_nhanh_id']) {

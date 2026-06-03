@@ -75,7 +75,13 @@
                          :style="{ cursor: isPanning ? 'grabbing' : 'grab' }">
                         
                         <div class="tree-canvas" :style="canvasStyle">
-                            <div class="tree" v-if="treeData.length">
+                            <div class="tree" :class="{ 'is-exporting': isExporting }" v-if="treeData.length">
+                                <!-- Export Header (Only visible on Export) -->
+                                <div class="export-header text-center mb-4">
+                                    <h2 class="export-title">Sơ đồ phả hệ dòng họ</h2>
+                                    <p class="export-subtitle">{{ getChiNhanhName }}</p>
+                                    <div class="export-divider"></div>
+                                </div>
                                 <ul>
                                     <TreeItem 
                                         v-for="member in treeData" 
@@ -123,7 +129,7 @@
                         <div class="row g-4">
                             <div class="col-md-12 text-center mb-1">
                                 <div class="position-relative d-inline-block">
-                                    <img :src="avatarPreview || currentMember.avatar || ('https://ui-avatars.com/api/?name=' + (currentMember.ho_ten || 'A') + '&background=d4af37&color=fff')" class="rounded-circle border border-3 border-warning" alt="Avatar" width="100" height="100" style="object-fit: cover;">
+                                    <img :src="avatarPreview || currentMember.avatar || defaultAvatar" class="rounded-circle border border-3 border-warning" alt="Avatar" width="100" height="100" style="object-fit: cover;">
                                     <label for="member-avatar-upload" class="btn btn-sm btn-warning rounded-circle position-absolute bottom-0 end-0 shadow-sm" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer;" title="Chọn ảnh">
                                         <i class="bx bx-camera text-dark"></i>
                                     </label>
@@ -169,8 +175,43 @@
                                 </div>
                             </div>
                             <div class="col-md-6" v-if="currentMember.trang_thai === 'Đã mất'">
-                                <label class="form-label fw-bold">Ngày mất</label>
+                                <label class="form-label fw-bold">Ngày mất (Dương lịch)</label>
                                 <input type="date" class="form-control radius-8 border-2 shadow-none" v-model="currentMember.ngay_mat">
+                            </div>
+                            
+                            <!-- Ngày mất Âm lịch -->
+                            <div class="col-md-12" v-if="currentMember.trang_thai === 'Đã mất'">
+                                <div class="card bg-light border border-dashed p-3 radius-8 mb-2">
+                                    <h6 class="fw-bold mb-3 text-dark d-flex align-items-center gap-1">
+                                        <i class="bx bx-calendar-event text-warning fs-5"></i> Ngày mất Âm lịch
+                                    </h6>
+                                    <div class="row g-2">
+                                        <div class="col-md-3 col-6">
+                                            <label class="form-label small text-muted mb-1">Ngày AL</label>
+                                            <select class="form-select radius-8 border-2 shadow-none" v-model="currentMember.ngay_mat_al_ngay">
+                                                <option :value="null">--</option>
+                                                <option v-for="d in 30" :key="d" :value="d">{{ d }}</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-3 col-6">
+                                            <label class="form-label small text-muted mb-1">Tháng AL</label>
+                                            <select class="form-select radius-8 border-2 shadow-none" v-model="currentMember.ngay_mat_al_thang">
+                                                <option :value="null">--</option>
+                                                <option v-for="m in 12" :key="m" :value="m">Tháng {{ m }}</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-3 col-6">
+                                            <label class="form-label small text-muted mb-1">Năm AL</label>
+                                            <input type="number" class="form-control radius-8 border-2 shadow-none" v-model="currentMember.ngay_mat_al_nam" placeholder="Ví dụ: 2026">
+                                        </div>
+                                        <div class="col-md-3 col-6 d-flex align-items-end">
+                                            <div class="form-check mb-2 ms-2">
+                                                <input class="form-check-input" type="checkbox" id="nhuan_mat" v-model="currentMember.ngay_mat_al_nhuan" :true-value="1" :false-value="0">
+                                                <label class="form-check-label fw-semibold text-dark" for="nhuan_mat">Tháng nhuận</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
                             <div class="col-md-6">
@@ -306,6 +347,8 @@ import toastr from 'toastr';
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
 
+const DEFAULT_AVATAR = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIiBmaWxsPSIjZDRhZjM3Ij48Y2lyY2xlIGN4PSI1MCIgY3k9IjM1IiByPSIyMCIvPjxwYXRoIGQ9Ik01MCA2MGMtMjUgMC0zNSAxNS0zNSAyNWg3MGMwLTEwLTEwLTI1LTM1LTM1eiIvPjwvc3ZnPg==';
+
 const TreeItem = defineComponent({
     name: 'TreeItem',
     props: ['member', 'listDoiTocHo', 'searchQuery'],
@@ -374,7 +417,7 @@ const TreeItem = defineComponent({
             },
             onDblclick: (e) => { e.stopPropagation(); this.isDoubleClick = true; clearTimeout(this.clickTimeout); this.$emit('show-qr', this.member); }
         }, [
-            h('div', { class: 'node-avatar-container' }, [ h('img', { src: this.member.avatar ? this.member.avatar : ('https://ui-avatars.com/api/?name=' + this.member.ho_ten + '&background=d4af37&color=fff'), class: 'node-avatar shadow-sm' }) ]),
+            h('div', { class: 'node-avatar-container' }, [ h('img', { src: this.member.avatar ? this.member.avatar : DEFAULT_AVATAR, class: 'node-avatar shadow-sm' }) ]),
             h('div', { class: 'node-content' }, [ h('div', { class: 'node-name' }, this.member.ho_ten), this.member.ngay_sinh ? h('div', { class: 'node-date' }, formatDate(this.member.ngay_sinh)) : null, h('div', { class: 'node-tag' }, `Đời ${this.member.doi_thu}${getTenDoi(this.member.doi_thu)}`) ]),
             h('div', { class: 'node-edit-btn' }, [ h('i', { class: 'bx bx-pencil' }) ]),
             h('div', { class: 'quick-actions' }, [
@@ -391,7 +434,7 @@ const TreeItem = defineComponent({
                 onClick: (e) => { e.stopPropagation(); clearTimeout(this.clickTimeout); this.isDoubleClick = false; this.clickTimeout = setTimeout(() => { if (!this.isDoubleClick) this.$emit('edit', spouse); }, 200); },
                 onDblclick: (e) => { e.stopPropagation(); this.isDoubleClick = true; clearTimeout(this.clickTimeout); this.$emit('show-qr', spouse); }
             }, [
-                h('div', { class: 'node-avatar-container' }, [ h('img', { src: spouse.avatar ? spouse.avatar : ('https://ui-avatars.com/api/?name=' + spouse.ho_ten + '&background=d4af37&color=fff'), class: 'node-avatar shadow-sm' }) ]),
+                h('div', { class: 'node-avatar-container' }, [ h('img', { src: spouse.avatar ? spouse.avatar : DEFAULT_AVATAR, class: 'node-avatar shadow-sm' }) ]),
                 h('div', { class: 'node-content' }, [ h('div', { class: 'node-name' }, spouse.ho_ten), h('div', { class: 'node-tag spouse-tag' }, spouse.gioi_tinh === 'Nữ' ? 'Vợ' : (spouse.gioi_tinh === 'Nam' ? 'Chồng' : 'Vợ/Chồng')) ]),
                 h('div', { class: 'node-edit-btn' }, [ h('i', { class: 'bx bx-pencil' }) ]),
                 h('div', { class: 'quick-actions' }, [
@@ -497,6 +540,7 @@ export default {
     components: { TreeItem },
     data() {
         return {
+            defaultAvatar: DEFAULT_AVATAR,
             allMembers: [],
             listChiNhanh: [],
             selectedChiNhanhId: null,
@@ -582,6 +626,11 @@ export default {
                 transform: `translate(${this.posX}px, ${this.posY}px) scale(${this.zoom})`,
                 transformOrigin: 'top center'
             };
+        },
+        getChiNhanhName() {
+            if (!this.selectedChiNhanhId || !this.listChiNhanh.length) return '';
+            const active = this.listChiNhanh.find(c => c.id === this.selectedChiNhanhId);
+            return active ? active.ten_chi : '';
         }
     },
     mounted() {
@@ -659,8 +708,21 @@ export default {
                 const canvas = document.querySelector('.tree');
                 if (!canvas) throw new Error("Không tìm thấy cây gia phả");
                 
+                // Calculate dynamic scale based on tree size to prevent out-of-memory/storage issues
+                let scale = 2;
+                const maxDim = Math.max(canvas.scrollWidth, canvas.scrollHeight);
+                if (maxDim > 8000) {
+                    scale = 0.8;
+                } else if (maxDim > 5000) {
+                    scale = 1.0;
+                } else if (maxDim > 3000) {
+                    scale = 1.2;
+                } else if (maxDim > 1500) {
+                    scale = 1.5;
+                }
+                
                 const renderedCanvas = await html2canvas(canvas, {
-                    scale: 2, // High resolution
+                    scale: scale, // Dynamic scale based on dimensions
                     useCORS: true,
                     backgroundColor: '#faf9f6',
                     logging: false
@@ -706,14 +768,29 @@ export default {
                 const canvas = document.querySelector('.tree');
                 if (!canvas) throw new Error("Không tìm thấy cây gia phả");
                 
+                // Calculate dynamic scale based on tree size to prevent out-of-memory/storage issues
+                let scale = 2;
+                const maxDim = Math.max(canvas.scrollWidth, canvas.scrollHeight);
+                if (maxDim > 8000) {
+                    scale = 0.8;
+                } else if (maxDim > 5000) {
+                    scale = 1.0;
+                } else if (maxDim > 3000) {
+                    scale = 1.2;
+                } else if (maxDim > 1500) {
+                    scale = 1.5;
+                }
+                
                 const renderedCanvas = await html2canvas(canvas, {
-                    scale: 2,
+                    scale: scale,
                     useCORS: true,
                     backgroundColor: '#faf9f6',
                     logging: false
                 });
                 
-                const imgData = renderedCanvas.toDataURL('image/jpeg', 1.0);
+                // Using JPEG with 0.85 quality and FAST compression inside jsPDF 
+                // is highly optimized and prevents browser Out of Storage / memory crash.
+                const imgData = renderedCanvas.toDataURL('image/jpeg', 0.85);
                 const imgProps = renderedCanvas; // width and height
                 
                 // Calculate PDF size matching the tree aspect ratio
@@ -723,7 +800,7 @@ export default {
                     format: [imgProps.width, imgProps.height]
                 });
                 
-                pdf.addImage(imgData, 'JPEG', 0, 0, imgProps.width, imgProps.height);
+                pdf.addImage(imgData, 'JPEG', 0, 0, imgProps.width, imgProps.height, undefined, 'FAST');
                 pdf.save(`Cay_Gia_Pha_${this.selectedChiNhanhId || 'Export'}.pdf`);
                 
                 toastr.success('Xuất PDF thành công!');
@@ -775,7 +852,8 @@ export default {
             this.currentMember = {
                 id: null, ho_ten: '', doi_thu: 1, cha_id: null, me_id: null, gioi_tinh: 'Nam',
                 loai_quan_he: 'Chính', spouse_of_id: null, trang_thai: 'Còn sống', ngay_mat: null, ngay_sinh: null, ghi_chu: '', avatar: null,
-                chi_nhanh_id: this.selectedChiNhanhId
+                chi_nhanh_id: this.selectedChiNhanhId,
+                ngay_mat_al_ngay: null, ngay_mat_al_thang: null, ngay_mat_al_nam: null, ngay_mat_al_nhuan: 0
             };
             this.avatarFile = null;
             this.avatarPreview = null;
@@ -786,7 +864,8 @@ export default {
             this.currentMember = {
                 id: null, ho_ten: '', doi_thu: parentMember.doi_thu + 1, cha_id: parentMember.id, me_id: null, gioi_tinh: 'Nam',
                 loai_quan_he: 'Chính', spouse_of_id: null, trang_thai: 'Còn sống', ngay_mat: null, ngay_sinh: null, ghi_chu: '', avatar: null,
-                chi_nhanh_id: this.selectedChiNhanhId
+                chi_nhanh_id: this.selectedChiNhanhId,
+                ngay_mat_al_ngay: null, ngay_mat_al_thang: null, ngay_mat_al_nam: null, ngay_mat_al_nhuan: 0
             };
             this.avatarFile = null;
             this.avatarPreview = null;
@@ -797,7 +876,8 @@ export default {
             this.currentMember = {
                 id: null, ho_ten: '', doi_thu: mainMember.doi_thu, cha_id: null, me_id: null, gioi_tinh: mainMember.gioi_tinh === 'Nam' ? 'Nữ' : 'Nam',
                 loai_quan_he: 'Vợ/Chồng', spouse_of_id: mainMember.id, trang_thai: 'Còn sống', ngay_mat: null, ngay_sinh: null, ghi_chu: '', avatar: null,
-                chi_nhanh_id: this.selectedChiNhanhId
+                chi_nhanh_id: this.selectedChiNhanhId,
+                ngay_mat_al_ngay: null, ngay_mat_al_thang: null, ngay_mat_al_nam: null, ngay_mat_al_nhuan: 0
             };
             this.avatarFile = null;
             this.avatarPreview = null;
@@ -1213,9 +1293,12 @@ export default {
 .gen-5::before { background: linear-gradient(to bottom, #e58e26, #fdfbf3); }
 
 .tree-node-card.is-dead {
-    filter: grayscale(0.6);
     background: #f9f9f9;
     border-color: #bdc3c7;
+}
+
+.tree-node-card.is-dead .node-avatar {
+    filter: grayscale(0.6);
 }
 
 .node-avatar {
@@ -1447,4 +1530,80 @@ export default {
   height: 90px;
   visibility: hidden;
 }
+
+/* ─── OVERRIDES FOR PDF/IMAGE EXPORT ─── */
+.tree.is-exporting {
+  padding: 40px 60px !important;
+}
+
+.export-header {
+  display: none;
+}
+
+.tree.is-exporting .export-header {
+  display: block !important;
+  margin-bottom: 50px !important;
+  text-align: center !important;
+}
+
+.export-title {
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 32px;
+  font-weight: 800;
+  color: #3b2c0c;
+  letter-spacing: 2px;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.export-subtitle {
+  font-size: 16px;
+  color: #d4af37;
+  font-weight: 700;
+  letter-spacing: 1px;
+  margin-bottom: 20px;
+  text-transform: uppercase;
+}
+
+.export-divider {
+  width: 200px;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, #d4af37, transparent);
+  margin: 0 auto;
+}
+
+.tree.is-exporting .quick-actions,
+.tree.is-exporting .node-edit-btn {
+  display: none !important;
+}
+
+.tree.is-exporting .tree-node-card {
+  filter: none !important; /* Fixes html2canvas black rectangle bug on grayscale filters */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05) !important;
+  background: #ffffff !important;
+}
+
+.tree.is-exporting .tree-node-card.spouse {
+  border-style: solid !important; /* Fixes html2canvas black rectangle bug on dashed borders with border-radius */
+}
+
+.tree.is-exporting .tree-node-card.is-dead {
+  border-color: #bdc3c7 !important;
+  background: #f5f6fa !important;
+}
+
+.tree.is-exporting .tree-node-card.is-dead .node-avatar {
+  filter: none !important;
+}
+
+.tree.is-exporting .tree-node-card::before {
+  /* Replace gradient with a solid color to avoid gradient rendering bugs in html2canvas */
+  background: #d4af37 !important;
+}
+
+.tree.is-exporting .gen-1::before { background: #e1b12c !important; }
+.tree.is-exporting .gen-2::before { background: #d4af37 !important; }
+.tree.is-exporting .gen-3::before { background: #b38d21 !important; }
+.tree.is-exporting .gen-4::before { background: #957314 !important; }
+.tree.is-exporting .gen-5::before { background: #e58e26 !important; }
 </style>

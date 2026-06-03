@@ -182,9 +182,46 @@
                     
                     <div class="col-md-6">
                       <label class="form-label-premium">
-                        <i class="bx bx-time me-1"></i>Thời gian tổ chức <span class="text-danger">*</span>
+                        <i class="bx bx-time me-1"></i>Thời gian tổ chức <span class="text-danger" v-if="!form.is_lunar">*</span>
                       </label>
-                      <input type="datetime-local" class="form-control premium-input-glow" v-model="form.ngay_to_chuc">
+                      <input type="datetime-local" class="form-control premium-input-glow" v-model="form.ngay_to_chuc" :disabled="form.is_lunar">
+                    </div>
+                  </div>
+
+                  <div class="mt-3">
+                    <div class="form-check form-switch mb-2">
+                      <input class="form-check-input" type="checkbox" id="is_lunar_event" v-model="form.is_lunar" :true-value="true" :false-value="false">
+                      <label class="form-check-label fw-bold text-secondary" for="is_lunar_event">
+                        <i class="bx bx-moon me-1 text-warning"></i> Sự kiện Âm lịch
+                      </label>
+                    </div>
+                  </div>
+
+                  <div class="card bg-light border border-dashed p-3 radius-8 mt-2" v-if="form.is_lunar">
+                    <h6 class="fw-bold mb-3 text-dark d-flex align-items-center gap-1">
+                      <i class="bx bx-calendar-event text-warning fs-5"></i> Ngày tổ chức Âm lịch
+                    </h6>
+                    <div class="row g-2">
+                      <div class="col-md-4 col-6">
+                        <label class="form-label small text-muted mb-1">Ngày AL <span class="text-danger">*</span></label>
+                        <select class="form-select radius-8 border-2 shadow-none text-dark" v-model="form.ngay_al_ngay">
+                          <option :value="null">--</option>
+                          <option v-for="d in 30" :key="d" :value="d">{{ d }}</option>
+                        </select>
+                      </div>
+                      <div class="col-md-4 col-6">
+                        <label class="form-label small text-muted mb-1">Tháng AL <span class="text-danger">*</span></label>
+                        <select class="form-select radius-8 border-2 shadow-none text-dark" v-model="form.ngay_al_thang">
+                          <option :value="null">--</option>
+                          <option v-for="m in 12" :key="m" :value="m">Tháng {{ m }}</option>
+                        </select>
+                      </div>
+                      <div class="col-md-4 col-12 d-flex align-items-end">
+                        <div class="form-check mb-2 ms-2">
+                          <input class="form-check-input" type="checkbox" id="nhuan_event" v-model="form.ngay_al_nhuan" :true-value="true" :false-value="false">
+                          <label class="form-check-label fw-semibold text-dark" for="nhuan_event">Tháng nhuận</label>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -269,7 +306,12 @@ export default {
         noi_dung: '',
         ngay_to_chuc: '',
         dia_diem: '',
-        loai: 'Giỗ tổ'
+        loai: 'Giỗ tổ',
+        is_lunar: false,
+        ngay_al_ngay: null,
+        ngay_al_thang: null,
+        ngay_al_nam: null,
+        ngay_al_nhuan: false
       },
       listChiNhanh: [],
       searchQuery: '',
@@ -386,7 +428,18 @@ export default {
     openAddModal() {
       this.isEditing = false;
       this.form = {
-        id: null, tieu_de: '', noi_dung: '', ngay_to_chuc: '', dia_diem: '', loai: 'Giỗ tổ', chi_nhanh_id: (this.listChiNhanh[0] && this.listChiNhanh[0].id) || null
+        id: null,
+        tieu_de: '',
+        noi_dung: '',
+        ngay_to_chuc: '',
+        dia_diem: '',
+        loai: 'Giỗ tổ',
+        chi_nhanh_id: (this.listChiNhanh[0] && this.listChiNhanh[0].id) || null,
+        is_lunar: false,
+        ngay_al_ngay: null,
+        ngay_al_thang: null,
+        ngay_al_nam: null,
+        ngay_al_nhuan: false
       };
       this.modal.show();
     },
@@ -399,14 +452,30 @@ export default {
         ngay_to_chuc: ev.ngay_to_chuc ? ev.ngay_to_chuc.substring(0, 16) : '',
         dia_diem: ev.dia_diem || '',
         loai: ev.loai,
-        chi_nhanh_id: ev.chi_nhanh_id || null
+        chi_nhanh_id: ev.chi_nhanh_id || null,
+        is_lunar: ev.is_lunar ? true : false,
+        ngay_al_ngay: ev.ngay_al_ngay || null,
+        ngay_al_thang: ev.ngay_al_thang || null,
+        ngay_al_nam: ev.ngay_al_nam || null,
+        ngay_al_nhuan: ev.ngay_al_nhuan ? true : false
       };
       this.modal.show();
     },
     saveEvent() {
-      if (!this.form.tieu_de || !this.form.ngay_to_chuc) {
-        toastr.warning('Vui lòng điền tiêu đề và thời gian tổ chức sự kiện!');
+      if (!this.form.tieu_de) {
+        toastr.warning('Vui lòng điền tiêu đề sự kiện!');
         return;
+      }
+      if (this.form.is_lunar) {
+        if (!this.form.ngay_al_ngay || !this.form.ngay_al_thang) {
+          toastr.warning('Vui lòng điền đầy đủ ngày/tháng Âm lịch!');
+          return;
+        }
+      } else {
+        if (!this.form.ngay_to_chuc) {
+          toastr.warning('Vui lòng điền thời gian tổ chức sự kiện!');
+          return;
+        }
       }
       const url = this.isEditing 
         ? 'http://127.0.0.1:8000/api/su-kien/update'
