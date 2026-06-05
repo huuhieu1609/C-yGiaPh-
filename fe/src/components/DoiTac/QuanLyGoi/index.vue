@@ -118,11 +118,11 @@
                 <!-- Progress Bar -->
                 <div class="qg-progress-wrap mt-3" v-if="pkg.is_active">
                   <div class="qg-progress-bar" :class="getProgressClass(pkg)">
-                    <div class="qg-progress-fill" :style="{ width: pkg.progress_pct + '%' }"></div>
+                    <div class="qg-progress-fill" :style="{ width: (pkg.progress_pct !== null && pkg.progress_pct !== undefined ? pkg.progress_pct : 100) + '%' }"></div>
                   </div>
                   <div class="qg-progress-labels">
                     <span>{{ formatDate(pkg.ngay_bat_dau) }}</span>
-                    <span class="fw-semibold">{{ pkg.progress_pct.toFixed(0) }}% còn lại</span>
+                    <span class="fw-semibold">{{ (pkg.progress_pct !== null && pkg.progress_pct !== undefined ? pkg.progress_pct.toFixed(0) : 100) }}% còn lại</span>
                     <span>{{ formatDate(pkg.ngay_ket_thuc) }}</span>
                   </div>
                 </div>
@@ -132,11 +132,15 @@
               <div class="qg-card-details">
                 <div class="qg-detail-row">
                   <span><i class="bx bx-layer me-1 text-info"></i>Giới hạn đời:</span>
-                  <strong>{{ pkg.max_doi >= 999 ? 'Không giới hạn' : pkg.max_doi + ' đời' }}</strong>
+                  <strong>{{ (pkg.max_doi !== null && pkg.max_doi !== undefined) ? (pkg.max_doi >= 999 ? 'Không giới hạn' : pkg.max_doi + ' đời') : 'Chưa giới hạn' }}</strong>
                 </div>
                 <div class="qg-detail-row">
                   <span><i class="bx bx-group me-1 text-success"></i>Giới hạn thành viên:</span>
-                  <strong>{{ pkg.max_thanh_vien >= 99999 ? 'Không giới hạn' : pkg.max_thanh_vien.toLocaleString() + ' người' }}</strong>
+                  <strong>{{ (pkg.max_thanh_vien !== null && pkg.max_thanh_vien !== undefined) ? (pkg.max_thanh_vien >= 99999 ? 'Không giới hạn' : pkg.max_thanh_vien.toLocaleString() + ' người') : 'Chưa giới hạn' }}</strong>
+                </div>
+                <div class="qg-detail-row">
+                  <span><i class="bx bx-git-branch me-1 text-warning"></i>Giới hạn chi nhánh:</span>
+                  <strong>{{ (pkg.max_chi_nhanh !== null && pkg.max_chi_nhanh !== undefined) ? (pkg.max_chi_nhanh >= 999 ? 'Không giới hạn' : pkg.max_chi_nhanh + ' chi nhánh') : '1 chi nhánh' }}</strong>
                 </div>
               </div>
 
@@ -208,6 +212,11 @@
             </div>
             <div class="qg-limit-sep"></div>
             <div class="qg-limit-item">
+              <i class="bx bx-git-branch text-primary"></i>
+              <span>Tối đa <strong>{{ effectiveMaxChiNhanh >= 999 ? 'không giới hạn' : (effectiveMaxChiNhanh || 1) + ' chi nhánh' }}</strong></span>
+            </div>
+            <div class="qg-limit-sep"></div>
+            <div class="qg-limit-item">
               <i class="bx bx-calendar text-warning"></i>
               <span>Hết hạn muộn nhất: <strong>{{ latestExpiry ? formatDate(latestExpiry) : 'Vô thời hạn' }}</strong></span>
             </div>
@@ -269,6 +278,7 @@ export default {
       effectiveFeatures: [],
       effectiveMaxDoi: 0,
       effectiveMaxMember: 0,
+      effectiveMaxChiNhanh: 1,
       activeCount: 0,
       latestExpiry: null,
       earliestExpiry: null,
@@ -300,6 +310,7 @@ export default {
           this.effectiveFeatures  = d.effective_features || [];
           this.effectiveMaxDoi    = d.effective_max_doi || 0;
           this.effectiveMaxMember = d.effective_max_thanh_vien || 0;
+          this.effectiveMaxChiNhanh = d.effective_max_chi_nhanh || 1;
           this.activeCount        = d.active_count || 0;
           this.latestExpiry       = d.latest_expiry || null;
           this.earliestExpiry     = d.earliest_expiry || null;

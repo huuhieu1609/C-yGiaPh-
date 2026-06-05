@@ -7,7 +7,14 @@
             <h5 class="fw-bold mb-0 theme-text-main">
               <i class="bx bx-calendar-event me-2 text-warning"></i>Quản Lý Sự Kiện Dòng Họ
             </h5>
-            <div class="d-flex align-items-center gap-2">
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+              <!-- Select Tree/Branch Filter -->
+              <div style="width: 170px;">
+                <select class="form-select premium-select fw-bold py-1 px-3 shadow-none border-2" v-model="selectedChiNhanhId">
+                  <option value="all">-- Tất cả các cây --</option>
+                  <option v-for="cn in listChiNhanh" :key="cn.id" :value="cn.id">{{ cn.ten_chi }}</option>
+                </select>
+              </div>
               <button class="btn btn-refresh-premium rounded-circle d-flex align-items-center justify-content-center" @click="refreshData" :disabled="isLoading" title="Làm mới dữ liệu">
                 <i class="bx bx-sync fs-5 text-warning" :class="{'bx-spin': isLoading}"></i>
               </button>
@@ -29,17 +36,25 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <tr v-if="events.length === 0">
+                  <tr v-if="filteredEvents.length === 0">
                     <td colspan="5" class="text-center py-5 text-muted bg-transparent fw-medium">
                       <i class="bx bx-calendar d-block display-4 opacity-25 mb-2 text-warning"></i>
-                      Chưa có sự kiện nào được khởi tạo trong dòng họ.
+                      Không tìm thấy sự kiện nào cho cây gia phả này.
                     </td>
                   </tr>
-                  <tr v-for="ev in events" :key="ev.id" class="table-row-premium" :class="{'row-active': selectedEventId === ev.id}" @click="selectEvent(ev)">
+                  <tr v-for="ev in filteredEvents" :key="ev.id" class="table-row-premium" :class="{'row-active': selectedEventId === ev.id}" @click="selectEvent(ev)">
                     <td class="ps-4 bg-transparent">
                       <div>
                         <strong class="theme-text-main d-block font-bold mb-1">{{ ev.tieu_de }}</strong>
-                        <small class="text-secondary text-truncate d-inline-block" style="max-width: 220px;">{{ ev.noi_dung }}</small>
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                          <small class="text-secondary text-truncate d-inline-block" style="max-width: 140px;">{{ ev.noi_dung }}</small>
+                          <span class="badge bg-light text-dark font-9 py-0.5 px-2" style="border: 1px solid rgba(0,0,0,0.1); border-radius: 4px !important;" v-if="ev.chi_nhanh_id">
+                            <i class="bx bx-git-branch text-warning"></i> {{ getEventBranchName(ev.chi_nhanh_id) }}
+                          </span>
+                          <span class="badge bg-light text-secondary font-9 py-0.5 px-2" style="border: 1px solid rgba(0,0,0,0.1); border-radius: 4px !important;" v-else>
+                            Toàn họ
+                          </span>
+                        </div>
                       </div>
                     </td>
                     <td class="bg-transparent">
@@ -300,6 +315,7 @@ export default {
       participants: [],
       selectedEventId: null,
       selectedEventName: '',
+      selectedChiNhanhId: 'all',
       form: {
         id: null,
         tieu_de: '',
@@ -322,6 +338,12 @@ export default {
     };
   },
   computed: {
+    filteredEvents() {
+      if (this.selectedChiNhanhId === 'all') {
+        return this.events;
+      }
+      return this.events.filter(e => e.chi_nhanh_id == this.selectedChiNhanhId);
+    },
     filteredParticipants() {
       let list = this.participants;
       if (this.searchQuery) {
@@ -336,6 +358,18 @@ export default {
     maxDoi() {
       if (!this.participants.length) return 0;
       return Math.max(...this.participants.map(p => p.doi_thu));
+    }
+  },
+  watch: {
+    selectedChiNhanhId() {
+      const list = this.filteredEvents;
+      if (list.length > 0) {
+        this.selectEvent(list[0]);
+      } else {
+        this.selectedEventId = null;
+        this.selectedEventName = '';
+        this.participants = [];
+      }
     }
   },
   mounted() {
@@ -525,6 +559,11 @@ export default {
       if (!d) return '';
       const dt = new Date(d);
       return dt.toLocaleDateString('vi-VN') + ' ' + dt.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+    },
+    getEventBranchName(branchId) {
+      if (!this.listChiNhanh || !this.listChiNhanh.length) return 'Cây gia phả';
+      const branch = this.listChiNhanh.find(c => c.id === branchId);
+      return branch ? branch.ten_chi : 'Cây gia phả';
     }
   }
 };

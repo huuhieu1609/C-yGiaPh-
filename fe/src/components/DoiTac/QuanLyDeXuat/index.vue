@@ -33,7 +33,14 @@
             <h5 class="fw-bold mb-0 theme-text-main">
               <i class="bx bx-git-pull-request me-2 text-warning"></i>Quản Lý Kiểm Duyệt Đề Xuất Phả Hệ
             </h5>
-            <div class="d-flex align-items-center gap-2">
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+              <!-- Select Tree/Branch Filter -->
+              <div style="width: 170px;">
+                <select class="form-select premium-select fw-bold py-1 px-3 shadow-none border-2" v-model="selectedChiNhanhId">
+                  <option value="all">-- Tất cả các cây --</option>
+                  <option v-for="cn in listChiNhanh" :key="cn.id" :value="cn.id">{{ cn.ten_chi }}</option>
+                </select>
+              </div>
               <button class="btn btn-refresh-premium rounded-circle d-flex align-items-center justify-content-center" @click="refreshData" :disabled="isLoading" title="Làm mới dữ liệu">
                 <i class="bx bx-sync fs-5 text-warning" :class="{'bx-spin': isLoading}"></i>
               </button>
@@ -67,8 +74,11 @@
                     </td>
                   </tr>
                   <tr v-for="item in filteredProposals" :key="item.id" class="table-row-premium">
-                    <td class="ps-4 bg-transparent fw-bold theme-text-main">
-                      {{ item.proposed_by ? item.proposed_by.ho_ten : 'Khách vãng lai' }}
+                    <td class="ps-4 bg-transparent">
+                      <strong class="theme-text-main d-block font-bold mb-1">{{ item.proposed_by ? item.proposed_by.ho_ten : 'Khách vãng lai' }}</strong>
+                      <span class="badge bg-light text-dark font-9 py-0.5 px-2" style="border: 1px solid rgba(0,0,0,0.1); border-radius: 4px !important;">
+                        <i class="bx bx-git-branch text-warning"></i> {{ getProposalBranchName(item) }}
+                      </span>
                     </td>
                     <td class="bg-transparent">
                       <span class="badge badge-premium-type" :class="typeBadgeClass(item.type)">
@@ -316,14 +326,24 @@ export default {
       currentProposal: {},
       responseNote: '',
       filterStatus: 'all',
+      selectedChiNhanhId: 'all',
       modal: null,
       isLoading: false
     };
   },
   computed: {
     filteredProposals() {
-      if (this.filterStatus === 'all') return this.proposals;
-      return this.proposals.filter(p => p.status === this.filterStatus);
+      let list = this.proposals;
+      if (this.filterStatus !== 'all') {
+        list = list.filter(p => p.status === this.filterStatus);
+      }
+      if (this.selectedChiNhanhId !== 'all') {
+        list = list.filter(p => {
+          const branchId = p.thanh_vien?.chi_nhanh_id || p.data?.chi_nhanh_id || p.proposed_by?.chi_nhanh_id;
+          return branchId == this.selectedChiNhanhId;
+        });
+      }
+      return list;
     }
   },
   mounted() {
@@ -501,6 +521,12 @@ export default {
       if (s === 'pending') return 'bg-warning-premium';
       if (s === 'approved') return 'bg-success-premium';
       return 'bg-danger-premium';
+    },
+    getProposalBranchName(item) {
+      const branchId = item.thanh_vien?.chi_nhanh_id || item.data?.chi_nhanh_id || item.proposed_by?.chi_nhanh_id;
+      if (!branchId) return 'Không rõ';
+      const branch = this.listChiNhanh.find(c => c.id === branchId);
+      return branch ? branch.ten_chi : 'Không rõ';
     }
   }
 };

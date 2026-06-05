@@ -58,14 +58,16 @@ class TaiLieuController extends Controller
     public function create(Request $request)
     {
         try {
-            $data = $request->only(['tieu_de', 'file_path', 'mo_ta']);
+            $data = $request->only(['tieu_de', 'file_path', 'mo_ta', 'chi_nhanh_id']);
 
-            // Assign chi_nhanh_id from partner's branch if available
-            $user = auth('sanctum')->user();
-            if ($user && $user->is_doi_tac == 1) {
-                $branchId = collect(\App\Models\ChiNhanh::getManagedBranchIds($user))->first();
-                if ($branchId) {
-                    $data['chi_nhanh_id'] = $branchId;
+            // Assign chi_nhanh_id from partner's branch if available and not provided
+            if (!isset($data['chi_nhanh_id']) || $data['chi_nhanh_id'] === '' || $data['chi_nhanh_id'] === null) {
+                $user = auth('sanctum')->user();
+                if ($user && $user->is_doi_tac == 1) {
+                    $branchId = collect(\App\Models\ChiNhanh::getManagedBranchIds($user))->first();
+                    if ($branchId) {
+                        $data['chi_nhanh_id'] = $branchId;
+                    }
                 }
             }
 
@@ -88,7 +90,7 @@ class TaiLieuController extends Controller
     {
         try {
             $item = TaiLieu::findOrFail($request->id);
-            $data = $request->only(['tieu_de', 'file_path', 'mo_ta']);
+            $data = $request->only(['tieu_de', 'file_path', 'mo_ta', 'chi_nhanh_id']);
             $item->update($data);
 
             return response()->json([

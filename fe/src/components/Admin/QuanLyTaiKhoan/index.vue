@@ -192,9 +192,14 @@
                         <button class="dd-item" v-if="acc.is_doi_tac != 1" @click="openUpgrade(acc); closeMenu(acc.id)">
                           <i class="bx bx-crown me-2 text-warning"></i>Cấp đối tác
                         </button>
-                        <button class="dd-item" v-else @click="doRemovePartner(acc); closeMenu(acc.id)">
-                          <i class="bx bx-user-minus me-2 text-danger"></i>Hủy đối tác
-                        </button>
+                        <template v-else>
+                          <button class="dd-item" @click="openUpgrade(acc); closeMenu(acc.id)">
+                            <i class="bx bx-crown me-2 text-warning"></i>Gia hạn / Nâng cấp
+                          </button>
+                          <button class="dd-item" @click="doRemovePartner(acc); closeMenu(acc.id)">
+                            <i class="bx bx-user-minus me-2 text-danger"></i>Hủy đối tác
+                          </button>
+                        </template>
                         <div class="dd-divider"></div>
                         <button class="dd-item danger" @click="doDelete(acc); closeMenu(acc.id)">
                           <i class="bx bx-trash me-2"></i>Xóa tài khoản
@@ -321,6 +326,26 @@
                 </select>
               </div>
             </div>
+            <div v-if="editForm.vai_tro !== 'Admin' && selectedAcc?.is_doi_tac == 1 && selectedAcc?.doi_tac" class="partner-info-box mt-3">
+              <div class="partner-info-card">
+                <div class="card-details">
+                  <div class="info-row">
+                    <span class="info-label">Gói hiện tại:</span>
+                    <span class="info-value text-gold">{{ selectedAcc.doi_tac.ten_goi }}</span>
+                  </div>
+                  <div class="info-row">
+                    <span class="info-label">Hạn sử dụng:</span>
+                    <span class="info-value" :class="{ 'text-danger fw-bold': isExpired(selectedAcc.doi_tac.ngay_ket_thuc) }">
+                      {{ formatDateShort(selectedAcc.doi_tac.ngay_ket_thuc) }}
+                      <span v-if="isExpired(selectedAcc.doi_tac.ngay_ket_thuc)"> (Hết hạn)</span>
+                    </span>
+                  </div>
+                </div>
+                <button type="button" class="btn-renew-partner" @click="openUpgradeFromEdit">
+                  <i class="bx bx-crown me-1"></i>Gia hạn / Nâng cấp
+                </button>
+              </div>
+            </div>
             <div class="modal-footer-btns">
               <button class="btn-secondary-custom" @click="modal.edit = false" :disabled="isProcessing">Hủy</button>
               <button class="btn-primary-custom" @click="submitEdit" :disabled="isProcessing">
@@ -395,7 +420,7 @@
               <select class="form-inp" v-model="upgradeForm.ten_goi" @change="onPackageChange">
                 <option value="">-- Chọn gói dịch vụ --</option>
                 <option v-for="pkg in availablePackages" :key="pkg.id" :value="pkg.ten_goi">
-                  {{ pkg.ten_goi }} — {{ formatCurrency(pkg.gia) }} / {{ pkg.thoi_han_nam }} năm
+                  {{ pkg.ten_goi }} — {{ formatCurrency(pkg.gia_ca) }} / {{ Math.round((pkg.thoi_han || 12) / 12) }} năm
                 </option>
               </select>
             </div>
@@ -673,7 +698,14 @@ export default {
 
     onPackageChange() {
       const pkg = this.availablePackages.find(p => p.ten_goi === this.upgradeForm.ten_goi);
-      if (pkg) { this.upgradeForm.so_tien = pkg.gia || 0; this.upgradeForm.thoi_han_nam = pkg.thoi_han_nam || 1; }
+      if (pkg) {
+        this.upgradeForm.so_tien = pkg.gia_ca || 0;
+        this.upgradeForm.thoi_han_nam = Math.max(1, Math.round((pkg.thoi_han || 12) / 12));
+      }
+    },
+    openUpgradeFromEdit() {
+      this.modal.edit = false;
+      this.openUpgrade(this.selectedAcc);
     },
 
     // API actions
@@ -1106,6 +1138,59 @@ function isExpiredFn(date) { return !!date && new Date(date) < new Date(); }
 .upgrade-target-info { display: flex; align-items: center; gap: 12px; background: var(--app-bg, #f8fafc); border-radius: 14px; padding: 14px; }
 .mini-avatar { width: 42px; height: 42px; border-radius: 12px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; color: #fff; }
 .upgrade-summary { background: rgba(217,119,6,0.06); border: 1px solid rgba(217,119,6,0.15); border-radius: 12px; padding: 12px 14px; font-size: 13px; color: var(--text-main, #334155); margin-top: 4px; }
+
+/* Partner info box in edit modal */
+.partner-info-box {
+  background: linear-gradient(135deg, rgba(217, 119, 6, 0.05), rgba(245, 158, 11, 0.02));
+  border: 1px dashed rgba(217, 119, 6, 0.3);
+  border-radius: 14px;
+  padding: 14px;
+}
+.partner-info-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.card-details {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.info-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+}
+.info-label {
+  color: var(--text-sub, #64748b);
+  font-weight: 500;
+}
+.info-value {
+  font-weight: 700;
+  color: var(--text-main, #1e293b);
+}
+.info-value.text-gold {
+  color: #d97706;
+}
+.btn-renew-partner {
+  background: linear-gradient(135deg, #d97706, #b45309);
+  color: #fff;
+  border: none;
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 10px rgba(217, 119, 6, 0.2);
+}
+.btn-renew-partner:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(217, 119, 6, 0.3);
+}
 
 /* Buttons */
 .modal-footer-btns { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }

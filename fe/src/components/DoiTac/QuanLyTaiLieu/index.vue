@@ -24,7 +24,7 @@
         </div>
 
         <div class="row mb-4 g-3 align-items-center">
-          <div class="col-md-6 col-lg-4">
+          <div class="col-md-5 col-lg-4">
             <div class="position-relative">
               <input 
                 type="text" 
@@ -37,7 +37,13 @@
               </span>
             </div>
           </div>
-          <div class="col-md-6 col-lg-8 text-md-end">
+          <div class="col-md-4 col-lg-3">
+            <select class="form-select premium-select fw-bold shadow-none border-2" v-model="selectedChiNhanhId">
+              <option value="all">-- Tất cả các cây --</option>
+              <option v-for="cn in listChiNhanh" :key="cn.id" :value="cn.id">{{ cn.ten_chi }}</option>
+            </select>
+          </div>
+          <div class="col-md-3 col-lg-5 text-md-end">
             <button class="btn btn-sm btn-gradient-orange text-white radius-30 fw-bold px-4 shadow-sm" @click="openAddModal">
               <i class="bx bx-plus-circle me-1 fs-5"></i> Thêm Tài Liệu Mới
             </button>
@@ -88,6 +94,15 @@
                 <p class="text-secondary small flex-grow-1 text-truncate-3 mb-3 line-clamp-desc-fix" :title="item.mo_ta">
                   {{ item.mo_ta || 'Không có mô tả chi tiết cho di sản này.' }}
                 </p>
+
+                <div class="mb-3">
+                  <span class="badge bg-light text-dark font-9 py-0.5 px-2" style="border: 1px solid rgba(0,0,0,0.1); border-radius: 4px !important;" v-if="item.chi_nhanh_id">
+                    <i class="bx bx-git-branch text-warning"></i> {{ getDocumentBranchName(item.chi_nhanh_id) }}
+                  </span>
+                  <span class="badge bg-light text-secondary font-9 py-0.5 px-2" style="border: 1px solid rgba(0,0,0,0.1); border-radius: 4px !important;" v-else>
+                    Toàn họ
+                  </span>
+                </div>
 
                 <div class="mt-auto pt-3 border-top border-adaptive d-flex align-items-center justify-content-between">
                   <span class="text-secondary small font-medium">
@@ -154,6 +169,13 @@
                   placeholder="Nhập nguồn gốc lịch sử, niên đại sắc phong hoặc tóm tắt nội dung văn tự chép tay..."
                 ></textarea>
               </div>
+              <div class="mb-3">
+                <label class="form-label fw-bold text-secondary small text-uppercase font-bold">Liên kết Chi Nhánh</label>
+                <select class="form-select premium-select" v-model="currentDocument.chi_nhanh_id">
+                  <option :value="null">-- Tài liệu công cộng (Toàn họ) --</option>
+                  <option v-for="cn in listChiNhanh" :key="cn.id" :value="cn.id">{{ cn.ten_chi }}</option>
+                </select>
+              </div>
               
               <div class="d-flex justify-content-end gap-2 mt-4">
                 <button type="button" class="btn btn-light radius-30 px-4 fw-medium" data-bs-dismiss="modal">Hủy bỏ</button>
@@ -178,6 +200,8 @@ export default {
   data() {
     return {
       listDocuments: [],
+      listChiNhanh: [],
+      selectedChiNhanhId: 'all',
       searchQuery: '',
       loading: false,
       isEditing: false,
@@ -186,17 +210,22 @@ export default {
         id: null,
         tieu_de: '',
         file_path: '',
-        mo_ta: ''
+        mo_ta: '',
+        chi_nhanh_id: null
       }
     };
   },
   computed: {
     filteredDocuments() {
+      let list = this.listDocuments;
+      if (this.selectedChiNhanhId !== 'all') {
+        list = list.filter(item => item.chi_nhanh_id == this.selectedChiNhanhId);
+      }
       if (!this.searchQuery) {
-        return this.listDocuments;
+        return list;
       }
       const query = this.searchQuery.toLowerCase().trim();
-      return this.listDocuments.filter(item => 
+      return list.filter(item => 
         (item.tieu_de && item.tieu_de.toLowerCase().includes(query)) ||
         (item.mo_ta && item.mo_ta.toLowerCase().includes(query)) ||
         (item.file_path && item.file_path.toLowerCase().includes(query))
@@ -211,6 +240,7 @@ export default {
       }
     });
     this.loadDocuments();
+    this.loadChiNhanh();
   },
   methods: {
     getHeaders() {
@@ -260,7 +290,11 @@ export default {
     openAddModal() {
       this.isEditing = false;
       this.currentDocument = {
-        id: null, tieu_de: '', file_path: '', mo_ta: ''
+        id: null,
+        tieu_de: '',
+        file_path: '',
+        mo_ta: '',
+        chi_nhanh_id: this.selectedChiNhanhId !== 'all' ? this.selectedChiNhanhId : ((this.listChiNhanh && this.listChiNhanh[0]?.id) || null)
       };
       if (this.modal) {
         this.modal.show();
@@ -322,6 +356,19 @@ export default {
             toastr.error('Lỗi truyền thông máy chủ.');
           });
       }
+    },
+    loadChiNhanh() {
+      axios.get('http://127.0.0.1:8000/api/chi-nhanh/get-data', this.getHeaders())
+        .then(res => {
+          if (res.data.status) {
+            this.listChiNhanh = res.data.data;
+          }
+        });
+    },
+    getDocumentBranchName(branchId) {
+      if (!this.listChiNhanh || !this.listChiNhanh.length) return 'Cây gia phả';
+      const branch = this.listChiNhanh.find(c => c.id === branchId);
+      return branch ? branch.ten_chi : 'Cây gia phả';
     }
   }
 };

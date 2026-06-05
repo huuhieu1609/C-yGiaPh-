@@ -26,6 +26,17 @@
                         </h6>
                     </div>
                     <div class="card-body p-4">
+                        <!-- Select Tree/Branch Filter -->
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold theme-text-main text-uppercase mb-1.5 d-block">
+                                <i class="bx bx-git-branch text-warning me-1"></i> Chọn Cây Gia Phả
+                            </label>
+                            <select class="form-select premium-input border-2 shadow-none fw-bold" v-model="selectedChiNhanhId">
+                                <option value="all">-- Tất cả các cây --</option>
+                                <option v-for="cn in listChiNhanh" :key="cn.id" :value="cn.id">{{ cn.ten_chi }}</option>
+                            </select>
+                        </div>
+
                         <!-- Search Box -->
                         <div class="search-box mb-4">
                             <i class='bx bx-search'></i>
@@ -56,6 +67,9 @@
                                     <h6 class="mb-0 fw-bold member-title text-truncate theme-text-main">{{ m.ho_ten }}</h6>
                                     <small class="text-secondary small d-block text-truncate mt-0.5">
                                         Đời {{ m.doi_thu }} • {{ m.loai_quan_he || 'Thành viên' }}
+                                        <span class="d-block text-warning fw-semibold mt-0.5" style="font-size: 11px;">
+                                            <i class="bx bx-git-branch"></i> {{ getMemberBranchName(m) }}
+                                        </span>
                                     </small>
                                 </div>
                                 <div class="ms-2" v-if="m.email">
@@ -237,6 +251,8 @@ export default {
     data() {
         return {
             allMembers: [],
+            listChiNhanh: [],
+            selectedChiNhanhId: 'all',
             selectedMember: null,
             roleName: '',
             listChucNang: [],
@@ -253,9 +269,13 @@ export default {
     },
     computed: {
         filteredMembers() {
-            if (!this.searchMember) return this.allMembers;
+            let members = this.allMembers;
+            if (this.selectedChiNhanhId && this.selectedChiNhanhId !== 'all') {
+                members = members.filter(m => m.chi_nhanh_id === this.selectedChiNhanhId);
+            }
+            if (!this.searchMember) return members;
             const term = this.searchMember.toLowerCase();
-            return this.allMembers.filter(m =>
+            return members.filter(m =>
                 m.ho_ten.toLowerCase().includes(term) ||
                 (m.email && m.email.toLowerCase().includes(term))
             );
@@ -279,6 +299,7 @@ export default {
         }
     },
     mounted() {
+        this.loadChiNhanh();
         this.loadMembers();
     },
     methods: {
@@ -289,7 +310,24 @@ export default {
                 }
             };
         },
+        loadChiNhanh() {
+            axios.get('http://127.0.0.1:8000/api/chi-nhanh/get-data', this.getHeaders())
+                .then(res => {
+                    if (res.data.status) {
+                        this.listChiNhanh = res.data.data;
+                    }
+                })
+                .catch(() => {
+                    toastr.error('Không thể tải danh sách chi nhánh');
+                });
+        },
+        getMemberBranchName(member) {
+            if (!this.listChiNhanh || !this.listChiNhanh.length) return 'Cây gia phả';
+            const branch = this.listChiNhanh.find(c => c.id === member.chi_nhanh_id);
+            return branch ? branch.ten_chi : 'Cây gia phả';
+        },
         refreshAll() {
+            this.loadChiNhanh();
             this.loadMembers();
             if (this.selectedMember) {
                 this.selectMember(this.selectedMember);

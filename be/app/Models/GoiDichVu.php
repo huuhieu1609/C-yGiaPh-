@@ -17,6 +17,7 @@ class GoiDichVu extends Model
         'thoi_han',
         'max_doi',
         'max_thanh_vien',
+        'max_chi_nhanh',
         'mo_ta',
         'trang_thai',
         'features'

@@ -215,26 +215,43 @@ class QuanLyTaiKhoanController extends Controller
                         $changes['is_doi_tac'] = ['from' => $user->is_doi_tac, 'to' => $newIsDoiTac];
 
                         if ($newIsDoiTac === 1) {
-                            // Nâng cấp lên Trưởng Nhánh
-                            $doiTac = DoiTac::where('id_nguoi_dung', $user->id)->first();
-                            if ($doiTac) {
-                                $doiTac->update([
-                                    'ten_goi'       => 'Gói Đối Tác',
-                                    'ngay_ket_thuc' => now()->addYear()->toDateString(),
-                                    'trang_thai'    => 'APPROVED',
-                                    'ly_do_tu_choi' => null,
-                                ]);
-                            } else {
-                                DoiTac::create([
-                                    'id_nguoi_dung' => $user->id,
-                                    'ten_goi'       => 'Gói Đối Tác',
-                                    'so_tien'       => 0,
-                                    'ngay_bat_dau'  => now()->toDateString(),
-                                    'ngay_ket_thuc' => now()->addYear()->toDateString(),
-                                    'trang_thai'    => 'APPROVED',
-                                ]);
-                            }
-                            $user->is_doi_tac = 1;
+                             // Nâng cấp lên Trưởng Nhánh
+                             $doiTac = DoiTac::where('id_nguoi_dung', $user->id)->first();
+                             $goiDichVu = \App\Models\GoiDichVu::where('ten_goi', 'Gói Khởi Tạo')->first();
+                             $id_goi_dich_vu = $goiDichVu ? $goiDichVu->id : null;
+                             $maxDoi = $goiDichVu ? $goiDichVu->max_doi : 10;
+                             $maxThanhVien = $goiDichVu ? $goiDichVu->max_thanh_vien : 100;
+                             $maxChiNhanh = $goiDichVu ? $goiDichVu->max_chi_nhanh : 1;
+                             $features = $goiDichVu ? $goiDichVu->features : 'tao_cay_gia_pha,them_thanh_vien,sua_xoa_thanh_vien,quan_ly_vo_chong,quan_ly_con_nuoi,xuat_pdf';
+
+                             if ($doiTac) {
+                                 $doiTac->update([
+                                     'ten_goi'       => 'Gói Đối Tác',
+                                     'id_goi_dich_vu'=> $id_goi_dich_vu,
+                                     'ngay_ket_thuc' => now()->addYear()->toDateString(),
+                                     'trang_thai'    => 'APPROVED',
+                                     'ly_do_tu_choi' => null,
+                                     'max_doi'       => $maxDoi,
+                                     'max_thanh_vien'=> $maxThanhVien,
+                                     'max_chi_nhanh' => $maxChiNhanh,
+                                     'features'      => $features,
+                                 ]);
+                             } else {
+                                 DoiTac::create([
+                                     'id_nguoi_dung' => $user->id,
+                                     'ten_goi'       => 'Gói Đối Tác',
+                                     'id_goi_dich_vu'=> $id_goi_dich_vu,
+                                     'so_tien'       => 0,
+                                     'ngay_bat_dau'  => now()->toDateString(),
+                                     'ngay_ket_thuc' => now()->addYear()->toDateString(),
+                                     'trang_thai'    => 'APPROVED',
+                                     'max_doi'       => $maxDoi,
+                                     'max_thanh_vien'=> $maxThanhVien,
+                                     'max_chi_nhanh' => $maxChiNhanh,
+                                     'features'      => $features,
+                                 ]);
+                             }
+                             $user->is_doi_tac = 1;
 
                             // Tự động gán chi_nhanh_id theo email thành viên nếu có
                             if (!$user->chi_nhanh_id) {
@@ -414,26 +431,43 @@ class QuanLyTaiKhoanController extends Controller
                 $thoiHanNam  = (int) $request->input('thoi_han_nam');
                 $doiTac      = DoiTac::where('id_nguoi_dung', $userId)->first();
 
+                $goiDichVu   = \App\Models\GoiDichVu::where('ten_goi', $request->input('ten_goi'))->first();
+                $idGoiDichVu = $goiDichVu ? $goiDichVu->id : null;
+                $maxChiNhanh = $goiDichVu ? $goiDichVu->max_chi_nhanh : 1;
+                $maxDoi      = $goiDichVu ? $goiDichVu->max_doi : null;
+                $maxThanhVien= $goiDichVu ? $goiDichVu->max_thanh_vien : null;
+                $features    = $goiDichVu ? $goiDichVu->features : '';
+
                 if ($doiTac) {
                     $baseDate = Carbon::parse($doiTac->ngay_ket_thuc ?? now());
                     if ($baseDate->isPast()) $baseDate = now();
                     $ngayKetThuc = $baseDate->addYears($thoiHanNam)->toDateString();
 
                     $doiTac->update([
-                        'ten_goi'       => $request->input('ten_goi'),
-                        'so_tien'       => $doiTac->so_tien + $request->input('so_tien'),
-                        'ngay_ket_thuc' => $ngayKetThuc,
-                        'trang_thai'    => 'APPROVED',
-                        'ly_do_tu_choi' => null,
+                        'ten_goi'        => $request->input('ten_goi'),
+                        'id_goi_dich_vu' => $idGoiDichVu,
+                        'so_tien'        => $doiTac->so_tien + $request->input('so_tien'),
+                        'ngay_ket_thuc'  => $ngayKetThuc,
+                        'trang_thai'     => 'APPROVED',
+                        'ly_do_tu_choi'  => null,
+                        'max_doi'        => $maxDoi,
+                        'max_thanh_vien' => $maxThanhVien,
+                        'max_chi_nhanh'  => $maxChiNhanh,
+                        'features'       => $features,
                     ]);
                 } else {
                     DoiTac::create([
-                        'id_nguoi_dung' => $userId,
-                        'ten_goi'       => $request->input('ten_goi'),
-                        'so_tien'       => $request->input('so_tien'),
-                        'ngay_bat_dau'  => now()->toDateString(),
-                        'ngay_ket_thuc' => now()->addYears($thoiHanNam)->toDateString(),
-                        'trang_thai'    => 'APPROVED',
+                        'id_nguoi_dung'  => $userId,
+                        'ten_goi'        => $request->input('ten_goi'),
+                        'id_goi_dich_vu' => $idGoiDichVu,
+                        'so_tien'        => $request->input('so_tien'),
+                        'ngay_bat_dau'   => now()->toDateString(),
+                        'ngay_ket_thuc'  => now()->addYears($thoiHanNam)->toDateString(),
+                        'trang_thai'     => 'APPROVED',
+                        'max_doi'        => $maxDoi,
+                        'max_thanh_vien' => $maxThanhVien,
+                        'max_chi_nhanh'  => $maxChiNhanh,
+                        'features'       => $features,
                     ]);
                 }
 

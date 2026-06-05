@@ -10,14 +10,19 @@
                         <div class="col-md-9 text-md-end d-flex align-items-center justify-content-end gap-2 flex-wrap">
                             
                             <!-- Branch Selector (Global Filter) -->
-                            <div class="me-2" style="width: 220px;">
-                                <select class="form-select radius-30 border-2 shadow-none fw-bold" v-model="selectedChiNhanhId" @change="resetView">
-                                    <option v-for="cn in listChiNhanh" :key="cn.id" :value="cn.id">{{ cn.ten_chi }}</option>
-                                </select>
+                            <div class="d-flex align-items-center gap-1 me-2">
+                                <div style="width: 170px;">
+                                    <select class="form-select radius-30 border-2 shadow-none fw-bold" v-model="selectedChiNhanhId" @change="resetView">
+                                        <option v-for="cn in listChiNhanh" :key="cn.id" :value="cn.id">{{ cn.ten_chi }}</option>
+                                    </select>
+                                </div>
+                                <button class="btn btn-outline-primary radius-30 px-2.5 shadow-sm fw-bold d-flex align-items-center gap-1" @click="openBranchModal" title="Tạo Cây Gia Phả Mới">
+                                    <i class="bx bx-plus"></i> Tạo Cây
+                                </button>
                             </div>
 
                             <!-- Search Bar -->
-                            <div class="position-relative d-none d-lg-block" style="width: 200px;">
+                            <div class="position-relative d-none d-lg-block" style="width: 180px;">
                                 <input type="text" class="form-control ps-5 radius-30 border-2" v-model="searchQuery" placeholder="Tìm thành viên...">
                                 <span class="position-absolute top-50 translate-middle-y start-0 ms-3 text-secondary"><i class="bx bx-search"></i></span>
                             </div>
@@ -54,15 +59,15 @@
                         <p class="text-muted small">Quá trình này có thể mất vài giây nếu cây gia phả lớn.</p>
                     </div>
 
-                    <div v-if="listChiNhanh.length === 0" class="text-center py-5">
+                     <div v-if="listChiNhanh.length === 0" class="text-center py-5">
                         <div class="mb-4 mt-5">
                             <i class="bx bx-building-house fs-1 text-muted opacity-25" style="font-size: 100px !important;"></i>
                         </div>
                         <h4 class="fw-bold text-dark">Chưa có thông tin Dòng Họ!</h4>
                         <p class="text-muted">Bạn cần khởi tạo Dòng Họ (Chi Nhánh) để bắt đầu xây dựng cây gia phả.</p>
-                        <router-link to="/doi-tac/dong-ho" class="btn btn-primary radius-30 px-5 mt-3 shadow-sm mb-5">
+                        <button class="btn btn-primary radius-30 px-5 mt-3 shadow-sm mb-5 fw-bold" @click="openBranchModal">
                             <i class="bx bx-plus-circle"></i> Khởi Tạo Ngay
-                        </router-link>
+                        </button>
                     </div>
                     <!-- Pan & Zoom Tree Container -->
                     <div v-else class="tree-viewport" 
@@ -347,6 +352,37 @@
                 </div>
             </div>
         </div>
+
+        <!-- Modal Tạo Chi Nhánh / Cây Gia Phả Mới -->
+        <div class="modal fade" id="branchModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content radius-15 shadow-lg border-0">
+                    <div class="modal-header border-0 text-white radius-top-15 bg-primary">
+                        <h5 class="modal-title fw-bold">
+                            <i class="bx bx-git-branch text-white"></i> Tạo Cây Gia Phả (Dòng Họ) Mới
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body p-4">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-dark">Tên Dòng Họ / Tên Chi Nhánh</label>
+                            <input type="text" class="form-control radius-8 border-2 shadow-none" v-model="newBranch.ten_chi" placeholder="Ví dụ: Nguyễn Thực Chi, Trần Hữu Chi...">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-dark">Mô Tả</label>
+                            <textarea class="form-control radius-8 border-2 shadow-none" v-model="newBranch.mo_ta" rows="3" placeholder="Mô tả tóm tắt về chi nhánh này..."></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0 p-3">
+                        <button type="button" class="btn btn-light radius-30 px-4 fw-bold" data-bs-dismiss="modal" :disabled="isSavingBranch">Hủy</button>
+                        <button type="button" class="btn btn-primary radius-30 px-4 fw-bold" @click="saveBranch" :disabled="isSavingBranch || !newBranch.ten_chi">
+                            <span v-if="isSavingBranch" class="spinner-border spinner-border-sm me-1" role="status"></span>
+                            Tạo Cây Mới
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </template>
 
@@ -566,7 +602,11 @@ export default {
             searchQuery: '',
             showQRModal: false,
             activeMember: {},
-            // permissions/roles (removed)
+            
+            // Branch creation
+            newBranch: { ten_chi: '', mo_ta: '' },
+            isSavingBranch: false,
+            branchModal: null,
             
             // Zoom & Pan state
             zoom: 1,
@@ -649,12 +689,55 @@ export default {
             this.modal = new window.bootstrap.Modal(document.getElementById('memberModal'));
             const delEl = document.getElementById('deleteConfirmModal');
             if (delEl) this.deleteModal = new window.bootstrap.Modal(delEl);
+            const branchEl = document.getElementById('branchModal');
+            if (branchEl) this.branchModal = new window.bootstrap.Modal(branchEl);
         }
         this.loadDoiTocHo();
         this.loadChiNhanh();
         this.loadData();
     },
     methods: {
+        openBranchModal() {
+            this.newBranch = { ten_chi: '', mo_ta: '' };
+            if (this.branchModal) this.branchModal.show();
+        },
+        saveBranch() {
+            this.isSavingBranch = true;
+            axios.post('http://127.0.0.1:8000/api/doi-tac/tao-chi-nhanh', this.newBranch, this.getHeaders())
+                .then(res => {
+                    this.isSavingBranch = false;
+                    if (res.data.success) {
+                        toastr.success(res.data.message || 'Tạo cây gia phả mới thành công!');
+                        if (this.branchModal) this.branchModal.hide();
+                        
+                        // Reload branches list
+                        axios.get('http://127.0.0.1:8000/api/chi-nhanh/get-data', this.getHeaders())
+                            .then(cRes => {
+                                if (cRes.data.status) {
+                                    this.listChiNhanh = cRes.data.data;
+                                    // Select the new branch automatically
+                                    if (res.data.chi_nhanh && res.data.chi_nhanh.id) {
+                                        this.selectedChiNhanhId = res.data.chi_nhanh.id;
+                                    } else if (this.listChiNhanh.length > 0) {
+                                        this.selectedChiNhanhId = this.listChiNhanh[this.listChiNhanh.length - 1].id;
+                                    }
+                                    this.loadDoiTocHo();
+                                    this.loadData();
+                                    this.resetView();
+                                }
+                            });
+                    } else {
+                        toastr.error(res.data.message || 'Có lỗi xảy ra khi tạo chi nhánh.');
+                    }
+                })
+                .catch(err => {
+                    this.isSavingBranch = false;
+                    const msg = err.response && err.response.data && err.response.data.message 
+                        ? err.response.data.message 
+                        : 'Không thể tạo chi nhánh mới (có thể đã vượt quá giới hạn gói).';
+                    toastr.error(msg);
+                });
+        },
         getHeaders() {
             return { headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` } };
         },

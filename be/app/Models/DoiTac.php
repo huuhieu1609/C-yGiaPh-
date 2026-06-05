@@ -20,6 +20,7 @@ class DoiTac extends Model
         "features",
         "max_doi",
         "max_thanh_vien",
+        "max_chi_nhanh",
         "so_tien",
         "ngay_bat_dau",
         "ngay_ket_thuc",
@@ -185,8 +186,8 @@ class DoiTac extends Model
     }
 
     /**
-     * Trả về giới hạn đời và thành viên tổng hợp (lấy MAX từ các gói còn hạn).
-     * @return array{max_doi: int, max_thanh_vien: int}
+     * Trả về giới hạn đời, thành viên và chi nhánh tổng hợp (lấy MAX từ các gói còn hạn).
+     * @return array{max_doi: int, max_thanh_vien: int, max_chi_nhanh: int}
      */
     public static function getEffectiveLimits(int $userId): array
     {
@@ -194,17 +195,21 @@ class DoiTac extends Model
 
         $maxDoi        = 0;
         $maxThanhVien  = 0;
+        $maxChiNhanh   = 1;
 
         foreach ($packages as $pkg) {
             $doi = (int) ($pkg->max_doi ?? 0);
             $tv  = (int) ($pkg->max_thanh_vien ?? 0);
+            $cn  = (int) ($pkg->max_chi_nhanh ?? 1);
             if ($doi > $maxDoi) $maxDoi = $doi;
             if ($tv > $maxThanhVien) $maxThanhVien = $tv;
+            if ($cn > $maxChiNhanh) $maxChiNhanh = $cn;
         }
 
         return [
             'max_doi'         => $maxDoi,
             'max_thanh_vien'  => $maxThanhVien,
+            'max_chi_nhanh'   => $maxChiNhanh,
         ];
     }
 

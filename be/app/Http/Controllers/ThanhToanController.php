@@ -86,6 +86,7 @@ class ThanhToanController extends Controller
                     $featuresOfGoi  = $goi ? $goi->features        : '';
                     $maxDoi         = $goi ? (int) $goi->max_doi        : 10;
                     $maxThanhVien   = $goi ? (int) $goi->max_thanh_vien : 100;
+                    $maxChiNhanh    = $goi ? (int) $goi->max_chi_nhanh  : 1;
                     $goiId          = $goi ? $goi->id              : null;
 
                     $ngayBatDau  = now()->toDateString();
@@ -110,6 +111,7 @@ class ThanhToanController extends Controller
                             'features'      => $featuresOfGoi,
                             'max_doi'       => $maxDoi,
                             'max_thanh_vien'=> $maxThanhVien,
+                            'max_chi_nhanh' => $maxChiNhanh,
                         ]);
 
                         $targetRecord   = $existingSamePackage;
@@ -122,6 +124,7 @@ class ThanhToanController extends Controller
                             'features'       => $featuresOfGoi,
                             'max_doi'        => $maxDoi,
                             'max_thanh_vien' => $maxThanhVien,
+                            'max_chi_nhanh'  => $maxChiNhanh,
                             'so_tien'        => 0,
                             'ngay_bat_dau'   => $ngayBatDau,
                             'ngay_ket_thuc'  => $ngayKetThuc,
@@ -324,6 +327,7 @@ class ThanhToanController extends Controller
                 $featuresOfGoi  = $goi ? $goi->features        : '';
                 $maxDoi         = $goi ? (int) $goi->max_doi        : 5;
                 $maxThanhVien   = $goi ? (int) $goi->max_thanh_vien : 100;
+                $maxChiNhanh    = $goi ? (int) $goi->max_chi_nhanh  : 1;
                 $goiId          = $goi ? $goi->id              : null;
 
                 $ngayBatDau  = now()->toDateString();
@@ -353,6 +357,7 @@ class ThanhToanController extends Controller
                         'features'      => $featuresOfGoi,
                         'max_doi'       => $maxDoi,
                         'max_thanh_vien'=> $maxThanhVien,
+                        'max_chi_nhanh' => $maxChiNhanh,
                     ]);
 
                     $targetRecord   = $existingSamePackage;
@@ -377,6 +382,7 @@ class ThanhToanController extends Controller
                             'features'       => $featuresOfGoi,
                             'max_doi'        => $maxDoi,
                             'max_thanh_vien' => $maxThanhVien,
+                            'max_chi_nhanh'  => $maxChiNhanh,
                             'ngay_bat_dau'   => $ngayBatDau,
                             'ngay_ket_thuc'  => $ngayKetThuc,
                         ]);
@@ -391,6 +397,7 @@ class ThanhToanController extends Controller
                             'features'       => $featuresOfGoi,
                             'max_doi'        => $maxDoi,
                             'max_thanh_vien' => $maxThanhVien,
+                            'max_chi_nhanh'  => $maxChiNhanh,
                             'so_tien'        => $amountIn,
                             'ngay_bat_dau'   => $ngayBatDau,
                             'ngay_ket_thuc'  => $ngayKetThuc,

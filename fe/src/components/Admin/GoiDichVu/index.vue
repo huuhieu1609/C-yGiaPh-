@@ -35,13 +35,17 @@
                         </div>
 
                         <div class="row">
-                            <div class="col-6 mb-3">
-                                <label class="form-label fw-bold text-secondary-custom">Giới Hạn Đời (Thế Hệ)</label>
+                            <div class="col-4 mb-3">
+                                <label class="form-label fw-bold text-secondary-custom">Giới Hạn Đời</label>
                                 <input type="number" class="form-control premium-input radius-10 border-2 shadow-none" placeholder="999 = Vô hạn" v-model="formData.max_doi" required>
                             </div>
-                            <div class="col-6 mb-3">
-                                <label class="form-label fw-bold text-secondary-custom">Giới Hạn Thành Viên</label>
+                            <div class="col-4 mb-3">
+                                <label class="form-label fw-bold text-secondary-custom">Thành Viên</label>
                                 <input type="number" class="form-control premium-input radius-10 border-2 shadow-none" placeholder="99999 = Vô hạn" v-model="formData.max_thanh_vien" required>
+                            </div>
+                            <div class="col-4 mb-3">
+                                <label class="form-label fw-bold text-secondary-custom">Chi Nhánh</label>
+                                <input type="number" class="form-control premium-input radius-10 border-2 shadow-none" placeholder="VD: 1" v-model="formData.max_chi_nhanh" required>
                             </div>
                         </div>
 
@@ -159,6 +163,9 @@
                                             </span>
                                             <span class="feat-badge feat-badge-limit">
                                                 <i class="bx bx-group me-1"></i>{{ item.max_thanh_vien >= 99999 ? 'Vô hạn TV' : item.max_thanh_vien + ' TV' }}
+                                            </span>
+                                            <span class="feat-badge feat-badge-limit">
+                                                <i class="bx bx-git-branch me-1"></i>{{ item.max_chi_nhanh >= 999 ? 'Vô hạn CN' : (item.max_chi_nhanh || 1) + ' CN' }}
                                             </span>
                                         </div>
                                         <!-- Features -->
@@ -307,6 +314,7 @@ export default {
                 thoi_han: 12,
                 max_doi: 5,
                 max_thanh_vien: 100,
+                max_chi_nhanh: 1,
                 mo_ta: '',
                 trang_thai: 'Hoạt động',
                 features: []
@@ -422,7 +430,7 @@ export default {
         },
         resetForm() {
             this.isEditing = false;
-            this.formData = { id: null, ten_goi: '', gia_ca: 0, thoi_han: 12, max_doi: 5, max_thanh_vien: 100, mo_ta: '', trang_thai: 'Hoạt động', features: [] };
+            this.formData = { id: null, ten_goi: '', gia_ca: 0, thoi_han: 12, max_doi: 5, max_thanh_vien: 100, max_chi_nhanh: 1, mo_ta: '', trang_thai: 'Hoạt động', features: [] };
             this.openGroups = Object.fromEntries(FEATURE_GROUPS.map(g => [g.key, g.key === 'gia_pha']));
         },
         formatCurrency(value) {

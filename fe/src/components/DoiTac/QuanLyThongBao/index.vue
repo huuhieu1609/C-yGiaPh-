@@ -14,7 +14,7 @@
       </div>
       <div class="card-body px-4 pb-4">
         <div class="row mb-4 g-3 align-items-center">
-          <div class="col-md-6 col-lg-4">
+          <div class="col-md-5 col-lg-4">
             <div class="position-relative">
               <input 
                 type="text" 
@@ -27,7 +27,13 @@
               </span>
             </div>
           </div>
-          <div class="col-md-6 col-lg-8 text-md-end">
+          <div class="col-md-4 col-lg-3">
+            <select class="form-select premium-select fw-bold shadow-none border-2" v-model="selectedChiNhanhId">
+              <option value="all">-- Tất cả các cây --</option>
+              <option v-for="cn in listChiNhanh" :key="cn.id" :value="cn.id">{{ cn.ten_chi }}</option>
+            </select>
+          </div>
+          <div class="col-md-3 col-lg-5 text-md-end">
             <button class="btn btn-sm btn-gradient-orange text-white radius-30 fw-bold px-4 shadow-sm" @click="openAddModal">
               <i class="bx bx-plus-circle me-1 fs-5"></i> Viết Thông Báo Mới
             </button>
@@ -69,9 +75,15 @@
               <tr v-for="(item, index) in filteredAnnouncements" :key="item.id" class="table-row-premium">
                 <td class="text-center fw-bold text-secondary bg-transparent">{{ index + 1 }}</td>
                 <td class="bg-transparent text-start ps-3">
-                  <div class="fw-bold row-member-name text-truncate-1">
+                  <div class="fw-bold row-member-name text-truncate-1 mb-1">
                     {{ item.tieu_de }}
                   </div>
+                  <span class="badge bg-light text-dark font-9 py-0.5 px-2" style="border: 1px solid rgba(0,0,0,0.1); border-radius: 4px !important;" v-if="item.chi_nhanh_id">
+                    <i class="bx bx-git-branch text-warning"></i> {{ getAnnouncementBranchName(item.chi_nhanh_id) }}
+                  </span>
+                  <span class="badge bg-light text-secondary font-9 py-0.5 px-2" style="border: 1px solid rgba(0,0,0,0.1); border-radius: 4px !important;" v-else>
+                    Toàn họ
+                  </span>
                 </td>
                 <td class="bg-transparent text-start">
                   <p class="text-secondary mb-0 text-truncate-2 text-wrap line-clamp-desc">
@@ -129,6 +141,13 @@
                   placeholder="Nhập thông tin chi tiết gửi tới toàn thể dòng họ..."
                 ></textarea>
               </div>
+              <div class="mb-3">
+                <label class="form-label fw-bold text-secondary small text-uppercase font-bold">Liên kết Chi Nhánh</label>
+                <select class="form-select premium-select" v-model="currentAnnouncement.chi_nhanh_id">
+                  <option :value="null">-- Sự kiện công cộng (Toàn họ) --</option>
+                  <option v-for="cn in listChiNhanh" :key="cn.id" :value="cn.id">{{ cn.ten_chi }}</option>
+                </select>
+              </div>
               
               <div class="d-flex justify-content-end gap-2 mt-4">
                 <button type="button" class="btn btn-light radius-30 px-4 fw-medium" data-bs-dismiss="modal">Hủy bỏ</button>
@@ -173,6 +192,8 @@ export default {
   data() {
     return {
       listAnnouncements: [],
+      listChiNhanh: [],
+      selectedChiNhanhId: 'all',
       searchQuery: '',
       loading: false,
       isEditing: false,
@@ -180,7 +201,8 @@ export default {
       currentAnnouncement: {
         id: null,
         tieu_de: '',
-        noi_dung: ''
+        noi_dung: '',
+        chi_nhanh_id: null
       },
       pendingDeleteId: null,
       deleteModal: null
@@ -188,11 +210,15 @@ export default {
   },
   computed: {
     filteredAnnouncements() {
+      let list = this.listAnnouncements;
+      if (this.selectedChiNhanhId !== 'all') {
+        list = list.filter(item => item.chi_nhanh_id == this.selectedChiNhanhId);
+      }
       if (!this.searchQuery) {
-        return this.listAnnouncements;
+        return list;
       }
       const query = this.searchQuery.toLowerCase().trim();
-      return this.listAnnouncements.filter(item => 
+      return list.filter(item => 
         (item.tieu_de && item.tieu_de.toLowerCase().includes(query)) ||
         (item.noi_dung && item.noi_dung.toLowerCase().includes(query))
       );
@@ -204,12 +230,13 @@ export default {
       if (window.bootstrap && modalEl) {
         this.modal = new window.bootstrap.Modal(modalEl);
       }
-        const delEl = document.getElementById('deleteConfirmModal');
-        if (window.bootstrap && delEl) {
-          this.deleteModal = new window.bootstrap.Modal(delEl);
-        }
+      const delEl = document.getElementById('deleteConfirmModal');
+      if (window.bootstrap && delEl) {
+        this.deleteModal = new window.bootstrap.Modal(delEl);
+      }
     });
     this.loadAnnouncements();
+    this.loadChiNhanh();
   },
   methods: {
     getHeaders() {
@@ -249,7 +276,8 @@ export default {
       this.currentAnnouncement = {
         id: null,
         tieu_de: '',
-        noi_dung: ''
+        noi_dung: '',
+        chi_nhanh_id: this.selectedChiNhanhId !== 'all' ? this.selectedChiNhanhId : ((this.listChiNhanh && this.listChiNhanh[0]?.id) || null)
       };
       if (this.modal) {
         this.modal.show();
@@ -322,6 +350,19 @@ export default {
           if (this.deleteModal) this.deleteModal.hide();
           this.pendingDeleteId = null;
         });
+    },
+    loadChiNhanh() {
+      axios.get('http://127.0.0.1:8000/api/chi-nhanh/get-data', this.getHeaders())
+        .then(res => {
+          if (res.data.status) {
+            this.listChiNhanh = res.data.data;
+          }
+        });
+    },
+    getAnnouncementBranchName(branchId) {
+      if (!this.listChiNhanh || !this.listChiNhanh.length) return 'Cây gia phả';
+      const branch = this.listChiNhanh.find(c => c.id === branchId);
+      return branch ? branch.ten_chi : 'Cây gia phả';
     }
   }
 };

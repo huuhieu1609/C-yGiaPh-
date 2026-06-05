@@ -67,9 +67,9 @@
         </li>
       </ul>
 
-      <!-- Main Search (hidden when creating) -->
-      <div v-if="!isCreating" class="search-box mb-3">
-        <div class="input-group">
+      <!-- Main Search & Branch Filter (hidden when creating) -->
+      <div v-if="!isCreating" class="mb-3">
+        <div class="input-group mb-2">
           <span class="input-group-text"><i class="bx bx-search"></i></span>
           <input 
             type="text" 
@@ -78,6 +78,10 @@
             v-model="searchQuery"
           />
         </div>
+        <select class="form-select premium-select shadow-none border" v-model="selectedChiNhanhId" @change="plotStaticMarkers">
+          <option value="all">-- Tất cả các cây --</option>
+          <option v-for="cn in listBranches" :key="cn.id" :value="cn.id">{{ cn.ten_chi }}</option>
+        </select>
       </div>
 
       <!-- Create New Form Panel -->
@@ -373,6 +377,7 @@ export default {
       listMembers: [], // for Grave creation linking
       listBranches: [], // for Shrine branch linking
       searchQuery: '',
+      selectedChiNhanhId: 'all',
       activeTab: 'grave', // grave, shrine
       editingItem: null, // item structure: { id, type, name, lat, lng, address, notes }
       isCreating: false,
@@ -409,14 +414,18 @@ export default {
       return { pinned, unpinned };
     },
     filteredGraves() {
-      return this.graves.filter(g => 
-        !this.searchQuery || g.ten_mo.toLowerCase().includes(this.searchQuery.toLowerCase())
-      );
+      return this.graves.filter(g => {
+        const matchesSearch = !this.searchQuery || g.ten_mo.toLowerCase().includes(this.searchQuery.toLowerCase());
+        const matchesBranch = this.selectedChiNhanhId === 'all' || (g.thanh_vien && g.thanh_vien.chi_nhanh_id == this.selectedChiNhanhId);
+        return matchesSearch && matchesBranch;
+      });
     },
     filteredShrines() {
-      return this.shrines.filter(s => 
-        !this.searchQuery || s.ten_nha_tho.toLowerCase().includes(this.searchQuery.toLowerCase())
-      );
+      return this.shrines.filter(s => {
+        const matchesSearch = !this.searchQuery || s.ten_nha_tho.toLowerCase().includes(this.searchQuery.toLowerCase());
+        const matchesBranch = this.selectedChiNhanhId === 'all' || s.chi_nhanh_id == this.selectedChiNhanhId;
+        return matchesSearch && matchesBranch;
+      });
     }
   },
   mounted() {
@@ -566,6 +575,9 @@ export default {
 
       this.graves.forEach(g => {
         if (!g.vi_do || !g.kinh_do) return;
+        if (this.selectedChiNhanhId !== 'all' && (!g.thanh_vien || g.thanh_vien.chi_nhanh_id != this.selectedChiNhanhId)) {
+          return;
+        }
         const markerKey = `grave-${g.id}`;
         
         const pinHtml = `<div class="custom-static-pin" style="background-color: #10b981"><i class="bx bx-shield"></i></div>`;
@@ -586,6 +598,9 @@ export default {
 
       this.shrines.forEach(s => {
         if (!s.vi_do || !s.kinh_do) return;
+        if (this.selectedChiNhanhId !== 'all' && s.chi_nhanh_id != this.selectedChiNhanhId) {
+          return;
+        }
         const markerKey = `shrine-${s.id}`;
 
         const pinHtml = `<div class="custom-static-pin" style="background-color: #f43f5e"><i class="bx bx-home-alt-2"></i></div>`;
