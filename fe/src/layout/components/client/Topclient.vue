@@ -92,9 +92,7 @@
                 <router-link to="/profile" @click="isDropdownOpen = false">
                   <i class="bx bx-user"></i> Hồ sơ cá nhân
                 </router-link>
-                <router-link to="/profile?tab=quan-ly" @click="isDropdownOpen = false">
-                  <i class="bx bx-cog text-gold"></i> Quản lý dòng họ
-                </router-link>
+                
                 <router-link to="/su-kien" @click="isDropdownOpen = false">
                   <i class="bx bx-calendar"></i> Sự kiện dòng họ
                 </router-link>
