@@ -109,13 +109,7 @@
             <span class="nav-dot hide-on-collapse"></span>
           </router-link>
         </li>
-        <li class="nav-item item-payment" v-if="hasPermission('Quản Lý Sự Kiện')">
-          <router-link to="/doi-tac/dong-gop" class="nav-link" active-class="active" title="Quản Lý Đóng Góp">
-            <span class="nav-icon"><i class="bx bx-gift"></i></span>
-            <span class="hide-on-collapse nav-label">Quản Lý Đóng Góp</span>
-            <span class="nav-dot hide-on-collapse"></span>
-          </router-link>
-        </li>
+
         <li class="nav-item item-notifs" v-if="hasPermission('Quản Lý Thông Báo')">
           <router-link to="/doi-tac/thong-bao" class="nav-link" active-class="active" title="Quản Lý Thông Báo">
             <span class="nav-icon"><i class="bx bx-bell"></i></span>
@@ -148,7 +142,7 @@
           </router-link>
         </li>
 
-        <li class="nav-item item-home" v-if="hasPermission('Quản Lý Sự Kiện')">
+        <li class="nav-item item-payment" v-if="hasPermission('Quản Lý Sự Kiện')">
           <router-link to="/doi-tac/dong-gop" class="nav-link" active-class="active" title="Quản Lý Đóng Góp">
             <span class="nav-icon"><i class="bx bx-gift"></i></span>
             <span class="hide-on-collapse nav-label">Quản Lý Đóng Góp</span>

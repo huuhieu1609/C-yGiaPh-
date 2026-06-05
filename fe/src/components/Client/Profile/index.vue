@@ -107,7 +107,7 @@
                       <i class="bx bx-receipt fs-1 text-muted"></i>
                       <p class="mt-2 text-muted">Chưa có lịch sử giao dịch nào.</p>
                       <div class="d-flex flex-wrap justify-content-center gap-2 mt-3">
-                        <router-link to="/dich-vu-goi" class="btn btn-sm px-3" style="background:#d4af37;color:#000;font-weight:600;transition:all 0.3s ease;">
+                        <router-link v-if="!isDoiTac" to="/dich-vu-goi" class="btn btn-sm px-3" style="background:#d4af37;color:#000;font-weight:600;transition:all 0.3s ease;">
                           <i class="bx bx-package me-1"></i> Đăng ký Gói Đối Tác
                         </router-link>
                         <router-link to="/dong-gop-quy" class="btn btn-sm btn-dark px-3" style="transition:all 0.3s ease;">
@@ -153,7 +153,8 @@ export default {
         email: '',
         so_dien_thoai: '',
         avatar: '',
-        vai_tro: ''
+        vai_tro: '',
+        is_doi_tac: 0
       },
       avatarFile: null,
       defaultAvatar: "data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%231e293b'/%3E%3Ccircle cx='50' cy='35' r='18' fill='%23d4af37'/%3E%3Cpath d='M15 85 C15 67 30 55 50 55 C70 55 85 67 85 85 Z' fill='%23d4af37'/%3E%3C/svg%3E",
@@ -166,6 +167,11 @@ export default {
       isChangingPassword: false,
       transactions: [],
       isLoadingHistory: false
+    }
+  },
+  computed: {
+    isDoiTac() {
+      return this.profile.is_doi_tac == 1 || this.profile.is_doi_tac === true || this.profile.vai_tro === 'Đối tác';
     }
   },
   mounted() {
@@ -182,7 +188,8 @@ export default {
             so_dien_thoai: userObj.so_dien_thoai || '',
             avatar: userObj.avatar || '',
             vai_tro: userObj.vai_tro || '',
-            chuc_vu: userObj.chuc_vu || null
+            chuc_vu: userObj.chuc_vu || null,
+            is_doi_tac: userObj.is_doi_tac || 0
           };
         }
       } catch (e) {
