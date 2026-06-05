@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
+use App\Models\ChiNhanh;
 use Illuminate\Support\Facades\Schema;
 
 class ChiNhanhSeeder extends Seeder
@@ -15,7 +15,7 @@ class ChiNhanhSeeder extends Seeder
     {
         // Xóa dữ liệu cũ để tránh trùng lặp
         Schema::disableForeignKeyConstraints();
-        DB::table('chi_nhanhs')->truncate();
+        ChiNhanh::truncate();
         Schema::enableForeignKeyConstraints();
 
         // Tạo dữ liệu mẫu cho các chi nhánh
@@ -23,30 +23,23 @@ class ChiNhanhSeeder extends Seeder
             [
                 'ten_chi' => 'Chi Nhánh Dòng Họ Nguyễn',
                 'mo_ta' => 'Chi nhánh đầu tiên của dòng họ Nguyễn, tập trung tại Hà Nội.',
-                'created_at' => now(),
-                'updated_at' => now(),
             ],
             [
                 'ten_chi' => 'Chi Nhánh Dòng Họ Trần',
                 'mo_ta' => 'Chi nhánh phía Nam, phát triển tại TP.HCM.',
-                'created_at' => now(),
-                'updated_at' => now(),
             ],
             [
                 'ten_chi' => 'Chi Nhánh Dòng Họ Lê',
                 'mo_ta' => 'Chi nhánh miền Trung, có lịch sử lâu đời.',
-                'created_at' => now(),
-                'updated_at' => now(),
             ],
             [
                 'ten_chi' => 'Chi Nhánh Dòng Họ Phạm',
                 'mo_ta' => 'Chi nhánh mới thành lập tại Đà Nẵng.',
-                'created_at' => now(),
-                'updated_at' => now(),
             ],
         ];
 
-        // Chèn dữ liệu vào bảng
-        DB::table('chi_nhanhs')->insert($chiNhanhs);
+        foreach ($chiNhanhs as $chiNhanh) {
+            ChiNhanh::create($chiNhanh);
+        }
     }
 }

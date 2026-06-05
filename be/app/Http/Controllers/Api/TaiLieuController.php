@@ -14,7 +14,7 @@ class TaiLieuController extends Controller
         try {
             $user = auth('sanctum')->user();
 
-            if ($user && $user->vai_tro === 'Admin') {
+            if ($user && ($user->vai_tro === 'Admin' || $user->isAdminOrSubAdmin())) {
                 $data = TaiLieu::orderBy('created_at', 'desc')->get();
             } elseif ($user && $user->is_doi_tac == 1) {
                 $chiNhanhIds = \App\Models\ChiNhanh::getManagedBranchIds($user);
@@ -24,6 +24,12 @@ class TaiLieuController extends Controller
                     ->get();
             } else {
                 $cnId = $user ? $user->chi_nhanh_id : null;
+                if (!$cnId && $user) {
+                    $myMember = \App\Models\ThanhVien::where('email', $user->email)->whereNotNull('email')->first();
+                    if ($myMember) {
+                        $cnId = $myMember->chi_nhanh_id;
+                    }
+                }
                 if ($cnId) {
                     $data = TaiLieu::where('chi_nhanh_id', $cnId)
                         ->orWhereNull('chi_nhanh_id')

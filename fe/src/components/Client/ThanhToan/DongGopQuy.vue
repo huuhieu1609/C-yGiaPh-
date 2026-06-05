@@ -194,11 +194,8 @@ export default {
         this.isCustomAmount = true;
       }
     }
-
-    this.startAutoCheck();
   },
   beforeUnmount() {
-    this.stopAutoCheck();
   },
   methods: {
     selectPreset(amount) {
@@ -212,41 +209,6 @@ export default {
     onCustomAmountInput(e) {
       const val = parseInt(e.target.value);
       this.form.so_tien = isNaN(val) ? null : val;
-    },
-    startAutoCheck() {
-      this.checkInterval = setInterval(() => {
-        if (this.cleanAmount >= 1000 && !this.isSubmitting) {
-          this.checkPaymentSilent();
-        }
-      }, 5000);
-    },
-    stopAutoCheck() {
-      if (this.checkInterval) {
-        clearInterval(this.checkInterval);
-        this.checkInterval = null;
-      }
-    },
-    checkPaymentSilent() {
-      const token = localStorage.getItem('access_token');
-      if (!token) return;
-
-      const userStr = localStorage.getItem('user');
-      const user = userStr ? JSON.parse(userStr) : null;
-      const userId = user ? (user.user || user).id : null;
-
-      axios.post('http://127.0.0.1:8000/api/thanh-toan/xac-nhan-thanh-toan', {
-        nguoi_dung_id: userId,
-        noi_dung: this.transferContent + ' | Đóng góp quỹ: ' + this.form.so_tien + ' VNĐ | QR Công Đức',
-        trang_thai: 'Chờ duyệt'
-      }, this.getHeaders())
-      .then(res => {
-        if (res.data.success) {
-          this.stopAutoCheck();
-          toastr.success('Cảm ơn đóng góp tâm đức của bạn! Thông tin đã được lưu danh Bảng Vàng Công Đức dòng họ.');
-          this.$router.push('/profile');
-        }
-      })
-      .catch(() => {});
     },
     getHeaders() {
       return { headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` } };
@@ -280,7 +242,6 @@ export default {
       }, this.getHeaders())
       .then(res => {
         if (res.data.success) {
-          this.stopAutoCheck();
           toastr.success('Cảm ơn đóng góp tâm đức của bạn! Hệ thống đã ghi danh Bảng Vàng.');
           this.$router.push('/profile');
         } else {

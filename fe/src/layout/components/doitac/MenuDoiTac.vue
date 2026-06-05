@@ -54,6 +54,13 @@
 						<div class="menu-title">Bản Đồ Số</div>
 					</router-link>
 				</li>
+				<li class="nav-item">
+					<router-link to="/doi-tac/quan-ly-goi" class="nav-link">
+						<div class="parent-icon"><i class='bx bx-package'></i>
+						</div>
+						<div class="menu-title">Quản Lý Gói</div>
+					</router-link>
+				</li>
 			</ul>
 		</nav>
 	</div>

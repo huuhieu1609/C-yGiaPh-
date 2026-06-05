@@ -1,14 +1,14 @@
 <template>
   <div class="tuong-niem-container">
-    <div class="container py-5">
+    <div class="container py-5 mt-5">
 
       <!-- Top Section Heading -->
       <div class="section-heading text-center mb-5 pt-4 position-relative">
         <span class="subtitle-gradient d-block text-uppercase mb-2 tracking-widest font-xs fw-bold">DI SẢN DÒNG
           HỌ</span>
         <h2 class="text-gradient fw-bold display-5 mb-2 font-serif">Dòng Lịch Sử Gia Tộc</h2>
-        <p class="text-white-50 max-w-600 mx-auto">Ôn lại niên trình, tiểu sử và những cột mốc vẻ vang của các
-          thế hệ tổ tiên đã dựng xây cơ nghiệp.</p>
+        <p class="text-white-50 max-w-600 mx-auto">Ôn lại niên trình, tiểu sử và những cột mốc vẻ vang của các thế hệ tổ
+          tiên đã dựng xây cơ nghiệp.</p>
         <button
           class="btn btn-refresh-premium rounded-circle d-flex align-items-center justify-content-center position-absolute end-0 top-0 mt-4"
           @click="loadAllMembersData" :disabled="isLoading" title="Làm mới dữ liệu">
@@ -21,7 +21,7 @@
         <div class="spinner-border text-warning" role="status">
           <span class="visually-hidden">Loading...</span>
         </div>
-        <p class="text-white-50 mt-3 font-sm">Đang tải dòng lịch sử gia tộc...</p>
+        <p class="text-white-50 mt-3">Đang tải dòng lịch sử gia tộc...</p>
       </div>
 
       <div v-else-if="allMembers.length === 0" class="text-center py-5 text-white-50">
@@ -161,10 +161,7 @@ export default {
   background-attachment: fixed;
   font-family: 'Inter', sans-serif;
   color: #f8fafc;
-  padding-top: 80px;
   padding-bottom: 50px;
-  position: relative;
-  z-index: 100;
 }
 
 .font-xs {

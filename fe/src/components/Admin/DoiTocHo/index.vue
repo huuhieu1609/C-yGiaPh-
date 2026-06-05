@@ -19,6 +19,15 @@
                             <input type="text" class="form-control premium-input radius-10 border-2 shadow-none" placeholder="Nhập tên đời (VD: Đời thứ nhất)" v-model="formData.ten_doi" required>
                         </div>
                         <div class="mb-4">
+                            <label class="form-label fw-bold text-secondary-custom">Dòng Họ (Chi Nhánh)</label>
+                            <select class="form-select premium-input radius-10 border-2 shadow-none" v-model="formData.chi_nhanh_id" required>
+                                <option value="" disabled>-- Chọn Dòng Họ --</option>
+                                <option v-for="cn in chiNhanhList" :key="cn.id" :value="cn.id">
+                                    {{ cn.ten_chi }}
+                                </option>
+                            </select>
+                        </div>
+                        <div class="mb-4">
                             <label class="form-label fw-bold text-secondary-custom">Tình Trạng</label>
                             <select class="form-select premium-input radius-10 border-2 shadow-none" v-model="formData.trang_thai">
                                 <option value="1">Hoạt động</option>
@@ -61,30 +70,32 @@
                         <table class="table modern-table align-middle mb-0">
                             <thead>
                                 <tr>
-                                    <th width="8%" class="text-center">#</th>
-                                    <th width="22%">Tên Đời</th>
-                                    <th width="15%" class="text-center">Số Đời</th>
-                                    <th width="35%">Mô Tả</th>
-                                    <th width="15%" class="text-center">Tình Trạng</th>
-                                    <th width="15%" class="text-center">Thao tác</th>
+                                    <th width="5%" class="text-center">#</th>
+                                    <th width="20%">Dòng Họ</th>
+                                    <th width="18%">Tên Đời</th>
+                                    <th width="12%" class="text-center">Số Đời</th>
+                                    <th width="25%">Mô Tả</th>
+                                    <th width="10%" class="text-center">Tình Trạng</th>
+                                    <th width="10%" class="text-center">Thao tác</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr v-if="isLoading">
-                                    <td colspan="6" class="text-center py-5">
+                                    <td colspan="7" class="text-center py-5">
                                         <div class="spinner-border text-warning" role="status">
                                             <span class="visually-hidden">Loading...</span>
                                         </div>
                                     </td>
                                 </tr>
                                 <tr v-else-if="filteredList.length === 0">
-                                    <td colspan="6" class="text-center py-5 text-muted">
+                                    <td colspan="7" class="text-center py-5 text-muted">
                                         <i class="bx bx-folder-open fs-1 mb-2 d-block opacity-50"></i>
                                         Chưa có cấu hình đời nào
                                     </td>
                                 </tr>
                                 <tr v-for="(item, index) in filteredList" :key="item.id">
                                     <td class="text-center fw-bold">{{ index + 1 }}</td>
+                                    <td class="fw-bold text-secondary small">{{ item.chi_nhanh?.ten_chi || '---' }}</td>
                                     <td class="fw-bold text-dark">{{ item.ten_doi }}</td>
                                     <td class="text-center">
                                         <span class="badge bg-warning-soft text-warning border border-warning border-opacity-25 rounded-pill px-3 py-1 fw-bold">
@@ -125,10 +136,12 @@ export default {
     data() {
         return {
             listData: [],
+            chiNhanhList: [],
             formData: {
                 id: null,
                 so_doi: '',
                 ten_doi: '',
+                chi_nhanh_id: '',
                 mo_ta: '',
                 trang_thai: 1
             },
@@ -150,6 +163,7 @@ export default {
     },
     mounted() {
         this.loadData();
+        this.loadChiNhanh();
     },
     methods: {
         getHeaders() {
@@ -196,7 +210,14 @@ export default {
         },
         editItem(item) {
             this.isEditing = true;
-            this.formData = { ...item };
+            this.formData = { 
+                id: item.id,
+                so_doi: item.so_doi,
+                ten_doi: item.ten_doi,
+                chi_nhanh_id: item.chi_nhanh_id || '',
+                mo_ta: item.mo_ta,
+                trang_thai: item.trang_thai
+            };
         },
         deleteItem(id) {
             if (confirm('Bạn có chắc chắn muốn xóa đời họ này?')) {
@@ -214,12 +235,21 @@ export default {
                     });
             }
         },
+        loadChiNhanh() {
+            axios.get('http://127.0.0.1:8000/api/chi-nhanh/get-data', this.getHeaders())
+                .then(res => {
+                    if (res.data.status) {
+                        this.chiNhanhList = res.data.data;
+                    }
+                });
+        },
         resetForm() {
             this.isEditing = false;
             this.formData = {
                 id: null,
                 so_doi: '',
                 ten_doi: '',
+                chi_nhanh_id: '',
                 mo_ta: '',
                 trang_thai: 1
             };

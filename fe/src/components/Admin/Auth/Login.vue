@@ -61,7 +61,11 @@ export default {
             axios.post('http://127.0.0.1:8000/api/login', this.loginData)
                 .then(res => {
                     if (res.data.status) {
-                        if (res.data.user.vai_tro !== 'Admin') {
+                        const user = res.data.user;
+                        const roleName = user?.vai_tro?.toLowerCase() || '';
+                        const chucVuName = user?.chuc_vu?.ten_chuc_vu?.toLowerCase() || '';
+                        const isSubAdmin = roleName === 'admin' || chucVuName.includes('quản trị');
+                        if (!isSubAdmin) {
                             toastr.error('Tài khoản này không có quyền truy cập quản trị!');
                             return;
                         }

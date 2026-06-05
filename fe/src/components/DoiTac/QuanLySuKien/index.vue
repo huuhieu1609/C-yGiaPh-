@@ -3,15 +3,13 @@
     <div class="row g-4">
       <div class="col-md-7">
         <div class="card genealogy-main-card border-0 shadow-sm radius-16">
-          <div
-            class="card-header bg-transparent border-0 py-4 px-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
+          <div class="card-header bg-transparent border-0 py-4 px-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
             <h5 class="fw-bold mb-0 theme-text-main">
               <i class="bx bx-calendar-event me-2 text-warning"></i>Quản Lý Sự Kiện Dòng Họ
             </h5>
             <div class="d-flex align-items-center gap-2">
-              <button class="btn btn-refresh-premium rounded-circle d-flex align-items-center justify-content-center"
-                @click="refreshData" :disabled="isLoading" title="Làm mới dữ liệu">
-                <i class="bx bx-sync fs-5 text-warning" :class="{ 'bx-spin': isLoading }"></i>
+              <button class="btn btn-refresh-premium rounded-circle d-flex align-items-center justify-content-center" @click="refreshData" :disabled="isLoading" title="Làm mới dữ liệu">
+                <i class="bx bx-sync fs-5 text-warning" :class="{'bx-spin': isLoading}"></i>
               </button>
               <button class="btn btn-sm btn-gradient-orange radius-30 px-3 fw-bold shadow-sm" @click="openAddModal">
                 <i class="bx bx-plus-circle me-1"></i> Tạo Sự Kiện Mới
@@ -37,13 +35,11 @@
                       Chưa có sự kiện nào được khởi tạo trong dòng họ.
                     </td>
                   </tr>
-                  <tr v-for="ev in events" :key="ev.id" class="table-row-premium"
-                    :class="{ 'row-active': selectedEventId === ev.id }" @click="selectEvent(ev)">
+                  <tr v-for="ev in events" :key="ev.id" class="table-row-premium" :class="{'row-active': selectedEventId === ev.id}" @click="selectEvent(ev)">
                     <td class="ps-4 bg-transparent">
                       <div>
                         <strong class="theme-text-main d-block font-bold mb-1">{{ ev.tieu_de }}</strong>
-                        <small class="text-secondary text-truncate d-inline-block" style="max-width: 220px;">{{
-                          ev.noi_dung }}</small>
+                        <small class="text-secondary text-truncate d-inline-block" style="max-width: 220px;">{{ ev.noi_dung }}</small>
                       </div>
                     </td>
                     <td class="bg-transparent">
@@ -90,8 +86,7 @@
               </div>
 
               <div class="mb-3 d-flex gap-2">
-                <input type="text" class="form-control premium-input" v-model="searchQuery"
-                  placeholder="Tìm thành viên...">
+                <input type="text" class="form-control premium-input" v-model="searchQuery" placeholder="Tìm thành viên...">
                 <select class="form-select premium-select w-auto" v-model="filterDoi">
                   <option value="">Mọi đời</option>
                   <option v-for="d in maxDoi" :key="d" :value="d">Đời thứ {{ d }}</option>
@@ -116,16 +111,12 @@
                     <tr v-for="p in filteredParticipants" :key="p.id" class="table-row-premium">
                       <td class="bg-transparent ps-2">
                         <div class="d-flex align-items-center gap-2">
-                          <img
-                            :src="p.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(p.ho_ten)}&background=f97316&color=fff&size=30`"
-                            class="rounded-circle border border-2 border-white shadow-sm" width="26" height="26" />
+                          <img :src="p.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(p.ho_ten)}&background=f97316&color=fff&size=30`" class="rounded-circle border border-2 border-white shadow-sm" width="26" height="26" />
                           <strong class="theme-text-main small font-bold">{{ p.ho_ten }}</strong>
                         </div>
                       </td>
-                      <td class="bg-transparent"><span class="small text-secondary font-medium">{{ p.gioi_tinh }}</span>
-                      </td>
-                      <td class="bg-transparent text-center"><span class="badge badge-generation font-monospace">Đời {{
-                          p.doi_thu }}</span></td>
+                      <td class="bg-transparent"><span class="small text-secondary font-medium">{{ p.gioi_tinh }}</span></td>
+                      <td class="bg-transparent text-center"><span class="badge badge-generation font-monospace">Đời {{ p.doi_thu }}</span></td>
                     </tr>
                   </tbody>
                 </table>
@@ -140,7 +131,7 @@
     <div class="modal fade" id="eventCrudModal" tabindex="-1" aria-hidden="true">
       <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content premium-modal border-0 shadow-lg bg-adaptive-card overflow-hidden">
-
+          
           <!-- Header Modal cực đỉnh với dải màu Gradient chuyển động -->
           <div class="modal-header border-0 premium-modal-header text-white p-4 position-relative">
             <div class="header-overlay"></div>
@@ -154,30 +145,28 @@
                 </h5>
                 <p class="text-white-50 small mb-0">Quản lý hoạt động cúng tế, họp mặt và ngày kỷ niệm dòng họ.</p>
               </div>
-              <button type="button" class="btn-close btn-close-white ms-auto" data-bs-dismiss="modal"
-                aria-label="Close"></button>
+              <button type="button" class="btn-close btn-close-white ms-auto" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
           </div>
 
           <!-- Body Modal với bố cục 2 cột (hoặc grouped) -->
           <div class="modal-body p-4 text-start bg-adaptive-card">
             <div class="row g-4">
-
+              
               <!-- Cột trái: Thông tin cơ bản -->
               <div class="col-lg-6">
                 <div class="form-section-card p-3 rounded-4 border-adaptive mb-3">
                   <h6 class="fw-bold mb-3 theme-text-main d-flex align-items-center">
                     <i class="bx bx-info-circle text-orange-premium me-2"></i>Thông Tin Cơ Bản
                   </h6>
-
+                  
                   <div class="mb-3">
                     <label class="form-label-premium">
                       <i class="bx bx-edit-alt me-1"></i>Tiêu đề sự kiện <span class="text-danger">*</span>
                     </label>
-                    <input type="text" class="form-control premium-input-glow" v-model="form.tieu_de"
-                      placeholder="Ví dụ: Giỗ Tổ Cuối Năm 2026">
+                    <input type="text" class="form-control premium-input-glow" v-model="form.tieu_de" placeholder="Ví dụ: Giỗ Tổ Cuối Năm 2026">
                   </div>
-
+                  
                   <div class="row g-2">
                     <div class="col-md-6">
                       <label class="form-label-premium">
@@ -190,13 +179,49 @@
                         <option value="Tang lễ">Tang lễ</option>
                       </select>
                     </div>
-
+                    
                     <div class="col-md-6">
                       <label class="form-label-premium">
-                        <i class="bx bx-time me-1"></i>Thời gian tổ chức <span class="text-danger">*</span>
+                        <i class="bx bx-time me-1"></i>Thời gian tổ chức <span class="text-danger" v-if="!form.is_lunar">*</span>
                       </label>
-                      <input type="datetime-local" class="form-control premium-input-glow" v-model="form.ngay_to_chuc"
-                        :min="minDateTime">
+                      <input type="datetime-local" class="form-control premium-input-glow" v-model="form.ngay_to_chuc" :disabled="form.is_lunar">
+                    </div>
+                  </div>
+
+                  <div class="mt-3">
+                    <div class="form-check form-switch mb-2">
+                      <input class="form-check-input" type="checkbox" id="is_lunar_event" v-model="form.is_lunar" :true-value="true" :false-value="false">
+                      <label class="form-check-label fw-bold text-secondary" for="is_lunar_event">
+                        <i class="bx bx-moon me-1 text-warning"></i> Sự kiện Âm lịch
+                      </label>
+                    </div>
+                  </div>
+
+                  <div class="card bg-light border border-dashed p-3 radius-8 mt-2" v-if="form.is_lunar">
+                    <h6 class="fw-bold mb-3 text-dark d-flex align-items-center gap-1">
+                      <i class="bx bx-calendar-event text-warning fs-5"></i> Ngày tổ chức Âm lịch
+                    </h6>
+                    <div class="row g-2">
+                      <div class="col-md-4 col-6">
+                        <label class="form-label small text-muted mb-1">Ngày AL <span class="text-danger">*</span></label>
+                        <select class="form-select radius-8 border-2 shadow-none text-dark" v-model="form.ngay_al_ngay">
+                          <option :value="null">--</option>
+                          <option v-for="d in 30" :key="d" :value="d">{{ d }}</option>
+                        </select>
+                      </div>
+                      <div class="col-md-4 col-6">
+                        <label class="form-label small text-muted mb-1">Tháng AL <span class="text-danger">*</span></label>
+                        <select class="form-select radius-8 border-2 shadow-none text-dark" v-model="form.ngay_al_thang">
+                          <option :value="null">--</option>
+                          <option v-for="m in 12" :key="m" :value="m">Tháng {{ m }}</option>
+                        </select>
+                      </div>
+                      <div class="col-md-4 col-12 d-flex align-items-end">
+                        <div class="form-check mb-2 ms-2">
+                          <input class="form-check-input" type="checkbox" id="nhuan_event" v-model="form.ngay_al_nhuan" :true-value="true" :false-value="false">
+                          <label class="form-check-label fw-semibold text-dark" for="nhuan_event">Tháng nhuận</label>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -205,7 +230,7 @@
                   <h6 class="fw-bold mb-3 theme-text-main d-flex align-items-center">
                     <i class="bx bx-globe text-orange-premium me-2"></i>Phạm Vi & Liên Kết
                   </h6>
-
+                  
                   <div>
                     <label class="form-label-premium">
                       <i class="bx bx-git-branch me-1"></i>Liên kết Chi Nhánh
@@ -215,8 +240,7 @@
                       <option v-for="cn in listChiNhanh" :key="cn.id" :value="cn.id">{{ cn.ten_chi }}</option>
                     </select>
                     <small class="text-muted d-block mt-2">
-                      <i class="bx bx-info-circle me-1"></i>Liên kết chi nhánh giúp lọc thành viên đăng ký và gửi thông
-                      báo chuẩn xác.
+                      <i class="bx bx-info-circle me-1"></i>Liên kết chi nhánh giúp lọc thành viên đăng ký và gửi thông báo chuẩn xác.
                     </small>
                   </div>
                 </div>
@@ -228,21 +252,19 @@
                   <h6 class="fw-bold mb-3 theme-text-main d-flex align-items-center">
                     <i class="bx bx-detail text-orange-premium me-2"></i>Chi Tiết Sự Kiện
                   </h6>
-
+                  
                   <div class="mb-3">
                     <label class="form-label-premium">
                       <i class="bx bx-map-pin me-1"></i>Địa điểm diễn ra
                     </label>
-                    <input type="text" class="form-control premium-input-glow" v-model="form.dia_diem"
-                      placeholder="Ví dụ: Nhà thờ tổ hoặc Khách sạn Hoa Sen">
+                    <input type="text" class="form-control premium-input-glow" v-model="form.dia_diem" placeholder="Ví dụ: Nhà thờ tổ hoặc Khách sạn Hoa Sen">
                   </div>
-
+                  
                   <div class="mb-0 flex-grow-1 d-flex flex-column">
                     <label class="form-label-premium">
                       <i class="bx bx-message-detail me-1"></i>Nội dung chi tiết / Thông báo
                     </label>
-                    <textarea class="form-control premium-textarea-glow flex-grow-1" rows="6" v-model="form.noi_dung"
-                      placeholder="Kế hoạch chi tiết, thời gian biểu, phân công công đức lộc lá..."></textarea>
+                    <textarea class="form-control premium-textarea-glow flex-grow-1" rows="6" v-model="form.noi_dung" placeholder="Kế hoạch chi tiết, thời gian biểu, phân công công đức lộc lá..."></textarea>
                   </div>
                 </div>
               </div>
@@ -251,13 +273,11 @@
           </div>
 
           <!-- Footer Modal với phím bóng bẩy -->
-          <div
-            class="modal-footer border-0 p-4 bg-adaptive-card d-flex justify-content-end gap-3 position-relative z-index-2">
+          <div class="modal-footer border-0 p-4 bg-adaptive-card d-flex justify-content-end gap-3 position-relative z-index-2">
             <button class="btn btn-premium-cancel px-4 radius-30 fw-semibold" data-bs-dismiss="modal">
               <i class="bx bx-x me-1"></i> Hủy Bỏ
             </button>
-            <button class="btn btn-gradient-orange text-white px-5 radius-30 fw-bold border-0 shadow-premium"
-              @click="saveEvent">
+            <button class="btn btn-gradient-orange text-white px-5 radius-30 fw-bold border-0 shadow-premium" @click="saveEvent">
               <i class="bx bx-check-double me-1 fs-5"></i> {{ isEditing ? 'Cập Nhật Ngay' : 'Tạo Sự Kiện' }}
             </button>
           </div>
@@ -286,7 +306,12 @@ export default {
         noi_dung: '',
         ngay_to_chuc: '',
         dia_diem: '',
-        loai: 'Giỗ tổ'
+        loai: 'Giỗ tổ',
+        is_lunar: false,
+        ngay_al_ngay: null,
+        ngay_al_thang: null,
+        ngay_al_nam: null,
+        ngay_al_nhuan: false
       },
       listChiNhanh: [],
       searchQuery: '',
@@ -297,11 +322,6 @@ export default {
     };
   },
   computed: {
-    minDateTime() {
-      const now = new Date();
-      now.setSeconds(0, 0);
-      return now.toISOString().slice(0, 16);
-    },
     filteredParticipants() {
       let list = this.participants;
       if (this.searchQuery) {
@@ -332,23 +352,23 @@ export default {
     loadEvents() {
       this.isLoading = true;
       axios.get('http://127.0.0.1:8000/api/su-kien/get-data', this.getHeaders())
-        .then(res => {
-          if (res.data.status) {
-            this.events = res.data.data;
-            toastr.info('Đã tải thành công ' + this.events.length + ' sự kiện.');
-            if (this.events.length > 0 && !this.selectedEventId) {
-              this.selectEvent(this.events[0]);
-            }
-          } else {
-            toastr.error(res.data.message);
+      .then(res => {
+        if (res.data.status) {
+          this.events = res.data.data;
+          toastr.info('Đã tải thành công ' + this.events.length + ' sự kiện.');
+          if (this.events.length > 0 && !this.selectedEventId) {
+            this.selectEvent(this.events[0]);
           }
-        })
-        .catch(err => {
-          toastr.error(err.response?.data?.message || 'Không thể lấy dữ liệu sự kiện.');
-        })
-        .finally(() => {
-          this.isLoading = false;
-        });
+        } else {
+          toastr.error(res.data.message);
+        }
+      })
+      .catch(err => {
+        toastr.error(err.response?.data?.message || 'Không thể lấy dữ liệu sự kiện.');
+      })
+      .finally(() => {
+        this.isLoading = false;
+      });
     },
     refreshData() {
       this.isLoading = true;
@@ -378,19 +398,19 @@ export default {
     },
     loadChiNhanh() {
       axios.get('http://127.0.0.1:8000/api/chi-nhanh/get-data', this.getHeaders())
-        .then(res => {
-          if (res.data.status) {
-            this.listChiNhanh = res.data.data;
-            if (!this.form.chi_nhanh_id && this.listChiNhanh.length) {
-              this.form.chi_nhanh_id = this.listChiNhanh[0].id;
-            }
-          } else {
-            toastr.error(res.data.message || 'Không thể tải danh sách chi nhánh.');
+      .then(res => {
+        if (res.data.status) {
+          this.listChiNhanh = res.data.data;
+          if (!this.form.chi_nhanh_id && this.listChiNhanh.length) {
+            this.form.chi_nhanh_id = this.listChiNhanh[0].id;
           }
-        })
-        .catch(err => {
-          toastr.error(err.response?.data?.message || 'Lỗi kết nối khi tải danh sách chi nhánh.');
-        });
+        } else {
+          toastr.error(res.data.message || 'Không thể tải danh sách chi nhánh.');
+        }
+      })
+      .catch(err => {
+        toastr.error(err.response?.data?.message || 'Lỗi kết nối khi tải danh sách chi nhánh.');
+      });
     },
     selectEvent(ev) {
       this.selectedEventId = ev.id;
@@ -399,16 +419,27 @@ export default {
     },
     loadParticipants(suKienId) {
       axios.get(`http://127.0.0.1:8000/api/su-kien/get-participants/${suKienId}`, this.getHeaders())
-        .then(res => {
-          if (res.data.status) {
-            this.participants = res.data.data;
-          }
-        });
+      .then(res => {
+        if (res.data.status) {
+          this.participants = res.data.data;
+        }
+      });
     },
     openAddModal() {
       this.isEditing = false;
       this.form = {
-        id: null, tieu_de: '', noi_dung: '', ngay_to_chuc: '', dia_diem: '', loai: 'Giỗ tổ', chi_nhanh_id: (this.listChiNhanh[0] && this.listChiNhanh[0].id) || null
+        id: null,
+        tieu_de: '',
+        noi_dung: '',
+        ngay_to_chuc: '',
+        dia_diem: '',
+        loai: 'Giỗ tổ',
+        chi_nhanh_id: (this.listChiNhanh[0] && this.listChiNhanh[0].id) || null,
+        is_lunar: false,
+        ngay_al_ngay: null,
+        ngay_al_thang: null,
+        ngay_al_nam: null,
+        ngay_al_nhuan: false
       };
       this.modal.show();
     },
@@ -421,56 +452,68 @@ export default {
         ngay_to_chuc: ev.ngay_to_chuc ? ev.ngay_to_chuc.substring(0, 16) : '',
         dia_diem: ev.dia_diem || '',
         loai: ev.loai,
-        chi_nhanh_id: ev.chi_nhanh_id || null
+        chi_nhanh_id: ev.chi_nhanh_id || null,
+        is_lunar: ev.is_lunar ? true : false,
+        ngay_al_ngay: ev.ngay_al_ngay || null,
+        ngay_al_thang: ev.ngay_al_thang || null,
+        ngay_al_nam: ev.ngay_al_nam || null,
+        ngay_al_nhuan: ev.ngay_al_nhuan ? true : false
       };
       this.modal.show();
     },
     saveEvent() {
-      if (!this.form.tieu_de || !this.form.ngay_to_chuc) {
-        toastr.warning('Vui lòng điền tiêu đề và thời gian tổ chức sự kiện!');
+      if (!this.form.tieu_de) {
+        toastr.warning('Vui lòng điền tiêu đề sự kiện!');
         return;
       }
-      if (new Date(this.form.ngay_to_chuc) <= new Date()) {
-        toastr.error('Thời gian tổ chức phải là thời gian trong tương lai.');
-        return;
+      if (this.form.is_lunar) {
+        if (!this.form.ngay_al_ngay || !this.form.ngay_al_thang) {
+          toastr.warning('Vui lòng điền đầy đủ ngày/tháng Âm lịch!');
+          return;
+        }
+      } else {
+        if (!this.form.ngay_to_chuc) {
+          toastr.warning('Vui lòng điền thời gian tổ chức sự kiện!');
+          return;
+        }
       }
-      const url = this.isEditing
+      const url = this.isEditing 
         ? 'http://127.0.0.1:8000/api/su-kien/update'
         : 'http://127.0.0.1:8000/api/su-kien/create';
 
       axios.post(url, this.form, this.getHeaders())
-        .then(res => {
-          if (res.data.status) {
-            toastr.success(res.data.message);
-            this.modal.hide();
-            this.loadEvents();
-          } else {
-            toastr.error(res.data.message);
-          }
-        })
-        .catch(err => {
-          toastr.error(err.response?.data?.message || 'Lỗi khi lưu sự kiện.');
-        });
+      .then(res => {
+        if (res.data.status) {
+          toastr.success(res.data.message);
+          this.modal.hide();
+          this.loadEvents();
+        } else {
+          toastr.error(res.data.message);
+        }
+      })
+      .catch(err => {
+        toastr.error(err.response?.data?.message || 'Lỗi khi lưu sự kiện.');
+      });
     },
     handleDelete(id) {
       if (!confirm('Bạn có chắc chắn muốn xóa sự kiện này không?')) return;
       axios.post('http://127.0.0.1:8000/api/su-kien/delete', { id }, this.getHeaders())
-        .then(res => {
-          if (res.data.status) {
-            toastr.success(res.data.message);
-            if (this.selectedEventId === id) {
-              this.selectedEventId = null;
-              this.selectedEventName = '';
-              this.participants = [];
-            }
-            this.loadEvents();
-          } else {
-            toastr.error(res.data.message);
+      .then(res => {
+        if (res.data.status) {
+          toastr.success(res.data.message);
+          if (this.selectedEventId === id) {
+            this.selectedEventId = null;
+            this.selectedEventName = '';
+            this.participants = [];
           }
-        })
-        .catch(err => {
-          toastr.error(err.response?.data?.message || 'Không thể xóa sự kiện.');
-        });
+          this.loadEvents();
+        } else {
+          toastr.error(res.data.message);
+        }
+      })
+      .catch(err => {
+        toastr.error(err.response?.data?.message || 'Không thể xóa sự kiện.');
+      });
     },
     evTypeBadgeClass(loai) {
       if (loai === 'Giỗ tổ') return 'badge-gioto';
@@ -494,33 +537,12 @@ export default {
   border: 1px solid var(--border-color) !important;
   border-radius: 16px !important;
 }
-
-.theme-text-main {
-  color: var(--text-main) !important;
-}
-
-.font-bold {
-  font-weight: 700;
-}
-
-.font-medium {
-  font-weight: 500;
-}
-
-.bg-adaptive-input {
-  background: var(--input-bg) !important;
-  border: 1px solid var(--border-color) !important;
-}
-
-.bg-adaptive-card {
-  background: var(--card-bg) !important;
-}
-
-.border-adaptive {
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  overflow: hidden;
-}
+.theme-text-main { color: var(--text-main) !important; }
+.font-bold { font-weight: 700; }
+.font-medium { font-weight: 500; }
+.bg-adaptive-input { background: var(--input-bg) !important; border: 1px solid var(--border-color) !important; }
+.bg-adaptive-card { background: var(--card-bg) !important; }
+.border-adaptive { border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; }
 
 /* Thẻ Summary và Ô Tìm kiếm viên thuốc */
 .event-summary {
@@ -529,8 +551,7 @@ export default {
   border-radius: 14px !important;
 }
 
-.premium-input,
-.premium-select {
+.premium-input, .premium-select {
   border-radius: 30px !important;
   border: 1px solid var(--border-color) !important;
   padding: 8px 16px !important;
@@ -540,9 +561,7 @@ export default {
   box-shadow: none !important;
   transition: all 0.2s ease;
 }
-
-.premium-input:focus,
-.premium-select:focus {
+.premium-input:focus, .premium-select:focus {
   border-color: #f97316 !important;
   background-color: var(--card-bg) !important;
 }
@@ -550,151 +569,65 @@ export default {
 /* KHUNG BẢNG PREMIUM ADAPTIVE */
 .table-container-premium {
   border: 1px solid var(--border-color);
-  border-radius: 12px;
-  overflow: hidden;
+  border-radius: 12px; overflow: hidden;
 }
-
 .table thead th {
   background-color: var(--input-bg) !important;
   color: var(--text-sub) !important;
-  font-weight: 600;
-  font-size: 12px;
+  font-weight: 600; font-size: 12px;
   border-bottom: 1px solid var(--border-color) !important;
   padding: 14px 16px !important;
 }
-
 .table-row-premium {
   border-bottom: 1px solid var(--border-color) !important;
   transition: background-color 0.2s ease;
   cursor: pointer;
 }
-
-.table-row-premium:hover {
-  background-color: var(--input-bg) !important;
-}
+.table-row-premium:hover { background-color: var(--input-bg) !important; }
 
 /* Kích hoạt dòng sự kiện đang chọn */
 .table-row-premium.row-active {
   background-color: rgba(249, 115, 22, 0.06) !important;
 }
-
 [data-theme="dark"] .table-row-premium.row-active {
   background-color: rgba(249, 115, 22, 0.12) !important;
 }
 
 /* ─── HỆ THỐNG BADGE PHÂN LOẠI MỜ PASTEL ─── */
-.badge {
-  padding: 6px 14px !important;
-  font-size: 11px !important;
-  font-weight: 700 !important;
-  border-radius: 30px !important;
-}
-
-.bg-orange-premium {
-  background-color: #f97316 !important;
-  color: white !important;
-}
+.badge { padding: 6px 14px !important; font-size: 11px !important; font-weight: 700 !important; border-radius: 30px !important; }
+.bg-orange-premium { background-color: #f97316 !important; color: white !important; }
 
 /* Badge loại danh mục */
-.badge-premium-type {
-  border-radius: 6px !important;
-  font-size: 11px !important;
-}
-
-.badge-gioto {
-  background-color: rgba(245, 158, 11, 0.08) !important;
-  color: #f59e0b !important;
-  border: 1px solid rgba(245, 158, 11, 0.15);
-}
-
-.badge-hopho {
-  background-color: rgba(59, 130, 246, 0.08) !important;
-  color: #3b82f6 !important;
-  border: 1px solid rgba(59, 130, 246, 0.15);
-}
-
-.badge-cuoihoi {
-  background-color: rgba(16, 185, 129, 0.08) !important;
-  color: #10b981 !important;
-  border: 1px solid rgba(16, 185, 129, 0.15);
-}
-
-.badge-tangle {
-  background-color: rgba(156, 163, 175, 0.08) !important;
-  color: #9ca3af !important;
-  border: 1px solid rgba(156, 163, 175, 0.15);
-}
-
-.badge-generation {
-  background-color: var(--input-bg) !important;
-  color: var(--text-main) !important;
-  border: 1px solid var(--border-color);
-}
+.badge-premium-type { border-radius: 6px !important; font-size: 11px !important; }
+.badge-gioto { background-color: rgba(245, 158, 11, 0.08) !important; color: #f59e0b !important; border: 1px solid rgba(245, 158, 11, 0.15); }
+.badge-hopho { background-color: rgba(59, 130, 246, 0.08) !important; color: #3b82f6 !important; border: 1px solid rgba(59, 130, 246, 0.15); }
+.badge-cuoihoi { background-color: rgba(16, 185, 129, 0.08) !important; color: #10b981 !important; border: 1px solid rgba(16, 185, 129, 0.15); }
+.badge-tangle { background-color: rgba(156, 163, 175, 0.08) !important; color: #9ca3af !important; border: 1px solid rgba(156, 163, 175, 0.15); }
+.badge-generation { background-color: var(--input-bg) !important; color: var(--text-main) !important; border: 1px solid var(--border-color); }
 
 /* NÚT TƯƠNG TÁC CHỨC NĂNG */
-.btn-action-edit,
-.btn-action-delete {
-  background: transparent !important;
-  padding: 5px 10px !important;
-  font-size: 14px;
-  border-radius: 8px !important;
-  transition: all 0.2s ease;
+.btn-action-edit, .btn-action-delete {
+  background: transparent !important; padding: 5px 10px !important; font-size: 14px; border-radius: 8px !important; transition: all 0.2s ease;
 }
+.btn-action-edit { border: 1px solid rgba(245, 158, 11, 0.3) !important; color: #f59e0b !important; }
+.btn-action-edit:hover { background: #f59e0b !important; color: white !important; }
 
-.btn-action-edit {
-  border: 1px solid rgba(245, 158, 11, 0.3) !important;
-  color: #f59e0b !important;
-}
-
-.btn-action-edit:hover {
-  background: #f59e0b !important;
-  color: white !important;
-}
-
-.btn-action-delete {
-  border: 1px solid rgba(239, 68, 68, 0.3) !important;
-  color: #ef4444 !important;
-}
-
-.btn-action-delete:hover {
-  background: #ef4444 !important;
-  color: white !important;
-}
+.btn-action-delete { border: 1px solid rgba(239, 68, 68, 0.3) !important; color: #ef4444 !important; }
+.btn-action-delete:hover { background: #ef4444 !important; color: white !important; }
 
 .btn-gradient-orange {
-  background: linear-gradient(135deg, #f43f5e 0%, #f97316 100%) !important;
-  color: white !important;
-  border: none;
+  background: linear-gradient(135deg, #f43f5e 0%, #f97316 100%) !important; color: white !important; border: none;
 }
-
-.radius-30 {
-  border-radius: 30px !important;
-}
-
-.radius-24 {
-  border-radius: 24px !important;
-}
+.radius-30 { border-radius: 30px !important; }
+.radius-24 { border-radius: 24px !important; }
 
 /* MODAL CONTAINER HỆ THỐNG */
-.bg-dark-premium {
-  background: linear-gradient(145deg, #1a1c2e 0%, #141625 100%) !important;
-  border-bottom: 1px solid var(--border-color);
-}
-
+.bg-dark-premium { background: linear-gradient(145deg, #1a1c2e 0%, #141625 100%) !important; border-bottom: 1px solid var(--border-color); }
 .premium-textarea {
-  border-radius: 14px !important;
-  border: 1px solid var(--border-color) !important;
-  padding: 12px 14px !important;
-  font-size: 14px;
-  background-color: var(--input-bg) !important;
-  color: var(--text-main) !important;
-  box-shadow: none !important;
+  border-radius: 14px !important; border: 1px solid var(--border-color) !important;
+  padding: 12px 14px !important; font-size: 14px; background-color: var(--input-bg) !important; color: var(--text-main) !important; box-shadow: none !important;
 }
-
-.premium-textarea:focus {
-  border-color: #f97316 !important;
-  background-color: var(--card-bg) !important;
-}
+.premium-textarea:focus { border-color: #f97316 !important; background-color: var(--card-bg) !important; }
 
 /* ─── PREMIUM MODAL STYLING SYSTEM ─── */
 .premium-modal {
@@ -708,7 +641,6 @@ export default {
   padding: 24px 28px !important;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
 }
-
 [data-theme="dark"] .premium-modal-header {
   background: linear-gradient(135deg, #090d16 0%, #111827 100%) !important;
 }
@@ -737,14 +669,10 @@ export default {
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.01) !important;
   transition: border-color 0.3s;
 }
-
 .form-section-card:hover {
   border-color: rgba(249, 115, 22, 0.25) !important;
 }
-
-.table-row-premium:hover {
-  background-color: var(--input-bg) !important;
-}
+.table-row-premium:hover { background-color: var(--input-bg) !important; }
 
 .form-label-premium {
   font-size: 12.5px;
@@ -757,9 +685,7 @@ export default {
 }
 
 /* INPUT GLOW STYLINGS */
-.premium-input-glow,
-.premium-select-glow,
-.premium-textarea-glow {
+.premium-input-glow, .premium-select-glow, .premium-textarea-glow {
   border-radius: 12px !important;
   border: 1px solid var(--border-color) !important;
   padding: 10px 16px !important;
@@ -769,10 +695,7 @@ export default {
   box-shadow: none !important;
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
-
-.premium-input-glow:focus,
-.premium-select-glow:focus,
-.premium-textarea-glow:focus {
+.premium-input-glow:focus, .premium-select-glow:focus, .premium-textarea-glow:focus {
   border-color: #f97316 !important;
   box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.12) !important;
   transform: translateY(-1px);
@@ -791,7 +714,6 @@ export default {
   border-radius: 30px !important;
   transition: all 0.25s ease;
 }
-
 .btn-premium-cancel:hover {
   background: var(--input-bg) !important;
   color: var(--text-main) !important;
@@ -803,16 +725,11 @@ export default {
   box-shadow: 0 6px 20px rgba(244, 63, 94, 0.3) !important;
   transition: all 0.3s ease;
 }
-
 .shadow-premium:hover {
   box-shadow: 0 8px 25px rgba(244, 63, 94, 0.45) !important;
   transform: translateY(-1.5px);
 }
-
-.premium-textarea:focus {
-  border-color: #f97316 !important;
-  background-color: var(--card-bg) !important;
-}
+.premium-textarea:focus { border-color: #f97316 !important; background-color: var(--card-bg) !important; }
 
 .btn-refresh-premium {
   background: var(--input-bg) !important;
@@ -826,13 +743,11 @@ export default {
   align-items: center;
   justify-content: center;
 }
-
 .btn-refresh-premium:hover {
   transform: rotate(30deg) scale(1.05);
   border-color: #f97316 !important;
   box-shadow: 0 4px 12px rgba(249, 115, 22, 0.15);
 }
-
 .btn-refresh-premium:active {
   transform: scale(0.95);
 }

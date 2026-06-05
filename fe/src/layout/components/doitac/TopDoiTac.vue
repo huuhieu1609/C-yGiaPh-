@@ -10,12 +10,12 @@
                 </div>
             </div>
             <div class="mobile-toggle-menu"><i class='bx bx-menu'></i></div>
-
+            
             <div class="top-menu ms-auto">
                 <ul class="navbar-nav align-items-center">
                     <li class="nav-item dropdown dropdown-large">
-                        <a class="nav-link dropdown-toggle dropdown-toggle-nocaret position-relative" href="#"
-                            role="button" data-bs-toggle="dropdown" aria-expanded="false"> <span
+                        <a class="nav-link dropdown-toggle dropdown-toggle-nocaret position-relative"
+                            href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"> <span
                                 class="alert-count">7</span>
                             <i class='bx bx-bell'></i>
                         </a>
@@ -32,8 +32,8 @@
                 </ul>
             </div>
             <div class="user-box dropdown">
-                <a class="d-flex align-items-center nav-link dropdown-toggle dropdown-toggle-nocaret" href="#"
-                    role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <a class="d-flex align-items-center nav-link dropdown-toggle dropdown-toggle-nocaret"
+                    href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                     <img :src="userAvatar" class="user-img" alt="user avatar">
                     <div class="user-info ps-3">
                         <p class="user-name mb-0">{{ userName }}</p>
@@ -41,13 +41,9 @@
                     </div>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end">
-                    <li><router-link class="dropdown-item" to="/profile"><i class="bx bx-user"></i><span>Hồ sơ cá
-                                nhân</span></router-link></li>
-                    <li>
-                        <div class="dropdown-divider mb-0"></div>
-                    </li>
-                    <li><a class="dropdown-item" href="javascript:;" @click="handleLogout"><i
-                                class='bx bx-log-out-circle'></i><span>Đăng xuất</span></a></li>
+                    <li><router-link class="dropdown-item" to="/profile"><i class="bx bx-user"></i><span>Hồ sơ cá nhân</span></router-link></li>
+                    <li><div class="dropdown-divider mb-0"></div></li>
+                    <li><a class="dropdown-item" href="javascript:;" @click="handleLogout"><i class='bx bx-log-out-circle'></i><span>Đăng xuất</span></a></li>
                 </ul>
             </div>
         </nav>
@@ -90,4 +86,5 @@ export default {
 }
 </script>
 
-<style scoped></style>
+<style scoped>
+</style>

@@ -7,7 +7,6 @@ use App\Models\SuKien;
 use App\Models\ThamGiaSuKien;
 use Illuminate\Http\Request;
 use Exception;
-use Carbon\Carbon;
 
 class SuKienController extends Controller
 {
@@ -22,7 +21,7 @@ class SuKienController extends Controller
                 ], 401);
             }
 
-            if ($user->vai_tro === 'Admin') {
+            if ($user->vai_tro === 'Admin' || $user->isAdminOrSubAdmin()) {
                 $data = SuKien::orderBy('ngay_to_chuc', 'desc')->get();
             } elseif ($user->is_doi_tac == 1) {
                 $chiNhanhIds = \App\Models\ChiNhanh::getManagedBranchIds($user);
@@ -68,22 +67,34 @@ class SuKienController extends Controller
     public function create(Request $request)
     {
         try {
-            $request->validate([
-                'ngay_to_chuc' => 'required|date|after:now',
-            ], [
-                'ngay_to_chuc.after' => 'Thời gian tổ chức phải là thời gian trong tương lai.',
-            ]);
-
             $data = $request->validate([
                 'tieu_de' => 'required|string|max:255',
                 'noi_dung' => 'nullable|string',
-                'ngay_to_chuc' => 'required|date|after:now',
+                'ngay_to_chuc' => 'nullable|required_without:is_lunar|date',
                 'dia_diem' => 'nullable|string|max:255',
-                'chi_nhanh_id' => 'nullable|integer|exists:chi_nhanhs,id',
                 'loai' => 'required|in:Giỗ tổ,Họp họ,Cưới hỏi,Tang lễ',
-            ], [
-                'ngay_to_chuc.after' => 'Thời gian tổ chức phải là thời gian trong tương lai.',
+                'chi_nhanh_id' => 'nullable|integer|exists:chi_nhanhs,id',
+                'is_lunar' => 'nullable|boolean',
+                'ngay_al_ngay' => 'nullable|integer|min:1|max:30',
+                'ngay_al_thang' => 'nullable|integer|min:1|max:12',
+                'ngay_al_nam' => 'nullable|integer',
+                'ngay_al_nhuan' => 'nullable|boolean',
             ]);
+
+            // Handle lunar to solar date conversion
+            if ($request->is_lunar) {
+                $currentYear = (int)date('Y');
+                $solarDate = \App\Utils\LunarHelper::lunarToSolar($currentYear, (int)$request->ngay_al_thang, (int)$request->ngay_al_ngay, (bool)$request->ngay_al_nhuan);
+                if ($solarDate && $solarDate < date('Y-m-d')) {
+                    // If it has already passed this year, schedule for next year
+                    $solarDate = \App\Utils\LunarHelper::lunarToSolar($currentYear + 1, (int)$request->ngay_al_thang, (int)$request->ngay_al_ngay, (bool)$request->ngay_al_nhuan);
+                }
+                if ($solarDate) {
+                    $data['ngay_to_chuc'] = $solarDate;
+                } else {
+                    return response()->json(['status' => false, 'message' => 'Ngày Âm lịch không hợp lệ.'], 422);
+                }
+            }
 
             $user = auth('sanctum')->user();
 
@@ -121,22 +132,33 @@ class SuKienController extends Controller
     {
         try {
             $item = SuKien::findOrFail($request->id);
-            $request->validate([
-                'ngay_to_chuc' => 'required|date|after:now',
-            ], [
-                'ngay_to_chuc.after' => 'Thời gian tổ chức phải là thời gian trong tương lai.',
-            ]);
-
             $data = $request->validate([
                 'tieu_de' => 'required|string|max:255',
                 'noi_dung' => 'nullable|string',
-                'ngay_to_chuc' => 'required|date|after:now',
+                'ngay_to_chuc' => 'nullable|required_without:is_lunar|date',
                 'dia_diem' => 'nullable|string|max:255',
-                'chi_nhanh_id' => 'nullable|integer|exists:chi_nhanhs,id',
                 'loai' => 'required|in:Giỗ tổ,Họp họ,Cưới hỏi,Tang lễ',
-            ], [
-                'ngay_to_chuc.after' => 'Thời gian tổ chức phải là thời gian trong tương lai.',
+                'chi_nhanh_id' => 'nullable|integer|exists:chi_nhanhs,id',
+                'is_lunar' => 'nullable|boolean',
+                'ngay_al_ngay' => 'nullable|integer|min:1|max:30',
+                'ngay_al_thang' => 'nullable|integer|min:1|max:12',
+                'ngay_al_nam' => 'nullable|integer',
+                'ngay_al_nhuan' => 'nullable|boolean',
             ]);
+
+            // Handle lunar to solar date conversion
+            if ($request->is_lunar) {
+                $currentYear = (int)date('Y');
+                $solarDate = \App\Utils\LunarHelper::lunarToSolar($currentYear, (int)$request->ngay_al_thang, (int)$request->ngay_al_ngay, (bool)$request->ngay_al_nhuan);
+                if ($solarDate && $solarDate < date('Y-m-d')) {
+                    $solarDate = \App\Utils\LunarHelper::lunarToSolar($currentYear + 1, (int)$request->ngay_al_thang, (int)$request->ngay_al_ngay, (bool)$request->ngay_al_nhuan);
+                }
+                if ($solarDate) {
+                    $data['ngay_to_chuc'] = $solarDate;
+                } else {
+                    return response()->json(['status' => false, 'message' => 'Ngày Âm lịch không hợp lệ.'], 422);
+                }
+            }
 
             $user = auth('sanctum')->user();
             if (isset($data['chi_nhanh_id']) && $data['chi_nhanh_id']) {
@@ -218,14 +240,6 @@ class SuKienController extends Controller
                 'thanh_vien_ids.*' => 'exists:thanh_viens,id',
             ]);
 
-            $suKien = SuKien::findOrFail($request->su_kien_id);
-            if (Carbon::parse($suKien->ngay_to_chuc)->lte(now())) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Sự kiện đã diễn ra, không thể đăng ký tham gia.'
-                ], 422);
-            }
-
             $suKienId = $request->su_kien_id;
             $thanhVienIds = $request->thanh_vien_ids;
 
@@ -256,14 +270,6 @@ class SuKienController extends Controller
                 'su_kien_id' => 'required|exists:su_kiens,id',
                 'thanh_vien_id' => 'required|exists:thanh_viens,id',
             ]);
-
-            $suKien = SuKien::findOrFail($request->su_kien_id);
-            if (Carbon::parse($suKien->ngay_to_chuc)->lte(now())) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Sự kiện đã diễn ra, không thể thay đổi danh sách đăng ký.'
-                ], 422);
-            }
 
             ThamGiaSuKien::where('su_kien_id', $request->su_kien_id)
                 ->where('thanh_vien_id', $request->thanh_vien_id)

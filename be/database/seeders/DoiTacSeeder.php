@@ -20,7 +20,7 @@ class DoiTacSeeder extends Seeder
      */
     public function run(): void
     {
-        // 1. Tránh trùng lặp tài khoản và chi nhánh đối tác (bao gồm cả tài khoản đã xóa mềm)
+        // 1. Tránh trùng lặp tài khoản và chi nhánh đối tác
         $existingUser = NguoiDung::withTrashed()->where('email', 'doitac@master.com')->first();
         if ($existingUser) {
             // Xóa sạch dữ liệu thành viên & chi nhánh cũ của đối tác này để tạo lại sạch sẽ
@@ -28,7 +28,7 @@ class DoiTacSeeder extends Seeder
             ThanhVien::whereIn('chi_nhanh_id', $oldBranchIds)->delete();
             DoiTocHo::whereIn('chi_nhanh_id', $oldBranchIds)->delete();
             ChiNhanh::where('id_nguoi_dung', $existingUser->id)->delete();
-            DoiTac::withTrashed()->where('id_nguoi_dung', $existingUser->id)->forceDelete();
+            DoiTac::where('id_nguoi_dung', $existingUser->id)->delete();
             $existingUser->forceDelete();
         }
 
@@ -41,19 +41,24 @@ class DoiTacSeeder extends Seeder
             'vai_tro' => 'Thành viên',
             'trang_thai' => 'Hoạt động',
             'is_doi_tac' => 1,
+            'avatar' => 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=200',
             'created_at' => now(),
             'updated_at' => now(),
         ]);
 
         DB::table('doi_tacs')->insert([
-            'id_nguoi_dung' => $userId,
-            'ten_goi' => 'Gói Đối Tác 5 Năm',
-            'so_tien' => 5000000,
-            'ngay_bat_dau' => now(),
-            'ngay_ket_thuc' => now()->addYears(5),
-            'trang_thai' => 'APPROVED',
-            'created_at' => now(),
-            'updated_at' => now(),
+            'id_nguoi_dung'  => $userId,
+            'ten_goi'        => 'Gói Trường Tồn',
+            'so_tien'        => 5000000,
+            'id_goi_dich_vu' => null,
+            'features'       => 'tao_cay_gia_pha,them_thanh_vien,sua_xoa_thanh_vien,quan_ly_vo_chong,quan_ly_con_nuoi,xuat_pdf,phe_duyet_de_xuat,tu_dong_phe_duyet,quan_ly_chi_nhanh,phan_quyen_thanh_vien,nhat_ky_hoat_dong,quan_ly_su_kien,dang_ky_su_kien,tuong_niem,nhac_gio_tu,quan_ly_tai_lieu,upload_hinh_anh,album_gia_dinh,ban_do_mo_phan,ban_do_nha_tho,tra_cuu_ban_do,quan_ly_dong_gop,bao_cao_tai_chinh,tra_cuu_quan_he,xuat_csv,thong_ke_nang_cao',
+            'max_doi'        => 99,
+            'max_thanh_vien' => 10000,
+            'ngay_bat_dau'   => now(),
+            'ngay_ket_thuc'  => now()->addYears(5),
+            'trang_thai'     => 'APPROVED',
+            'created_at'     => now(),
+            'updated_at'     => now(),
         ]);
 
         // 3. Tạo Chi Nhánh (Cây Gia Phả Dòng Họ Nguyễn Đức)
@@ -65,12 +70,17 @@ class DoiTacSeeder extends Seeder
 
         $cnId = $chiNhanh->id;
 
-        // 4. Tạo các đời tộc họ (Đời 1 đến Đời 5) cho chi nhánh này
+        // 4. Tạo các đời tộc họ (Đời 1 đến Đời 10) cho chi nhánh này
         DoiTocHo::create(['so_doi' => 1, 'ten_doi' => 'Thủy Tổ Khai Sáng', 'mo_ta' => 'Thế hệ đầu tiên định cư tại Thạch Thất', 'chi_nhanh_id' => $cnId]);
         DoiTocHo::create(['so_doi' => 2, 'ten_doi' => 'Thế Hệ Tiếp Bước', 'mo_ta' => 'Giai đoạn kháng chiến cứu nước', 'chi_nhanh_id' => $cnId]);
         DoiTocHo::create(['so_doi' => 3, 'ten_doi' => 'Thế Hệ Đổi Mới', 'mo_ta' => 'Xây dựng và phục hưng dòng họ', 'chi_nhanh_id' => $cnId]);
         DoiTocHo::create(['so_doi' => 4, 'ten_doi' => 'Thế Hệ Hội Nhập', 'mo_ta' => 'Thế hệ hiện đại năng động', 'chi_nhanh_id' => $cnId]);
         DoiTocHo::create(['so_doi' => 5, 'ten_doi' => 'Thế Hệ Tương Lai', 'mo_ta' => 'Ươm mầm tài năng trẻ dòng họ', 'chi_nhanh_id' => $cnId]);
+        DoiTocHo::create(['so_doi' => 6, 'ten_doi' => 'Thế Hệ Tiếp Nối', 'mo_ta' => 'Thế hệ phát huy giá trị truyền thống', 'chi_nhanh_id' => $cnId]);
+        DoiTocHo::create(['so_doi' => 7, 'ten_doi' => 'Thế Hệ Kiến Tạo', 'mo_ta' => 'Thế hệ kiến tạo tương lai phát triển', 'chi_nhanh_id' => $cnId]);
+        DoiTocHo::create(['so_doi' => 8, 'ten_doi' => 'Thế Hệ Vững Bền', 'mo_ta' => 'Thế hệ phát triển vững mạnh toàn diện', 'chi_nhanh_id' => $cnId]);
+        DoiTocHo::create(['so_doi' => 9, 'ten_doi' => 'Thế Hệ Tinh Anh', 'mo_ta' => 'Thế hệ tinh hoa vươn tầm cao mới', 'chi_nhanh_id' => $cnId]);
+        DoiTocHo::create(['so_doi' => 10, 'ten_doi' => 'Thế Hệ Rực Rỡ', 'mo_ta' => 'Thế hệ tương lai tỏa sáng rực rỡ', 'chi_nhanh_id' => $cnId]);
 
         // 5. Thêm dữ liệu 5 đời thành viên chân thực (Mở rộng quy mô, có nhiều người 2 vợ)
         // ------------------ ĐỜI 1 ------------------
@@ -2910,5 +2920,152 @@ class DoiTacSeeder extends Seeder
                 'updated_at' => now(),
             ]
         ]);
+
+        // Tự động sinh dữ liệu từ đời 6 đến đời 10 cho dòng họ Nguyễn Đức
+        self::generateGenerations6To10($cnId, 'Nguyễn Đức', 'Nguyễn Thị');
+    }
+
+    /**
+     * Tự động sinh dữ liệu từ đời 6 đến đời 10
+     */
+    private static function generateGenerations6To10($chiNhanhId, $malePrefix, $femalePrefix)
+    {
+        // 1. Đảm bảo các đời tộc họ đã tồn tại trong DB (nếu chưa có thì tạo)
+        for ($i = 6; $i <= 10; $i++) {
+            $exists = DoiTocHo::where('chi_nhanh_id', $chiNhanhId)->where('so_doi', $i)->exists();
+            if (!$exists) {
+                DoiTocHo::create([
+                    'so_doi' => $i,
+                    'ten_doi' => "Thế Hệ Thứ " . $i,
+                    'mo_ta' => "Thế hệ thứ " . $i . " của dòng họ.",
+                    'chi_nhanh_id' => $chiNhanhId,
+                    'trang_thai' => 'Hoạt động'
+                ]);
+            }
+        }
+
+        // 2. Lấy tất cả thành viên thuộc nhánh chính ở đời 5
+        $parents = ThanhVien::where('chi_nhanh_id', $chiNhanhId)
+            ->where('doi_thu', 5)
+            ->where('loai_quan_he', 'Chính')
+            ->get();
+
+        $firstNamesNam = ['Bình', 'Chiến', 'Danh', 'Duy', 'Gia', 'Hải', 'Hiếu', 'Hoàng', 'Hùng', 'Huy', 'Khánh', 'Khoa', 'Lâm', 'Long', 'Minh', 'Nam', 'Nhân', 'Phúc', 'Quân', 'Quốc', 'Sơn', 'Tân', 'Thắng', 'Thành', 'Thiên', 'Thịnh', 'Tiến', 'Toàn', 'Trung', 'Tú', 'Tuấn', 'Việt', 'Vinh', 'Uy'];
+        $firstNamesNu = ['An', 'Anh', 'Cúc', 'Chi', 'Diệp', 'Dung', 'Hà', 'Hằng', 'Hạnh', 'Hoa', 'Hồng', 'Hương', 'Khánh', 'Lan', 'Liên', 'Linh', 'Mai', 'My', 'Ngọc', 'Nga', 'Oanh', 'Phương', 'Quỳnh', 'Thảo', 'Thanh', 'Thu', 'Thủy', 'Trang', 'Trinh', 'Tuyết', 'Vân', 'Vy', 'Yến'];
+        $spouseLastNames = ['Nguyễn', 'Trần', 'Lê', 'Phạm', 'Hoàng', 'Phan', 'Vũ', 'Võ', 'Đặng', 'Bùi', 'Đỗ', 'Hồ', 'Ngô', 'Dương', 'Lý'];
+        $middleNamesNam = ['Văn', 'Minh', 'Hữu', 'Đức', 'Quốc', 'Anh'];
+        $middleNamesNu = ['Thị', 'Thu', 'Ngọc', 'Kiều', 'Như', 'Bích'];
+
+        foreach ($parents as $parent) {
+            $currParent = $parent;
+
+            for ($gen = 5; $gen <= 9; $gen++) {
+                // Tìm hoặc tạo vợ/chồng cho parent hiện tại
+                $spouse = ThanhVien::where('spouse_of_id', $currParent->id)->first();
+                if (!$spouse) {
+                    $isParentMale = ($currParent->gioi_tinh === 'Nam');
+                    $spouseGender = $isParentMale ? 'Nữ' : 'Nam';
+                    
+                    $lastName = $spouseLastNames[array_rand($spouseLastNames)];
+                    if ($spouseGender === 'Nam') {
+                        $middleName = $middleNamesNam[array_rand($middleNamesNam)];
+                        $firstName = $firstNamesNam[array_rand($firstNamesNam)];
+                        $spouseName = "{$lastName} {$middleName} {$firstName}";
+                    } else {
+                        $middleName = $middleNamesNu[array_rand($middleNamesNu)];
+                        $firstName = $firstNamesNu[array_rand($firstNamesNu)];
+                        $spouseName = "{$lastName} {$middleName} {$firstName}";
+                    }
+
+                    $parentBirthYear = 2020;
+                    if ($currParent->ngay_sinh) {
+                        $parentBirthYear = intval(substr($currParent->ngay_sinh, 0, 4));
+                    }
+                    $spouseBirthYear = $parentBirthYear + rand(-3, 3);
+                    $spouseBirthDate = sprintf("%04d-%02d-%02d", $spouseBirthYear, rand(1, 12), rand(1, 28));
+
+                    $spouse = ThanhVien::create([
+                        'chi_nhanh_id' => $chiNhanhId,
+                        'ho_ten' => $spouseName,
+                        'ten_goi' => $firstName,
+                        'gioi_tinh' => $spouseGender,
+                        'ngay_sinh' => $spouseBirthDate,
+                        'noi_sinh' => $currParent->noi_sinh ?: 'Hà Nội',
+                        'nghe_nghiep' => 'Kinh doanh',
+                        'doi_thu' => $currParent->doi_thu,
+                        'loai_quan_he' => 'Vợ/Chồng',
+                        'spouse_of_id' => $currParent->id,
+                        'trang_thai' => 'Còn sống',
+                        'ghi_chu' => "Vợ/chồng của {$currParent->ho_ten}",
+                        'avatar' => $spouseGender === 'Nam' 
+                            ? 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=200'
+                            : 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=200'
+                    ]);
+
+                    $chongId = $isParentMale ? $currParent->id : $spouse->id;
+                    $voId = $isParentMale ? $spouse->id : $currParent->id;
+                    VoChong::create([
+                        'chong_id' => $chongId,
+                        'vo_id' => $voId,
+                        'ngay_cuoi' => sprintf("%04d-%02d-%02d", $parentBirthYear + rand(20, 25), rand(1, 12), rand(1, 28)),
+                        'trang_thai' => 'Đang sống'
+                    ]);
+                }
+
+                // Sinh ra 2 con ở đời tiếp theo
+                $parentBirthYear = 2020;
+                if ($currParent->ngay_sinh) {
+                    $parentBirthYear = intval(substr($currParent->ngay_sinh, 0, 4));
+                }
+                $childBirthYear = $parentBirthYear + rand(24, 28);
+                
+                // Con 1: Nam (Tiếp tục nối dõi)
+                $c1FirstName = $firstNamesNam[array_rand($firstNamesNam)];
+                $c1Name = "{$malePrefix} {$c1FirstName}";
+                $c1BirthDate = sprintf("%04d-%02d-%02d", $childBirthYear, rand(1, 12), rand(1, 28));
+
+                $child1 = ThanhVien::create([
+                    'chi_nhanh_id' => $chiNhanhId,
+                    'ho_ten' => $c1Name,
+                    'ten_goi' => $c1FirstName,
+                    'gioi_tinh' => 'Nam',
+                    'ngay_sinh' => $c1BirthDate,
+                    'noi_sinh' => $currParent->noi_sinh ?: 'Hà Nội',
+                    'nghe_nghiep' => 'Học sinh/Sinh viên',
+                    'doi_thu' => $gen + 1,
+                    'loai_quan_he' => 'Chính',
+                    'cha_id' => ($currParent->gioi_tinh === 'Nam') ? $currParent->id : $spouse->id,
+                    'me_id' => ($currParent->gioi_tinh === 'Nữ') ? $currParent->id : $spouse->id,
+                    'trang_thai' => 'Còn sống',
+                    'ghi_chu' => "Con thứ nhất đời " . ($gen + 1),
+                    'avatar' => 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200'
+                ]);
+
+                // Con 2: Nữ
+                $c2FirstName = $firstNamesNu[array_rand($firstNamesNu)];
+                $c2Name = "{$femalePrefix} {$c2FirstName}";
+                $c2BirthDate = sprintf("%04d-%02d-%02d", $childBirthYear + rand(1, 3), rand(1, 12), rand(1, 28));
+
+                $child2 = ThanhVien::create([
+                    'chi_nhanh_id' => $chiNhanhId,
+                    'ho_ten' => $c2Name,
+                    'ten_goi' => $c2FirstName,
+                    'gioi_tinh' => 'Nữ',
+                    'ngay_sinh' => $c2BirthDate,
+                    'noi_sinh' => $currParent->noi_sinh ?: 'Hà Nội',
+                    'nghe_nghiep' => 'Học sinh/Sinh viên',
+                    'doi_thu' => $gen + 1,
+                    'loai_quan_he' => 'Chính',
+                    'cha_id' => ($currParent->gioi_tinh === 'Nam') ? $currParent->id : $spouse->id,
+                    'me_id' => ($currParent->gioi_tinh === 'Nữ') ? $currParent->id : $spouse->id,
+                    'trang_thai' => 'Còn sống',
+                    'ghi_chu' => "Con thứ hai đời " . ($gen + 1),
+                    'avatar' => 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=200'
+                ]);
+
+                // Gán cha mẹ mới cho vòng lặp tiếp theo
+                $currParent = $child1;
+            }
+        }
     }
 }

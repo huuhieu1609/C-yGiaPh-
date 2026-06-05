@@ -21,5 +21,23 @@ class NguoiDung extends Authenticatable
     public function dongGops() { return $this->hasMany(DongGop::class); }
     public function doiTac() { return $this->hasOne(DoiTac::class, 'id_nguoi_dung'); }
     public function chiNhanh() { return $this->belongsTo(ChiNhanh::class, 'chi_nhanh_id'); }
+    public function chucVu() { return $this->belongsTo(ChucVu::class, 'id_chuc_vu'); }
+
+    public function isAdminOrSubAdmin()
+    {
+        if (strtolower(trim($this->vai_tro)) === 'admin' || $this->email === 'admin@master.com') {
+            return true;
+        }
+        
+        $chucVu = $this->chucVu;
+        if ($chucVu) {
+            $roleName = strtolower($chucVu->ten_chuc_vu);
+            if (str_contains($roleName, 'quản trị') || str_contains($roleName, 'admin')) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
 
 }

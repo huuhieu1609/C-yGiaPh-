@@ -148,7 +148,7 @@
               <td class="small text-secondary text-break">{{ acc.email }}</td>
               <td class="small">{{ acc.so_dien_thoai || '—' }}</td>
               <td class="text-center">
-                <span class="badge-role" :class="roleClass(acc.vai_tro)">{{ acc.vai_tro || '—' }}</span>
+                <span class="badge-role" :class="roleClass(acc)">{{ roleLabel(acc) }}</span>
               </td>
               <td class="text-center">
                 <span class="badge-type" :class="typeClass(acc)">{{ typeLabel(acc) }}</span>
@@ -228,7 +228,7 @@
         <template v-for="p in pageNumbers" :key="p">
           <span v-if="p === '...'" class="pg-dots">…</span>
           <button v-else class="pg-btn" :class="{ 'pg-active': p === pagination.current_page }" @click="goPage(p)">{{ p
-          }}</button>
+            }}</button>
         </template>
         <button class="pg-btn" :disabled="pagination.current_page >= pagination.last_page"
           @click="goPage(pagination.current_page + 1)">
@@ -254,8 +254,8 @@
               <div>
                 <h5 class="mb-1 fw-bold">{{ detailData.account.ho_ten }}</h5>
                 <span class="text-muted small">{{ detailData.account.email }}</span><br>
-                <span class="badge-role mt-1 d-inline-block" :class="roleClass(detailData.account.vai_tro)">{{
-                  detailData.account.vai_tro }}</span>
+                <span class="badge-role mt-1 d-inline-block" :class="roleClass(detailData.account)">{{
+                  roleLabel(detailData.account) }}</span>
                 <span class="badge-type ms-2 d-inline-block" :class="typeClass(detailData.account)">{{
                   typeLabel(detailData.account) }}</span>
               </div>
@@ -690,13 +690,7 @@ export default {
 
     onPackageChange() {
       const pkg = this.availablePackages.find(p => p.ten_goi === this.upgradeForm.ten_goi);
-      if (pkg) {
-        this.upgradeForm.so_tien = pkg.gia_ca || 0;
-        this.upgradeForm.thoi_han_nam = pkg.thoi_han_nam || 1;
-      } else {
-        this.upgradeForm.so_tien = 0;
-        this.upgradeForm.thoi_han_nam = 1;
-      }
+      if (pkg) { this.upgradeForm.so_tien = pkg.gia_ca || 0; this.upgradeForm.thoi_han_nam = pkg.thoi_han_nam || 1; }
     },
 
     // API actions
@@ -804,7 +798,7 @@ export default {
       const headers = ['ID', 'Họ tên', 'Email', 'SĐT', 'Vai trò', 'Loại TK', 'Gói', 'Hạn sử dụng', 'Trạng thái'];
       const rows = this.accounts.map(a => [
         a.id, a.ho_ten, a.email, a.so_dien_thoai || '',
-        a.vai_tro, this.typeLabel(a),
+        this.roleLabel(a), this.typeLabel(a),
         a.doi_tac?.ten_goi || '',
         a.doi_tac?.ngay_ket_thuc || '',
         this.statusLabel(a),
@@ -834,7 +828,21 @@ export default {
       if (!name) return colors[0];
       return colors[[...name].reduce((s, c) => s + c.charCodeAt(0), 0) % colors.length];
     },
-    roleClass(role) { return role?.toLowerCase() === 'admin' ? 'role-admin' : 'role-member'; },
+    isSubAdmin(acc) {
+      const chucVuName = acc?.chuc_vu?.ten_chuc_vu?.toLowerCase() || '';
+      return chucVuName.includes('quản trị') || chucVuName.includes('admin');
+    },
+    isAdminLike(acc) {
+      const roleName = acc?.vai_tro?.toLowerCase() || '';
+      return roleName === 'admin' || this.isSubAdmin(acc);
+    },
+    roleLabel(acc) {
+      if (this.isAdminLike(acc)) return 'Quản trị viên';
+      return acc?.vai_tro || '—';
+    },
+    roleClass(acc) {
+      return this.isAdminLike(acc) ? 'role-admin' : 'role-member';
+    },
     typeClass(acc) {
       if (acc.deleted_at) return 'type-deleted';
       if (acc.is_doi_tac == 1) return acc.doi_tac?.trang_thai === 'PENDING' ? 'type-pending' : 'type-partner';

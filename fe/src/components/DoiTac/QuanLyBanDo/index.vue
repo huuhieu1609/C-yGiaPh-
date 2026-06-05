@@ -2,7 +2,7 @@
   <div class="map-manager-container">
     <!-- Left Panel: Sidebar containing Statistics, Lists, Create Form, and Edit Form -->
     <div class="sidebar-panel d-flex flex-column shadow-lg">
-
+      
       <!-- Panel Header with Add Button -->
       <div class="panel-header d-flex justify-content-between align-items-center mb-2">
         <div>
@@ -12,12 +12,10 @@
           <p class="text-muted font-sm mb-0">Quản lý định vị Mộ phần & Nhà thờ</p>
         </div>
         <div class="d-flex align-items-center gap-2">
-          <button class="btn btn-refresh-premium rounded-circle d-flex align-items-center justify-content-center"
-            @click="loadAllData" :disabled="isLoading" title="Làm mới dữ liệu">
-            <i class="bx bx-sync fs-5 text-warning" :class="{ 'bx-spin': isLoading }"></i>
+          <button class="btn btn-refresh-premium rounded-circle d-flex align-items-center justify-content-center" @click="loadAllData" :disabled="isLoading" title="Làm mới dữ liệu">
+            <i class="bx bx-sync fs-5 text-warning" :class="{'bx-spin': isLoading}"></i>
           </button>
-          <button v-if="!isCreating" class="btn btn-sm btn-create-new d-flex align-items-center gap-1"
-            @click="startCreating">
+          <button v-if="!isCreating" class="btn btn-sm btn-create-new d-flex align-items-center gap-1" @click="startCreating">
             <i class="bx bx-plus-circle"></i> Thêm mới
           </button>
         </div>
@@ -42,14 +40,28 @@
       <!-- Tabs between MoPhan and NhaThoHo (hidden when creating) -->
       <ul v-if="!isCreating" class="nav nav-pills custom-pills mb-3" id="manager-tab" role="tablist">
         <li class="nav-item flex-grow-1" role="presentation">
-          <button class="nav-link w-100" :class="{ active: activeTab === 'grave' }" id="grave-tab" data-bs-toggle="pill"
-            data-bs-target="#grave-pane" type="button" role="tab" @click="onTabChange('grave')">
+          <button 
+            class="nav-link w-100 active" 
+            id="grave-tab" 
+            data-bs-toggle="pill" 
+            data-bs-target="#grave-pane" 
+            type="button" 
+            role="tab" 
+            @click="onTabChange('grave')"
+          >
             <i class="bx bx-shield"></i> Mộ Phần ({{ graves.length }})
           </button>
         </li>
         <li class="nav-item flex-grow-1" role="presentation">
-          <button class="nav-link w-100" :class="{ active: activeTab === 'shrine' }" id="shrine-tab"
-            data-bs-toggle="pill" data-bs-target="#shrine-pane" type="button" role="tab" @click="onTabChange('shrine')">
+          <button 
+            class="nav-link w-100" 
+            id="shrine-tab" 
+            data-bs-toggle="pill" 
+            data-bs-target="#shrine-pane" 
+            type="button" 
+            role="tab" 
+            @click="onTabChange('shrine')"
+          >
             <i class="bx bx-home-alt-2"></i> Nhà Thờ ({{ shrines.length }})
           </button>
         </li>
@@ -59,7 +71,12 @@
       <div v-if="!isCreating" class="search-box mb-3">
         <div class="input-group">
           <span class="input-group-text"><i class="bx bx-search"></i></span>
-          <input type="text" class="form-control" placeholder="Tìm theo tên..." v-model="searchQuery" />
+          <input 
+            type="text" 
+            class="form-control" 
+            placeholder="Tìm theo tên..." 
+            v-model="searchQuery"
+          />
         </div>
       </div>
 
@@ -78,34 +95,49 @@
             <label class="form-label fw-bold font-xs text-muted mb-1">
               Tên {{ activeTab === 'grave' ? 'Mộ phần' : 'Nhà thờ' }} <span class="text-danger">*</span>
             </label>
-            <input type="text" class="form-control border" v-model="newForm.name"
+            <input 
+              type="text" 
+              class="form-control border" 
+              v-model="newForm.name" 
               :placeholder="activeTab === 'grave' ? 'VD: Mộ Cụ Thủy Tổ' : 'VD: Nhà Thờ Tổ Chi Nhánh Phía Bắc'"
-              required />
+              required
+            />
           </div>
 
           <!-- Address Input -->
           <div class="mb-3">
             <label class="form-label fw-bold font-xs text-muted mb-1">Địa chỉ</label>
-            <input type="text" class="form-control border" v-model="newForm.address"
-              placeholder="VD: Nghĩa trang Thạch Thất, Hà Nội" />
+            <input 
+              type="text" 
+              class="form-control border" 
+              v-model="newForm.address" 
+              placeholder="VD: Nghĩa trang Thạch Thất, Hà Nội"
+            />
             <span class="text-muted font-xxs mt-1 d-block">
-              <i class="bx bx-info-circle text-orange"></i> Click bản đồ để lấy vị trí, sau đó bạn có thể chỉnh sửa/tự
-              nhập thêm số nhà chính xác.
+              <i class="bx bx-info-circle text-orange"></i> Click bản đồ để lấy vị trí, sau đó bạn có thể chỉnh sửa/tự nhập thêm số nhà chính xác.
             </span>
           </div>
 
           <!-- Image URL Input -->
           <div class="mb-3">
             <label class="form-label fw-bold font-xs text-muted mb-1">Hình ảnh (Link URL)</label>
-            <input type="url" class="form-control border" v-model="newForm.hinh_anh"
-              placeholder="Nhập link hình ảnh hiển thị..." />
+            <input 
+              type="url" 
+              class="form-control border" 
+              v-model="newForm.hinh_anh" 
+              placeholder="Nhập link hình ảnh hiển thị..."
+            />
           </div>
 
           <!-- Description / Notes -->
           <div class="mb-3">
             <label class="form-label fw-bold font-xs text-muted mb-1">Ghi chú / Mô tả</label>
-            <textarea class="form-control border" rows="3" v-model="newForm.notes"
-              placeholder="Ghi chú thêm về vị trí, lịch sử..."></textarea>
+            <textarea 
+              class="form-control border" 
+              rows="3" 
+              v-model="newForm.notes" 
+              placeholder="Ghi chú thêm về vị trí, lịch sử..."
+            ></textarea>
           </div>
 
           <!-- Dropdown based on Tab Type -->
@@ -120,8 +152,7 @@
           </div>
 
           <div v-else class="mb-3">
-            <label class="form-label fw-bold font-xs text-muted mb-1">Chi nhánh quản lý <span
-                class="text-danger">*</span></label>
+            <label class="form-label fw-bold font-xs text-muted mb-1">Chi nhánh quản lý <span class="text-danger">*</span></label>
             <select class="form-select border" v-model="newForm.branchId">
               <option :value="null">-- Chọn chi nhánh dòng tộc --</option>
               <option v-for="b in listBranches" :key="b.id" :value="b.id">
@@ -134,18 +165,15 @@
           <div class="row g-2 mb-3">
             <div class="col-6">
               <label class="form-label fw-bold font-xs text-muted mb-1">Vĩ độ (Lat)</label>
-              <input type="text" class="form-control bg-light font-xs border" v-model="newForm.lat" readonly
-                placeholder="Click bản đồ" />
+              <input type="text" class="form-control bg-light font-xs border" v-model="newForm.lat" readonly placeholder="Click bản đồ" />
             </div>
             <div class="col-6">
               <label class="form-label fw-bold font-xs text-muted mb-1">Kinh độ (Lng)</label>
-              <input type="text" class="form-control bg-light font-xs border" v-model="newForm.lng" readonly
-                placeholder="Click bản đồ" />
+              <input type="text" class="form-control bg-light font-xs border" v-model="newForm.lng" readonly placeholder="Click bản đồ" />
             </div>
             <div class="col-12 mt-1">
               <span class="text-muted font-xxs">
-                <i class="bx bx-info-circle text-orange"></i> Click trực tiếp lên điểm mong muốn trên bản đồ để chọn tọa
-                độ ghim.
+                <i class="bx bx-info-circle text-orange"></i> Click trực tiếp lên điểm mong muốn trên bản đồ để chọn tọa độ ghim.
               </span>
             </div>
           </div>
@@ -169,23 +197,28 @@
 
         <div v-else class="tab-content" id="manager-tabContent">
           <!-- Graves List -->
-          <div class="tab-pane fade" :class="{ 'show active': activeTab === 'grave' }" id="grave-pane" role="tabpanel">
+          <div class="tab-pane fade show active" id="grave-pane" role="tabpanel">
             <div v-if="filteredGraves.length === 0" class="text-center py-5 text-muted">
               <i class="bx bx-info-circle fs-2 mb-2"></i>
               <p>Không có mộ phần nào hợp lệ</p>
             </div>
             <div v-else class="list-wrapper">
-              <div v-for="item in filteredGraves" :key="item.id" class="item-row" :class="{
-                active: editingItem && editingItem.type === 'grave' && editingItem.id === item.id,
-                'has-pos': item.vi_do && item.kinh_do
-              }" @click="selectItemForEditing(item, 'grave')">
+              <div 
+                v-for="item in filteredGraves" 
+                :key="item.id" 
+                class="item-row"
+                :class="{ 
+                  active: editingItem && editingItem.type === 'grave' && editingItem.id === item.id,
+                  'has-pos': item.vi_do && item.kinh_do
+                }"
+                @click="selectItemForEditing(item, 'grave')"
+              >
                 <div class="d-flex justify-content-between align-items-center">
                   <div class="flex-grow-1 me-2 overflow-hidden">
                     <h6 class="mb-1 item-name text-truncate">{{ item.ten_mo }}</h6>
                     <p class="mb-0 text-muted font-xs text-truncate">{{ item.dia_chi || 'Chưa cập nhật địa chỉ' }}</p>
                   </div>
-                  <span class="badge flex-shrink-0"
-                    :class="item.vi_do && item.kinh_do ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger'">
+                  <span class="badge flex-shrink-0" :class="item.vi_do && item.kinh_do ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger'">
                     {{ item.vi_do && item.kinh_do ? 'Đã ghim' : 'Chưa ghim' }}
                   </span>
                 </div>
@@ -194,24 +227,28 @@
           </div>
 
           <!-- Shrines List -->
-          <div class="tab-pane fade" :class="{ 'show active': activeTab === 'shrine' }" id="shrine-pane"
-            role="tabpanel">
+          <div class="tab-pane fade" id="shrine-pane" role="tabpanel">
             <div v-if="filteredShrines.length === 0" class="text-center py-5 text-muted">
               <i class="bx bx-info-circle fs-2 mb-2"></i>
               <p>Không có nhà thờ nào hợp lệ</p>
             </div>
             <div v-else class="list-wrapper">
-              <div v-for="item in filteredShrines" :key="item.id" class="item-row" :class="{
-                active: editingItem && editingItem.type === 'shrine' && editingItem.id === item.id,
-                'has-pos': item.vi_do && item.kinh_do
-              }" @click="selectItemForEditing(item, 'shrine')">
+              <div 
+                v-for="item in filteredShrines" 
+                :key="item.id" 
+                class="item-row"
+                :class="{ 
+                  active: editingItem && editingItem.type === 'shrine' && editingItem.id === item.id,
+                  'has-pos': item.vi_do && item.kinh_do
+                }"
+                @click="selectItemForEditing(item, 'shrine')"
+              >
                 <div class="d-flex justify-content-between align-items-center">
                   <div class="flex-grow-1 me-2 overflow-hidden">
                     <h6 class="mb-1 item-name text-truncate">{{ item.ten_nha_tho }}</h6>
                     <p class="mb-0 text-muted font-xs text-truncate">{{ item.dia_chi || 'Chưa cập nhật địa chỉ' }}</p>
                   </div>
-                  <span class="badge flex-shrink-0"
-                    :class="item.vi_do && item.kinh_do ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger'">
+                  <span class="badge flex-shrink-0" :class="item.vi_do && item.kinh_do ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger'">
                     {{ item.vi_do && item.kinh_do ? 'Đã ghim' : 'Chưa ghim' }}
                   </span>
                 </div>
@@ -240,16 +277,14 @@
             <label class="form-label font-xs text-muted mb-1">Địa chỉ</label>
             <input type="text" class="form-control form-control-sm border" v-model="editingItem.address" />
             <span class="text-muted font-xxs mt-1 d-block">
-              <i class="bx bx-info-circle text-orange"></i> Click bản đồ để lấy vị trí, sau đó bạn có thể chỉnh sửa/tự
-              nhập thêm số nhà chính xác.
+              <i class="bx bx-info-circle text-orange"></i> Click bản đồ để lấy vị trí, sau đó bạn có thể chỉnh sửa/tự nhập thêm số nhà chính xác.
             </span>
           </div>
 
           <!-- Image URL Edit -->
           <div class="mb-2">
             <label class="form-label font-xs text-muted mb-1">Hình ảnh (Link URL)</label>
-            <input type="url" class="form-control form-control-sm border" v-model="editingItem.hinh_anh"
-              placeholder="Nhập link hình ảnh..." />
+            <input type="url" class="form-control form-control-sm border" v-model="editingItem.hinh_anh" placeholder="Nhập link hình ảnh..." />
           </div>
 
           <!-- Notes/Description Edit -->
@@ -262,24 +297,32 @@
           <div class="row g-2 mb-2">
             <div class="col-6">
               <label class="form-label font-xs text-muted mb-1">Vĩ độ (Lat)</label>
-              <input type="number" step="any" class="form-control form-control-sm border"
-                v-model.number="editingItem.lat" @input="updateMarkerPosition" />
+              <input 
+                type="number" 
+                step="any" 
+                class="form-control form-control-sm border" 
+                v-model.number="editingItem.lat" 
+                @input="updateMarkerPosition"
+              />
             </div>
             <div class="col-6">
               <label class="form-label font-xs text-muted mb-1">Kinh độ (Lng)</label>
-              <input type="number" step="any" class="form-control form-control-sm border"
-                v-model.number="editingItem.lng" @input="updateMarkerPosition" />
+              <input 
+                type="number" 
+                step="any" 
+                class="form-control form-control-sm border" 
+                v-model.number="editingItem.lng" 
+                @input="updateMarkerPosition"
+              />
             </div>
           </div>
         </div>
 
         <div class="d-flex gap-2 mt-2">
-          <button class="btn btn-sm btn-action-orange flex-grow-1 fw-semibold py-2" @click="saveCoordinates"
-            :disabled="isSaving">
+          <button class="btn btn-sm btn-action-orange flex-grow-1 fw-semibold py-2" @click="saveCoordinates" :disabled="isSaving">
             <i class="bx bx-save"></i> {{ isSaving ? 'Đang lưu...' : 'Lưu Thay Đổi' }}
           </button>
-          <button v-if="editingItem.lat && editingItem.lng" class="btn btn-sm btn-outline-warning"
-            @click="removeCoordinates" title="Xóa ghim">
+          <button v-if="editingItem.lat && editingItem.lng" class="btn btn-sm btn-outline-warning" @click="removeCoordinates" title="Xóa ghim">
             <i class="bx bx-pin"></i>
           </button>
           <button class="btn btn-sm btn-outline-danger" @click="deleteItem" title="Xóa vĩnh viễn">
@@ -298,8 +341,7 @@
         <i class="bx bx-info-circle fs-5 animate-pulse"></i>
         <div>
           <h6 class="mb-0 fw-bold">Chế độ định vị trực quan</h6>
-          <p class="mb-0 font-xxs opacity-90">Click bất kỳ điểm nào trên bản đồ hoặc Kéo thả marker màu cam để chọn vị
-            trí chính xác.</p>
+          <p class="mb-0 font-xxs opacity-90">Click bất kỳ điểm nào trên bản đồ hoặc Kéo thả marker màu cam để chọn vị trí chính xác.</p>
         </div>
       </div>
     </div>
@@ -310,9 +352,22 @@
 import axios from 'axios';
 import toastr from 'toastr';
 
+// NDA Maps Constants & Geocoding helpers
+const NDA_API_KEY = '6TTIZbUWJmRMSpiYzQ0YY8z5v8wv43w0';
+const NDA_MAP_STYLE = 'https://tiles.openmap.vn/styles/day-v1/style.json';
+
+const BE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
+const ndaGeocodeForward = (query) =>
+  `${BE_URL}/api/map/geocode/forward?text=${encodeURIComponent(query)}`;
+
+const ndaGeocodeReverse = (lat, lng) =>
+  `${BE_URL}/api/map/geocode/reverse?lat=${lat}&lng=${lng}`;
+
 export default {
   name: 'QuanLyBanDo',
   created() {
+    // Keep Leaflet objects OUT of Vue reactivity to prevent internal state corruption
     this.map = null;
     this.activePinMarker = null;
     this.staticMarkers = {};
@@ -357,12 +412,12 @@ export default {
       return { pinned, unpinned };
     },
     filteredGraves() {
-      return this.graves.filter(g =>
+      return this.graves.filter(g => 
         !this.searchQuery || g.ten_mo.toLowerCase().includes(this.searchQuery.toLowerCase())
       );
     },
     filteredShrines() {
-      return this.shrines.filter(s =>
+      return this.shrines.filter(s => 
         !this.searchQuery || s.ten_nha_tho.toLowerCase().includes(this.searchQuery.toLowerCase())
       );
     }
@@ -380,10 +435,36 @@ export default {
       return { headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` } };
     },
     loadLeafletCDN(callback) {
-      if (window.L) {
+      if (window.L && window.L.maplibreGL) {
         callback();
         return;
       }
+      
+      const loadMapLibreGL = () => {
+        // Load MapLibre CSS
+        const linkMapLibre = document.createElement('link');
+        linkMapLibre.rel = 'stylesheet';
+        linkMapLibre.href = 'https://unpkg.com/maplibre-gl@4.3.2/dist/maplibre-gl.css';
+        document.head.appendChild(linkMapLibre);
+
+        // Load MapLibre JS
+        const scriptMapLibre = document.createElement('script');
+        scriptMapLibre.src = 'https://unpkg.com/maplibre-gl@4.3.2/dist/maplibre-gl.js';
+        scriptMapLibre.onload = () => {
+          // Load MapLibre Leaflet Adapter
+          const scriptAdapter = document.createElement('script');
+          scriptAdapter.src = 'https://unpkg.com/@maplibre/maplibre-gl-leaflet@0.0.20/leaflet-maplibre-gl.js';
+          scriptAdapter.onload = callback;
+          document.head.appendChild(scriptAdapter);
+        };
+        document.head.appendChild(scriptMapLibre);
+      };
+
+      if (window.L) {
+        loadMapLibreGL();
+        return;
+      }
+
       const link = document.createElement('link');
       link.rel = 'stylesheet';
       link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
@@ -393,31 +474,25 @@ export default {
       const script = document.createElement('script');
       script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
       script.crossOrigin = '';
-      script.onload = () => {
-        callback();
-      };
+      script.onload = loadMapLibreGL;
       document.head.appendChild(script);
     },
     initMap() {
       if (!this.leafletLoaded || this.map) return;
 
-      this.map = window.L.map('leaflet-manager-map').setView([16.047079, 108.206230], 6);
+      this.map = window.L.map('leaflet-manager-map', {
+        attributionControl: false
+      }).setView([16.047079, 108.206230], 6);
 
-      const openMapKey = 'DNmLXlnYjfHFnvaThBU1FXYrXAGhfpgD';
-      const openMapUrl = `https://api.openmap.vn/styles/osm-bright/{z}/{x}/{y}.png?apikey=${openMapKey}`;
-      const osmUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+      // Configure enterprise OpenMap.vn layer with MapLibre GL Vector 'day-v1' style
+      const openMapKey = NDA_API_KEY;
+      const openMapUrl = `${NDA_MAP_STYLE}?apikey=${openMapKey}`;
 
-      const tileLayer = window.L.tileLayer(openMapUrl, {
-        attribution: '&copy; <a href="https://openmap.vn" target="_blank">OpenMap.vn</a> contributors',
-        maxZoom: 19
+      const glLayer = window.L.maplibreGL({
+        style: openMapUrl
       });
 
-      tileLayer.on('tileerror', () => {
-        console.warn("OpenMap.vn tile server loading error. Falling back to OpenStreetMap.");
-        tileLayer.setUrl(osmUrl);
-      });
-
-      tileLayer.addTo(this.map);
+      glLayer.addTo(this.map);
 
       // Click event for coordinates capture
       this.map.on('click', (e) => {
@@ -452,9 +527,6 @@ export default {
 
           this.$nextTick(() => {
             this.plotStaticMarkers();
-            if (this.map) {
-              this.map.invalidateSize();
-            }
           });
         })
         .catch(err => {
@@ -490,30 +562,22 @@ export default {
     plotStaticMarkers() {
       if (!this.map || !this.leafletLoaded) return;
 
-      console.log('PLOT GRAVES:', this.graves?.length);
-      console.log('PLOT SHRINES:', this.shrines?.length);
-      console.log('STATIC MARKERS:', Object.keys(this.staticMarkers || {}).length);
-
-      // Clear old markers from map explicitly
-      if (this.staticMarkers) {
-        Object.values(this.staticMarkers).forEach(marker => {
-          if (marker && this.map && this.map.hasLayer(marker)) {
-            this.map.removeLayer(marker);
-          }
-        });
-      }
+      // Remove ALL old static markers from the map safely
+      Object.values(this.staticMarkers).forEach(marker => {
+        if (marker && this.map.hasLayer(marker)) {
+          this.map.removeLayer(marker);
+        }
+      });
       this.staticMarkers = {};
 
       const bounds = [];
 
       this.graves.forEach(g => {
-        if (!g.vi_do || !g.kinh_do) return;
         const lat = Number(g.vi_do);
         const lng = Number(g.kinh_do);
-        if (isNaN(lat) || isNaN(lng)) return;
-
+        if (Number.isNaN(lat) || Number.isNaN(lng) || !g.vi_do || !g.kinh_do) return;
         const markerKey = `grave-${g.id}`;
-
+        
         const pinHtml = `<div class="custom-static-pin" style="background-color: #10b981"><i class="bx bx-shield"></i></div>`;
         const icon = window.L.divIcon({
           html: pinHtml,
@@ -524,18 +588,16 @@ export default {
 
         const marker = window.L.marker([lat, lng], { icon })
           .bindTooltip(`Mộ phần: ${g.ten_mo}`, { permanent: false, direction: 'top' });
-
+        
         marker.addTo(this.map);
         this.staticMarkers[markerKey] = marker;
         bounds.push([lat, lng]);
       });
 
       this.shrines.forEach(s => {
-        if (!s.vi_do || !s.kinh_do) return;
         const lat = Number(s.vi_do);
         const lng = Number(s.kinh_do);
-        if (isNaN(lat) || isNaN(lng)) return;
-
+        if (Number.isNaN(lat) || Number.isNaN(lng) || !s.vi_do || !s.kinh_do) return;
         const markerKey = `shrine-${s.id}`;
 
         const pinHtml = `<div class="custom-static-pin" style="background-color: #f43f5e"><i class="bx bx-home-alt-2"></i></div>`;
@@ -579,27 +641,17 @@ export default {
     cancelCreating() {
       this.isCreating = false;
       if (this.activePinMarker) {
-        this.map.removeLayer(this.activePinMarker);
+        if (this.map && this.map.hasLayer(this.activePinMarker)) {
+          this.map.removeLayer(this.activePinMarker);
+        }
         this.activePinMarker = null;
       }
-      this.plotStaticMarkers();
       this.$nextTick(() => {
-        if (this.map) {
-          this.map.invalidateSize();
-        }
+        if (this.map) this.map.invalidateSize();
       });
-      setTimeout(() => {
-        if (this.map) {
-          this.map.invalidateSize();
-        }
-      }, 100);
     },
     updateCreationMarker() {
       if (!this.map || !this.leafletLoaded || !this.newForm.lat || !this.newForm.lng) return;
-
-      const lat = Number(this.newForm.lat);
-      const lng = Number(this.newForm.lng);
-      if (isNaN(lat) || isNaN(lng)) return;
 
       if (!this.activePinMarker) {
         const pinHtml = `<div class="custom-active-pin"><i class="bx bx-map-pin"></i><div class="active-pulse"></div></div>`;
@@ -610,7 +662,7 @@ export default {
           iconAnchor: [19, 38]
         });
 
-        this.activePinMarker = window.L.marker([lat, lng], {
+        this.activePinMarker = window.L.marker([this.newForm.lat, this.newForm.lng], {
           icon: icon,
           draggable: true
         }).addTo(this.map);
@@ -624,10 +676,10 @@ export default {
           this.reverseGeocode(latVal, lngVal, 'new');
         });
       } else {
-        this.activePinMarker.setLatLng([lat, lng]);
+        this.activePinMarker.setLatLng([this.newForm.lat, this.newForm.lng]);
       }
     },
-    saveNewItem() {
+    async saveNewItem() {
       if (!this.newForm.name) {
         toastr.warning(`Vui lòng nhập Tên ${this.activeTab === 'grave' ? 'mộ phần' : 'nhà thờ'}.`);
         return;
@@ -635,7 +687,7 @@ export default {
 
       this.isSaving = true;
       const apiPrefix = this.activeTab === 'grave' ? 'mo-phan' : 'nha-tho-ho';
-
+      
       const payload = this.activeTab === 'grave' ? {
         ten_mo: this.newForm.name,
         dia_chi: this.newForm.address,
@@ -654,56 +706,33 @@ export default {
         hinh_anh: this.newForm.hinh_anh
       };
 
-      console.log('CREATE TYPE:', this.activeTab, payload);
-
-      axios.post(`http://127.0.0.1:8000/api/${apiPrefix}/create`, payload, this.getHeaders())
-        .then(async res => {
-          console.log('CREATE RESPONSE:', res.data);
-          if (res.data.status) {
-            toastr.success(`Đã thêm mới thành công "${this.newForm.name}"!`);
-
-            // a. remove activePinMarker
-            if (this.activePinMarker) {
+      try {
+        const res = await axios.post(`http://127.0.0.1:8000/api/${apiPrefix}/create`, payload, this.getHeaders());
+        if (res.data.status) {
+          toastr.success(`Đã thêm mới thành công "${this.newForm.name}"!`);
+          // 1. Remove activePinMarker first
+          if (this.activePinMarker) {
+            if (this.map && this.map.hasLayer(this.activePinMarker)) {
               this.map.removeLayer(this.activePinMarker);
-              this.activePinMarker = null;
             }
-
-            // b. reset isCreating/form
-            this.isCreating = false;
-
-            // c. await loadAllData()
-            await this.loadAllData();
-            console.log('GRAVES COUNT:', this.graves?.length);
-            console.log('SHRINES COUNT:', this.shrines?.length);
-            console.log('LAST SHRINE:', this.shrines?.[this.shrines.length - 1]);
-
-            // d. plotStaticMarkers()
-            this.plotStaticMarkers();
-
-            // e. nextTick invalidateSize
-            this.$nextTick(() => {
-              if (this.map) {
-                this.map.invalidateSize();
-              }
-            });
-
-            // f. setTimeout 100ms
-            setTimeout(() => {
-              if (this.map) {
-                this.map.invalidateSize();
-              }
-            }, 100);
-          } else {
-            toastr.error("Có lỗi xảy ra: " + res.data.message);
+            this.activePinMarker = null;
           }
-        })
-        .catch(err => {
-          console.error("Lỗi khi thêm mới:", err);
-          toastr.error("Lỗi kết nối máy chủ, không thể lưu.");
-        })
-        .finally(() => {
-          this.isSaving = false;
+          // 2. Reset creating state
+          this.isCreating = false;
+          // 3. Reload data and re-plot all markers from DB
+          await this.loadAllData();
+        } else {
+          toastr.error("Có lỗi xảy ra: " + res.data.message);
+        }
+      } catch (err) {
+        console.error("Lỗi khi thêm mới:", err);
+        toastr.error("Lỗi kết nối máy chủ, không thể lưu.");
+      } finally {
+        this.isSaving = false;
+        this.$nextTick(() => {
+          if (this.map) this.map.invalidateSize();
         });
+      }
     },
     selectItemForEditing(item, type) {
       const lat = item.vi_do ? parseFloat(item.vi_do) : null;
@@ -732,12 +761,14 @@ export default {
     updateMarkerPosition() {
       if (!this.map || !this.leafletLoaded || !this.editingItem) return;
 
-      const lat = Number(this.editingItem.lat);
-      const lng = Number(this.editingItem.lng);
+      const lat = this.editingItem.lat;
+      const lng = this.editingItem.lng;
 
-      if (isNaN(lat) || isNaN(lng) || !lat || !lng) {
+      if (!lat || !lng) {
         if (this.activePinMarker) {
-          this.map.removeLayer(this.activePinMarker);
+          if (this.map.hasLayer(this.activePinMarker)) {
+            this.map.removeLayer(this.activePinMarker);
+          }
           this.activePinMarker = null;
         }
         return;
@@ -772,22 +803,17 @@ export default {
     cancelEditing() {
       this.editingItem = null;
       if (this.activePinMarker) {
-        this.map.removeLayer(this.activePinMarker);
+        if (this.map && this.map.hasLayer(this.activePinMarker)) {
+          this.map.removeLayer(this.activePinMarker);
+        }
         this.activePinMarker = null;
       }
       this.plotStaticMarkers();
       this.$nextTick(() => {
-        if (this.map) {
-          this.map.invalidateSize();
-        }
+        if (this.map) this.map.invalidateSize();
       });
-      setTimeout(() => {
-        if (this.map) {
-          this.map.invalidateSize();
-        }
-      }, 100);
     },
-    saveCoordinates() {
+    async saveCoordinates() {
       if (!this.editingItem) return;
       if (!this.editingItem.name) {
         toastr.warning("Tên không được để trống!");
@@ -796,7 +822,7 @@ export default {
 
       this.isSaving = true;
       const apiPrefix = this.editingItem.type === 'grave' ? 'mo-phan' : 'nha-tho-ho';
-
+      
       const payload = this.editingItem.type === 'grave' ? {
         id: this.editingItem.id,
         ten_mo: this.editingItem.name,
@@ -815,50 +841,33 @@ export default {
         hinh_anh: this.editingItem.hinh_anh
       };
 
-      axios.post(`http://127.0.0.1:8000/api/${apiPrefix}/update`, payload, this.getHeaders())
-        .then(async res => {
-          if (res.data.status) {
-            toastr.success(`Đã cập nhật thông tin thành công cho "${this.editingItem.name}"`);
-
-            // a. remove activePinMarker
-            if (this.activePinMarker) {
+      try {
+        const res = await axios.post(`http://127.0.0.1:8000/api/${apiPrefix}/update`, payload, this.getHeaders());
+        if (res.data.status) {
+          toastr.success(`Đã cập nhật thông tin thành công cho "${this.editingItem.name}"`);
+          // 1. Remove activePinMarker first
+          if (this.activePinMarker) {
+            if (this.map && this.map.hasLayer(this.activePinMarker)) {
               this.map.removeLayer(this.activePinMarker);
-              this.activePinMarker = null;
             }
-
-            // b. reset editingItem
-            this.editingItem = null;
-
-            // c. await loadAllData()
-            await this.loadAllData();
-
-            // d. plotStaticMarkers()
-            this.plotStaticMarkers();
-
-            // e. nextTick invalidateSize
-            this.$nextTick(() => {
-              if (this.map) {
-                this.map.invalidateSize();
-              }
-            });
-
-            // f. setTimeout 100ms
-            setTimeout(() => {
-              if (this.map) {
-                this.map.invalidateSize();
-              }
-            }, 100);
-          } else {
-            toastr.error("Có lỗi xảy ra: " + res.data.message);
+            this.activePinMarker = null;
           }
-        })
-        .catch(err => {
-          console.error("Lỗi cập nhật:", err);
-          toastr.error("Lỗi kết nối máy chủ, không thể lưu.");
-        })
-        .finally(() => {
-          this.isSaving = false;
+          // 2. Clear editing state
+          this.editingItem = null;
+          // 3. Reload data and re-plot all markers from DB
+          await this.loadAllData();
+        } else {
+          toastr.error("Có lỗi xảy ra: " + res.data.message);
+        }
+      } catch (err) {
+        console.error("Lỗi cập nhật:", err);
+        toastr.error("Lỗi kết nối máy chủ, không thể lưu.");
+      } finally {
+        this.isSaving = false;
+        this.$nextTick(() => {
+          if (this.map) this.map.invalidateSize();
         });
+      }
     },
     removeCoordinates() {
       if (!this.editingItem) return;
@@ -869,7 +878,7 @@ export default {
     },
     deleteItem() {
       if (!this.editingItem) return;
-
+      
       if (!confirm(`Bạn có chắc chắn muốn XÓA VĨNH VIỄN "${this.editingItem.name}" khỏi hệ thống?`)) {
         return;
       }
@@ -878,38 +887,11 @@ export default {
       const apiPrefix = this.editingItem.type === 'grave' ? 'mo-phan' : 'nha-tho-ho';
 
       axios.post(`http://127.0.0.1:8000/api/${apiPrefix}/delete`, { id: this.editingItem.id }, this.getHeaders())
-        .then(async res => {
+        .then(res => {
           if (res.data.status) {
             toastr.success(`Đã xóa vĩnh viễn địa điểm thành công!`);
-
-            // a. remove activePinMarker
-            if (this.activePinMarker) {
-              this.map.removeLayer(this.activePinMarker);
-              this.activePinMarker = null;
-            }
-
-            // b. reset editingItem
-            this.editingItem = null;
-
-            // c. await loadAllData()
-            await this.loadAllData();
-
-            // d. plotStaticMarkers()
-            this.plotStaticMarkers();
-
-            // e. nextTick invalidateSize
-            this.$nextTick(() => {
-              if (this.map) {
-                this.map.invalidateSize();
-              }
-            });
-
-            // f. setTimeout 100ms
-            setTimeout(() => {
-              if (this.map) {
-                this.map.invalidateSize();
-              }
-            }, 100);
+            this.loadAllData();
+            this.cancelEditing();
           } else {
             toastr.error("Lỗi khi xóa: " + res.data.message);
           }
@@ -924,26 +906,32 @@ export default {
     },
     reverseGeocode(lat, lng, target) {
       if (!lat || !lng) return;
-
-      const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1&email=huuhieu1609@gmail.com`;
-
-      axios.get(url, {
-        headers: {
-          'Accept-Language': 'vi,en;q=0.9',
-          'User-Agent': 'CayGiaPhaMapApp/1.0'
-        }
-      })
+      
+      const url = ndaGeocodeReverse(lat, lng);
+      const headers = this.getHeaders();
+      
+      axios.get(url, headers)
         .then(res => {
-          if (res.data && res.data.display_name) {
-            let displayAddress = res.data.display_name;
+          let displayAddress = "";
+          let addr = null;
 
-            // Clean up Nominatim response to be neat and standard for VN address hierarchy
-            const addr = res.data.address;
+          if (res.data) {
+            if (res.data.results && res.data.results.length > 0) {
+              const firstResult = res.data.results[0];
+              displayAddress = firstResult.formatted_address || firstResult.display_name || "";
+              addr = firstResult.address || null;
+            } else {
+              displayAddress = res.data.display_name || res.data.formatted_address || "";
+              addr = res.data.address || null;
+            }
+          }
+
+          if (displayAddress) {
             if (addr) {
               const houseNumber = addr.house_number || addr.building || '';
               const road = addr.road || '';
               const ward = addr.suburb || addr.village || addr.hamlet || addr.commune || '';
-
+              
               const districtCandidates = [addr.city_district, addr.district, addr.town, addr.county];
               let district = '';
               for (const cand of districtCandidates) {
@@ -952,16 +940,16 @@ export default {
                   break;
                 }
               }
-
+              
               const province = addr.city || addr.province || addr.state || '';
-
+              
               const parts = [];
               const streetAddress = [houseNumber, road].filter(p => !!p).join(' ');
               if (streetAddress) parts.push(streetAddress);
               if (ward) parts.push(ward);
               if (district && district !== ward) parts.push(district);
               if (province && province !== district && province !== ward) parts.push(province);
-
+              
               if (parts.length > 0) {
                 displayAddress = parts.join(', ');
               }
@@ -975,7 +963,7 @@ export default {
           }
         })
         .catch(err => {
-          console.warn("Lỗi khi giải ngược địa chỉ bằng Nominatim:", err);
+          console.warn("Lỗi khi giải ngược địa chỉ bằng NDA Geocoder:", err);
         });
     }
   }
@@ -993,7 +981,7 @@ export default {
   overflow: hidden;
   border-radius: 20px;
   background-color: var(--card-bg, #ffffff);
-  border: 1px solid var(--border-color, rgba(0, 0, 0, 0.05));
+  border: 1px solid var(--border-color, rgba(0,0,0,0.05));
   position: relative;
 }
 
@@ -1001,7 +989,7 @@ export default {
 .sidebar-panel {
   width: 380px;
   background: var(--card-bg, #ffffff);
-  border-right: 1px solid var(--border-color, rgba(0, 0, 0, 0.05));
+  border-right: 1px solid var(--border-color, rgba(0,0,0,0.05));
   padding: 24px;
   display: flex;
   flex-direction: column;
@@ -1011,7 +999,7 @@ export default {
 
 [data-theme="dark"] .sidebar-panel {
   background: #111c44;
-  border-right-color: rgba(255, 255, 255, 0.05);
+  border-right-color: rgba(255,255,255,0.05);
 }
 
 .panel-header {
@@ -1054,14 +1042,14 @@ export default {
 /* QUICK STATS */
 .stat-box {
   background: var(--input-bg, #f8fafc);
-  border: 1px solid var(--border-color, rgba(0, 0, 0, 0.03));
+  border: 1px solid var(--border-color, rgba(0,0,0,0.03));
   border-radius: 12px;
   padding: 10px;
 }
 
 [data-theme="dark"] .stat-box {
-  background: rgba(255, 255, 255, 0.02);
-  border-color: rgba(255, 255, 255, 0.04);
+  background: rgba(255,255,255,0.02);
+  border-color: rgba(255,255,255,0.04);
 }
 
 .stat-count {
@@ -1086,7 +1074,7 @@ export default {
 }
 
 [data-theme="dark"] .custom-pills {
-  background: rgba(0, 0, 0, 0.15);
+  background: rgba(0,0,0,0.15);
 }
 
 .custom-pills .nav-link {
@@ -1101,7 +1089,7 @@ export default {
 .custom-pills .nav-link.active {
   background: var(--card-bg, #ffffff) !important;
   color: #f97316 !important;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04) !important;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.04) !important;
 }
 
 [data-theme="dark"] .custom-pills .nav-link.active {
@@ -1111,7 +1099,7 @@ export default {
 /* SEARCH INPUT */
 .search-box .form-control {
   background: var(--input-bg, #f1f5f9) !important;
-  border: 1px solid var(--border-color, rgba(0, 0, 0, 0.03)) !important;
+  border: 1px solid var(--border-color, rgba(0,0,0,0.03)) !important;
   font-size: 13.5px;
   padding: 9px 12px;
   border-radius: 0 10px 10px 0;
@@ -1120,7 +1108,7 @@ export default {
 
 .search-box .input-group-text {
   background: var(--input-bg, #f1f5f9);
-  border: 1px solid var(--border-color, rgba(0, 0, 0, 0.03));
+  border: 1px solid var(--border-color, rgba(0,0,0,0.03));
   border-radius: 10px 0 0 10px;
   color: var(--text-sub);
 }
@@ -1131,15 +1119,8 @@ export default {
 }
 
 @keyframes slideInLeft {
-  from {
-    transform: translateX(-15px);
-    opacity: 0;
-  }
-
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
+  from { transform: translateX(-15px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
 }
 
 .form-scrollable {
@@ -1153,12 +1134,11 @@ export default {
 }
 
 .form-scrollable::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.05);
+  background: rgba(0,0,0,0.05);
   border-radius: 10px;
 }
 
-.form-control,
-.form-select {
+.form-control, .form-select {
   border-radius: 10px;
   font-size: 13.5px;
   padding: 10px 14px;
@@ -1166,8 +1146,7 @@ export default {
   background-color: var(--card-bg);
 }
 
-.form-control:focus,
-.form-select:focus {
+.form-control:focus, .form-select:focus {
   border-color: #f97316 !important;
   box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1) !important;
 }
@@ -1184,7 +1163,7 @@ export default {
 }
 
 .list-container::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.08);
+  background: rgba(0,0,0,0.08);
   border-radius: 10px;
 }
 
@@ -1196,7 +1175,7 @@ export default {
 
 .item-row {
   background: var(--card-bg);
-  border: 1px solid var(--border-color, rgba(0, 0, 0, 0.05));
+  border: 1px solid var(--border-color, rgba(0,0,0,0.05));
   border-radius: 12px;
   padding: 12px;
   cursor: pointer;
@@ -1235,11 +1214,11 @@ export default {
   background: var(--input-bg, #f8fafc);
   border-radius: 14px;
   padding: 16px;
-  border: 1px solid var(--border-color, rgba(0, 0, 0, 0.03));
+  border: 1px solid var(--border-color, rgba(0,0,0,0.03));
 }
 
 [data-theme="dark"] .edit-form-panel {
-  background: rgba(0, 0, 0, 0.15);
+  background: rgba(0,0,0,0.15);
 }
 
 .btn-close-edit {
@@ -1260,8 +1239,8 @@ export default {
 
 .btn-action-orange {
   background: linear-gradient(135deg, #f43f5e 0%, #f97316 100%) !important;
-  color: #ffffff !important;
-  border: none !important;
+  color: #ffffff !important; 
+  border: none !important; 
   border-radius: 10px !important;
   box-shadow: 0 4px 10px rgba(244, 63, 94, 0.15) !important;
 }
@@ -1297,17 +1276,9 @@ export default {
 }
 
 @keyframes pulseIcon {
-  0% {
-    transform: scale(1);
-  }
-
-  50% {
-    transform: scale(1.15);
-  }
-
-  100% {
-    transform: scale(1);
-  }
+  0% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+  100% { transform: scale(1); }
 }
 
 /* CUSTOM MARKERS */
@@ -1320,7 +1291,7 @@ export default {
   align-items: center;
   justify-content: center;
   border: 2px solid #fff;
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 3px 6px rgba(0,0,0,0.15);
 }
 
 .custom-static-pin i {
@@ -1339,7 +1310,7 @@ export default {
   align-items: center;
   justify-content: center;
   border: 2.5px solid #fff;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.25);
   animation: bounceActivePin 0.6s ease-out;
 }
 
@@ -1360,31 +1331,14 @@ export default {
 }
 
 @keyframes bounceActivePin {
-  0% {
-    transform: translateY(-20px) rotate(-45deg);
-    opacity: 0;
-  }
-
-  60% {
-    transform: translateY(4px) rotate(-45deg);
-  }
-
-  100% {
-    transform: translateY(0) rotate(-45deg);
-    opacity: 1;
-  }
+  0% { transform: translateY(-20px) rotate(-45deg); opacity: 0; }
+  60% { transform: translateY(4px) rotate(-45deg); }
+  100% { transform: translateY(0) rotate(-45deg); opacity: 1; }
 }
 
 @keyframes activePulseRing {
-  0% {
-    transform: rotate(45deg) scale(1);
-    opacity: 0.8;
-  }
-
-  100% {
-    transform: rotate(45deg) scale(2);
-    opacity: 0;
-  }
+  0% { transform: rotate(45deg) scale(1); opacity: 0.8; }
+  100% { transform: rotate(45deg) scale(2); opacity: 0; }
 }
 
 .btn-refresh-premium {
@@ -1399,13 +1353,11 @@ export default {
   align-items: center;
   justify-content: center;
 }
-
 .btn-refresh-premium:hover {
   transform: rotate(30deg) scale(1.05);
   border-color: #f97316 !important;
   box-shadow: 0 4px 12px rgba(249, 115, 22, 0.15);
 }
-
 .btn-refresh-premium:active {
   transform: scale(0.95);
 }

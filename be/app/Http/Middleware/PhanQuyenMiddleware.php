@@ -37,38 +37,39 @@ class PhanQuyenMiddleware
             return $next($request);
         }
 
-        // Đối tác tối cao (chủ tài khoản đối tác) không có chức vụ → có toàn quyền đối tác
-        if ($user->is_doi_tac == 1 && !$user->id_chuc_vu) {
-            return $next($request);
-        }
-
-        // Xác định ID Chức Vụ để kiểm tra quyền:
-        // Nếu user không có chức vụ (id_chuc_vu = null) -> Mặc định gán vai trò "Thành Viên" (ID = 3)
-        $idChucVu = $user->id_chuc_vu;
-        if (!$idChucVu) {
-            $idChucVu = \Illuminate\Support\Facades\DB::table('chuc_vus')
-                ->where('ten_chuc_vu', 'like', '%Thành Viên%')
-                ->value('id') ?? 3;
-        }
-
-        // Kiểm tra chức năng này có đang hoạt động không
-        $chucNangRecord = ChucNang::where('ten_chuc_nang', $chucNang)
-            ->where('trang_thai', 'Hoạt động')
-            ->first();
-
-        if (!$chucNangRecord) {
-            // Nếu chức năng không tồn tại trong DB thì bỏ qua kiểm tra (không chặn)
-            return $next($request);
-        }
-
         // Kiểm tra quyền hoạt động thực tế sau khi giao thoa
         $active_permissions = \App\Models\ThanhVienChucNang::getMemberActivePermissions($user);
-        $hasPermission = in_array($chucNangRecord->ten_chuc_nang, $active_permissions);
+
+        // Hỗ trợ nhiều quyền phân tách bởi dấu gạch đứng '|'
+        $required_perms = explode('|', $chucNang);
+        $hasPermission = false;
+
+        foreach ($required_perms as $perm) {
+            $permName = trim($perm);
+            $chucNangRecord = ChucNang::where('ten_chuc_nang', $permName)
+                ->where('trang_thai', 'Hoạt động')
+                ->first();
+
+            // Nếu chức năng không tồn tại trong DB, mặc định cho qua
+            if (!$chucNangRecord) {
+                $hasPermission = true;
+                break;
+            }
+
+            if (in_array($chucNangRecord->ten_chuc_nang, $active_permissions)) {
+                $hasPermission = true;
+                break;
+            }
+        }
 
         if (!$hasPermission) {
+            $msg = 'Bạn không có quyền thực hiện chức năng: ' . $chucNang;
+            if ($user->is_doi_tac == 1) {
+                $msg = 'Bạn không có quyền sử dụng chức năng này. Khi nào bên Admin bật lại thì bạn mới có thể dùng được!';
+            }
             return response()->json([
                 'success' => false,
-                'message' => 'Bạn không có quyền thực hiện chức năng: ' . $chucNang,
+                'message' => $msg,
                 'required_permission' => $chucNang,
             ], 403);
         }

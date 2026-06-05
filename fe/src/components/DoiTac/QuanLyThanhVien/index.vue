@@ -148,6 +148,10 @@
                                 </select>
                             </div>
                             <div class="col-md-6">
+                                <label class="form-label fw-bold text-secondary">Email nhận thông báo</label>
+                                <input type="email" class="form-control premium-input" v-model="currentMember.email" placeholder="example@gmail.com">
+                            </div>
+                            <div class="col-md-6">
                                 <label class="form-label fw-bold text-secondary">Ngày sinh</label>
                                 <input type="date" class="form-control premium-input" v-model="currentMember.ngay_sinh">
                             </div>
@@ -165,8 +169,48 @@
                                 </div>
                             </div>
                             <div class="col-md-6" v-if="currentMember.trang_thai === 'Đã mất'">
-                                <label class="form-label fw-bold text-danger">Ngày mất</label>
+                                <label class="form-label fw-bold text-danger">Ngày mất (Dương lịch)</label>
                                 <input type="date" class="form-control premium-input border-danger border-opacity-50" v-model="currentMember.ngay_mat">
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-secondary">Ảnh đại diện (Tải lên từ máy)</label>
+                                <input type="file" :key="avatarResetKey" class="form-control premium-input" @change="onAvatarChange" accept="image/*">
+                            </div>
+
+                            <!-- Ngày mất Âm lịch -->
+                            <div class="col-md-12" v-if="currentMember.trang_thai === 'Đã mất'">
+                                <div class="card bg-light border border-dashed p-3 radius-8 mb-2">
+                                    <h6 class="fw-bold mb-3 text-dark d-flex align-items-center gap-1">
+                                        <i class="bx bx-calendar-event text-warning fs-5"></i> Ngày mất Âm lịch
+                                    </h6>
+                                    <div class="row g-2">
+                                        <div class="col-md-3 col-6">
+                                            <label class="form-label small text-muted mb-1">Ngày AL</label>
+                                            <select class="form-select radius-8 border-2 shadow-none" v-model="currentMember.ngay_mat_al_ngay">
+                                                <option :value="null">--</option>
+                                                <option v-for="d in 30" :key="d" :value="d">{{ d }}</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-3 col-6">
+                                            <label class="form-label small text-muted mb-1">Tháng AL</label>
+                                            <select class="form-select radius-8 border-2 shadow-none" v-model="currentMember.ngay_mat_al_thang">
+                                                <option :value="null">--</option>
+                                                <option v-for="m in 12" :key="m" :value="m">Tháng {{ m }}</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-3 col-6">
+                                            <label class="form-label small text-muted mb-1">Năm AL</label>
+                                            <input type="number" class="form-control radius-8 border-2 shadow-none" v-model="currentMember.ngay_mat_al_nam" placeholder="Ví dụ: 2026">
+                                        </div>
+                                        <div class="col-md-3 col-6 d-flex align-items-end">
+                                            <div class="form-check mb-2 ms-2">
+                                                <input class="form-check-input" type="checkbox" id="nhuan_mat" v-model="currentMember.ngay_mat_al_nhuan" :true-value="1" :false-value="0">
+                                                <label class="form-check-label fw-semibold text-dark" for="nhuan_mat">Tháng nhuận</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-bold text-secondary">Quan hệ với dòng họ</label>
@@ -278,9 +322,10 @@ export default {
             sortKey: 'ho_ten',
             sortOrder: 'asc',
             isEditing: false,
+            avatarResetKey: 0,
             modal: null,
             currentMember: {
-                id: null, ho_ten: '', doi_thu: 1, cha_id: null, gioi_tinh: 'Nam', chi_nhanh_id: null,
+                id: null, ho_ten: '', email: '', doi_thu: 1, cha_id: null, gioi_tinh: 'Nam', chi_nhanh_id: null,
                 loai_quan_he: 'Chính', spouse_of_id: null, trang_thai: 'Còn sống', ngay_mat: null, ngay_sinh: null, ghi_chu: '', avatar: null,
                 ngay_mat_al_ngay: null, ngay_mat_al_thang: null, ngay_mat_al_nam: null, ngay_mat_al_nhuan: 0
             },
@@ -384,12 +429,13 @@ export default {
         openAddModal() {
             this.isEditing = false;
             this.currentMember = {
-                id: null, ho_ten: '', doi_thu: 1, cha_id: null, gioi_tinh: 'Nam', chi_nhanh_id: null,
+                id: null, ho_ten: '', email: '', doi_thu: 1, cha_id: null, gioi_tinh: 'Nam', chi_nhanh_id: null,
                 loai_quan_he: 'Chính', spouse_of_id: null, trang_thai: 'Còn sống', ngay_mat: null, ngay_sinh: null, ghi_chu: '', avatar: null,
                 ngay_mat_al_ngay: null, ngay_mat_al_thang: null, ngay_mat_al_nam: null, ngay_mat_al_nhuan: 0
             };
             this.avatarFile = null;
             this.avatarPreview = null;
+            this.avatarResetKey++;
             this.modal.show();
         },
         onEdit(member) {
@@ -397,6 +443,7 @@ export default {
             this.currentMember = { ...member };
             this.avatarFile = null;
             this.avatarPreview = null;
+            this.avatarResetKey++;
             this.modal.show();
         },
         onAvatarChange(e) {

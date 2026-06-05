@@ -295,12 +295,33 @@ export default {
     },
     computed: {
         filteredRoles() {
+            // Đọc thông tin user đang đăng nhập
+            const userStr = localStorage.getItem('user');
+            let currentUser = null;
+            if (userStr) {
+                try {
+                    currentUser = JSON.parse(userStr);
+                } catch(e) {}
+            }
+
             // Lọc bỏ "Quản Trị Viên Tổng" (Admin hệ thống gốc), chỉ hiển thị chức vụ đối tác và thành viên dòng họ
             let baseList = this.listRoles.filter(r => 
                 r.id !== 1 && 
                 !r.ten_chuc_vu.toLowerCase().includes('tổng') && 
                 !r.mo_ta?.toLowerCase().includes('toàn quyền hệ thống')
             );
+
+            // Nếu người dùng đăng nhập là Quản trị viên phụ tá (Sub-Admin), chỉ cho phép phân quyền cho Trưởng Nhánh và Thành Viên
+            const chucVuName = currentUser?.chuc_vu?.ten_chuc_vu?.toLowerCase() || '';
+            const roleName = currentUser?.vai_tro?.toLowerCase() || '';
+            const isMasterAdmin = roleName === 'admin' || currentUser?.email === 'admin@master.com' || chucVuName.includes('tổng');
+            const isSubAdmin = chucVuName.includes('quản trị') && !isMasterAdmin;
+            if (isSubAdmin) {
+                baseList = baseList.filter(r => 
+                    r.ten_chuc_vu.toLowerCase().includes('nhánh') || 
+                    r.ten_chuc_vu.toLowerCase().includes('thành viên')
+                );
+            }
             
             if (!this.searchRole) return baseList;
             const term = this.searchRole.toLowerCase();
@@ -312,12 +333,26 @@ export default {
         filteredChucNang() {
             if (!this.selectedRole) return [];
             
-            const adminFuncs = ['Admin Dashboard', 'Quản Lý Đối Tác', 'Quản Lý Người Dùng', 'Quản Lý Chức Vụ', 'Quản Lý Chức Năng', 'Hệ Thống'];
+            const adminFuncs = [
+                'Admin Dashboard',
+                'Quản Lý Gia Phả Hệ',
+                'Quản Lý Bản Đồ Hệ Thống',
+                'Quản Lý Dòng Họ Hệ Thống',
+                'Quản Lý Sự Kiện Hệ Thống',
+                'Quản Lý Đóng Góp Hệ Thống',
+                'Quản Lý Nhật Ký Hoạt Động',
+                'Quản Lý Đối Tác',
+                'Quản Lý Người Dùng',
+                'Quản Lý Chức Vụ',
+                'Quản Lý Chức Năng',
+                'Hệ Thống'
+            ];
             
             // Lọc theo chức vụ được chọn
             let baseList = this.listChucNang;
-            if (this.selectedRole.id === 1 || this.selectedRole.ten_chuc_vu.toLowerCase().includes('admin') || this.selectedRole.ten_chuc_vu.toLowerCase().includes('tổng')) {
-                // Chức vụ Admin tổng -> Chỉ hiện các chức năng admin hệ thống
+            const tenChucVu = (this.selectedRole.ten_chuc_vu || '').toLowerCase();
+            if (this.selectedRole.id === 1 || tenChucVu.includes('admin') || tenChucVu.includes('tổng') || tenChucVu.includes('quản trị')) {
+                // Chức vụ Admin tổng hoặc Quản trị viên -> Chỉ hiện các chức năng admin hệ thống
                 baseList = this.listChucNang.filter(cn => adminFuncs.includes(cn.ten_chuc_nang));
             } else {
                 // Chức vụ của đối tác và thành viên -> KHÔNG hiện các chức năng admin hệ thống
@@ -483,17 +518,19 @@ export default {
                 let friendlyName = name.replace(/Quản Lý/g, 'Xem').replace(/quản lý/g, 'xem');
                 
                 // Các trường hợp đặc biệt không chứa từ "Quản Lý" nhưng nên đổi sang "Xem..."
-                if (name === 'Cây Gia Phả') return 'Xem Cây Gia Phả';
+                if (name === 'Cây Gia Phả') return 'Xem Gia Phả Hệ';
                 if (name === 'Tra Cứu Xưng Hô') return 'Xem Tra Cứu Xưng Hô';
                 if (name === 'Quỹ & Sự Kiện') return 'Xem Quỹ & Sự Kiện';
                 if (name === 'Nhật Ký Thao Tác') return 'Xem Nhật Ký Thao Tác';
                 
                 return friendlyName;
             }
+
             return name;
         },
         getFriendlyDesc(cn) {
             let desc = cn.mo_ta || ('Cho phép truy cập ' + cn.ten_chuc_nang);
+            // Giữ nguyên mô tả gốc cho Cây Gia Phả của đối tác/thành viên
             if (this.selectedRole) {
                 const roleName = (this.selectedRole.ten_chuc_vu || '').toString().toLowerCase().normalize('NFC');
                 const isThanhVien = roleName.includes('thành viên') || 
@@ -502,7 +539,7 @@ export default {
                                     
                 if (isThanhVien) {
                     // Đổi "Quản lý" / "quản lý" thành "Xem" / "xem"
-                    return desc.replace(/Quản lý/g, 'Xem').replace(/quản lý/g, 'xem');
+                    return desc.replace(/Quản lý/g, 'Xem').replace(/quản lý/g, 'xem').replace(/chỉnh sửa/g, 'xem');
                 }
             }
             return desc;

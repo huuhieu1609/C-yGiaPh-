@@ -82,7 +82,7 @@
                         :style="{ cursor: isPanning ? 'grabbing' : 'grab' }">
 
                         <div class="tree-canvas" :style="canvasStyle">
-                            <div class="tree" :class="{ 'is-exporting-tree': isExporting }" v-if="treeData.length">
+                            <div class="tree" v-if="treeData.length">
                                 <ul>
                                     <TreeItem v-for="member in treeData" :key="member.id" :member="member"
                                         :listDoiTocHo="listDoiTocHo" :searchQuery="searchQuery" @edit="onEdit"
@@ -292,10 +292,10 @@
                                     {{ activeMember.doi_thu }}</span>
                                 <span class="badge badge-gold-soft font-9 px-2 py-0.5"
                                     style="background: rgba(212, 175, 55, 0.15) !important; color: #ffd891 !important; border: 1px solid rgba(212, 175, 55, 0.25);">{{
-                                        activeMember.gioi_tinh }}</span>
+                                    activeMember.gioi_tinh }}</span>
                                 <span class="badge badge-gold-soft font-9 px-2 py-0.5"
                                     style="background: rgba(212, 175, 55, 0.15) !important; color: #ffd891 !important; border: 1px solid rgba(212, 175, 55, 0.25);">{{
-                                        activeMember.trang_thai }}</span>
+                                    activeMember.trang_thai }}</span>
                             </div>
                         </div>
                     </div>
@@ -351,8 +351,17 @@
 import { defineComponent, h } from 'vue';
 import axios from 'axios';
 import toastr from 'toastr';
-import html2canvas from 'html2canvas-pro';
+import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
+
+const getAvatarUrl = (url) => {
+    if (!url) return '';
+    try {
+        return url.replace(/^https?:\/\/(127\.0\.0\.1|localhost):8000/, window.location.origin);
+    } catch (e) {
+        return url;
+    }
+};
 
 const TreeItem = defineComponent({
     name: 'TreeItem',
@@ -420,7 +429,7 @@ const TreeItem = defineComponent({
             },
             onDblclick: (e) => { e.stopPropagation(); this.isDoubleClick = true; clearTimeout(this.clickTimeout); this.$emit('show-qr', this.member); }
         }, [
-            h('div', { class: 'node-avatar-container' }, [h('img', { src: this.member.avatar ? this.member.avatar : ('https://ui-avatars.com/api/?name=' + this.member.ho_ten + '&background=d4af37&color=fff'), class: 'node-avatar shadow-sm' })]),
+            h('div', { class: 'node-avatar-container' }, [h('img', { src: this.member.avatar ? getAvatarUrl(this.member.avatar) : ('https://ui-avatars.com/api/?name=' + this.member.ho_ten + '&background=d4af37&color=fff'), class: 'node-avatar shadow-sm' })]),
             h('div', { class: 'node-content' }, [h('div', { class: 'node-name' }, this.member.ho_ten), this.member.ngay_sinh ? h('div', { class: 'node-date' }, formatDate(this.member.ngay_sinh)) : null, h('div', { class: 'node-tag' }, `Đời ${this.member.doi_thu}${getTenDoi(this.member.doi_thu)}`)]),
             h('div', { class: 'node-edit-btn' }, [h('i', { class: 'bx bx-pencil' })]),
             h('div', { class: 'quick-actions' }, [
@@ -437,7 +446,7 @@ const TreeItem = defineComponent({
                 onClick: (e) => { e.stopPropagation(); clearTimeout(this.clickTimeout); this.isDoubleClick = false; this.clickTimeout = setTimeout(() => { if (!this.isDoubleClick) this.$emit('edit', spouse); }, 200); },
                 onDblclick: (e) => { e.stopPropagation(); this.isDoubleClick = true; clearTimeout(this.clickTimeout); this.$emit('show-qr', spouse); }
             }, [
-                h('div', { class: 'node-avatar-container' }, [h('img', { src: spouse.avatar ? spouse.avatar : ('https://ui-avatars.com/api/?name=' + spouse.ho_ten + '&background=d4af37&color=fff'), class: 'node-avatar shadow-sm' })]),
+                h('div', { class: 'node-avatar-container' }, [h('img', { src: spouse.avatar ? getAvatarUrl(spouse.avatar) : ('https://ui-avatars.com/api/?name=' + spouse.ho_ten + '&background=d4af37&color=fff'), class: 'node-avatar shadow-sm' })]),
                 h('div', { class: 'node-content' }, [h('div', { class: 'node-name' }, spouse.ho_ten), h('div', { class: 'node-tag spouse-tag' }, spouse.gioi_tinh === 'Nữ' ? 'Vợ' : (spouse.gioi_tinh === 'Nam' ? 'Chồng' : 'Vợ/Chồng'))]),
                 h('div', { class: 'node-edit-btn' }, [h('i', { class: 'bx bx-pencil' })]),
                 h('div', { class: 'quick-actions' }, [
@@ -685,29 +694,79 @@ export default {
             this.posX = 0;
             this.posY = 0;
         },
+        filterStyleSheetsForExport() {
+            try {
+                const originalDescriptor = Object.getOwnPropertyDescriptor(Document.prototype, 'styleSheets');
+                const allSheets = Array.from(document.styleSheets);
+                const filteredSheets = allSheets.filter(sheet => {
+                    try {
+                        const rules = sheet.cssRules || sheet.rules;
+                        if (rules) {
+                            for (let i = 0; i < rules.length; i++) {
+                                const cssText = rules[i].cssText;
+                                if (cssText && cssText.includes('oklch')) {
+                                    return false;
+                                }
+                            }
+                        }
+                    } catch (e) {
+                        // If reading rules throws a SecurityError (CORS / Cross-Origin / Extension styles)
+                        if (sheet.href) {
+                            const href = sheet.href.toLowerCase();
+                            // Always exclude chrome extensions
+                            if (href.startsWith('chrome-extension://') || href.includes('extension')) {
+                                return false;
+                            }
+                            // Keep known safe CDN stylesheets
+                            const safeKeywords = ['boxicons', 'googleapis', 'fonts.gstatic.com', 'bootstrap', 'font-awesome', 'fontawesome'];
+                            if (safeKeywords.some(keyword => href.includes(keyword))) {
+                                return true;
+                            }
+                        }
+                        // Exclude any other untrusted cross-origin stylesheets to prevent oklch parsing crashes
+                        return false;
+                    }
+                    return true;
+                });
+
+                Object.defineProperty(document, 'styleSheets', {
+                    get() { return filteredSheets; },
+                    configurable: true
+                });
+
+                return () => {
+                    if (originalDescriptor) {
+                        Object.defineProperty(Document.prototype, 'styleSheets', originalDescriptor);
+                    } else {
+                        delete document.styleSheets;
+                    }
+                };
+            } catch (err) {
+                console.warn('Failed to filter stylesheets:', err);
+                return () => { };
+            }
+        },
+        /**
+         * Clone the .tree element offscreen, compute real bounding box of ALL
+         * descendant elements (including those with negative offsets from pseudo
+         * elements, flex layout, etc.), translate everything into positive
+         * coordinate space, and capture with html2canvas.
+         *
+         * Returns { canvas, cleanup } where cleanup MUST be called in finally.
+         */
         async _captureTreeCanvas() {
-            // Strategy: Clone .tree into an offscreen wrapper, compute the TRUE bounding
-            // box by iterating every descendant's getBoundingClientRect(), then translate
-            // the clone so all content (including negative-offset parts) sits in positive
-            // coordinate space. This guarantees html2canvas captures the full tree.
-
             const treeEl = document.querySelector('.tree');
-            if (!treeEl) throw new Error('Không tìm thấy cây gia phả');
+            if (!treeEl) throw new Error("Không tìm thấy cây gia phả");
 
-            // --- Step 1: Create offscreen wrapper ---
+            // --- 1. Create offscreen wrapper ---
             const wrapper = document.createElement('div');
-            wrapper.style.cssText = [
-                'position:fixed',
-                'left:-99999px',
-                'top:0',
-                'background:#faf9f6',
-                'overflow:visible',
-                'padding:0',
-                'pointer-events:none',
-                'z-index:-9999'
-            ].join(';');
+            wrapper.style.cssText = 'position:fixed;left:-99999px;top:0;background:#faf9f6;overflow:visible;padding:0;pointer-events:none;z-index:-1;';
 
-            // --- Step 2: Clone .tree ---
+            // --- 2. Create inner container ---
+            const inner = document.createElement('div');
+            inner.style.cssText = 'position:relative;display:inline-block;overflow:visible;';
+
+            // --- 3. Clone .tree ---
             const clone = treeEl.cloneNode(true);
             clone.style.transform = 'none';
             clone.style.position = 'relative';
@@ -716,29 +775,22 @@ export default {
             clone.style.margin = '0';
             clone.style.transition = 'none';
 
-            // --- Step 3: Inner container ---
-            const inner = document.createElement('div');
-            inner.style.position = 'relative';
-            inner.style.display = 'inline-block';
-            inner.style.overflow = 'visible';
-
-            // Kill transitions on every descendant so layout is instant
-            clone.querySelectorAll('*').forEach(el => { el.style.transition = 'none'; });
-
             inner.appendChild(clone);
             wrapper.appendChild(inner);
             document.body.appendChild(wrapper);
 
-            // --- Step 4: Wait for browser to fully paint the clone ---
+            // --- 4. Wait for DOM render (2 rAF) ---
             await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+            // Extra small delay for complex layouts
+            await new Promise(resolve => setTimeout(resolve, 200));
 
-            // --- Step 5: Compute the TRUE bounding box of ALL descendants ---
+            // --- 5. Compute real bounding box ---
             const elements = [clone, ...clone.querySelectorAll('*')];
             let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
 
             elements.forEach(el => {
-                // Skip elements with no layout (display:none, etc.)
                 const rect = el.getBoundingClientRect();
+                // Skip zero-size invisible elements
                 if (rect.width === 0 && rect.height === 0) return;
                 if (rect.left < minX) minX = rect.left;
                 if (rect.top < minY) minY = rect.top;
@@ -746,40 +798,48 @@ export default {
                 if (rect.bottom > maxY) maxY = rect.bottom;
             });
 
-            // --- Step 6: Safe padding (covers ::before/::after that getBoundingClientRect can't measure) ---
-            const padding = 200;
+            // Fallback if bounding box couldn't be computed
+            if (!isFinite(minX)) {
+                minX = 0; minY = 0;
+                maxX = clone.scrollWidth || 2000;
+                maxY = clone.scrollHeight || 2000;
+            }
 
-            // --- Step 7: Compute export dimensions ---
+            // --- 6. Add safety padding for pseudo elements (::before/::after) ---
+            const padding = 200;
             const exportWidth = Math.ceil(maxX - minX + padding * 2);
             const exportHeight = Math.ceil(maxY - minY + padding * 2);
 
-            // --- Step 8: Translate clone so everything is in positive coordinate space ---
-            // minX/minY are relative to the viewport; we need to shift inner so that
-            // the leftmost/topmost content starts at x=padding, y=padding inside wrapper.
-            const innerRect = inner.getBoundingClientRect();
-            const shiftX = padding - (minX - innerRect.left);
-            const shiftY = padding - (minY - innerRect.top);
-            inner.style.transform = `translate(${shiftX}px, ${shiftY}px)`;
+            // --- 7. Translate clone so all content is in positive space ---
+            // minX/minY are in viewport coords; we need the offset relative to the wrapper
+            const wrapperRect = wrapper.getBoundingClientRect();
+            const offsetX = minX - wrapperRect.left;
+            const offsetY = minY - wrapperRect.top;
+            inner.style.transform = `translate(${padding - offsetX}px, ${padding - offsetY}px)`;
             inner.style.transformOrigin = 'top left';
 
-            // --- Step 9: Set wrapper to exact computed size ---
-            wrapper.style.width = exportWidth + 'px';
-            wrapper.style.height = exportHeight + 'px';
+            // --- 8. Set wrapper to exact export size ---
+            wrapper.style.width = `${exportWidth}px`;
+            wrapper.style.height = `${exportHeight}px`;
             wrapper.style.overflow = 'hidden';
-            wrapper.style.background = '#faf9f6';
 
-            // Wait for the transform to take effect
+            // Wait for transform to apply
             await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
 
-            // --- Step 10: Decide scale based on export width ---
+            // --- 9. Determine scale based on export size ---
             let scale = 2;
             if (exportWidth > 10000) scale = 0.6;
             else if (exportWidth > 7000) scale = 0.8;
             else if (exportWidth > 4000) scale = 1;
             else if (exportWidth > 2500) scale = 1.3;
 
+            // --- 10. Filter stylesheets ---
+            const restoreStyleSheets = this.filterStyleSheetsForExport();
+
+            // --- 11. Capture with html2canvas ---
+            let renderedCanvas;
             try {
-                const rendered = await html2canvas(wrapper, {
+                renderedCanvas = await html2canvas(wrapper, {
                     scale: scale,
                     useCORS: true,
                     backgroundColor: '#faf9f6',
@@ -793,10 +853,18 @@ export default {
                     x: 0,
                     y: 0
                 });
-                return rendered;
             } finally {
-                document.body.removeChild(wrapper);
+                restoreStyleSheets();
             }
+
+            // --- 12. Return canvas + cleanup ---
+            const cleanup = () => {
+                if (wrapper.parentNode) {
+                    document.body.removeChild(wrapper);
+                }
+            };
+
+            return { canvas: renderedCanvas, cleanup };
         },
 
         async exportToImage() {
@@ -804,20 +872,27 @@ export default {
                 toastr.warning('Không có dữ liệu để xuất!');
                 return;
             }
+
             this.isExporting = true;
-            await this.$nextTick();
+            let cleanup = null;
+
             try {
-                const rendered = await this._captureTreeCanvas();
-                const imgData = rendered.toDataURL('image/png');
+                const result = await this._captureTreeCanvas();
+                cleanup = result.cleanup;
+
+                const imgData = result.canvas.toDataURL('image/png');
+
                 const link = document.createElement('a');
                 link.download = `Cay_Gia_Pha_${this.selectedChiNhanhId || 'Export'}.png`;
                 link.href = imgData;
                 link.click();
+
                 toastr.success('Xuất ảnh thành công!');
             } catch (error) {
-                console.error(error);
-                toastr.error('Có lỗi xảy ra khi xuất ảnh.');
+                console.error('Export Image Error:', error);
+                toastr.error('Có lỗi xảy ra khi xuất ảnh: ' + error.message);
             } finally {
+                if (cleanup) cleanup();
                 this.isExporting = false;
             }
         },
@@ -827,34 +902,41 @@ export default {
                 toastr.warning('Không có dữ liệu để xuất!');
                 return;
             }
-            this.isExporting = true;
-            await this.$nextTick();
-            try {
-                const rendered = await this._captureTreeCanvas();
-                const imgData = rendered.toDataURL('image/jpeg', 1.0);
 
-                // Cap PDF page size to jsPDF safe limit (14400 pt max)
-                let pdfW = rendered.width;
-                let pdfH = rendered.height;
-                const MAX = 5000;
-                if (pdfW > MAX) {
-                    const r = MAX / pdfW;
-                    pdfW = MAX;
-                    pdfH = Math.round(pdfH * r);
+            this.isExporting = true;
+            let cleanup = null;
+
+            try {
+                const result = await this._captureTreeCanvas();
+                cleanup = result.cleanup;
+
+                const imgData = result.canvas.toDataURL('image/jpeg', 1.0);
+
+                // Scale to stay within jsPDF 14400 userUnit limit
+                const maxPDFDimension = 5000;
+                let pdfWidth = result.canvas.width;
+                let pdfHeight = result.canvas.height;
+                if (pdfWidth > maxPDFDimension || pdfHeight > maxPDFDimension) {
+                    const ratio = Math.min(maxPDFDimension / pdfWidth, maxPDFDimension / pdfHeight);
+                    pdfWidth = Math.floor(pdfWidth * ratio);
+                    pdfHeight = Math.floor(pdfHeight * ratio);
                 }
 
                 const pdf = new jsPDF({
-                    orientation: pdfW > pdfH ? 'landscape' : 'portrait',
+                    orientation: pdfWidth > pdfHeight ? 'landscape' : 'portrait',
                     unit: 'px',
-                    format: [pdfW, pdfH]
+                    format: [pdfWidth, pdfHeight]
                 });
-                pdf.addImage(imgData, 'JPEG', 0, 0, pdfW, pdfH);
+
+                pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
                 pdf.save(`Cay_Gia_Pha_${this.selectedChiNhanhId || 'Export'}.pdf`);
+
                 toastr.success('Xuất PDF thành công!');
             } catch (error) {
-                console.error(error);
-                toastr.error('Có lỗi xảy ra khi xuất PDF.');
+                console.error('Export PDF Error:', error);
+                toastr.error('Có lỗi xảy ra khi xuất PDF: ' + error.message);
             } finally {
+                if (cleanup) cleanup();
                 this.isExporting = false;
             }
         },
@@ -1143,18 +1225,6 @@ export default {
 .tree li {
     position: relative;
     transition: all 0.3s;
-}
-
-/* Disable transitions during export to instantly snap elements to coordinates */
-.tree.is-exporting-tree,
-.tree.is-exporting-tree *,
-.tree-canvas:has(.is-exporting-tree) {
-    transition: none !important;
-}
-
-.tree.is-exporting-tree {
-    padding: 50px !important;
-    background-color: #faf9f6 !important;
 }
 
 .tree ul {

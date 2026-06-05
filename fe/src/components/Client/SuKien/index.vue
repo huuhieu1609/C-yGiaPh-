@@ -4,17 +4,14 @@
     <div class="glow-blob blob-purple"></div>
     <div class="glow-blob blob-blue"></div>
 
-    <div class="container content-relative pt-5 pb-5 mt-5">
+    <div class="container content-relative pt-5 pb-5">
       <div class="glass-card shadow-2xl rounded-3xl overflow-hidden mt-5 p-4 p-md-5">
         <div class="checkout-header text-center mb-5 position-relative">
           <span class="subtitle-gradient d-block text-uppercase mb-2">KẾT NỐI DÒNG TỘC</span>
           <h2 class="text-gradient fw-bold mb-2">Sự Kiện Dòng Họ</h2>
-          <p class="text-white-50">Lịch trình các hoạt động tế lễ, họp dòng họ, giỗ tổ và các sự kiện chung trong gia
-            tộc.</p>
-          <button
-            class="btn btn-refresh-premium rounded-circle d-flex align-items-center justify-content-center position-absolute end-0 top-0 mt-2"
-            @click="loadData" :disabled="isLoading" title="Làm mới dữ liệu">
-            <i class="bx bx-sync fs-5 text-warning" :class="{ 'bx-spin': isLoading }"></i>
+          <p class="text-white-50">Lịch trình các hoạt động tế lễ, họp dòng họ, giỗ tổ và các sự kiện chung trong gia tộc.</p>
+          <button class="btn btn-refresh-premium rounded-circle d-flex align-items-center justify-content-center position-absolute end-0 top-0 mt-2" @click="loadData" :disabled="isLoading" title="Làm mới dữ liệu">
+            <i class="bx bx-sync fs-5 text-warning" :class="{'bx-spin': isLoading}"></i>
           </button>
         </div>
 
@@ -23,13 +20,13 @@
           <p class="text-white-50 mt-3">Đang tải danh sách sự kiện...</p>
         </div>
 
-        <div v-else-if="!events.length" class="empty-state text-center py-5">
+        <div v-else-if="!combinedEvents.length" class="empty-state text-center py-5">
           <i class="bx bx-calendar-event text-white-50" style="font-size: 4rem;"></i>
-          <p class="text-white-50 mt-3">Chưa có sự kiện nào được lên lịch.</p>
+          <p class="text-white-50 mt-3">Chưa có sự kiện hoặc ngày giỗ nào được lên lịch.</p>
         </div>
 
         <div v-else class="row g-4">
-          <div v-for="ev in events" :key="ev.id" class="col-lg-6">
+          <div v-for="ev in combinedEvents" :key="ev.id" class="col-lg-6">
             <div class="event-card glass-panel h-100 d-flex flex-column justify-content-between">
               <div>
                 <div class="d-flex justify-content-between align-items-start gap-2 mb-3">
@@ -63,31 +60,27 @@
                 <hr class="border-white/10 my-3" />
 
                 <!-- Đã đăng ký -->
-                <div class="mb-3" v-if="participantsMap[ev.id] && participantsMap[ev.id].length">
-                  <span class="text-white-50 small d-block mb-2">Thành viên tham gia ({{ participantsMap[ev.id].length
-                  }}):</span>
+                <div class="mb-3" v-if="!ev.is_anniversary && participantsMap[ev.id] && participantsMap[ev.id].length">
+                  <span class="text-white-50 small d-block mb-2">Thành viên tham gia ({{ participantsMap[ev.id].length }}):</span>
                   <div class="d-flex flex-wrap gap-2">
-                    <span v-for="p in participantsMap[ev.id].slice(0, 5)" :key="p.id"
-                      class="badge bg-white/5 border border-white/10 text-white rounded-pill px-3 py-2 d-flex align-items-center gap-2">
-                      <img
-                        :src="p.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(p.ho_ten)}&background=d4af37&color=fff&size=30`"
-                        class="rounded-circle" width="18" height="18" />
+                    <span v-for="p in participantsMap[ev.id].slice(0, 5)" :key="p.id" class="badge bg-white/5 border border-white/10 text-white rounded-pill px-3 py-2 d-flex align-items-center gap-2">
+                      <img :src="p.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(p.ho_ten)}&background=d4af37&color=fff&size=30`" class="rounded-circle" width="18" height="18" />
                       {{ p.ho_ten }}
-                      <i v-if="!isPastEvent(ev)" class="bx bx-x text-danger cursor-pointer ms-1"
-                        style="font-size: 1rem;" @click="unregister(ev.id, p.id)" title="Hủy đăng ký"></i>
+                      <i class="bx bx-x text-danger cursor-pointer ms-1" style="font-size: 1rem;" @click="unregister(ev.id, p.id)" title="Hủy đăng ký"></i>
                     </span>
-                    <span v-if="participantsMap[ev.id].length > 5"
-                      class="badge bg-gold/20 text-gold border border-gold/30 rounded-pill px-3 py-2">
+                    <span v-if="participantsMap[ev.id].length > 5" class="badge bg-gold/20 text-gold border border-gold/30 rounded-pill px-3 py-2">
                       +{{ participantsMap[ev.id].length - 5 }} người khác
                     </span>
                   </div>
                 </div>
 
                 <div class="d-flex gap-2">
-                  <button class="btn btn-warning w-100 radius-10 fw-bold py-2.5" @click="openRegisterModal(ev)"
-                    :disabled="isPastEvent(ev)">
-                    <i class="bx bx-check-double me-1"></i> {{ isPastEvent(ev) ? 'Đã diễn ra' : 'Đăng Ký Tham Gia' }}
+                  <button class="btn btn-warning w-100 radius-10 fw-bold py-2.5" @click="openRegisterModal(ev)" v-if="!ev.is_anniversary">
+                    <i class="bx bx-check-double me-1"></i> Đăng Ký Tham Gia
                   </button>
+                  <router-link to="/tuong-niem" class="btn btn-outline-warning w-100 radius-10 fw-bold py-2.5 d-flex align-items-center justify-content-center gap-1" v-else>
+                    <i class="bx bx-history"></i> Xem Dòng Lịch Sử
+                  </router-link>
                 </div>
               </div>
             </div>
@@ -114,33 +107,25 @@
 
             <label class="form-label fw-bold mb-2">Chọn thành viên gia đình tham gia:</label>
             <div class="search-box mb-3">
-              <input type="text"
-                class="form-control radius-8 border-2 bg-white/5 border-white/10 text-white shadow-none"
-                v-model="searchQuery" placeholder="Tìm kiếm thành viên...">
+              <input type="text" class="form-control radius-8 border-2 bg-white/5 border-white/10 text-white shadow-none" v-model="searchQuery" placeholder="Tìm kiếm thành viên...">
             </div>
 
-            <div class="member-list-wrapper rounded-2xl p-2 bg-black/20 border border-white/5"
-              style="max-height: 250px; overflow-y: auto;">
+            <div class="member-list-wrapper rounded-2xl p-2 bg-black/20 border border-white/5" style="max-height: 250px; overflow-y: auto;">
               <div v-if="filteredMembers.length === 0" class="text-center text-white-50 py-3">
                 Không tìm thấy thành viên phù hợp
               </div>
-              <div v-else v-for="m in filteredMembers" :key="m.id"
-                class="form-check p-2 border-bottom border-white/5 d-flex align-items-center justify-content-between">
+              <div v-else v-for="m in filteredMembers" :key="m.id" class="form-check p-2 border-bottom border-white/5 d-flex align-items-center justify-content-between">
                 <div class="d-flex align-items-center gap-2">
-                  <input class="form-check-input ms-0 me-2" type="checkbox" :value="m.id" v-model="selectedMemberIds"
-                    :id="`chk_${m.id}`" :disabled="isAlreadyRegistered(m.id)">
+                  <input class="form-check-input ms-0 me-2" type="checkbox" :value="m.id" v-model="selectedMemberIds" :id="`chk_${m.id}`" :disabled="isAlreadyRegistered(m.id)">
                   <label class="form-check-label text-white d-flex align-items-center gap-2" :for="`chk_${m.id}`">
-                    <img
-                      :src="m.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(m.ho_ten)}&background=d4af37&color=fff&size=30`"
-                      class="rounded-circle" width="24" height="24" />
+                    <img :src="m.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(m.ho_ten)}&background=d4af37&color=fff&size=30`" class="rounded-circle" width="24" height="24" />
                     <div>
                       <strong>{{ m.ho_ten }}</strong>
                       <span class="text-white-50 small"> (Đời {{ m.doi_thu }})</span>
                     </div>
                   </label>
                 </div>
-                <span class="badge bg-success/20 text-success border border-success/30 radius-8 text-xs px-2 py-1"
-                  v-if="isAlreadyRegistered(m.id)">
+                <span class="badge bg-success/20 text-success border border-success/30 radius-8 text-xs px-2 py-1" v-if="isAlreadyRegistered(m.id)">
                   Đã đăng ký
                 </span>
               </div>
@@ -148,8 +133,7 @@
           </div>
           <div class="modal-footer border-top border-white/10 p-4">
             <button class="btn btn-light px-4 radius-10" data-bs-dismiss="modal">Đóng</button>
-            <button class="btn btn-warning px-4 radius-10 fw-bold" @click="submitRegister"
-              :disabled="selectedMemberIds.length === 0">
+            <button class="btn btn-warning px-4 radius-10 fw-bold" @click="submitRegister" :disabled="selectedMemberIds.length === 0">
               Xác Nhận Đăng Ký
             </button>
           </div>
@@ -162,6 +146,7 @@
 <script>
 import axios from 'axios';
 import toastr from 'toastr';
+import { lunarToSolar } from '@/utils/lunar.js';
 
 export default {
   name: 'ClientSuKien',
@@ -184,6 +169,60 @@ export default {
       if (!this.searchQuery) return this.allMembers;
       const q = this.searchQuery.toLowerCase();
       return this.allMembers.filter(m => m.ho_ten.toLowerCase().includes(q));
+    },
+    combinedEvents() {
+      const list = [...this.events];
+      const todayStr = new Date().toISOString().substring(0, 10);
+      const currentYear = new Date().getFullYear();
+      
+      this.allMembers.forEach(member => {
+        if (member.trang_thai === 'Đã mất') {
+          let solarDate = null;
+          let note = '';
+          
+          if (member.ngay_mat_al_ngay && member.ngay_mat_al_thang) {
+            solarDate = lunarToSolar(currentYear, member.ngay_mat_al_thang, member.ngay_mat_al_ngay, member.ngay_mat_al_nhuan === 1);
+            if (solarDate && solarDate < todayStr) {
+              solarDate = lunarToSolar(currentYear + 1, member.ngay_mat_al_thang, member.ngay_mat_al_ngay, member.ngay_mat_al_nhuan === 1);
+            }
+            note = `Ngày giỗ Âm lịch: Ngày ${member.ngay_mat_al_ngay} tháng ${member.ngay_mat_al_thang} (AL)${member.ngay_mat_al_nhuan ? ' (tháng nhuận)' : ''}.`;
+            if (member.ngay_mat_al_nam) {
+              note += ` Mất năm ${member.ngay_mat_al_nam}.`;
+            }
+          } else if (member.ngay_mat) {
+            const dMat = new Date(member.ngay_mat);
+            if (!isNaN(dMat.getTime())) {
+              const mm = dMat.getMonth() + 1;
+              const dd = dMat.getDate();
+              const mmStr = mm < 10 ? '0' + mm : mm;
+              const ddStr = dd < 10 ? '0' + dd : dd;
+              solarDate = `${currentYear}-${mmStr}-${ddStr}`;
+              if (solarDate < todayStr) {
+                solarDate = `${currentYear + 1}-${mmStr}-${ddStr}`;
+              }
+              note = `Ngày giỗ Dương lịch: Ngày ${dd} tháng ${mm}.`;
+            }
+          }
+          
+          if (solarDate) {
+            list.push({
+              id: `anniversary_${member.id}`,
+              tieu_de: `Giỗ chạp: ${member.ho_ten}`,
+              loai: 'Giỗ chạp',
+              ngay_to_chuc: `${solarDate} 08:00:00`,
+              dia_diem: member.ghi_chu || 'Tại gia đình / Nhà thờ họ',
+              noi_dung: `${member.ho_ten} (Đời thứ ${member.doi_thu}). ${note}`,
+              is_anniversary: true
+            });
+          }
+        }
+      });
+      
+      return list.sort((a, b) => {
+        const timeA = new Date(a.ngay_to_chuc).getTime() || 0;
+        const timeB = new Date(b.ngay_to_chuc).getTime() || 0;
+        return timeA - timeB;
+      });
     }
   },
   mounted() {
@@ -209,44 +248,40 @@ export default {
     loadData() {
       this.isLoading = true;
       axios.get('http://127.0.0.1:8000/api/su-kien/get-data', this.getHeaders())
-        .then(res => {
-          if (res.data.status) {
-            this.events = res.data.data;
-            this.events.forEach(ev => {
-              this.loadParticipants(ev.id);
-            });
-          } else {
-            toastr.error(res.data.message);
-          }
-        })
-        .catch(err => {
-          toastr.error(err.response?.data?.message || 'Không thể tải danh sách sự kiện.');
-        })
-        .finally(() => {
-          this.isLoading = false;
-        });
+      .then(res => {
+        if (res.data.status) {
+          this.events = res.data.data;
+          this.events.forEach(ev => {
+            this.loadParticipants(ev.id);
+          });
+        } else {
+          toastr.error(res.data.message);
+        }
+      })
+      .catch(err => {
+        toastr.error(err.response?.data?.message || 'Không thể tải danh sách sự kiện.');
+      })
+      .finally(() => {
+        this.isLoading = false;
+      });
     },
     loadMembers() {
       axios.get('http://127.0.0.1:8000/api/thanh-vien/get-data', this.getHeaders())
-        .then(res => {
-          if (res.data.status) {
-            this.allMembers = res.data.data;
-          }
-        });
+      .then(res => {
+        if (res.data.status) {
+          this.allMembers = res.data.data;
+        }
+      });
     },
     loadParticipants(suKienId) {
       axios.get(`http://127.0.0.1:8000/api/su-kien/get-participants/${suKienId}`, this.getHeaders())
-        .then(res => {
-          if (res.data.status) {
-            this.participantsMap[suKienId] = res.data.data;
-          }
-        });
+      .then(res => {
+        if (res.data.status) {
+          this.participantsMap[suKienId] = res.data.data;
+        }
+      });
     },
     openRegisterModal(ev) {
-      if (this.isPastEvent(ev)) {
-        toastr.error('Sự kiện đã diễn ra, không thể đăng ký tham gia.');
-        return;
-      }
       const token = localStorage.getItem('access_token');
       if (!token) {
         toastr.error('Vui lòng đăng nhập để đăng ký sự kiện!');
@@ -255,6 +290,16 @@ export default {
       }
       this.currentEvent = ev;
       this.selectedMemberIds = [];
+      const userData = JSON.parse(localStorage.getItem('user'));
+      if (userData) {
+        const user = userData.user || userData;
+        if (user && user.email) {
+          const myMember = this.allMembers.find(m => m.email && m.email.toLowerCase() === user.email.toLowerCase());
+          if (myMember && !this.isAlreadyRegistered(myMember.id)) {
+            this.selectedMemberIds.push(myMember.id);
+          }
+        }
+      }
       this.searchQuery = '';
       this.modal.show();
     },
@@ -274,28 +319,23 @@ export default {
       }, {
         headers: { Authorization: `Bearer ${token}` }
       })
-        .then(res => {
-          if (res.data.status) {
-            toastr.success(res.data.message);
-            this.modal.hide();
-            this.loadParticipants(this.currentEvent.id);
-          } else {
-            toastr.error(res.data.message);
-          }
-        })
-        .catch(err => {
-          toastr.error(err.response?.data?.message || 'Không thể đăng ký sự kiện.');
-        });
+      .then(res => {
+        if (res.data.status) {
+          toastr.success(res.data.message);
+          this.modal.hide();
+          this.loadParticipants(this.currentEvent.id);
+        } else {
+          toastr.error(res.data.message);
+        }
+      })
+      .catch(err => {
+        toastr.error(err.response?.data?.message || 'Không thể đăng ký sự kiện.');
+      });
     },
     unregister(suKienId, memberId) {
       const token = localStorage.getItem('access_token');
       if (!token) {
         toastr.error('Vui lòng đăng nhập để hủy đăng ký!');
-        return;
-      }
-      const ev = this.events.find(e => e.id === suKienId);
-      if (ev && this.isPastEvent(ev)) {
-        toastr.error('Sự kiện đã diễn ra, không thể thay đổi danh sách đăng ký.');
         return;
       }
       if (!confirm('Bạn có chắc chắn muốn hủy đăng ký cho thành viên này không?')) return;
@@ -306,17 +346,17 @@ export default {
       }, {
         headers: { Authorization: `Bearer ${token}` }
       })
-        .then(res => {
-          if (res.data.status) {
-            toastr.success(res.data.message);
-            this.loadParticipants(suKienId);
-          } else {
-            toastr.error(res.data.message);
-          }
-        })
-        .catch(err => {
-          toastr.error(err.response?.data?.message || 'Không thể hủy đăng ký.');
-        });
+      .then(res => {
+        if (res.data.status) {
+          toastr.success(res.data.message);
+          this.loadParticipants(suKienId);
+        } else {
+          toastr.error(res.data.message);
+        }
+      })
+      .catch(err => {
+        toastr.error(err.response?.data?.message || 'Không thể hủy đăng ký.');
+      });
     },
     fmtDateTime(d) {
       if (!d) return '';
@@ -324,34 +364,25 @@ export default {
       return dt.toLocaleDateString('vi-VN') + ' ' + dt.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
     },
     evTypeClass(type) {
-      if (type === 'Giỗ tổ') return 'bg-gold-badge text-gold border border-gold/30';
+      if (type === 'Giỗ tổ' || type === 'Giỗ chạp') return 'bg-gold-badge text-gold border border-gold/30';
       if (type === 'Họp họ') return 'bg-blue-badge text-blue-custom border border-blue/30';
       if (type === 'Cưới hỏi') return 'bg-pink-badge text-pink-custom border border-pink/30';
       return 'bg-gray-badge text-gray-custom border border-gray/30';
     },
     getCountdown(targetDateStr) {
       if (!targetDateStr) return '';
-      const value = String(targetDateStr).replace(' ', 'T');
-      const targetTime = new Date(value).getTime();
-      if (isNaN(targetTime)) return '';
+      const targetTime = new Date(targetDateStr).getTime();
       const diff = targetTime - this.currentTime;
       if (diff <= 0) return '';
-
+      
       const days = Math.floor(diff / (1000 * 60 * 60 * 24));
       const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
       const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-
+      
       if (days > 0) {
         return `${days} ngày ${hours}h`;
       }
       return `${hours}h ${minutes}m`;
-    },
-    isPastEvent(ev) {
-      if (!ev || !ev.ngay_to_chuc) return false;
-      const value = String(ev.ngay_to_chuc).replace(' ', 'T');
-      const time = new Date(value).getTime();
-      if (isNaN(time)) return false;
-      return time <= Date.now();
     }
   }
 };
@@ -371,10 +402,7 @@ export default {
 
 .hero-background {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  top: 0; left: 0; width: 100%; height: 100%;
   background-image: linear-gradient(to bottom, rgba(11, 17, 32, 0.4) 0%, rgba(11, 17, 32, 0.9) 100%),
     url('@/assets/images/bg_product.webp');
   background-size: cover;
@@ -389,25 +417,15 @@ export default {
 
 .glow-blob {
   position: absolute;
-  width: 400px;
-  height: 400px;
+  width: 400px; height: 400px;
   border-radius: 50%;
   filter: blur(120px);
   z-index: 1;
   opacity: 0.4;
 }
 
-.blob-purple {
-  background: #120a1f;
-  top: 10%;
-  left: -10%;
-}
-
-.blob-blue {
-  background: #031948;
-  top: 40%;
-  right: -10%;
-}
+.blob-purple { background: #120a1f; top: 10%; left: -10%; }
+.blob-blue { background: #031948; top: 40%; right: -10%; }
 
 .glass-card {
   background: rgba(15, 23, 42, 0.6);
@@ -429,37 +447,21 @@ export default {
   color: transparent;
 }
 
-.text-gold {
-  color: #ffd700;
-}
+.text-gold { color: #ffd700; }
 
 .ld-ring {
-  width: 50px;
-  height: 50px;
-  border: 4px solid rgba(255, 255, 255, 0.1);
+  width: 50px; height: 50px;
+  border: 4px solid rgba(255,255,255,0.1);
   border-top-color: #ffd700;
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin: 0 auto;
 }
+@keyframes spin { to { transform: rotate(360deg); } }
 
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.radius-15 {
-  border-radius: 15px !important;
-}
-
-.radius-10 {
-  border-radius: 10px !important;
-}
-
-.radius-8 {
-  border-radius: 8px !important;
-}
+.radius-15 { border-radius: 15px !important; }
+.radius-10 { border-radius: 10px !important; }
+.radius-8 { border-radius: 8px !important; }
 
 /* Event Card CSS */
 .event-card {
@@ -474,41 +476,19 @@ export default {
   transform: translateY(-5px);
   background: rgba(255, 255, 255, 0.05);
   border-color: rgba(255, 255, 255, 0.15);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.3);
 }
 
 /* Badge classes */
-.bg-gold-badge {
-  background: rgba(212, 175, 55, 0.15);
-}
+.bg-gold-badge { background: rgba(212, 175, 55, 0.15); }
+.bg-blue-badge { background: rgba(59, 130, 246, 0.15); }
+.bg-pink-badge { background: rgba(236, 72, 153, 0.15); }
+.bg-gray-badge { background: rgba(156, 163, 175, 0.15); }
 
-.bg-blue-badge {
-  background: rgba(59, 130, 246, 0.15);
-}
-
-.bg-pink-badge {
-  background: rgba(236, 72, 153, 0.15);
-}
-
-.bg-gray-badge {
-  background: rgba(156, 163, 175, 0.15);
-}
-
-.text-gold {
-  color: #ffd700 !important;
-}
-
-.text-blue-custom {
-  color: #3b82f6 !important;
-}
-
-.text-pink-custom {
-  color: #ec4899 !important;
-}
-
-.text-gray-custom {
-  color: #9ca3af !important;
-}
+.text-gold { color: #ffd700 !important; }
+.text-blue-custom { color: #3b82f6 !important; }
+.text-pink-custom { color: #ec4899 !important; }
+.text-gray-custom { color: #9ca3af !important; }
 
 .countdown-badge {
   background: rgba(16, 185, 129, 0.15);
@@ -532,7 +512,7 @@ export default {
 
 .bg-dark-custom {
   background-color: #111827 !important;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255,255,255,0.1);
 }
 
 .form-check-input:checked {
@@ -556,13 +536,11 @@ export default {
   align-items: center;
   justify-content: center;
 }
-
 .btn-refresh-premium:hover {
   transform: rotate(30deg) scale(1.05);
   border-color: #ffd700 !important;
   box-shadow: 0 4px 12px rgba(255, 215, 0, 0.15);
 }
-
 .btn-refresh-premium:active {
   transform: scale(0.95);
 }

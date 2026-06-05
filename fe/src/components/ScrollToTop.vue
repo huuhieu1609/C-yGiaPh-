@@ -4,47 +4,35 @@
       v-show="isVisible"
       class="scroll-to-top-btn"
       @click="scrollToTop"
-      role="button"
-      aria-label="Cuộn lên đầu trang"
+      title="Lên đầu trang"
     >
       <!-- Circular Progress Ring -->
-      <svg class="progress-ring" width="52" height="52">
-        <defs>
-          <linearGradient id="progress-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stop-color="#3b82f6" />
-            <stop offset="50%" stop-color="#6366f1" />
-            <stop offset="100%" stop-color="#ec4899" />
-          </linearGradient>
-        </defs>
-        <!-- Track Circle -->
+      <svg class="progress-ring" width="48" height="48">
         <circle
-          class="progress-ring__track"
-          stroke="rgba(255, 255, 255, 0.12)"
+          class="progress-ring__circle-bg"
           stroke-width="3"
           fill="transparent"
-          r="22"
-          cx="26"
-          cy="26"
+          r="21"
+          cx="24"
+          cy="24"
         />
-        <!-- Progress Circle -->
         <circle
           class="progress-ring__circle"
-          stroke="url(#progress-gradient)"
-          stroke-width="3.5"
-          stroke-linecap="round"
-          fill="transparent"
-          r="22"
-          cx="26"
-          cy="26"
           :stroke-dasharray="strokeDasharray"
           :stroke-dashoffset="strokeDashoffset"
+          stroke-width="3"
+          stroke-linecap="round"
+          fill="transparent"
+          r="21"
+          cx="24"
+          cy="24"
         />
       </svg>
-
-      <!-- Up Arrow Icon -->
-      <div class="arrow-icon-wrapper">
+      
+      <!-- Inner Icon Wrapper -->
+      <div class="scroll-icon-wrapper">
         <svg
-          class="arrow-up-svg"
+          class="scroll-icon"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
@@ -52,8 +40,7 @@
           stroke-linecap="round"
           stroke-linejoin="round"
         >
-          <line x1="12" y1="19" x2="12" y2="5"></line>
-          <polyline points="5 12 12 5 19 12"></polyline>
+          <polyline points="18 15 12 9 6 15"></polyline>
         </svg>
       </div>
     </div>
@@ -66,177 +53,179 @@ export default {
   data() {
     return {
       isVisible: false,
-      progress: 0,
-      scrollTarget: null,
-      radius: 22,
+      scrollPercent: 0,
+      radius: 21,
     };
   },
   computed: {
     strokeDasharray() {
-      return 2 * Math.PI * this.radius; // 2 * pi * 22 = ~138.23
+      return 2 * Math.PI * this.radius; // ~131.95
     },
     strokeDashoffset() {
-      return this.strokeDasharray * (1 - this.progress);
-    },
+      return this.strokeDasharray - (this.scrollPercent / 100) * this.strokeDasharray;
+    }
   },
   mounted() {
-    // Listen to all scroll events on page (including container scroll) via capture phase listener
+    // Listen to scroll events on window in capturing phase to capture scroll event from any child container (like .main-workspace-wrapper)
     window.addEventListener('scroll', this.handleScroll, true);
+    window.addEventListener('resize', this.handleScroll);
     
-    // Watch path change to reset scroll view
-    this.$watch('$route', () => {
-      this.isVisible = false;
-      this.progress = 0;
-      this.scrollTarget = null;
-    });
+    // Check initial scroll state
+    this.handleScroll();
   },
   beforeUnmount() {
     window.removeEventListener('scroll', this.handleScroll, true);
+    window.removeEventListener('resize', this.handleScroll);
   },
   methods: {
-    handleScroll(event) {
-      let target = event.target;
+    handleScroll() {
+      const docEl = document.documentElement;
+      const body = document.body;
       
-      // If it's a document/window scroll
-      if (target === document || target === window || target === document.documentElement || target === document.body) {
-        const scrollTop = window.scrollY || document.documentElement.scrollTop;
-        const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
-        
-        this.progress = scrollHeight > 0 ? Math.min(scrollTop / scrollHeight, 1) : 0;
-        this.isVisible = scrollTop > 300;
-        this.scrollTarget = window;
+      // 1. Check window/body scroll
+      const windowScrollTop = window.scrollY || docEl.scrollTop || body.scrollTop;
+      const windowHeight = docEl.scrollHeight - docEl.clientHeight;
+      const windowPercent = windowHeight > 0 ? (windowScrollTop / windowHeight) * 100 : 0;
+
+      // 2. Check admin/partner layout workspace wrapper scroll
+      const workspace = document.querySelector('.main-workspace-wrapper');
+      let workspaceScrollTop = 0;
+      let workspacePercent = 0;
+      
+      if (workspace) {
+        workspaceScrollTop = workspace.scrollTop;
+        const workspaceHeight = workspace.scrollHeight - workspace.clientHeight;
+        workspacePercent = workspaceHeight > 0 ? (workspaceScrollTop / workspaceHeight) * 100 : 0;
+      }
+
+      // Choose which scroll context is active based on whether workspace is actually scrolled
+      if (workspace && workspaceScrollTop > 30) {
+        this.isVisible = workspaceScrollTop > 150;
+        this.scrollPercent = Math.min(100, Math.max(0, workspacePercent));
       } else {
-        // If it's an element scroll, verify if it is scrollable and has significant size
-        if (target.classList && (target.classList.contains('main-workspace-wrapper') || target.scrollHeight > target.clientHeight)) {
-          const scrollTop = target.scrollTop;
-          const scrollHeight = target.scrollHeight - target.clientHeight;
-          
-          this.progress = scrollHeight > 0 ? Math.min(scrollTop / scrollHeight, 1) : 0;
-          this.isVisible = scrollTop > 300;
-          this.scrollTarget = target;
-        }
+        this.isVisible = windowScrollTop > 150;
+        this.scrollPercent = Math.min(100, Math.max(0, windowPercent));
       }
     },
     scrollToTop() {
-      const target = this.scrollTarget || window;
-      if (target === window) {
-        window.scrollTo({
+      // Scroll the main window smoothly
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+
+      // Scroll the workspace wrapper smoothly if it exists
+      const workspace = document.querySelector('.main-workspace-wrapper');
+      if (workspace) {
+        workspace.scrollTo({
           top: 0,
-          behavior: 'smooth',
-        });
-      } else if (typeof target.scrollTo === 'function') {
-        target.scrollTo({
-          top: 0,
-          behavior: 'smooth',
+          behavior: 'smooth'
         });
       }
-    },
-  },
+    }
+  }
 };
 </script>
 
 <style scoped>
 .scroll-to-top-btn {
-  box-sizing: border-box;
   position: fixed;
-  bottom: 30px;
-  right: 30px;
-  width: 52px;
-  height: 52px;
+  bottom: 35px;
+  right: 35px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
-  background: rgba(18, 19, 32, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.05);
   cursor: pointer;
-  z-index: 99999;
+  z-index: 10000;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
-  user-select: none;
-  outline: none;
-}
-
-/* Light mode support if layout has theme tag */
-[data-theme="light"] .scroll-to-top-btn {
+  
+  /* Glassmorphism Styling */
   background: rgba(255, 255, 255, 0.85);
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.02);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08), inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+  
+  transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+  user-select: none;
 }
 
-[data-theme="light"] .progress-ring__track {
-  stroke: rgba(0, 0, 0, 0.06);
+/* Dark mode overrides using the app's data-theme attribute */
+[data-theme="dark"] .scroll-to-top-btn {
+  background: rgba(26, 28, 46, 0.85);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3), inset 0 0 0 1px rgba(255, 255, 255, 0.05);
 }
 
 .scroll-to-top-btn:hover {
-  transform: scale(1.1) translateY(-4px);
-  background: rgba(24, 25, 41, 0.95);
-  border-color: rgba(99, 102, 241, 0.4);
-  box-shadow: 0 12px 40px rgba(99, 102, 241, 0.3), 0 0 15px rgba(99, 102, 241, 0.2);
+  transform: translateY(-5px) scale(1.08);
+  background: #ffffff;
+  box-shadow: 0 10px 25px rgba(67, 160, 71, 0.25), inset 0 0 0 1px rgba(67, 160, 71, 0.2);
 }
 
-[data-theme="light"] .scroll-to-top-btn:hover {
-  background: rgba(255, 255, 255, 0.95);
-  border-color: rgba(99, 102, 241, 0.3);
-  box-shadow: 0 12px 40px rgba(99, 102, 241, 0.15), 0 0 15px rgba(99, 102, 241, 0.1);
+[data-theme="dark"] .scroll-to-top-btn:hover {
+  background: #1a1c2e;
+  box-shadow: 0 10px 25px rgba(67, 160, 71, 0.35), inset 0 0 0 1px rgba(67, 160, 71, 0.3);
 }
 
-.scroll-to-top-btn:active {
-  transform: scale(0.92) translateY(-2px);
-}
-
-/* Progress Ring styling */
+/* SVG Progress Ring */
 .progress-ring {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%) rotate(-90deg);
-  width: 52px;
-  height: 52px;
-  margin: 0;
-  padding: 0;
+  top: -1px;
+  left: -1px;
+  transform: rotate(-90deg);
   pointer-events: none;
-  display: block;
+}
+
+.progress-ring__circle-bg {
+  stroke: rgba(0, 0, 0, 0.05);
+  transition: stroke 0.3s ease;
+}
+
+[data-theme="dark"] .progress-ring__circle-bg {
+  stroke: rgba(255, 255, 255, 0.06);
 }
 
 .progress-ring__circle {
-  transition: stroke-dashoffset 0.1s linear;
+  stroke: #43a047; /* Premium theme green */
+  transition: stroke-dashoffset 0.08s linear, stroke 0.3s ease;
 }
 
-/* Arrow Icon styling */
-.arrow-icon-wrapper {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+.scroll-to-top-btn:hover .progress-ring__circle {
+  stroke: #2e7d32;
+}
+
+/* Scroll Icon Wrapper */
+.scroll-icon-wrapper {
   display: flex;
   align-items: center;
   justify-content: center;
+  color: var(--text-main, #212529);
+  transition: all 0.3s ease;
   z-index: 2;
-  color: #ffffff;
-  transition: color 0.3s;
-  box-sizing: border-box;
 }
 
-[data-theme="light"] .arrow-icon-wrapper {
-  color: #1f2937;
+.scroll-to-top-btn:hover .scroll-icon-wrapper {
+  color: #43a047;
 }
 
-.arrow-up-svg {
-  width: 20px;
-  height: 20px;
-  transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+[data-theme="dark"] .scroll-icon-wrapper {
+  color: var(--text-main, #f3f4f6);
 }
 
-.scroll-to-top-btn:hover .arrow-up-svg {
-  transform: translateY(-2px);
-  color: #6366f1;
+.scroll-icon {
+  width: 18px;
+  height: 18px;
+  transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
-/* Vue Fade-Slide Transition */
+.scroll-to-top-btn:hover .scroll-icon {
+  transform: translateY(-3px);
+}
+
+/* Animation Transitions */
 .fade-slide-enter-active,
 .fade-slide-leave-active {
   transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
@@ -245,6 +234,6 @@ export default {
 .fade-slide-enter-from,
 .fade-slide-leave-to {
   opacity: 0;
-  transform: translateY(20px) scale(0.8);
+  transform: translateY(30px) scale(0.7);
 }
 </style>

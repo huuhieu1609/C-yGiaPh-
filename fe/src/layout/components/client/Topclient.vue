@@ -1,5 +1,5 @@
 <template>
-  <header class="top-client" :class="{ 'scrolled': isScrolled }">
+  <header class="top-client" :class="{ 'scrolled': isScrolled || $route.path !== '/' }">
     <div class="container">
       <nav class="navbar">
         <div class="logo">
@@ -13,9 +13,8 @@
           <li v-if="isLoggedIn"><router-link to="/tuong-niem">Dòng Lịch Sử</router-link></li>
           <li><router-link to="/tra-cuu">Tra Cứu</router-link></li>
           <li><router-link to="/dich-vu-goi">Dịch Vụ Gói</router-link></li>
-          <li v-for="menu in comingSoonMenus" :key="'cs' + menu.id">
-            <router-link :to="'/coming-soon?name=' + encodeURIComponent(menu.ten_chuc_nang)"
-              class="text-gold-client-menu">{{ menu.ten_chuc_nang }}</router-link>
+          <li v-for="menu in comingSoonMenus" :key="'cs'+menu.id">
+            <router-link :to="'/coming-soon?name=' + encodeURIComponent(menu.ten_chuc_nang)" class="text-gold-client-menu">{{ menu.ten_chuc_nang }}</router-link>
           </li>
         </ul>
         <div class="nav-actions">
@@ -39,7 +38,7 @@
                     <i class="bx bx-check-double"></i> Đọc tất cả
                   </button>
                 </div>
-
+                
                 <div class="noti-list scrollable-noti">
                   <!-- Case 1: Loading state -->
                   <div v-if="isNotiLoading" class="noti-empty text-center py-4">
@@ -55,11 +54,15 @@
 
                   <!-- Case 3: List of notifications -->
                   <div v-else>
-                    <div v-for="noti in notifications" :key="noti.uniqueId" class="noti-item"
-                      :class="{ 'unread': !noti.isRead }" @click="readSingleNotification(noti)">
+                    <div 
+                      v-for="noti in notifications" 
+                      :key="noti.uniqueId" 
+                      class="noti-item" 
+                      :class="{ 'unread': !noti.isRead }"
+                      @click="readSingleNotification(noti)"
+                    >
                       <div class="noti-icon-box" :class="noti.type">
-                        <i class="bx"
-                          :class="noti.type === 'su-kien' ? 'bx-calendar' : (noti.type === 'he-thong' ? 'bx-shield' : 'bx-bell')"></i>
+                        <i class="bx" :class="noti.type === 'su-kien' ? 'bx-calendar' : (noti.type === 'he-thong' ? 'bx-shield' : 'bx-bell')"></i>
                       </div>
                       <div class="noti-content">
                         <span class="noti-badge-type">{{ noti.typeLabel }}</span>
@@ -83,8 +86,7 @@
                 <router-link v-if="isAdmin" to="/admin" @click="isDropdownOpen = false">
                   <i class="bx bx-shield-quarter"></i> Quản trị hệ thống
                 </router-link>
-                <router-link v-if="isDoiTac" to="/doi-tac/dashboard" @click="isDropdownOpen = false"
-                  class="partner-link">
+                <router-link v-if="isDoiTac" to="/doi-tac/dashboard" @click="isDropdownOpen = false" class="partner-link">
                   <i class="bx bxs-briefcase text-gold"></i> Quản trị đối tác
                 </router-link>
                 <router-link to="/profile" @click="isDropdownOpen = false">
@@ -129,10 +131,8 @@
           <li><router-link to="/login" class="mobile-btn" @click="isMobileMenuOpen = false">Đăng Nhập</router-link></li>
         </template>
         <template v-else>
-          <li v-if="isDoiTac"><router-link to="/doi-tac/dashboard" @click="isMobileMenuOpen = false"
-              style="color: #d4af37;">Quản trị đối tác</router-link></li>
-          <li v-if="isAdmin"><router-link to="/admin" @click="isMobileMenuOpen = false" style="color: #3b82f6;">Quản trị
-              hệ thống</router-link></li>
+          <li v-if="isDoiTac"><router-link to="/doi-tac/dashboard" @click="isMobileMenuOpen = false" style="color: #d4af37;">Quản trị đối tác</router-link></li>
+          <li v-if="isAdmin"><router-link to="/admin" @click="isMobileMenuOpen = false" style="color: #3b82f6;">Quản trị hệ thống</router-link></li>
           <li><router-link to="/profile" @click="isMobileMenuOpen = false">Hồ sơ cá nhân</router-link></li>
           <li><router-link to="/su-kien" @click="isMobileMenuOpen = false">Sự kiện dòng họ</router-link></li>
           <li><router-link to="/ban-do" @click="isMobileMenuOpen = false">Bản đồ số</router-link></li>
@@ -189,6 +189,7 @@ export default {
     window.addEventListener('scroll', this.handleScroll);
     window.addEventListener('profile-updated', this.checkLogin);
     this.checkLogin();
+    this.syncUserProfile();
     this.loadComingSoonMenus();
   },
   unmounted() {
@@ -205,7 +206,7 @@ export default {
         if (res.data && res.data.status) {
           this.comingSoonMenus = res.data.data || [];
         }
-      }).catch(() => { });
+      }).catch(() => {});
     },
     handleScroll() {
       this.isScrolled = window.scrollY > 50;
@@ -264,7 +265,11 @@ export default {
         this.isLoggedIn = true;
         const user = userData.user || userData;
         this.userName = user.ho_ten;
-        this.isAdmin = user.vai_tro === 'Admin';
+        const roleName = user.vai_tro?.toLowerCase() || '';
+        const chucVuName = user.chuc_vu?.ten_chuc_vu?.toLowerCase() || '';
+        // Nhận diện sub-admin qua tên chức vụ (không hard-code ID)
+        const isSubAdmin = chucVuName.includes('quản trị') || roleName.includes('admin');
+        this.isAdmin = roleName === 'admin' || isSubAdmin;
         this.isDoiTac = user.is_doi_tac == 1 || user.is_doi_tac === true || user.vai_tro === 'Đối tác';
         const avatar = user.avatar;
         if (avatar && avatar !== 'https://dzfullstack.com/assets/images/logo-1.png') {
@@ -280,6 +285,25 @@ export default {
         this.isDoiTac = false;
         this.notifications = [];
       }
+    },
+    syncUserProfile() {
+      const token = localStorage.getItem('access_token');
+      if (!token) return;
+      axios.get('http://127.0.0.1:8000/api/me', {
+        headers: { Authorization: 'Bearer ' + token }
+      })
+      .then(res => {
+        if (res.data && res.data.user) {
+          localStorage.setItem('user', JSON.stringify(res.data.user));
+          if (res.data.permissions) {
+            localStorage.setItem('permissions', JSON.stringify(res.data.permissions));
+          }
+          this.checkLogin();
+        }
+      })
+      .catch(err => {
+        console.error("Topclient sync profile failed:", err);
+      });
     },
     closeDropdown() {
       this.isDropdownOpen = false;
@@ -329,94 +353,94 @@ export default {
         axios.get('http://127.0.0.1:8000/api/de-xuat/my-proposals', headers).catch(() => ({ data: { status: false } })),
         axios.get('http://127.0.0.1:8000/api/me/notifications', headers).catch(() => ({ data: { status: false } }))
       ])
-        .then(([resEvents, resNotis, resProposals, resCustomNotis]) => {
-          let list = [];
+      .then(([resEvents, resNotis, resProposals, resCustomNotis]) => {
+        let list = [];
 
-          if (resEvents.data && resEvents.data.status) {
-            const events = resEvents.data.data.map(item => {
-              const formattedDate = item.ngay_to_chuc ? new Date(item.ngay_to_chuc).toLocaleDateString('vi-VN') : '';
+        if (resEvents.data && resEvents.data.status) {
+          const events = resEvents.data.data.map(item => {
+            const formattedDate = item.ngay_to_chuc ? new Date(item.ngay_to_chuc).toLocaleDateString('vi-VN') : '';
+            return {
+              uniqueId: `event_${item.id}`,
+              id: item.id,
+              type: 'su-kien',
+              typeLabel: 'Sự kiện dòng tộc',
+              title: `📅 ${item.loai || 'Sự kiện'}: ${item.tieu_de}`,
+              message: `Diễn ra tại ${item.dia_diem || 'Gia đường'} vào ngày ${formattedDate}. ${item.noi_dung || ''}`,
+              createdAt: new Date(item.created_at || item.ngay_to_chuc),
+              timeAgo: this.getTimeAgo(item.created_at || item.ngay_to_chuc),
+              isRead: this.readNotificationIds.includes(`event_${item.id}`)
+            };
+          });
+          list.push(...events);
+        }
+
+        if (resNotis.data && resNotis.data.status) {
+          const announcements = resNotis.data.data.map(item => {
+            return {
+              uniqueId: `announcement_${item.id}`,
+              id: item.id,
+              type: 'thong-bao',
+              typeLabel: 'Thông báo chung',
+              title: `📢 ${item.tieu_de}`,
+              message: item.noi_dung || '',
+              createdAt: new Date(item.created_at),
+              timeAgo: this.getTimeAgo(item.created_at),
+              isRead: this.readNotificationIds.includes(`announcement_${item.id}`)
+            };
+          });
+          list.push(...announcements);
+        }
+
+        if (resProposals.data && resProposals.data.status) {
+          const proposals = resProposals.data.data
+            .filter(item => item.status === 'approved' || item.status === 'rejected')
+            .map(item => {
+              const isApp = item.status === 'approved';
+              const typeLabel = item.type === 'edit' ? 'Chỉnh sửa' : (item.type === 'add_child' ? 'Thêm con' : (item.type === 'add_spouse' ? 'Thêm phối ngẫu' : 'Yêu cầu xóa'));
+              const memberName = item.data?.ho_ten || '';
+              
               return {
-                uniqueId: `event_${item.id}`,
+                uniqueId: `proposal_${item.id}_${item.status}`,
                 id: item.id,
-                type: 'su-kien',
-                typeLabel: 'Sự kiện dòng tộc',
-                title: `📅 ${item.loai || 'Sự kiện'}: ${item.tieu_de}`,
-                message: `Diễn ra tại ${item.dia_diem || 'Gia đường'} vào ngày ${formattedDate}. ${item.noi_dung || ''}`,
-                createdAt: new Date(item.created_at || item.ngay_to_chuc),
-                timeAgo: this.getTimeAgo(item.created_at || item.ngay_to_chuc),
-                isRead: this.readNotificationIds.includes(`event_${item.id}`)
+                type: isApp ? 'de-xuat-duyet' : 'de-xuat-tuchoi',
+                typeLabel: isApp ? 'Đề xuất đã duyệt' : 'Đề xuất bị từ chối',
+                title: isApp ? `✅ Đề xuất được phê duyệt` : `❌ Đề xuất bị từ chối`,
+                message: isApp 
+                  ? `Đề xuất "${typeLabel}: ${memberName}" của bạn đã được phê duyệt thành công!` 
+                  : `Đề xuất "${typeLabel}: ${memberName}" của bạn bị từ chối. Lý do: ${item.note || 'Không có ghi chú.'}`,
+                createdAt: new Date(item.updated_at || item.created_at),
+                timeAgo: this.getTimeAgo(item.updated_at || item.created_at),
+                isRead: this.readNotificationIds.includes(`proposal_${item.id}_${item.status}`)
               };
             });
-            list.push(...events);
-          }
+          list.push(...proposals);
+        }
 
-          if (resNotis.data && resNotis.data.status) {
-            const announcements = resNotis.data.data.map(item => {
-              return {
-                uniqueId: `announcement_${item.id}`,
-                id: item.id,
-                type: 'thong-bao',
-                typeLabel: 'Thông báo chung',
-                title: `📢 ${item.tieu_de}`,
-                message: item.noi_dung || '',
-                createdAt: new Date(item.created_at),
-                timeAgo: this.getTimeAgo(item.created_at),
-                isRead: this.readNotificationIds.includes(`announcement_${item.id}`)
-              };
-            });
-            list.push(...announcements);
-          }
+        if (resCustomNotis.data && resCustomNotis.data.status) {
+          const customNotis = resCustomNotis.data.data.map(item => {
+            return {
+              uniqueId: `custom_${item.id}`,
+              id: item.id,
+              type: 'he-thong',
+              typeLabel: 'Thông báo',
+              title: `🛡️ ${item.title || 'Thông báo hệ thống'}`,
+              message: item.body || '',
+              createdAt: new Date(item.created_at),
+              timeAgo: this.getTimeAgo(item.created_at),
+              isRead: !!item.read_at || this.readNotificationIds.includes(`custom_${item.id}`)
+            };
+          });
+          list.push(...customNotis);
+        }
 
-          if (resProposals.data && resProposals.data.status) {
-            const proposals = resProposals.data.data
-              .filter(item => item.status === 'approved' || item.status === 'rejected')
-              .map(item => {
-                const isApp = item.status === 'approved';
-                const typeLabel = item.type === 'edit' ? 'Chỉnh sửa' : (item.type === 'add_child' ? 'Thêm con' : (item.type === 'add_spouse' ? 'Thêm phối ngẫu' : 'Yêu cầu xóa'));
-                const memberName = item.data?.ho_ten || '';
+        list.sort((a, b) => b.createdAt - a.createdAt);
 
-                return {
-                  uniqueId: `proposal_${item.id}_${item.status}`,
-                  id: item.id,
-                  type: isApp ? 'de-xuat-duyet' : 'de-xuat-tuchoi',
-                  typeLabel: isApp ? 'Đề xuất đã duyệt' : 'Đề xuất bị từ chối',
-                  title: isApp ? `✅ Đề xuất được phê duyệt` : `❌ Đề xuất bị từ chối`,
-                  message: isApp
-                    ? `Đề xuất "${typeLabel}: ${memberName}" của bạn đã được phê duyệt thành công!`
-                    : `Đề xuất "${typeLabel}: ${memberName}" của bạn bị từ chối. Lý do: ${item.note || 'Không có ghi chú.'}`,
-                  createdAt: new Date(item.updated_at || item.created_at),
-                  timeAgo: this.getTimeAgo(item.updated_at || item.created_at),
-                  isRead: this.readNotificationIds.includes(`proposal_${item.id}_${item.status}`)
-                };
-              });
-            list.push(...proposals);
-          }
-
-          if (resCustomNotis.data && resCustomNotis.data.status) {
-            const customNotis = resCustomNotis.data.data.map(item => {
-              return {
-                uniqueId: `custom_${item.id}`,
-                id: item.id,
-                type: 'he-thong',
-                typeLabel: 'Thông báo',
-                title: `🛡️ ${item.title || 'Thông báo hệ thống'}`,
-                message: item.body || '',
-                createdAt: new Date(item.created_at),
-                timeAgo: this.getTimeAgo(item.created_at),
-                isRead: !!item.read_at || this.readNotificationIds.includes(`custom_${item.id}`)
-              };
-            });
-            list.push(...customNotis);
-          }
-
-          list.sort((a, b) => b.createdAt - a.createdAt);
-
-          this.notifications = list;
-          this.updateUnreadCount();
-        })
-        .finally(() => {
-          this.isNotiLoading = false;
-        });
+        this.notifications = list;
+        this.updateUnreadCount();
+      })
+      .finally(() => {
+        this.isNotiLoading = false;
+      });
     },
     updateUnreadCount() {
       this.unreadCount = this.notifications.filter(n => !n.isRead).length;
@@ -493,7 +517,7 @@ export default {
   top: 0;
   left: 0;
   right: 0;
-  z-index: 1100;
+  z-index: 9999;
   padding: 20px 0;
   transition: all 0.4s ease;
   background: transparent;
@@ -527,7 +551,7 @@ export default {
 }
 
 .top-client.scrolled .logo a {
-  color: #1a1a1a;
+  color: #111827;
 }
 
 .logo span {
@@ -539,56 +563,50 @@ export default {
 .nav-links {
   display: flex;
   list-style: none;
-  gap: 18px;
+  gap: 25px;
   margin: 0;
   padding: 0;
   flex-shrink: 0;
 }
 
 .nav-links a {
+  position: relative;
   text-decoration: none;
   color: #ffffff;
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 1px;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
   text-transform: uppercase;
-  transition: all 0.25s ease;
-  opacity: 0.85;
-  position: relative;
+  transition: all 0.3s ease;
+  opacity: 0.9;
   padding-bottom: 4px;
 }
 
-.top-client.scrolled .nav-links a {
-  color: #1a1a1a;
-}
-
-.nav-links a:hover {
-  color: #d4af37 !important;
-  opacity: 1;
-}
-
-.nav-links a.router-link-exact-active {
-  color: #d4af37 !important;
-  opacity: 1;
-}
-
-.nav-links a.router-link-exact-active::after {
+.nav-links a::after {
   content: '';
   position: absolute;
   bottom: 0;
-  left: 0;
-  right: 0;
+  left: 50%;
+  width: 0;
   height: 2px;
-  background: #d4af37;
-  border-radius: 2px;
+  background-color: #d4af37;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateX(-50%);
 }
 
-.top-client.scrolled .nav-links a.router-link-exact-active {
-  color: #b8902a !important;
+.top-client.scrolled .nav-links a {
+  color: #1e293b;
 }
 
-.top-client.scrolled .nav-links a.router-link-exact-active::after {
-  background: #b8902a;
+.nav-links a:hover,
+.nav-links a.router-link-active {
+  color: #d4af37 !important;
+  opacity: 1;
+}
+
+.nav-links a:hover::after,
+.nav-links a.router-link-active::after {
+  width: 100%;
 }
 
 .nav-actions {
@@ -607,7 +625,7 @@ export default {
 }
 
 .top-client.scrolled .btn-login {
-  color: #1a1a1a;
+  color: #1e293b;
 }
 
 .btn-start {
@@ -641,7 +659,7 @@ export default {
 }
 
 .top-client.scrolled .user-info {
-  color: #1a1a1a;
+  color: #1e293b;
 }
 
 .user-avatar {
@@ -655,11 +673,6 @@ export default {
 .user-name {
   font-weight: 600;
   font-size: 14px;
-  color: #ffffff !important;
-}
-
-.top-client.scrolled .user-name {
-  color: #1a1a1a !important;
 }
 
 .dropdown-menu {
@@ -725,7 +738,7 @@ export default {
 }
 
 .top-client.scrolled .mobile-toggle {
-  color: #1a1a1a;
+  color: #1e293b;
 }
 
 /* Mobile Menu */
@@ -790,18 +803,18 @@ export default {
 .text-gold {
   color: #d4af37 !important;
 }
-
 .partner-link:hover {
   background: #fdf8ef !important;
 }
 
 .text-gold-client-menu {
   color: #ffd700 !important;
-  font-weight: 600 !important;
+  font-weight: 700 !important;
+  text-shadow: 0 0 4px rgba(255, 215, 0, 0.2);
 }
-
 .text-gold-client-menu:hover {
   color: #ffffff !important;
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.4);
 }
 
 /* Premium Notification Bell & Dropdown Styles */
@@ -810,7 +823,6 @@ export default {
   display: flex;
   align-items: center;
 }
-
 .bell-trigger {
   position: relative;
   cursor: pointer;
@@ -827,26 +839,22 @@ export default {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   margin-right: 15px;
 }
-
 .top-client.scrolled .bell-trigger {
   background: rgba(0, 0, 0, 0.03);
   border-color: rgba(0, 0, 0, 0.06);
-  color: #1a1a1a;
+  color: #1e293b;
 }
-
 .bell-trigger:hover {
   background: rgba(212, 175, 55, 0.1);
   border-color: rgba(212, 175, 55, 0.3);
   color: #d4af37;
   transform: scale(1.05);
 }
-
 .top-client.scrolled .bell-trigger:hover {
   background: rgba(212, 175, 55, 0.08);
   border-color: rgba(212, 175, 55, 0.25);
   color: #d4af37;
 }
-
 .unread-badge {
   position: absolute;
   top: -4px;
@@ -864,51 +872,22 @@ export default {
   border: 2px solid #000;
   box-shadow: 0 2px 5px rgba(239, 68, 68, 0.4);
 }
-
 .top-client.scrolled .unread-badge {
   border-color: #fff;
 }
-
 .animate-ring {
   animation: ring 2.2s infinite ease-in-out;
 }
-
 @keyframes ring {
-  0% {
-    transform: rotate(0deg);
-  }
-
-  5% {
-    transform: rotate(15deg);
-  }
-
-  10% {
-    transform: rotate(-15deg);
-  }
-
-  15% {
-    transform: rotate(10deg);
-  }
-
-  20% {
-    transform: rotate(-10deg);
-  }
-
-  25% {
-    transform: rotate(5deg);
-  }
-
-  30% {
-    transform: rotate(-5deg);
-  }
-
-  35% {
-    transform: rotate(0deg);
-  }
-
-  100% {
-    transform: rotate(0deg);
-  }
+  0% { transform: rotate(0deg); }
+  5% { transform: rotate(15deg); }
+  10% { transform: rotate(-15deg); }
+  15% { transform: rotate(10deg); }
+  20% { transform: rotate(-10deg); }
+  25% { transform: rotate(5deg); }
+  30% { transform: rotate(-5deg); }
+  35% { transform: rotate(0deg); }
+  100% { transform: rotate(0deg); }
 }
 
 .notification-dropdown {
@@ -927,22 +906,18 @@ export default {
   overflow: hidden;
   animation: fadeInDown 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
-
 .notification-dropdown.show {
   display: block;
 }
-
 .noti-header {
   padding: 16px 20px;
   border-bottom: 1px solid #f3f4f6;
   background: #fdfdfd;
 }
-
 .noti-header h6 {
   color: #111827;
   font-size: 14px;
 }
-
 .btn-mark-read {
   background: transparent;
   border: none;
@@ -955,21 +930,17 @@ export default {
   align-items: center;
   gap: 3px;
 }
-
 .btn-mark-read:hover {
   opacity: 0.8;
 }
-
 .scrollable-noti {
   max-height: 380px;
   overflow-y: auto;
 }
-
 .noti-empty {
   color: #9ca3af;
   font-size: 13px;
 }
-
 .noti-item {
   display: flex;
   gap: 12px;
@@ -979,23 +950,18 @@ export default {
   transition: all 0.2s ease;
   text-align: left;
 }
-
 .noti-item:last-child {
   border-bottom: none;
 }
-
 .noti-item:hover {
   background: rgba(212, 175, 55, 0.02);
 }
-
 .noti-item.unread {
   background: rgba(212, 175, 55, 0.04);
 }
-
 .noti-item.unread:hover {
   background: rgba(212, 175, 55, 0.06);
 }
-
 .noti-icon-box {
   width: 36px;
   height: 36px;
@@ -1007,36 +973,29 @@ export default {
   flex-shrink: 0;
   margin-top: 2px;
 }
-
 .noti-icon-box.su-kien {
   background: rgba(59, 130, 246, 0.08);
   color: #3b82f6;
 }
-
 .noti-icon-box.thong-bao {
   background: rgba(249, 115, 22, 0.08);
   color: #f97316;
 }
-
 .noti-icon-box.de-xuat-duyet {
   background: rgba(16, 185, 129, 0.08);
   color: #10b981;
 }
-
 .noti-icon-box.de-xuat-tuchoi {
   background: rgba(239, 68, 68, 0.08);
   color: #ef4444;
 }
-
 .noti-icon-box.he-thong {
   background: rgba(139, 92, 246, 0.08);
   color: #8b5cf6;
 }
-
 .noti-content {
   flex-grow: 1;
 }
-
 .noti-badge-type {
   font-size: 9px;
   text-transform: uppercase;
@@ -1047,46 +1006,38 @@ export default {
   margin-bottom: 4px;
   display: inline-block;
 }
-
-.noti-item .su-kien+.noti-content .noti-badge-type {
+.noti-item .su-kien + .noti-content .noti-badge-type {
   background: rgba(59, 130, 246, 0.08);
   color: #3b82f6;
 }
-
-.noti-item .thong-bao+.noti-content .noti-badge-type {
+.noti-item .thong-bao + .noti-content .noti-badge-type {
   background: rgba(249, 115, 22, 0.08);
   color: #f97316;
 }
-
-.noti-item .de-xuat-duyet+.noti-content .noti-badge-type {
+.noti-item .de-xuat-duyet + .noti-content .noti-badge-type {
   background: rgba(16, 185, 129, 0.08);
   color: #10b981;
 }
-
-.noti-item .de-xuat-tuchoi+.noti-content .noti-badge-type {
+.noti-item .de-xuat-tuchoi + .noti-content .noti-badge-type {
   background: rgba(239, 68, 68, 0.08);
   color: #ef4444;
 }
-
-.noti-item .he-thong+.noti-content .noti-badge-type {
+.noti-item .he-thong + .noti-content .noti-badge-type {
   background: rgba(139, 92, 246, 0.08);
   color: #8b5cf6;
 }
-
 .noti-title {
   color: #111827;
   font-size: 13px;
   font-weight: 700;
   line-height: 1.4;
 }
-
 .noti-text {
   color: #4b5563;
   font-size: 12px;
   line-height: 1.4;
   margin: 0;
 }
-
 .noti-time {
   color: #9ca3af;
   font-size: 10px;
@@ -1094,7 +1045,6 @@ export default {
   align-items: center;
   margin-top: 4px;
 }
-
 .text-truncate-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;

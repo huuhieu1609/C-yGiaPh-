@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
@@ -14,15 +15,11 @@ return new class extends Migration
     public function up(): void
     {
         if (DB::getDriverName() === 'sqlite') {
-            if (Schema::hasTable('de_xuat_chinh_suas')) {
-                // 1. Backup existing data
-                $existing = DB::table('de_xuat_chinh_suas')->get();
+            // 1. Backup existing data
+            $existing = DB::table('de_xuat_chinh_suas')->get();
 
-                // 2. Drop old table (SQLite cannot ALTER CHECK constraints)
-                Schema::drop('de_xuat_chinh_suas');
-            } else {
-                $existing = collect();
-            }
+            // 2. Drop old table (SQLite cannot ALTER CHECK constraints)
+            Schema::drop('de_xuat_chinh_suas');
 
             // 3. Recreate with correct SQLite-compatible enum (includes "delete")
             DB::statement('
@@ -62,13 +59,12 @@ return new class extends Migration
                 }
             }
         } else {
-            // For MySQL/MariaDB or others:
             if (Schema::hasTable('de_xuat_chinh_suas')) {
-                // Just alter the column type to include 'delete'
-                DB::statement("ALTER TABLE de_xuat_chinh_suas MODIFY COLUMN type ENUM('edit', 'add_child', 'add_spouse', 'delete') NOT NULL");
+                Schema::table('de_xuat_chinh_suas', function (Blueprint $table) {
+                    $table->enum("type", ["edit", "add_child", "add_spouse", "delete"])->change();
+                });
             } else {
-                // If it got dropped by a previous failed run, recreate it
-                Schema::create('de_xuat_chinh_suas', function ($table) {
+                Schema::create('de_xuat_chinh_suas', function (Blueprint $table) {
                     $table->id();
                     $table->foreignId("thanh_vien_id")->nullable()->constrained("thanh_viens")->nullOnDelete();
                     $table->foreignId("proposed_by_user_id")->constrained("nguoi_dungs")->cascadeOnDelete();
@@ -127,7 +123,11 @@ return new class extends Migration
                 }
             }
         } else {
-            DB::statement("ALTER TABLE de_xuat_chinh_suas MODIFY COLUMN type ENUM('edit', 'add_child', 'add_spouse') NOT NULL");
+            if (Schema::hasTable('de_xuat_chinh_suas')) {
+                Schema::table('de_xuat_chinh_suas', function (Blueprint $table) {
+                    $table->enum("type", ["edit", "add_child", "add_spouse"])->change();
+                });
+            }
         }
     }
 };
