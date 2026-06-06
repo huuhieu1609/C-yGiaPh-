@@ -1,25 +1,26 @@
 <template>
-    <div class="row">
-        <div class="col-lg-4 col-md-12 mb-4">
-            <div class="card shadow-sm border-0 radius-10">
-                <div class="card-header bg-white py-3 border-0 border-bottom">
-                    <h5 class="mb-0 fw-bold text-uppercase" style="color: #00b4d8;">
-                        <i class="bx bx-plus-circle me-1"></i> {{ isEditing ? 'Cập Nhật Chức Vụ' : 'Thêm Chức Vụ Mới' }}
+    <div class="row g-4">
+        <!-- Left Column: Add/Edit Form -->
+        <div class="col-lg-4 col-md-12">
+            <div class="card luxury-panel border-0 shadow-sm">
+                <div class="card-header bg-transparent py-4 border-0 border-bottom border-light-subtle d-flex align-items-center">
+                    <h5 class="mb-0 fw-bold panel-title text-dark text-gradient-gold">
+                        <i class="bx bx-plus-circle me-2"></i> {{ isEditing ? 'Cập Nhật Chức Vụ' : 'Thêm Chức Vụ Mới' }}
                     </h5>
                 </div>
                 <div class="card-body p-4">
                     <form @submit.prevent="saveData">
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold">Tên Chức Vụ</label>
-                            <input type="text" class="form-control radius-8 border-2 shadow-none" placeholder="Nhập tên chức vụ" v-model="formData.ten_chuc_vu" required>
+                        <div class="mb-4">
+                            <label class="form-label fw-bold text-secondary-custom">Tên Chức Vụ</label>
+                            <input type="text" class="form-control premium-input radius-10 border-2 shadow-none" placeholder="Nhập tên chức vụ..." v-model="formData.ten_chuc_vu" required>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold">Mô Tả</label>
-                            <textarea class="form-control radius-8 border-2 shadow-none" rows="4" placeholder="Nhập mô tả..." v-model="formData.mo_ta"></textarea>
+                        <div class="mb-4">
+                            <label class="form-label fw-bold text-secondary-custom">Mô Tả</label>
+                            <textarea class="form-control premium-input radius-10 border-2 shadow-none" rows="4" placeholder="Nhập mô tả vai trò..." v-model="formData.mo_ta"></textarea>
                         </div>
-                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
-                            <button type="button" class="btn btn-light radius-8 px-4" v-if="isEditing" @click="resetForm">Hủy</button>
-                            <button type="submit" class="btn text-white radius-8 px-4 fw-bold shadow-sm" style="background-color: #008bf8; border-color: #008bf8;">
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-5">
+                            <button type="button" class="btn btn-outline-secondary radius-30 px-4" v-if="isEditing" @click="resetForm">Hủy</button>
+                            <button type="submit" class="btn btn-filter-submit text-white radius-30 px-4 fw-bold shadow-sm">
                                 {{ isEditing ? 'Cập Nhật' : 'Thêm Mới' }}
                             </button>
                         </div>
@@ -28,51 +29,65 @@
             </div>
         </div>
 
+        <!-- Right Column: Data Table -->
         <div class="col-lg-8 col-md-12">
-            <div class="card shadow-sm border-0 radius-10 h-100">
-                <div class="card-header bg-white py-3 border-0 border-bottom d-flex align-items-center justify-content-between">
-                    <h5 class="mb-0 fw-bold text-uppercase" style="color: #333;">
-                        <i class="bx bx-list-ul me-1"></i> Danh Sách Chức Vụ
+            <div class="card luxury-panel border-0 shadow-sm h-100">
+                <div class="card-header bg-transparent py-4 border-0 border-bottom border-light-subtle d-flex align-items-center justify-content-between flex-wrap gap-3">
+                    <h5 class="mb-0 fw-bold panel-title text-dark">
+                        <i class="bx bx-id-card me-2 text-warning"></i> Chức Vụ & Vai Trò Hệ Thống
                     </h5>
+                    <button class="btn btn-refresh-premium rounded-circle d-flex align-items-center justify-content-center" @click="loadData" :disabled="isLoading" title="Làm mới dữ liệu">
+                        <i class="bx bx-sync fs-5 text-warning" :class="{'bx-spin': isLoading}"></i>
+                    </button>
                 </div>
                 <div class="card-body p-4">
-                    <div class="table-responsive">
-                        <table class="table table-bordered table-hover align-middle mb-0">
-                            <thead class="text-center text-white" style="background-color: #008bf8;">
+                    <div class="table-responsive rounded-3 border border-light-subtle">
+                        <table class="table modern-table align-middle mb-0">
+                            <thead>
                                 <tr>
-                                    <th width="5%" class="py-3">#</th>
-                                    <th width="25%" class="py-3">Tên Chức Vụ</th>
-                                    <th width="35%" class="py-3">Mô Tả</th>
-                                    <th width="10%" class="py-3">Trạng Thái</th>
-                                    <th width="25%" class="py-3">Hành Động</th>
+                                    <th width="8%" class="text-center">#</th>
+                                    <th width="27%">Tên Chức Vụ</th>
+                                    <th width="35%">Mô Tả</th>
+                                    <th width="15%" class="text-center">Trạng Thái</th>
+                                    <th width="15%" class="text-center">Thao tác</th>
                                 </tr>
                             </thead>
                             <tbody>
+                                <tr v-if="isLoading">
+                                    <td colspan="5" class="text-center py-5">
+                                        <div class="spinner-border text-warning" role="status">
+                                            <span class="visually-hidden">Loading...</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr v-else-if="listData.length === 0">
+                                    <td colspan="5" class="text-center py-5 text-muted">
+                                        <i class="bx bx-folder-open fs-1 mb-2 d-block opacity-50"></i>
+                                        Chưa có chức vụ nào
+                                    </td>
+                                </tr>
                                 <tr v-for="(item, index) in listData" :key="item.id">
                                     <td class="text-center fw-bold">{{ index + 1 }}</td>
-                                    <td class="fw-semibold">{{ item.ten_chuc_vu }}</td>
-                                    <td>{{ item.mo_ta || '---' }}</td>
+                                    <td class="fw-bold text-dark">{{ item.ten_chuc_vu }}</td>
+                                    <td class="text-secondary small">{{ item.mo_ta || '---' }}</td>
                                     <td class="text-center">
-                                        <button @click="changeStatus(item.id)" :class="item.trang_thai == 'Hoạt động' ? 'btn-success' : 'btn-danger'" class="btn btn-sm radius-8 w-100">
+                                        <button @click="changeStatus(item.id)" :class="item.trang_thai == 'Hoạt động' ? 'btn-status-active' : 'btn-status-locked'" class="btn-status-toggle w-100 fw-bold">
                                             {{ item.trang_thai }}
                                         </button>
                                     </td>
                                     <td class="text-center">
                                         <div class="d-flex justify-content-center gap-2">
-                                            <button class="btn btn-sm btn-info text-white radius-8 shadow-sm" @click="openPhanQuyen(item)" title="Phân Quyền">
-                                                <i class="bx bx-shield-quarter m-0"></i> Phân Quyền
+                                            <button class="btn btn-action-edit text-primary border-primary border-opacity-25" @click="openPhanQuyen(item)" title="Phân Quyền">
+                                                <i class="bx bx-shield-quarter"></i>
                                             </button>
-                                            <button class="btn btn-sm btn-outline-primary radius-8" @click="editItem(item)" title="Sửa">
-                                                <i class="bx bx-edit-alt m-0"></i>
+                                            <button class="btn btn-action-edit" @click="editItem(item)" title="Sửa">
+                                                <i class="bx bx-edit-alt"></i>
                                             </button>
-                                            <button class="btn btn-sm btn-outline-danger radius-8" @click="deleteItem(item.id)" title="Xóa">
-                                                <i class="bx bx-trash m-0"></i>
+                                            <button class="btn btn-action-delete" @click="deleteItem(item.id)" title="Xóa">
+                                                <i class="bx bx-trash"></i>
                                             </button>
                                         </div>
                                     </td>
-                                </tr>
-                                <tr v-if="listData.length === 0">
-                                    <td colspan="5" class="text-center py-4 text-muted">Không có dữ liệu chức vụ</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -175,6 +190,7 @@ export default {
                 trang_thai: 'Hoạt động'
             },
             isEditing: false,
+            isLoading: false,
             // Phan Quyen
             selectedRole: {},
             listChucNang: [],
@@ -200,8 +216,16 @@ export default {
         }
     },
     methods: {
+        getHeaders() {
+            return {
+                headers: {
+                    Authorization: 'Bearer ' + localStorage.getItem('access_token')
+                }
+            };
+        },
         loadData() {
-            axios.get('http://127.0.0.1:8000/api/chuc-vu/get-data')
+            this.isLoading = true;
+            axios.get('http://127.0.0.1:8000/api/chuc-vu/get-data', this.getHeaders())
                 .then(res => {
                     if (res.data.status) {
                         this.listData = res.data.data;
@@ -214,6 +238,9 @@ export default {
                         { id: 2, ten_chuc_vu: 'Trưởng Tộc', mo_ta: 'Quản lý thông tin dòng họ, nhánh', trang_thai: 'Hoạt động' },
                         { id: 3, ten_chuc_vu: 'Thành Viên', mo_ta: 'Xem gia phả và tham gia sự kiện', trang_thai: 'Hoạt động' }
                     ];
+                })
+                .finally(() => {
+                    this.isLoading = false;
                 });
         },
         saveData() {
@@ -221,7 +248,7 @@ export default {
                 ? 'http://127.0.0.1:8000/api/chuc-vu/update'
                 : 'http://127.0.0.1:8000/api/chuc-vu/create';
             
-            axios.post(url, this.formData)
+            axios.post(url, this.formData, this.getHeaders())
                 .then(res => {
                     if (res.data.status) {
                         toastr.success(res.data.message);
@@ -239,7 +266,7 @@ export default {
         },
         deleteItem(id) {
             if (confirm('Bạn có chắc chắn muốn xóa?')) {
-                axios.post('http://127.0.0.1:8000/api/chuc-vu/delete', { id })
+                axios.post('http://127.0.0.1:8000/api/chuc-vu/delete', { id }, this.getHeaders())
                     .then(res => {
                         if (res.data.status) {
                             toastr.success(res.data.message);
@@ -249,7 +276,7 @@ export default {
             }
         },
         changeStatus(id) {
-            axios.post('http://127.0.0.1:8000/api/chuc-vu/status', { id })
+            axios.post('http://127.0.0.1:8000/api/chuc-vu/status', { id }, this.getHeaders())
                 .then(res => {
                     if (res.data.status) {
                         toastr.success(res.data.message);
@@ -270,7 +297,7 @@ export default {
         openPhanQuyen(item) {
             this.selectedRole = item;
             this.searchPermission = '';
-            axios.post('http://127.0.0.1:8000/api/phan-quyen/get-chuc-nang', { chuc_vu_id: item.id })
+            axios.post('http://127.0.0.1:8000/api/phan-quyen/get-chuc-nang', { chuc_vu_id: item.id }, this.getHeaders())
                 .then(res => {
                     if (res.data.status) {
                         this.listChucNang = res.data.data;
@@ -302,7 +329,7 @@ export default {
                 chuc_vu_id: this.selectedRole.id,
                 list_chuc_nang: this.selectedPermissions
             };
-            axios.post('http://127.0.0.1:8000/api/phan-quyen/update', payload)
+            axios.post('http://127.0.0.1:8000/api/phan-quyen/update', payload, this.getHeaders())
                 .then(res => {
                     if (res.data.status) {
                         toastr.success(res.data.message);

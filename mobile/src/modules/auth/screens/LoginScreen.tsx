@@ -63,10 +63,12 @@ export default function LoginScreen() {
       await AsyncStorage.setItem("token", data.access_token);
       
       hienThiThongBao("Thành công", "Chào mừng bạn quay trở lại!", "success", () => {
-        if (data.redirect_url?.includes("doi-tac")) {
+        if (data.redirect_url?.includes("doi-tac") || data.user?.is_doi_tac == 1) {
           router.replace("/doi-tac");
+        } else if (data.redirect_url?.includes("nguoi-dung") || data.user?.vai_tro?.toLowerCase().includes("thành viên") || data.user?.vai_tro?.toLowerCase().includes("member")) {
+          router.replace("/thanh-vien" as any);
         } else {
-          router.replace("/doi-tac"); // Default fallback
+          router.replace("/thanh-vien" as any); // Mặc định cho thành viên thường
         }
       });
     } catch (error: any) {

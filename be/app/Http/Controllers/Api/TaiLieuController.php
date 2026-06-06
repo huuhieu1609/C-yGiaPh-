@@ -9,10 +9,32 @@ use Illuminate\Http\Request;
 
 class TaiLieuController extends Controller
 {
-    public function getData()
+    public function getData(Request $request)
     {
         try {
-            $data = TaiLieu::all();
+            $user = auth('sanctum')->user();
+
+            if ($user && $user->vai_tro === 'Admin') {
+                $data = TaiLieu::orderBy('created_at', 'desc')->get();
+            } elseif ($user && $user->is_doi_tac == 1) {
+                $chiNhanhIds = \App\Models\ChiNhanh::getManagedBranchIds($user);
+                $data = TaiLieu::whereIn('chi_nhanh_id', $chiNhanhIds)
+                    ->orWhereNull('chi_nhanh_id')
+                    ->orderBy('created_at', 'desc')
+                    ->get();
+            } else {
+                $cnId = $user ? $user->chi_nhanh_id : null;
+                if ($cnId) {
+                    $data = TaiLieu::where('chi_nhanh_id', $cnId)
+                        ->orWhereNull('chi_nhanh_id')
+                        ->orderBy('created_at', 'desc')
+                        ->get();
+                } else {
+                    $data = TaiLieu::whereNull('chi_nhanh_id')
+                        ->orderBy('created_at', 'desc')
+                        ->get();
+                }
+            }
 
             return response()->json([
                 'status' => true,
@@ -31,6 +53,16 @@ class TaiLieuController extends Controller
     {
         try {
             $data = $request->only(['tieu_de', 'file_path', 'mo_ta']);
+
+            // Assign chi_nhanh_id from partner's branch if available
+            $user = auth('sanctum')->user();
+            if ($user && $user->is_doi_tac == 1) {
+                $branchId = collect(\App\Models\ChiNhanh::getManagedBranchIds($user))->first();
+                if ($branchId) {
+                    $data['chi_nhanh_id'] = $branchId;
+                }
+            }
+
             $item = TaiLieu::create($data);
 
             return response()->json([

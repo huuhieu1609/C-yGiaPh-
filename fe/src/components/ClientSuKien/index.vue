@@ -6,10 +6,13 @@
 
     <div class="container content-relative pt-5 pb-5">
       <div class="glass-card shadow-2xl rounded-3xl overflow-hidden mt-5 p-4 p-md-5">
-        <div class="checkout-header text-center mb-5">
+        <div class="checkout-header text-center mb-5 position-relative">
           <span class="subtitle-gradient d-block text-uppercase mb-2">KẾT NỐI DÒNG TỘC</span>
           <h2 class="text-gradient fw-bold mb-2">Sự Kiện Dòng Họ</h2>
           <p class="text-white-50">Lịch trình các hoạt động tế lễ, họp dòng họ, giỗ tổ và các sự kiện chung trong gia tộc.</p>
+          <button class="btn btn-refresh-premium rounded-circle d-flex align-items-center justify-content-center position-absolute end-0 top-0 mt-2" @click="loadData" :disabled="isLoading" title="Làm mới dữ liệu">
+            <i class="bx bx-sync fs-5 text-warning" :class="{'bx-spin': isLoading}"></i>
+          </button>
         </div>
 
         <div v-if="isLoading" class="empty-state text-center py-5">
@@ -451,5 +454,26 @@ export default {
 
 .cursor-pointer {
   cursor: pointer;
+}
+
+.btn-refresh-premium {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  transition: all 0.25s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.btn-refresh-premium:hover {
+  transform: rotate(30deg) scale(1.05);
+  border-color: #ffd700 !important;
+  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.15);
+}
+.btn-refresh-premium:active {
+  transform: scale(0.95);
 }
 </style>

@@ -2,8 +2,11 @@
     <div class="row">
         <div class="col-12">
             <div class="card genealogy-main-card shadow-sm border-0 radius-10 overflow-hidden">
-                <div class="card-header py-3 border-0 mt-2 px-4">
+                <div class="card-header py-3 border-0 mt-2 px-4 d-flex align-items-center justify-content-between">
                     <h5 class="mb-0 fw-bold theme-text-main"><i class="bx bx-group text-warning"></i> Quản Lý Thành Viên Dòng Họ</h5>
+                    <button class="btn btn-refresh-premium rounded-circle d-flex align-items-center justify-content-center" @click="refreshData" :disabled="isLoading" title="Làm mới dữ liệu">
+                        <i class="bx bx-sync fs-5 text-warning" :class="{'bx-spin': isLoading}"></i>
+                    </button>
                 </div>
                 <div class="card-body px-4 pb-4">
                     <div v-if="listChiNhanh.length === 0" class="text-center py-5">
@@ -53,10 +56,10 @@
                             <table class="table align-middle mb-0 text-nowrap">
                                 <thead>
                                     <tr class="text-center">
-                                        <th class="text-start ps-4">Thành Viên</th>
-                                        <th>Đời Thứ</th>
+                                        <th class="text-start ps-4 cursor-pointer" @click="sortBy('ho_ten')">Thành Viên <i class="bx" :class="sortKey === 'ho_ten' ? (sortOrder === 'asc' ? 'bx-sort-up' : 'bx-sort-down') : 'bx-sort'"></i></th>
+                                        <th class="cursor-pointer" @click="sortBy('doi_thu')">Đời Thứ <i class="bx" :class="sortKey === 'doi_thu' ? (sortOrder === 'asc' ? 'bx-sort-up' : 'bx-sort-down') : 'bx-sort'"></i></th>
                                         <th>Mối Quan Hệ</th>
-                                        <th>Ngày Sinh</th>
+                                        <th class="cursor-pointer" @click="sortBy('ngay_sinh')">Ngày Sinh <i class="bx" :class="sortKey === 'ngay_sinh' ? (sortOrder === 'asc' ? 'bx-sort-up' : 'bx-sort-down') : 'bx-sort'"></i></th>
                                         <th>Trạng Thái</th>
                                         <th class="pe-4">Hành Động</th>
                                     </tr>
@@ -272,6 +275,8 @@ export default {
             listDoiTocHo: [],
             searchQuery: '',
             filterDoi: null,
+            sortKey: 'ho_ten',
+            sortOrder: 'asc',
             isEditing: false,
             modal: null,
             currentMember: {
@@ -287,11 +292,23 @@ export default {
     },
     computed: {
         filteredMembers() {
-            return this.allMembers.filter(m => {
+            let temp = this.allMembers.filter(m => {
                 const matchSearch = m.ho_ten.toLowerCase().includes(this.searchQuery.toLowerCase());
                 const matchDoi = this.filterDoi === null || m.doi_thu == this.filterDoi;
                 const matchChiNhanh = this.selectedChiNhanhId === null || m.chi_nhanh_id == this.selectedChiNhanhId;
                 return matchSearch && matchDoi && matchChiNhanh;
+            });
+
+            return temp.sort((a, b) => {
+                let valA = a[this.sortKey] || '';
+                let valB = b[this.sortKey] || '';
+                if (this.sortKey === 'doi_thu') {
+                    valA = parseInt(valA);
+                    valB = parseInt(valB);
+                }
+                if (valA < valB) return this.sortOrder === 'asc' ? -1 : 1;
+                if (valA > valB) return this.sortOrder === 'asc' ? 1 : -1;
+                return 0;
             });
         }
     },
@@ -304,6 +321,14 @@ export default {
         this.loadData();
     },
     methods: {
+        sortBy(key) {
+            if (this.sortKey === key) {
+                this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc';
+            } else {
+                this.sortKey = key;
+                this.sortOrder = 'asc';
+            }
+        },
         getHeaders() {
             return { headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` } };
         },
@@ -312,10 +337,13 @@ export default {
                 .then(res => { if (res.data.status) this.listDoiTocHo = res.data.data; });
         },
         loadData() {
+            this.isLoading = true;
             axios.get('http://127.0.0.1:8000/api/thanh-vien/get-data', this.getHeaders())
-                .then(res => { if (res.data.status) this.allMembers = res.data.data; });
+                .then(res => { if (res.data.status) this.allMembers = res.data.data; })
+                .finally(() => { this.isLoading = false; });
         },
         loadChiNhanh() {
+            this.isLoading = true;
             axios.get('http://127.0.0.1:8000/api/chi-nhanh/get-data', this.getHeaders())
                 .then(res => {
                     if (res.data.status) {
@@ -324,7 +352,30 @@ export default {
                             this.selectedChiNhanhId = this.listChiNhanh[0].id;
                         }
                     }
-                });
+                })
+                .finally(() => { this.isLoading = false; });
+        },
+        refreshData() {
+            this.isLoading = true;
+            Promise.all([
+                axios.get('http://127.0.0.1:8000/api/doi-toc-ho/get-data', this.getHeaders()),
+                axios.get('http://127.0.0.1:8000/api/chi-nhanh/get-data', this.getHeaders()),
+                axios.get('http://127.0.0.1:8000/api/thanh-vien/get-data', this.getHeaders())
+            ]).then(([resG, resB, resM]) => {
+                if (resG.data.status) this.listDoiTocHo = resG.data.data;
+                if (resB.data.status) {
+                    this.listChiNhanh = resB.data.data;
+                    if (this.listChiNhanh.length > 0 && !this.selectedChiNhanhId) {
+                        this.selectedChiNhanhId = this.listChiNhanh[0].id;
+                    }
+                }
+                if (resM.data.status) this.allMembers = resM.data.data;
+                toastr.success('Dữ liệu thành viên đã được làm mới!');
+            }).catch(() => {
+                toastr.error('Lỗi khi tải lại dữ liệu thành viên.');
+            }).finally(() => {
+                this.isLoading = false;
+            });
         },
         formatDate(date) {
             if (!date) return '---';
@@ -624,4 +675,25 @@ export default {
 .custom-radio .form-check-input:checked { background-color: #f97316 !important; border-color: #f97316 !important; }
 .btn-orange-premium { background: linear-gradient(135deg, #f43f5e 0%, #f97316 100%) !important; color: white !important; border: none; }
 .btn-warning-premium { background: #f59e0b !important; color: #111827 !important; border: none; }
+
+.btn-refresh-premium {
+  background: var(--input-bg) !important;
+  border: 1px solid var(--border-color) !important;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  transition: all 0.25s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.btn-refresh-premium:hover {
+  transform: rotate(30deg) scale(1.05);
+  border-color: #f97316 !important;
+  box-shadow: 0 4px 12px rgba(249, 115, 22, 0.15);
+}
+.btn-refresh-premium:active {
+  transform: scale(0.95);
+}
 </style>

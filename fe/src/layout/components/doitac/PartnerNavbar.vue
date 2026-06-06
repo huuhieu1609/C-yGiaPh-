@@ -16,7 +16,7 @@
       <i class='bx' :class="isCollapsed ? 'bx-chevron-right' : 'bx-chevron-left'"></i>
     </button>
 
-    <div class="user-greeting d-flex align-items-center gap-3 mb-2">
+    <div class="user-greeting d-flex align-items-center gap-3 mb-2" @click="goToProfile" style="cursor: pointer;" title="Xem hồ sơ & đổi mật khẩu">
       <div class="avatar flex-shrink-0">
         <span>{{ userName.charAt(0).toUpperCase() }}</span>
         <div class="avatar-ring"></div>
@@ -54,37 +54,37 @@
           </router-link>
         </li>
 
-        <li class="section-heading hide-on-collapse">Quản Lý Gia Phả</li>
+        <li class="section-heading hide-on-collapse" v-if="hasPermission('Cây Gia Phả') || hasPermission('Quản Lý Thành Viên') || hasPermission('Tra Cứu Xưng Hô') || hasPermission('Quản Lý Chi Nhánh') || hasPermission('Quản Lý Mộ Phần')">Quản Lý Gia Phả</li>
 
-        <li class="nav-item item-tree">
+        <li class="nav-item item-tree" v-if="hasPermission('Cây Gia Phả')">
           <router-link to="/doi-tac/gia-pha" class="nav-link" active-class="active" title="Cây Gia Phả">
             <span class="nav-icon"><i class="bx bx-git-branch"></i></span>
             <span class="hide-on-collapse nav-label">Cây Gia Phả</span>
             <span class="nav-dot hide-on-collapse"></span>
           </router-link>
         </li>
-        <li class="nav-item item-members">
+        <li class="nav-item item-members" v-if="hasPermission('Quản Lý Thành Viên')">
           <router-link to="/doi-tac/thanh-vien" class="nav-link" active-class="active" title="Thành Viên">
             <span class="nav-icon"><i class="bx bx-group"></i></span>
             <span class="hide-on-collapse nav-label">Thành Viên</span>
             <span class="nav-dot hide-on-collapse"></span>
           </router-link>
         </li>
-        <li class="nav-item item-search">
+        <li class="nav-item item-search" v-if="hasPermission('Tra Cứu Xưng Hô')">
           <router-link to="/doi-tac/tra-cuu" class="nav-link" active-class="active" title="Tra Cứu">
             <span class="nav-icon"><i class="bx bx-search-alt"></i></span>
             <span class="hide-on-collapse nav-label">Tra Cứu</span>
             <span class="nav-dot hide-on-collapse"></span>
           </router-link>
         </li>
-        <li class="nav-item item-clan">
-          <router-link to="/doi-tac/dong-ho" class="nav-link" active-class="active" title="Dòng Họ">
-            <span class="nav-icon"><i class="bx bx-folder"></i></span>
-            <span class="hide-on-collapse nav-label">Dòng Họ</span>
+        <li class="nav-item item-clan" v-if="hasPermission('Quản Lý Chi Nhánh')">
+          <router-link to="/doi-tac/dong-ho" class="nav-link" active-class="active" title="Phân Quyền">
+            <span class="nav-icon"><i class="bx bx-shield-quarter"></i></span>
+            <span class="hide-on-collapse nav-label">Phân Quyền</span>
             <span class="nav-dot hide-on-collapse"></span>
           </router-link>
         </li>
-        <li class="nav-item item-map">
+        <li class="nav-item item-map" v-if="hasPermission('Quản Lý Mộ Phần')">
           <router-link to="/doi-tac/ban-do" class="nav-link" active-class="active" title="Bản Đồ Số">
             <span class="nav-icon"><i class="bx bx-map-alt"></i></span>
             <span class="hide-on-collapse nav-label">Bản Đồ Số</span>
@@ -92,40 +92,58 @@
           </router-link>
         </li>
         
-        <li class="section-heading hide-on-collapse">Công Cụ & Hoạt Động</li>
+        <li class="section-heading hide-on-collapse" v-if="hasPermission('Kiểm Duyệt Đề Xuất') || hasPermission('Quản Lý Sự Kiện') || hasPermission('Quản Lý Thông Báo') || hasPermission('Quản Lý Tài Liệu') || hasPermission('Nhật Ký Thao Tác')">Công Cụ & Hoạt Động</li>
         
-        <li class="nav-item item-proposals">
+        <li class="nav-item item-proposals" v-if="hasPermission('Kiểm Duyệt Đề Xuất')">
           <router-link to="/doi-tac/de-xuat" class="nav-link" active-class="active" title="Kiểm Duyệt Đề Xuất">
             <span class="nav-icon"><i class="bx bx-git-pull-request"></i></span>
             <span class="hide-on-collapse nav-label">Kiểm Duyệt Đề Xuất</span>
             <span class="nav-dot hide-on-collapse"></span>
           </router-link>
         </li>
-        <li class="nav-item item-events">
+        <li class="nav-item item-events" v-if="hasPermission('Quản Lý Sự Kiện')">
           <router-link to="/doi-tac/su-kien" class="nav-link" active-class="active" title="Quản Lý Sự Kiện">
             <span class="nav-icon"><i class="bx bx-calendar-event"></i></span>
             <span class="hide-on-collapse nav-label">Quản Lý Sự Kiện</span>
             <span class="nav-dot hide-on-collapse"></span>
           </router-link>
         </li>
-        <li class="nav-item item-notifs">
+        <li class="nav-item item-notifs" v-if="hasPermission('Quản Lý Thông Báo')">
           <router-link to="/doi-tac/thong-bao" class="nav-link" active-class="active" title="Quản Lý Thông Báo">
             <span class="nav-icon"><i class="bx bx-bell"></i></span>
             <span class="hide-on-collapse nav-label">Quản Lý Thông Báo</span>
             <span class="nav-dot hide-on-collapse"></span>
           </router-link>
         </li>
-        <li class="nav-item item-docs">
+        <li class="nav-item item-docs" v-if="hasPermission('Quản Lý Tài Liệu')">
           <router-link to="/doi-tac/tai-lieu" class="nav-link" active-class="active" title="Thư Viện Tài Liệu">
             <span class="nav-icon"><i class="bx bx-book-open"></i></span>
             <span class="hide-on-collapse nav-label">Thư Viện Tài Liệu</span>
             <span class="nav-dot hide-on-collapse"></span>
           </router-link>
         </li>
-        <li class="nav-item item-logs">
+        <li class="nav-item item-logs" v-if="hasPermission('Nhật Ký Thao Tác')">
           <router-link to="/doi-tac/nhat-ky" class="nav-link" active-class="active" title="Nhật Ký Thao Tác">
             <span class="nav-icon"><i class="bx bx-history"></i></span>
             <span class="hide-on-collapse nav-label">Nhật Ký Thao Tác</span>
+            <span class="nav-dot hide-on-collapse"></span>
+          </router-link>
+        </li>
+
+        <li class="section-heading hide-on-collapse" v-if="hasPermission('Quản Lý Gói Dịch Vụ')">Gói &amp; Thanh Toán</li>
+
+        <li class="nav-item" v-if="hasPermission('Quản Lý Gói Dịch Vụ')">
+          <router-link to="/doi-tac/quan-ly-goi" class="nav-link" active-class="active" title="Quản Lý Gói">
+            <span class="nav-icon"><i class="bx bx-package"></i></span>
+            <span class="hide-on-collapse nav-label">Quản Lý Gói</span>
+            <span class="nav-dot hide-on-collapse"></span>
+          </router-link>
+        </li>
+
+        <li class="nav-item item-events" v-for="menu in comingSoonMenus" :key="'cs'+menu.id">
+          <router-link :to="'/coming-soon?name=' + encodeURIComponent(menu.ten_chuc_nang)" class="nav-link" active-class="active" :title="menu.ten_chuc_nang">
+            <span class="nav-icon"><i class="bx bx-crown text-warning"></i></span>
+            <span class="hide-on-collapse nav-label text-gradient-gold-sidebar">{{ menu.ten_chuc_nang }}</span>
             <span class="nav-dot hide-on-collapse"></span>
           </router-link>
         </li>
@@ -149,6 +167,8 @@
 </template>
 
 <script>
+import axios from 'axios';
+
 export default {
   name: 'PartnerNavbar',
   props: {
@@ -161,15 +181,19 @@ export default {
   data() {
     return {
       userName: 'Đối Tác',
-      isDarkMode: false
+      isDarkMode: false,
+      permissions: [],
+      isMasterAdmin: false,
+      comingSoonMenus: []
     }
   },
   mounted() {
-    // Đọc trạng thái theme đã lưu từ trước
+    // Đọc trạng thái theme
     const savedTheme = localStorage.getItem('theme') || 'light';
     this.isDarkMode = savedTheme === 'dark';
     document.documentElement.setAttribute('data-theme', savedTheme);
 
+    // Đọc thông tin user
     const userStr = localStorage.getItem('user');
     if (userStr) {
       try {
@@ -179,12 +203,57 @@ export default {
         } else if (user && user.username) {
           this.userName = user.username;
         }
+        // Master Admin luôn có toàn quyền
+        this.isMasterAdmin = user?.vai_tro?.toLowerCase() === 'admin';
       } catch (e) {
         console.error("Lỗi parse thông tin user trong Sidebar:", e);
       }
     }
+
+    // Đọc permissions từ localStorage (được lưu khi login)
+    try {
+      const permsStr = localStorage.getItem('permissions');
+      this.permissions = permsStr ? JSON.parse(permsStr) : [];
+    } catch (e) {
+      this.permissions = [];
+    }
+
+    // Tải danh sách menu Coming Soon động
+    this.loadComingSoonMenus();
   },
   methods: {
+    loadComingSoonMenus() {
+      axios.get('http://127.0.0.1:8000/api/chuc-nang/coming-soon-menus', {
+        headers: { Authorization: 'Bearer ' + localStorage.getItem('access_token') }
+      }).then(res => {
+        if (res.data && res.data.status) {
+          this.comingSoonMenus = res.data.data || [];
+        }
+      }).catch(() => {});
+    },
+    /**
+     * Kiểm tra user có quyền chức năng không.
+     * Master Admin (vai_tro='admin') -> hiện tất cả.
+     * Tất cả tài khoản đối tác (kể cả chủ sở hữu và phụ) đều đồng bộ theo mảng permissions đã sync realtime.
+     */
+    hasPermission(chucNang) {
+      if (this.isMasterAdmin) return true;
+
+      // Tất cả tài khoản đối tác (is_doi_tac = 1, kể cả chủ sở hữu có id_chuc_vu = null)
+      // đều bắt buộc phải có tên quyền trong mảng permissions đã được đồng bộ realtime
+      return this.permissions.includes(chucNang);
+    },
+    isOwner() {
+      if (this.isMasterAdmin) return true;
+      const userStr = localStorage.getItem('user');
+      if (userStr) {
+        try {
+          const user = JSON.parse(userStr);
+          return user?.id_chuc_vu === null || user?.id_chuc_vu === undefined;
+        } catch (e) {}
+      }
+      return false;
+    },
     toggleTheme() {
       this.isDarkMode = !this.isDarkMode;
       const themeStr = this.isDarkMode ? 'dark' : 'light';
@@ -194,10 +263,14 @@ export default {
     logout() {
       localStorage.removeItem('access_token');
       localStorage.removeItem('user');
+      localStorage.removeItem('permissions');
       this.$router.push('/login');
     },
     goHome() {
       this.$router.push('/');
+    },
+    goToProfile() {
+      this.$router.push('/profile');
     }
   }
 }
@@ -354,4 +427,10 @@ export default {
 .admin-sidebar.sidebar-collapsed-state .btn-home,
 .admin-sidebar.sidebar-collapsed-state .btn-logout { padding: 12px 0; justify-content: center; border-radius: 14px !important; }
 .admin-sidebar.sidebar-collapsed-state .btn-logout { background: var(--neo-bg) !important; border: 1px solid rgba(244, 63, 94, 0.2); color: #f43f5e; }
+.text-gradient-gold-sidebar {
+  background: linear-gradient(135deg, #b8860b 0%, #ffd700 50%, #e5a93b 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  font-weight: 600 !important;
+}
 </style>

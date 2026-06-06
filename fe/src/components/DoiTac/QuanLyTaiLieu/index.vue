@@ -5,7 +5,12 @@
         <h5 class="mb-0 fw-bold theme-text-main">
           <i class="bx bx-book-open text-warning me-2 fs-4"></i>Thư Viện Tài Liệu & Di Sản Dòng Họ
         </h5>
-        <span class="badge bg-orange-light-premium text-orange-premium">Lưu giữ ngàn đời</span>
+        <div class="d-flex align-items-center gap-2">
+          <button class="btn btn-refresh-premium rounded-circle d-flex align-items-center justify-content-center" @click="loadDocuments" :disabled="loading" title="Làm mới dữ liệu">
+            <i class="bx bx-sync fs-5 text-warning" :class="{'bx-spin': loading}"></i>
+          </button>
+          <span class="badge bg-orange-light-premium text-orange-premium">Lưu giữ ngàn đời</span>
+        </div>
       </div>
       <div class="card-body px-4 pb-4">
         <div class="alert alert-custom-orange border-0 radius-12 p-3 mb-4 d-flex align-items-start gap-3 bg-adaptive-input">
@@ -424,6 +429,27 @@ export default {
 .bg-orange-light-premium { background-color: rgba(249, 115, 22, 0.08) !important; border: 1px solid rgba(249, 115, 22, 0.15); }
 .text-orange-premium { color: #f97316 !important; font-weight: 700; }
 .font-medium { font-weight: 500; }
+
+.btn-refresh-premium {
+  background: var(--input-bg) !important;
+  border: 1px solid var(--border-color) !important;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  transition: all 0.25s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.btn-refresh-premium:hover {
+  transform: rotate(30deg) scale(1.05);
+  border-color: #f97316 !important;
+  box-shadow: 0 4px 12px rgba(249, 115, 22, 0.15);
+}
+.btn-refresh-premium:active {
+  transform: scale(0.95);
+}
 
 .radius-16 { border-radius: 16px !important; }
 .radius-12 { border-radius: 12px !important; }

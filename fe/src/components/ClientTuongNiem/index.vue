@@ -3,10 +3,13 @@
     <div class="container py-5 mt-5">
       
       <!-- Top Section Heading -->
-      <div class="section-heading text-center mb-5 pt-4">
+      <div class="section-heading text-center mb-5 pt-4 position-relative">
         <span class="subtitle-gradient d-block text-uppercase mb-2 tracking-widest font-xs fw-bold">DI SẢN DÒNG HỌ</span>
         <h2 class="text-gradient fw-bold display-5 mb-2 font-serif">Dòng Lịch Sử Gia Tộc</h2>
         <p class="text-white-50 max-w-600 mx-auto font-sm">Ôn lại niên trình, tiểu sử và những cột mốc vẻ vang của các thế hệ tổ tiên đã dựng xây cơ nghiệp.</p>
+        <button class="btn btn-refresh-premium rounded-circle d-flex align-items-center justify-content-center position-absolute end-0 top-0 mt-4" @click="loadAllMembersData" :disabled="isLoading" title="Làm mới dữ liệu">
+          <i class="bx bx-sync fs-5 text-warning" :class="{'bx-spin': isLoading}"></i>
+        </button>
       </div>
 
       <!-- Loading State -->
@@ -338,5 +341,26 @@ export default {
   .hide-on-mobile {
     display: none !important;
   }
+}
+
+.btn-refresh-premium {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  transition: all 0.25s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.btn-refresh-premium:hover {
+  transform: rotate(30deg) scale(1.05);
+  border-color: #ffd700 !important;
+  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.15);
+}
+.btn-refresh-premium:active {
+  transform: scale(0.95);
 }
 </style>

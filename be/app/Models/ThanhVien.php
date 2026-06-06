@@ -24,6 +24,7 @@ class ThanhVien extends Model
         'id_me',
         'me_id',
         'trang_thai', // Ví dụ: 'Còn sống', 'Đã mất'
+        'tinh_trang_hon_nhan', // Ví dụ: 'Độc thân', 'Đã kết hôn', 'Ly hôn', 'Góa'
         'thong_tin_them',
         'doi_thu',
         'loai_quan_he',

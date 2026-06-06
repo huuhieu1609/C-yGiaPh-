@@ -14,8 +14,7 @@ class DeXuatController extends Controller
         try {
             $user = auth('sanctum')->user();
             if ($user && $user->is_doi_tac == 1) {
-                // Get branches owned by this partner
-                $chiNhanhIds = \App\Models\ChiNhanh::where('id_nguoi_dung', $user->id)->pluck('id')->toArray();
+                $chiNhanhIds = \App\Models\ChiNhanh::getManagedBranchIds($user);
                 
                 $proposals = DeXuatChinhSua::with(['thanhVien', 'proposedBy', 'approver'])
                     ->orderBy('id', 'desc')
@@ -210,6 +209,11 @@ class DeXuatController extends Controller
             $data['spouse_of_id'] = $proposal->thanh_vien_id;
             $data['loai_quan_he'] = 'Vợ/Chồng';
             \App\Models\ThanhVien::create($data);
+        } elseif ($proposal->type === 'delete') {
+            $thanhVien = \App\Models\ThanhVien::find($proposal->thanh_vien_id);
+            if ($thanhVien) {
+                $thanhVien->delete();
+            }
         }
     }
 }

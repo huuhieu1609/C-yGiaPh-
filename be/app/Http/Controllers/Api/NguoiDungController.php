@@ -12,7 +12,16 @@ class NguoiDungController extends Controller
     public function getData()
     {
         try {
-            $data = NguoiDung::all();
+            $user = auth('sanctum')->user();
+            if ($user && $user->vai_tro === 'Admin') {
+                $data = NguoiDung::all();
+            } else if ($user && $user->chi_nhanh_id) {
+                $data = NguoiDung::where('chi_nhanh_id', $user->chi_nhanh_id)->get();
+            } else if ($user) {
+                $data = NguoiDung::where('id', $user->id)->get();
+            } else {
+                $data = [];
+            }
 
             return response()->json([
                 'status' => true,
@@ -30,6 +39,7 @@ class NguoiDungController extends Controller
     public function create(Request $request)
     {
         try {
+            $user = auth('sanctum')->user();
             $data = [
                 'ho_ten' => $request->ho_ten,
                 'email' => $request->email,

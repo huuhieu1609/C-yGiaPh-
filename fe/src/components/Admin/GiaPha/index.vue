@@ -9,7 +9,7 @@
                                 Gia Phả</h5>
                         </div>
                         <div class="col-md-9 text-md-end d-flex align-items-center justify-content-end gap-3 flex-wrap">
-                            <!-- Branch Filter -->
+                            <!-- Partner Filter -->
                             <div class="d-flex align-items-center gap-2">
                                 <label class="small fw-bold text-uppercase text-secondary text-nowrap mb-0">Dòng
                                     họ:</label>
@@ -41,8 +41,10 @@
                                         class="bx bx-refresh"></i></button>
                             </div>
 
-                            <button class="btn btn-primary radius-30 px-4 shadow-sm" @click="openAddModal">
-                                <i class="bx bx-plus"></i> Thêm Thành Viên
+                            <button
+                                class="btn btn-refresh-premium rounded-circle d-flex align-items-center justify-content-center me-2 shadow-sm"
+                                @click="loadData" :disabled="isLoading" title="Làm mới phả hệ">
+                                <i class="bx bx-sync fs-5 text-warning" :class="{ 'bx-spin': isLoading }"></i>
                             </button>
                         </div>
                     </div>
@@ -54,13 +56,33 @@
                         :style="{ cursor: isPanning ? 'grabbing' : 'grab' }">
 
                         <div class="tree-canvas" :style="canvasStyle">
-                            <div class="tree" v-if="treeData.length">
+                            <!-- State 1: No partner chosen yet -->
+                            <div v-if="!selectedPartner" class="text-center py-5 mt-5">
+                                <div class="empty-state-icon mb-3">
+                                    <i
+                                        class="bx bx-user-voice fs-1 text-warning opacity-75 animate__animated animate__pulse animate__infinite"></i>
+                                </div>
+                                <h4 class="fw-bold text-dark mb-2">Chưa Chọn Đối Tác Quản Lý</h4>
+                                <p class="text-muted small mx-auto" style="max-width: 450px;">
+                                    Vui lòng lựa chọn một tài khoản đối tác từ danh sách để tải dữ liệu cây gia phả và
+                                    thực hiện quản lý thành viên dòng họ.
+                                </p>
+                                <button class="btn btn-warning radius-30 px-4 mt-3 fw-bold shadow-sm"
+                                    @click="showPartnerSelectorModal = true">
+                                    <i class="bx bx-list-ul me-1"></i> Chọn Đối Tác Ngay
+                                </button>
+                            </div>
+
+                            <!-- State 2: Partner chosen and has tree data -->
+                            <div class="tree" v-else-if="treeData.length">
                                 <ul>
                                     <TreeItem v-for="member in treeData" :key="member.id" :member="member"
                                         :listDoiTocHo="listDoiTocHo" :searchQuery="searchQuery" @select="onEdit"
                                         @show-qr="showQRCard" />
                                 </ul>
                             </div>
+
+                            <!-- State 3: Partner chosen but no tree data found -->
                             <div v-else class="text-center py-5 mt-5">
                                 <div class="empty-state-icon mb-3">
                                     <i class="bx bx-git-repo-forked fs-1 text-muted opacity-25"></i>
@@ -477,10 +499,14 @@ export default {
             allMembers: [],
             listChiNhanh: [],
             listDoiTocHo: [],
+            listPartners: [],
+            selectedPartner: null,
+            showPartnerSelectorModal: false,
+            partnerSearchQuery: '',
             selectedChiNhanh: null,
             currentMember: {
-                id: null, ho_ten: '', doi_thu: 1, cha_id: null, gioi_tinh: 'Nam', chi_nhanh_id: null,
-                loai_quan_he: 'Chính', spouse_of_id: null, trang_thai: 'Còn sống', ngay_mat: null, ngay_sinh: null, ghi_chu: '', avatar: null
+                id: null, ho_ten: '', doi_thu: 1, cha_id: null, me_id: null, gioi_tinh: 'Nam', chi_nhanh_id: null,
+                loai_quan_he: 'Chính', spouse_of_id: null, trang_thai: 'Còn sống', ngay_mat: null, ngay_sinh: null, tinh_trang_hon_nhan: '', ghi_chu: '', avatar: null
             },
             avatarPreview: null,
             isEditing: false,
@@ -488,7 +514,6 @@ export default {
             searchQuery: '',
             showQRModal: false,
             activeMember: {},
-
             // Zoom & Pan state
             zoom: 1,
             posX: 0,
@@ -499,7 +524,23 @@ export default {
         }
     },
     computed: {
+        filteredPartners() {
+            if (!this.partnerSearchQuery) {
+                return this.listPartners;
+            }
+            const q = this.partnerSearchQuery.toLowerCase();
+            return this.listPartners.filter(item => {
+                const partnerName = (item.nguoi_dung?.ho_ten || item.ten_goi || '').toLowerCase();
+                const partnerEmail = (item.nguoi_dung?.email || '').toLowerCase();
+                const clanName = (item.dong_ho || '').toLowerCase();
+                return partnerName.includes(q) || partnerEmail.includes(q) || clanName.includes(q);
+            });
+        },
         treeData() {
+            if (!this.selectedPartner || !this.selectedChiNhanh) {
+                return [];
+            }
+
             let list = JSON.parse(JSON.stringify(this.allMembers));
 
             // Branch filtering
@@ -533,6 +574,7 @@ export default {
             list.forEach(item => {
                 if (item.loai_quan_he === 'Vợ/Chồng' && item.spouse_of_id && map[item.spouse_of_id]) {
                     map[item.spouse_of_id].spouses.push(item);
+                    map[item.spouse_of_id].spouses.sort((a, b) => a.id - b.id);
                 } else if (item.cha_id && map[item.cha_id]) {
                     let parent = map[item.cha_id];
                     // Handle generation jumps
@@ -549,7 +591,7 @@ export default {
                     roots.push(item);
                 }
             });
-            return roots;
+            return roots.filter(r => r.chi_nhanh_id == this.selectedChiNhanh);
         },
         canvasStyle() {
             return {
@@ -563,12 +605,60 @@ export default {
             this.modal = new window.bootstrap.Modal(document.getElementById('memberModal'));
         }
         this.loadChiNhanh();
+        this.loadPartners();
         this.loadDoiTocHo();
         this.loadData();
     },
     methods: {
         getHeaders() {
             return { headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` } };
+        },
+        loadPartners() {
+            axios.get('http://127.0.0.1:8000/api/admin/doi-tac/get-data', this.getHeaders())
+                .then(res => {
+                    if (res.data.status) {
+                        this.listPartners = res.data.data;
+                    }
+                });
+        },
+        selectPartner(item) {
+            this.selectedPartner = item;
+            this.selectedChiNhanh = item.id_chi_nhanh;
+            this.showPartnerSelectorModal = false;
+            this.filterTree();
+            toastr.success(`Đã chọn đối tác: ${item.nguoi_dung?.ho_ten || item.ten_goi}`);
+        },
+        clearPartnerSelection() {
+            this.selectedPartner = null;
+            this.selectedChiNhanh = null;
+            this.showPartnerSelectorModal = false;
+            this.filterTree();
+            toastr.info('Đã gỡ chọn đối tác.');
+        },
+        getAvatarInitials(name) {
+            if (!name) return 'DT';
+            const parts = name.trim().split(/\s+/);
+            if (parts.length >= 2) {
+                return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+            }
+            return name.substring(0, 2).toUpperCase();
+        },
+        getAvatarBg(name) {
+            if (!name) return '#d4af37';
+            let hash = 0;
+            for (let i = 0; i < name.length; i++) {
+                hash = name.charCodeAt(i) + ((hash << 5) - hash);
+            }
+            const colors = [
+                'linear-gradient(135deg, #d4af37 0%, #aa8c2c 100%)',
+                'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)',
+                'linear-gradient(135deg, #0f2027 0%, #203a43 100%)',
+                'linear-gradient(135deg, #56ab2f 0%, #a8e063 100%)',
+                'linear-gradient(135deg, #e65c00 0%, #f9d423 100%)',
+                'linear-gradient(135deg, #833ab4 0%, #fd1d1d 100%)'
+            ];
+            const index = Math.abs(hash) % colors.length;
+            return colors[index];
         },
         loadDoiTocHo() {
             axios.get('http://127.0.0.1:8000/api/doi-toc-ho/get-data', this.getHeaders())
@@ -587,11 +677,18 @@ export default {
                 });
         },
         loadData() {
+            this.isLoading = true;
             axios.get('http://127.0.0.1:8000/api/thanh-vien/get-data', this.getHeaders())
                 .then(res => {
                     if (res.data.status) {
                         this.allMembers = res.data.data;
                     }
+                })
+                .catch(err => {
+                    toastr.error('Lỗi khi tải phả hệ!');
+                })
+                .finally(() => {
+                    this.isLoading = false;
                 });
         },
         filterTree() {
@@ -607,11 +704,19 @@ export default {
         endPan() { this.isPanning = false; },
 
         // CRUD
+        getSpousesOfFather(fatherId) {
+            if (!fatherId) return [];
+            return this.allMembers.filter(m => m.loai_quan_he === 'Vợ/Chồng' && m.spouse_of_id == fatherId);
+        },
         openAddModal() {
+            if (!this.selectedPartner) {
+                toastr.warning('Vui lòng chọn đối tác quản lý trước khi thêm thành viên!');
+                return;
+            }
             this.isEditing = false;
             this.currentMember = {
-                id: null, ho_ten: '', doi_thu: 1, cha_id: null, gioi_tinh: 'Nam', chi_nhanh_id: this.selectedChiNhanh,
-                loai_quan_he: 'Chính', spouse_of_id: null, trang_thai: 'Còn sống', ngay_mat: null, ngay_sinh: null, ghi_chu: '', avatar: null
+                id: null, ho_ten: '', doi_thu: 1, cha_id: null, me_id: null, gioi_tinh: 'Nam', chi_nhanh_id: this.selectedChiNhanh,
+                loai_quan_he: 'Chính', spouse_of_id: null, trang_thai: 'Còn sống', ngay_mat: null, ngay_sinh: null, tinh_trang_hon_nhan: '', ghi_chu: '', avatar: null
             };
             this.avatarFile = null;
             this.avatarPreview = null;
@@ -885,6 +990,8 @@ export default {
     height: 50px;
 }
 
+/* (restored default connector behavior) */
+
 /* Node Styling */
 .tree-node-group {
     display: inline-flex;
@@ -919,7 +1026,7 @@ export default {
     align-items: center;
     gap: 12px;
     transition: 0.3s ease;
-    overflow: hidden;
+    overflow: visible;
 }
 
 .quick-actions {
@@ -934,11 +1041,13 @@ export default {
     z-index: 20;
     pointer-events: none;
 }
+
 .tree-node-card:hover .quick-actions {
     opacity: 1;
     pointer-events: auto;
     bottom: -15px;
 }
+
 .btn-action {
     width: 28px;
     height: 28px;
@@ -948,13 +1057,14 @@ export default {
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
     color: #fff;
     font-size: 16px;
     padding: 0;
     transition: transform 0.2s;
     background: #d4af37;
 }
+
 .btn-action:hover {
     transform: scale(1.1);
     background: #c39b2e;

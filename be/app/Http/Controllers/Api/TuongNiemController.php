@@ -114,7 +114,7 @@ class TuongNiemController extends Controller
             if ($user->vai_tro === 'Admin') {
                 $chiNhanhIds = ChiNhanh::pluck('id');
             } elseif ($user->is_doi_tac == 1) {
-                $chiNhanhIds = ChiNhanh::where('id_nguoi_dung', $user->id)->pluck('id');
+                $chiNhanhIds = ChiNhanh::getManagedBranchIds($user);
             } else {
                 $myMember = ThanhVien::where('email', $user->email)->whereNotNull('email')->first();
                 if ($myMember) {

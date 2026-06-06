@@ -19,6 +19,9 @@
                         <div class="d-flex align-items-center gap-2">
                             <i class="bx bx-calculator text-dark fs-3"></i>
                             <h4 class="fw-bold mb-0 text-dark">Máy Tính Xưng Hô & Tra Cứu</h4>
+                            <button class="btn btn-refresh-premium rounded-circle d-flex align-items-center justify-content-center ms-2" @click="loadData" title="Làm mới dữ liệu">
+                                <i class="bx bx-sync fs-5 text-warning"></i>
+                            </button>
                         </div>
                         <button class="btn btn-gold-glass px-4 py-2.5 rounded-pill fw-bold text-dark d-flex align-items-center gap-2 transition" @click="openQRModal" style="background: rgba(212, 175, 55, 0.15); border: 1px solid rgba(212, 175, 55, 0.3); color: #8a6d1c !important;">
                             <i class="bx bx-qr-scan fs-4"></i>
@@ -678,5 +681,26 @@ export default {
     background: rgba(212, 175, 55, 0.2);
     border-color: #d4af37;
     transform: translateY(-2px);
+}
+
+.btn-refresh-premium {
+  background: #f1f5f9 !important;
+  border: 1px solid #cbd5e1 !important;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  transition: all 0.25s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.btn-refresh-premium:hover {
+  transform: rotate(30deg) scale(1.05);
+  border-color: #d4af37 !important;
+  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.15);
+}
+.btn-refresh-premium:active {
+  transform: scale(0.95);
 }
 </style>

@@ -11,9 +11,14 @@
           </h4>
           <p class="text-muted font-sm mb-0">Quản lý định vị Mộ phần & Nhà thờ</p>
         </div>
-        <button v-if="!isCreating" class="btn btn-sm btn-create-new d-flex align-items-center gap-1" @click="startCreating">
-          <i class="bx bx-plus-circle"></i> Thêm mới
-        </button>
+        <div class="d-flex align-items-center gap-2">
+          <button class="btn btn-refresh-premium rounded-circle d-flex align-items-center justify-content-center" @click="loadAllData" :disabled="isLoading" title="Làm mới dữ liệu">
+            <i class="bx bx-sync fs-5 text-warning" :class="{'bx-spin': isLoading}"></i>
+          </button>
+          <button v-if="!isCreating" class="btn btn-sm btn-create-new d-flex align-items-center gap-1" @click="startCreating">
+            <i class="bx bx-plus-circle"></i> Thêm mới
+          </button>
+        </div>
       </div>
 
       <!-- Quick Statistics Cards (hidden when creating) -->
@@ -107,6 +112,20 @@
               class="form-control border" 
               v-model="newForm.address" 
               placeholder="VD: Nghĩa trang Thạch Thất, Hà Nội"
+            />
+            <span class="text-muted font-xxs mt-1 d-block">
+              <i class="bx bx-info-circle text-orange"></i> Click bản đồ để lấy vị trí, sau đó bạn có thể chỉnh sửa/tự nhập thêm số nhà chính xác.
+            </span>
+          </div>
+
+          <!-- Image URL Input -->
+          <div class="mb-3">
+            <label class="form-label fw-bold font-xs text-muted mb-1">Hình ảnh (Link URL)</label>
+            <input 
+              type="url" 
+              class="form-control border" 
+              v-model="newForm.hinh_anh" 
+              placeholder="Nhập link hình ảnh hiển thị..."
             />
           </div>
 
@@ -257,6 +276,15 @@
           <div class="mb-2">
             <label class="form-label font-xs text-muted mb-1">Địa chỉ</label>
             <input type="text" class="form-control form-control-sm border" v-model="editingItem.address" />
+            <span class="text-muted font-xxs mt-1 d-block">
+              <i class="bx bx-info-circle text-orange"></i> Click bản đồ để lấy vị trí, sau đó bạn có thể chỉnh sửa/tự nhập thêm số nhà chính xác.
+            </span>
+          </div>
+
+          <!-- Image URL Edit -->
+          <div class="mb-2">
+            <label class="form-label font-xs text-muted mb-1">Hình ảnh (Link URL)</label>
+            <input type="url" class="form-control form-control-sm border" v-model="editingItem.hinh_anh" placeholder="Nhập link hình ảnh..." />
           </div>
 
           <!-- Notes/Description Edit -->
@@ -343,7 +371,8 @@ export default {
         memberId: null,
         branchId: null,
         lat: null,
-        lng: null
+        lng: null,
+        hinh_anh: ''
       },
       map: null,
       activePinMarker: null,
@@ -544,7 +573,7 @@ export default {
       });
 
       if (bounds.length > 0 && !this.editingItem && !this.isCreating) {
-        this.map.fitBounds(bounds, { padding: [50, 50], maxZoom: 16 });
+        this.map.fitBounds(bounds, { padding: [50, 50], maxZoom: 18 });
       }
     },
     onTabChange(tabName) {
@@ -561,7 +590,8 @@ export default {
         memberId: this.listMembers.length > 0 ? this.listMembers[0].id : null,
         branchId: this.listBranches.length > 0 ? this.listBranches[0].id : null,
         lat: null,
-        lng: null
+        lng: null,
+        hinh_anh: ''
       };
     },
     cancelCreating() {
@@ -616,14 +646,16 @@ export default {
         ghi_chu: this.newForm.notes,
         thanh_vien_id: this.newForm.memberId,
         vi_do: this.newForm.lat,
-        kinh_do: this.newForm.lng
+        kinh_do: this.newForm.lng,
+        hinh_anh: this.newForm.hinh_anh
       } : {
         ten_nha_tho: this.newForm.name,
         dia_chi: this.newForm.address,
         mo_ta: this.newForm.notes,
         chi_nhanh_id: this.newForm.branchId,
         vi_do: this.newForm.lat,
-        kinh_do: this.newForm.lng
+        kinh_do: this.newForm.lng,
+        hinh_anh: this.newForm.hinh_anh
       };
 
       axios.post(`http://127.0.0.1:8000/api/${apiPrefix}/create`, payload, this.getHeaders())
@@ -656,11 +688,12 @@ export default {
         notes: type === 'grave' ? item.ghi_chu : item.mo_ta,
         lat: lat,
         lng: lng,
+        hinh_anh: item.hinh_anh || '',
         originalItem: item
       };
 
       if (lat && lng) {
-        this.map.flyTo([lat, lng], 16, { animate: true });
+        this.map.flyTo([lat, lng], 18, { animate: true });
       }
 
       this.$nextTick(() => {
@@ -731,14 +764,16 @@ export default {
         dia_chi: this.editingItem.address,
         ghi_chu: this.editingItem.notes,
         vi_do: this.editingItem.lat,
-        kinh_do: this.editingItem.lng
+        kinh_do: this.editingItem.lng,
+        hinh_anh: this.editingItem.hinh_anh
       } : {
         id: this.editingItem.id,
         ten_nha_tho: this.editingItem.name,
         dia_chi: this.editingItem.address,
         mo_ta: this.editingItem.notes,
         vi_do: this.editingItem.lat,
-        kinh_do: this.editingItem.lng
+        kinh_do: this.editingItem.lng,
+        hinh_anh: this.editingItem.hinh_anh
       };
 
       axios.post(`http://127.0.0.1:8000/api/${apiPrefix}/update`, payload, this.getHeaders())
@@ -796,28 +831,44 @@ export default {
     },
     reverseGeocode(lat, lng, target) {
       if (!lat || !lng) return;
-      const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`;
+      
+      const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1&email=huuhieu1609@gmail.com`;
       
       axios.get(url, {
         headers: {
-          'Accept-Language': 'vi,en;q=0.9'
+          'Accept-Language': 'vi,en;q=0.9',
+          'User-Agent': 'CayGiaPhaMapApp/1.0'
         }
       })
         .then(res => {
           if (res.data && res.data.display_name) {
             let displayAddress = res.data.display_name;
             
-            // Clean up Nominatim response to be neat and standard for VN address
+            // Clean up Nominatim response to be neat and standard for VN address hierarchy
             const addr = res.data.address;
             if (addr) {
-              const road = addr.road || addr.suburb || addr.neighbourhood || addr.village || '';
-              const quarter = addr.quarter || '';
-              const suburb = addr.suburb || '';
-              const town = addr.town || addr.city || addr.district || '';
-              const county = addr.county || '';
-              const state = addr.state || '';
+              const houseNumber = addr.house_number || addr.building || '';
+              const road = addr.road || '';
+              const ward = addr.suburb || addr.village || addr.hamlet || addr.commune || '';
               
-              const parts = [road, quarter, suburb, town, county, state].filter(p => !!p);
+              const districtCandidates = [addr.city_district, addr.district, addr.town, addr.county];
+              let district = '';
+              for (const cand of districtCandidates) {
+                if (cand && cand !== ward && !cand.toLowerCase().includes('thành phố') && !cand.toLowerCase().includes('tỉnh')) {
+                  district = cand;
+                  break;
+                }
+              }
+              
+              const province = addr.city || addr.province || addr.state || '';
+              
+              const parts = [];
+              const streetAddress = [houseNumber, road].filter(p => !!p).join(' ');
+              if (streetAddress) parts.push(streetAddress);
+              if (ward) parts.push(ward);
+              if (district && district !== ward) parts.push(district);
+              if (province && province !== district && province !== ward) parts.push(province);
+              
               if (parts.length > 0) {
                 displayAddress = parts.join(', ');
               }
@@ -831,7 +882,7 @@ export default {
           }
         })
         .catch(err => {
-          console.warn("Lỗi khi giải ngược địa chỉ:", err);
+          console.warn("Lỗi khi giải ngược địa chỉ bằng Nominatim:", err);
         });
     }
   }
@@ -1207,5 +1258,26 @@ export default {
 @keyframes activePulseRing {
   0% { transform: rotate(45deg) scale(1); opacity: 0.8; }
   100% { transform: rotate(45deg) scale(2); opacity: 0; }
+}
+
+.btn-refresh-premium {
+  background: var(--input-bg) !important;
+  border: 1px solid var(--border-color) !important;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  transition: all 0.25s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.btn-refresh-premium:hover {
+  transform: rotate(30deg) scale(1.05);
+  border-color: #f97316 !important;
+  box-shadow: 0 4px 12px rgba(249, 115, 22, 0.15);
+}
+.btn-refresh-premium:active {
+  transform: scale(0.95);
 }
 </style>

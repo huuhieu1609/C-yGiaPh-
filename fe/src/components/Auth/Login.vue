@@ -69,9 +69,11 @@ export default {
                     if (res.data.status) {
                         toastr.success(res.data.message);
 
-                        // 1. Lưu thông tin vào LocalStorage trước
+                        // 1. Lưu thông tin vào LocalStorage
                         localStorage.setItem('access_token', res.data.access_token);
                         localStorage.setItem('user', JSON.stringify(res.data.user));
+                        // Lưu permissions để sidebar/router dùng kiểm tra quyền
+                        localStorage.setItem('permissions', JSON.stringify(res.data.permissions || []));
 
                         // 2. Lấy thông tin user vừa đăng nhập để phân quyền chính xác
                         const user = res.data.user;

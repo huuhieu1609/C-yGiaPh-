@@ -24,7 +24,7 @@ class SuKienController extends Controller
             if ($user->vai_tro === 'Admin') {
                 $data = SuKien::orderBy('ngay_to_chuc', 'desc')->get();
             } elseif ($user->is_doi_tac == 1) {
-                $chiNhanhIds = \App\Models\ChiNhanh::where('id_nguoi_dung', $user->id)->pluck('id');
+                $chiNhanhIds = \App\Models\ChiNhanh::getManagedBranchIds($user);
                 $data = SuKien::whereIn('chi_nhanh_id', $chiNhanhIds)
                     ->orWhereNull('chi_nhanh_id')
                     ->orderBy('ngay_to_chuc', 'desc')
@@ -82,7 +82,7 @@ class SuKienController extends Controller
             // If partner provided chi_nhanh_id ensure they own it; or auto-assign their branch if omitted
             if ($data['chi_nhanh_id'] ?? null) {
                 if ($user && $user->is_doi_tac == 1) {
-                    $owns = \App\Models\ChiNhanh::where('id', $data['chi_nhanh_id'])->where('id_nguoi_dung', $user->id)->exists();
+                    $owns = in_array((int)$data['chi_nhanh_id'], \App\Models\ChiNhanh::getManagedBranchIds($user));
                     if (! $owns) {
                         return response()->json(['status' => false, 'message' => 'Bạn không có quyền gán sự kiện cho chi nhánh này.'], 403);
                     }
@@ -90,7 +90,7 @@ class SuKienController extends Controller
             } else {
                 // if partner and no chi_nhanh_id provided, set to first branch they own
                 if ($user && $user->is_doi_tac == 1) {
-                    $branchId = \App\Models\ChiNhanh::where('id_nguoi_dung', $user->id)->value('id');
+                    $branchId = collect(\App\Models\ChiNhanh::getManagedBranchIds($user))->first();
                     if ($branchId) $data['chi_nhanh_id'] = $branchId;
                 }
             }
@@ -126,14 +126,14 @@ class SuKienController extends Controller
             $user = auth('sanctum')->user();
             if (isset($data['chi_nhanh_id']) && $data['chi_nhanh_id']) {
                 if ($user && $user->is_doi_tac == 1) {
-                    $owns = \App\Models\ChiNhanh::where('id', $data['chi_nhanh_id'])->where('id_nguoi_dung', $user->id)->exists();
+                    $owns = in_array((int)$data['chi_nhanh_id'], \App\Models\ChiNhanh::getManagedBranchIds($user));
                     if (! $owns) {
                         return response()->json(['status' => false, 'message' => 'Bạn không có quyền gán sự kiện cho chi nhánh này.'], 403);
                     }
                 }
             } else {
                 if ($user && $user->is_doi_tac == 1) {
-                    $branchId = \App\Models\ChiNhanh::where('id_nguoi_dung', $user->id)->value('id');
+                    $branchId = collect(\App\Models\ChiNhanh::getManagedBranchIds($user))->first();
                     if ($branchId) $data['chi_nhanh_id'] = $branchId;
                 }
             }

@@ -160,7 +160,7 @@ class DashboardController extends Controller
             // 4. Danh sách cập nhật gia phả gần đây
             $recentMembers = ThanhVien::with('chiNhanh')
                 ->orderBy('updated_at', 'desc')
-                ->limit(5)
+                ->limit(100)
                 ->get()
                 ->map(function ($member) {
                     return [
@@ -189,6 +189,7 @@ class DashboardController extends Controller
                         'total_trees' => $totalTrees,
                         'total_contributions' => $totalContributions,
                         'total_requests' => $totalRequests,
+                        'total_users' => NguoiDung::count(),
                     ],
                     'growth_chart' => [
                         'labels' => $labels,

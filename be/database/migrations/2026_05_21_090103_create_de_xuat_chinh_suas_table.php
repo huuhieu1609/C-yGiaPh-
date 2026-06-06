@@ -11,7 +11,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId("thanh_vien_id")->nullable()->constrained("thanh_viens")->nullOnDelete();
             $table->foreignId("proposed_by_user_id")->constrained("nguoi_dungs")->cascadeOnDelete();
-            $table->enum("type", ["edit", "add_child", "add_spouse"]);
+            $table->enum("type", ["edit", "add_child", "add_spouse", "delete"]);
             $table->json("data");
             $table->enum("status", ["pending", "approved", "rejected"])->default("pending");
             $table->foreignId("approved_by")->nullable()->constrained("nguoi_dungs")->nullOnDelete();

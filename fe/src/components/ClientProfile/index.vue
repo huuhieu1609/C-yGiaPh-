@@ -33,13 +33,13 @@
               <div class="col-md-8 ps-md-4">
                 <ul class="nav nav-tabs mb-4" id="profileTabs" role="tablist">
                   <li class="nav-item" role="presentation">
-                    <button class="nav-link active" id="info-tab" data-bs-toggle="tab" data-bs-target="#info" type="button" role="tab" style="color: #d4af37; font-weight: 600;">Thông Tin Chung</button>
+                    <button class="nav-link active" id="info-tab" data-bs-toggle="tab" data-bs-target="#info" type="button" role="tab">Thông Tin Chung</button>
                   </li>
                   <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="password-tab" data-bs-toggle="tab" data-bs-target="#password" type="button" role="tab" style="color: #6c757d; font-weight: 600;">Đổi Mật Khẩu</button>
+                    <button class="nav-link" id="password-tab" data-bs-toggle="tab" data-bs-target="#password" type="button" role="tab">Đổi Mật Khẩu</button>
                   </li>
                   <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="history-tab" data-bs-toggle="tab" data-bs-target="#history" type="button" role="tab" style="color: #6c757d; font-weight: 600;">Lịch Sử Giao Dịch</button>
+                    <button class="nav-link" id="history-tab" data-bs-toggle="tab" data-bs-target="#history" type="button" role="tab">Lịch Sử Giao Dịch</button>
                   </li>
                 </ul>
 
@@ -128,6 +128,8 @@
                       </div>
                     </div>
                   </div>
+
+
                 </div>
 
               </div>
@@ -136,6 +138,7 @@
         </div>
       </div>
     </div>
+
   </div>
 </template>
 
@@ -167,6 +170,7 @@ export default {
       isLoadingHistory: false
     }
   },
+
   mounted() {
     this.loadUserProfile();
     this.loadTransactions();
@@ -343,12 +347,17 @@ export default {
   border: none;
   border-bottom: 2px solid transparent;
   padding: 10px 20px;
+  color: #6c757d;
+  font-weight: 600;
+  transition: all 0.3s ease;
 }
 .nav-tabs .nav-link.active {
   border-bottom: 2px solid #d4af37;
+  color: #d4af37 !important;
   background-color: transparent;
 }
 .nav-tabs .nav-link:hover {
+  color: #e5c45e;
   border-bottom: 2px solid #e5c45e;
 }
 
@@ -379,5 +388,17 @@ export default {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+
+
+/* Animation utilities */
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+.animate-pulse {
+  animation: pulse 2s infinite ease-in-out;
 }
 </style>

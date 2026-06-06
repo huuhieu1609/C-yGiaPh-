@@ -1,10 +1,13 @@
 <template>
-    <div class="row">
-        <div class="col-lg-4 col-md-12 mb-4">
-            <div class="card shadow-sm border-0 radius-10">
-                <div class="card-header bg-white py-3 border-0 border-bottom">
-                    <h5 class="mb-0 fw-bold text-uppercase" style="color: #00b4d8;">
-                        <i class="bx bx-user-plus me-1"></i> {{ isEditing ? 'Cập Nhật Người Dùng' : 'Thêm Người Dùng Mới' }}
+    <div class="row g-4">
+        <!-- Left Column: Add/Edit Form -->
+        <div class="col-lg-4 col-md-12">
+            <div class="card luxury-panel border-0 shadow-sm">
+                <div
+                    class="card-header bg-transparent py-4 border-0 border-bottom border-light-subtle d-flex align-items-center">
+                    <h5 class="mb-0 fw-bold panel-title text-dark text-gradient-gold">
+                        <i class="bx bx-user-plus me-2"></i> {{ isEditing ? 'Cập Nhật Người Dùng' : 'Thêm Người Dùng '
+                        }}
                     </h5>
                 </div>
                 <div class="card-body p-4">
@@ -29,9 +32,10 @@
                             <input type="text" class="form-control radius-8 border-2 shadow-none"
                                 placeholder="Nhập số điện thoại" v-model="formData.so_dien_thoai">
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold">Chức Vụ</label>
-                            <select class="form-select radius-8 border-2 shadow-none" v-model="formData.id_chuc_vu">
+                        <div class="mb-4">
+                            <label class="form-label fw-bold text-secondary-custom">Chức Vụ</label>
+                            <select class="form-select premium-input radius-10 border-2 shadow-none"
+                                v-model="formData.id_chuc_vu">
                                 <option :value="null">-- Chọn Chức Vụ --</option>
                                 <option v-for="cv in listChucVu" :key="cv.id" :value="cv.id">{{ cv.ten_chuc_vu }}
                                 </option>
@@ -50,6 +54,7 @@
             </div>
         </div>
 
+        <!-- Right Column: Data Table -->
         <div class="col-lg-8 col-md-12">
             <div class="card shadow-sm border-0 radius-10 h-100">
                 <div
@@ -57,11 +62,16 @@
                     <h5 class="mb-0 fw-bold text-uppercase" style="color: #333;">
                         <i class="bx bx-group me-1"></i> Danh Sách Người Dùng
                     </h5>
+                    <button
+                        class="btn btn-refresh-premium rounded-circle d-flex align-items-center justify-content-center"
+                        @click="loadData" :disabled="isLoading" title="Làm mới dữ liệu">
+                        <i class="bx bx-sync fs-5 text-warning" :class="{ 'bx-spin': isLoading }"></i>
+                    </button>
                 </div>
                 <div class="card-body p-4">
-                    <div class="table-responsive">
-                        <table class="table table-bordered table-hover align-middle mb-0">
-                            <thead class="text-center text-white" style="background-color: #008bf8;">
+                    <div class="table-responsive rounded-3 border border-light-subtle">
+                        <table class="table modern-table align-middle mb-0">
+                            <thead>
                                 <tr>
                                     <th width="5%" class="py-3">#</th>
                                     <th width="25%" class="py-3">Họ Tên</th>
@@ -72,10 +82,23 @@
                                 </tr>
                             </thead>
                             <tbody>
+                                <tr v-if="isLoading">
+                                    <td colspan="7" class="text-center py-5">
+                                        <div class="spinner-border text-warning" role="status">
+                                            <span class="visually-hidden">Loading...</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr v-else-if="listData.length === 0">
+                                    <td colspan="7" class="text-center py-5 text-muted">
+                                        <i class="bx bx-folder-open fs-1 mb-2 d-block opacity-50"></i>
+                                        Chưa có người dùng nào
+                                    </td>
+                                </tr>
                                 <tr v-for="(item, index) in listData" :key="item.id">
                                     <td class="text-center fw-bold">{{ index + 1 }}</td>
-                                    <td class="fw-semibold">{{ item.ho_ten }}</td>
-                                    <td>{{ item.email }}</td>
+                                    <td class="fw-bold text-dark">{{ item.ho_ten }}</td>
+                                    <td class="text-secondary small">{{ item.email }}</td>
                                     <td class="text-center">
                                         <span class="badge bg-info text-white radius-10 px-3">{{
                                             getTenChucVu(item.id_chuc_vu) }}</span>
@@ -131,7 +154,8 @@ export default {
                 trang_thai: 'Hoạt động',
                 is_doi_tac: 0
             },
-            isEditing: false
+            isEditing: false,
+            isLoading: false
         }
     },
     mounted() {
@@ -175,7 +199,6 @@ export default {
             const url = this.isEditing
                 ? 'http://127.0.0.1:8000/api/nguoi-dung/update'
                 : 'http://127.0.0.1:8000/api/nguoi-dung/create';
-
             axios.post(url, this.formData, this.getHeaders())
                 .then(res => {
                     if (res.data.status) {

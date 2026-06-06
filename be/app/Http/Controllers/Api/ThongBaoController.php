@@ -9,10 +9,32 @@ use Illuminate\Http\Request;
 
 class ThongBaoController extends Controller
 {
-    public function getData()
+    public function getData(Request $request)
     {
         try {
-            $data = ThongBao::all();
+            $user = auth('sanctum')->user();
+
+            if ($user && $user->vai_tro === 'Admin') {
+                $data = ThongBao::orderBy('created_at', 'desc')->get();
+            } elseif ($user && $user->is_doi_tac == 1) {
+                $chiNhanhIds = \App\Models\ChiNhanh::getManagedBranchIds($user);
+                $data = ThongBao::whereIn('chi_nhanh_id', $chiNhanhIds)
+                    ->orWhereNull('chi_nhanh_id')
+                    ->orderBy('created_at', 'desc')
+                    ->get();
+            } else {
+                $cnId = $user ? $user->chi_nhanh_id : null;
+                if ($cnId) {
+                    $data = ThongBao::where('chi_nhanh_id', $cnId)
+                        ->orWhereNull('chi_nhanh_id')
+                        ->orderBy('created_at', 'desc')
+                        ->get();
+                } else {
+                    $data = ThongBao::whereNull('chi_nhanh_id')
+                        ->orderBy('created_at', 'desc')
+                        ->get();
+                }
+            }
 
             return response()->json([
                 'status' => true,
@@ -31,6 +53,16 @@ class ThongBaoController extends Controller
     {
         try {
             $data = $request->only(['tieu_de', 'noi_dung']);
+
+            // Assign chi_nhanh_id from partner's branch if available
+            $user = auth('sanctum')->user();
+            if ($user && $user->is_doi_tac == 1) {
+                $branchId = collect(\App\Models\ChiNhanh::getManagedBranchIds($user))->first();
+                if ($branchId) {
+                    $data['chi_nhanh_id'] = $branchId;
+                }
+            }
+
             $item = ThongBao::create($data);
 
             return response()->json([
