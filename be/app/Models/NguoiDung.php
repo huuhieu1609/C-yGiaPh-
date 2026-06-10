@@ -21,6 +21,7 @@ class NguoiDung extends Authenticatable
     public function dongGops() { return $this->hasMany(DongGop::class); }
     public function doiTac() { return $this->hasOne(DoiTac::class, 'id_nguoi_dung'); }
     public function chiNhanh() { return $this->belongsTo(ChiNhanh::class, 'chi_nhanh_id'); }
+    public function managedBranches() { return $this->hasMany(ChiNhanh::class, 'id_nguoi_dung'); }
     public function chucVu() { return $this->belongsTo(ChucVu::class, 'id_chuc_vu'); }
 
     public function isAdminOrSubAdmin()

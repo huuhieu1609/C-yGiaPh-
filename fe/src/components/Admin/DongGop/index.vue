@@ -166,7 +166,7 @@
                 <td class="ps-4 fw-bold text-muted-custom font-sm">{{ index + 1 }}</td>
                 <td>
                   <span class="badge badge-purple-subtle radius-8 font-xs py-1 px-2.5 fw-semibold">
-                    {{ item.nguoi_dung?.chi_nhanh?.ten_chi || 'Không xác định' }}
+                    {{ getBranchDisplayName(item.nguoi_dung) }}
                   </span>
                 </td>
                 <td>
@@ -387,7 +387,11 @@ export default {
       let data = this.listData;
       
       if (this.filterBranchId) {
-        data = data.filter(item => item.nguoi_dung?.chi_nhanh_id === this.filterBranchId);
+        data = data.filter(item => {
+          const directBranchId = item.nguoi_dung?.chi_nhanh_id;
+          const managedBranchIds = item.nguoi_dung?.managed_branches?.map(b => b.id) || [];
+          return directBranchId === this.filterBranchId || managedBranchIds.includes(this.filterBranchId);
+        });
       }
 
       if (!this.searchQuery) return data;
@@ -396,7 +400,11 @@ export default {
         const userName = (item.nguoi_dung?.ho_ten || 'Hệ thống').toLowerCase();
         const email = (item.nguoi_dung?.email || '').toLowerCase();
         const content = (item.noi_dung || '').toLowerCase();
-        const branchName = (item.nguoi_dung?.chi_nhanh?.ten_chi || '').toLowerCase();
+        const branchName = (
+          item.nguoi_dung?.chi_nhanh?.ten_chi || 
+          item.nguoi_dung?.managed_branches?.map(b => b.ten_chi).join(', ') || 
+          ''
+        ).toLowerCase();
         return userName.includes(q) || email.includes(q) || content.includes(q) || branchName.includes(q);
       });
     },
@@ -808,6 +816,16 @@ export default {
       if (!outText) return 'Không đồng';
       
       return outText.charAt(0).toUpperCase() + outText.slice(1) + ' đồng chẵn';
+    },
+    getBranchDisplayName(user) {
+      if (!user) return 'Không xác định';
+      if (user.chi_nhanh?.ten_chi) {
+        return user.chi_nhanh.ten_chi;
+      }
+      if (user.managed_branches && user.managed_branches.length > 0) {
+        return user.managed_branches.map(b => b.ten_chi).join(', ');
+      }
+      return 'Không xác định';
     }
   }
 }

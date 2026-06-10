@@ -6,59 +6,72 @@
     <div class="glow-blob blob-gold"></div>
 
     <div class="container container-custom content-relative pt-5 pb-5">
-      <!-- Section Header -->
-      <div class="text-center mb-5 mt-2">
-        <span class="badge badge-gold-outline mb-2">Bảng giá dịch vụ</span>
-        <h1 class="text-gradient fw-extrabold mb-3">Các Gói Dịch Vụ Gia Phả Số</h1>
-        <p class="text-white-50 max-width-600 mx-auto">
-          Chọn giải pháp tối ưu nhất để số hóa, kết nối con cháu và vinh danh truyền thống văn hóa dòng tộc qua muôn thế hệ.
-        </p>
-      </div>
+      <!-- Section Header for Non-Partners -->
+      <template v-if="!isDoiTac">
+        <div class="text-center mb-5 mt-2">
+          <span class="badge badge-gold-outline mb-2">Bảng giá dịch vụ</span>
+          <h1 class="text-gradient fw-extrabold mb-3">Các Gói Dịch Vụ Gia Phả Số</h1>
+          <p class="text-white-50 max-width-600 mx-auto">
+            Chọn giải pháp tối ưu nhất để số hóa, kết nối con cháu và vinh danh truyền thống văn hóa dòng tộc qua muôn thế hệ.
+          </p>
+        </div>
 
-      <!-- Package Grid -->
-      <div class="row g-4 align-items-stretch justify-content-center">
-        <!-- Dynamic Packages from DB -->
-        <div class="col-lg-4 col-md-6 d-flex" v-for="pkg in listPackages" :key="pkg.id">
-          <div class="glass-card package-card d-flex flex-column w-100" :class="{'featured-card': pkg.ten_goi.includes('Hưng Thịnh'), 'premium-card': pkg.ten_goi.includes('Trường Tồn')}">
-            <div class="featured-ribbon" v-if="pkg.ten_goi.includes('Hưng Thịnh')">PHỔ BIẾN NHẤT</div>
-            <div class="card-header-custom p-4 border-bottom border-white/5">
-              <span class="badge mb-2" :class="{'bg-gold text-dark': pkg.ten_goi.includes('Hưng Thịnh'), 'bg-purple-600 text-white': pkg.ten_goi.includes('Trường Tồn'), 'bg-slate-700 text-white-50': !pkg.ten_goi.includes('Hưng Thịnh') && !pkg.ten_goi.includes('Trường Tồn')}">
-                {{ pkg.ten_goi.includes('Hưng Thịnh') ? 'Đặc quyền' : (pkg.ten_goi.includes('Trường Tồn') ? 'Vĩnh cửu' : 'Cơ bản') }}
-              </span>
-              <h3 class="package-title text-white">{{ pkg.ten_goi }}</h3>
-              <p class="package-desc text-white-50">{{ pkg.mo_ta }}</p>
-              <div class="price-container mt-4">
-                <span class="price-num" :class="{'text-gold': pkg.ten_goi.includes('Hưng Thịnh'), 'text-purple-400': pkg.ten_goi.includes('Trường Tồn')}">
-                  {{ formatCurrencyNoVND(pkg.gia_ca) }}đ
+        <!-- Package Grid -->
+        <div class="row g-4 align-items-stretch justify-content-center">
+          <!-- Dynamic Packages from DB -->
+          <div class="col-lg-4 col-md-6 d-flex" v-for="pkg in listPackages" :key="pkg.id">
+            <div class="glass-card package-card d-flex flex-column w-100" :class="{'featured-card': pkg.ten_goi.includes('Hưng Thịnh'), 'premium-card': pkg.ten_goi.includes('Trường Tồn')}">
+              <div class="featured-ribbon" v-if="pkg.ten_goi.includes('Hưng Thịnh')">PHỔ BIẾN NHẤT</div>
+              <div class="card-header-custom p-4 border-bottom border-white/5">
+                <span class="badge mb-2" :class="{'bg-gold text-dark': pkg.ten_goi.includes('Hưng Thịnh'), 'bg-purple-600 text-white': pkg.ten_goi.includes('Trường Tồn'), 'bg-slate-700 text-white-50': !pkg.ten_goi.includes('Hưng Thịnh') && !pkg.ten_goi.includes('Trường Tồn')}">
+                  {{ pkg.ten_goi.includes('Hưng Thịnh') ? 'Đặc quyền' : (pkg.ten_goi.includes('Trường Tồn') ? 'Vĩnh cửu' : 'Cơ bản') }}
                 </span>
-                <span class="price-duration text-white-50">/ {{ pkg.thoi_han }} Tháng</span>
+                <h3 class="package-title text-white">{{ pkg.ten_goi }}</h3>
+                <p class="package-desc text-white-50">{{ pkg.mo_ta }}</p>
+                <div class="price-container mt-4">
+                  <span class="price-num" :class="{'text-gold': pkg.ten_goi.includes('Hưng Thịnh'), 'text-purple-400': pkg.ten_goi.includes('Trường Tồn')}">
+                    {{ formatCurrencyNoVND(pkg.gia_ca) }}đ
+                  </span>
+                  <span class="price-duration text-white-50">/ {{ pkg.thoi_han }} Tháng</span>
+                </div>
               </div>
-            </div>
-            
-            <div class="card-body-custom p-4 flex-grow-1">
-              <ul class="features-list list-unstyled mb-0">
-                <li><i class="bx bx-check-circle text-success me-2"></i>Tối đa <strong>{{ pkg.max_doi >= 999 ? 'Không giới hạn' : pkg.max_doi + ' đời' }}</strong></li>
-                <li><i class="bx bx-check-circle text-success me-2"></i>Tối đa <strong>{{ pkg.max_thanh_vien >= 99999 ? 'Không giới hạn' : pkg.max_thanh_vien + ' thành viên' }}</strong></li>
-                
-                <template v-if="getItemFeatures(pkg).length > 0">
-                  <li v-for="feat in getItemFeatures(pkg)" :key="feat.key">
-                    <i :class="feat.icon || 'bx bx-check-circle'" class="text-success me-2"></i>{{ feat.label }}
-                  </li>
-                </template>
-                <template v-else>
-                  <li class="disabled"><i class="bx bx-x-circle text-danger me-2"></i>Chưa cấu hình tính năng</li>
-                </template>
-              </ul>
-            </div>
-            
-            <div class="card-footer-custom p-4 border-top border-white/5 text-center">
-              <button @click="dangKyGoi(pkg.gia_ca, pkg.ten_goi)" class="btn w-100 mb-3" :class="pkg.ten_goi.includes('Hưng Thịnh') ? 'btn-package-gold' : 'btn-package-outline'">
-                Đăng Ký Ngay
-              </button>
+              
+              <div class="card-body-custom p-4 flex-grow-1">
+                <ul class="features-list list-unstyled mb-0">
+                  <li><i class="bx bx-check-circle text-success me-2"></i>Tối đa <strong>{{ pkg.max_doi >= 999 ? 'Không giới hạn' : pkg.max_doi + ' đời' }}</strong></li>
+                  <li><i class="bx bx-check-circle text-success me-2"></i>Tối đa <strong>{{ pkg.max_thanh_vien >= 99999 ? 'Không giới hạn' : pkg.max_thanh_vien + ' thành viên' }}</strong></li>
+                  
+                  <template v-if="getItemFeatures(pkg).length > 0">
+                    <li v-for="feat in getItemFeatures(pkg)" :key="feat.key">
+                      <i :class="feat.icon || 'bx bx-check-circle'" class="text-success me-2"></i>{{ feat.label }}
+                    </li>
+                  </template>
+                  <template v-else>
+                    <li class="disabled"><i class="bx bx-x-circle text-danger me-2"></i>Chưa cấu hình tính năng</li>
+                  </template>
+                </ul>
+              </div>
+              
+              <div class="card-footer-custom p-4 border-top border-white/5 text-center">
+                <button @click="dangKyGoi(pkg.gia_ca, pkg.ten_goi)" class="btn w-100 mb-3" :class="pkg.ten_goi.includes('Hưng Thịnh') ? 'btn-package-gold' : 'btn-package-outline'">
+                  Đăng Ký Ngay
+                </button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      </template>
+
+      <!-- Section Header for Partners -->
+      <template v-else>
+        <div class="text-center mb-5 mt-2">
+          <span class="badge badge-gold-outline mb-2">Hội viên Đối Tác</span>
+          <h1 class="text-gradient fw-extrabold mb-3">Đóng Góp Công Đức Hảo Tâm</h1>
+          <p class="text-white-50 max-width-600 mx-auto">
+            Cảm ơn bạn đã nâng cấp và đồng hành cùng hệ thống Gia Phả Số. Mọi sự hảo tâm đóng góp của bạn đều góp phần gìn giữ, phát huy các giá trị cội nguồn dòng họ.
+          </p>
+        </div>
+      </template>
 
       <!-- Donation Callout Section -->
       <div class="glass-card donation-callout mt-5 p-4 p-md-5 rounded-3xl border border-white/10 text-center">
@@ -118,6 +131,12 @@ export default {
   data() {
     return {
       listPackages: []
+    }
+  },
+  computed: {
+    isDoiTac() {
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      return user && user.is_doi_tac == 1;
     }
   },
   mounted() {

@@ -14,14 +14,14 @@ class NguoiDungController extends Controller
         try {
             $user = auth('sanctum')->user();
             if ($user && strtolower(trim($user->vai_tro)) === 'admin') {
-                $data = NguoiDung::all();
+                $data = NguoiDung::with(['managedBranches'])->get();
             } else if ($user && $user->is_doi_tac == 1) {
                 $branchIds = \App\Models\ChiNhanh::getManagedBranchIds($user);
-                $data = NguoiDung::whereIn('chi_nhanh_id', $branchIds)->get();
+                $data = NguoiDung::with(['managedBranches'])->whereIn('chi_nhanh_id', $branchIds)->get();
             } else if ($user && $user->chi_nhanh_id) {
-                $data = NguoiDung::where('chi_nhanh_id', $user->chi_nhanh_id)->get();
+                $data = NguoiDung::with(['managedBranches'])->where('chi_nhanh_id', $user->chi_nhanh_id)->get();
             } else if ($user) {
-                $data = NguoiDung::where('id', $user->id)->get();
+                $data = NguoiDung::with(['managedBranches'])->where('id', $user->id)->get();
             } else {
                 $data = [];
             }

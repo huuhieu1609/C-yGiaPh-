@@ -15,18 +15,25 @@ class DongGopController extends Controller
             $user = auth('sanctum')->user();
 
             if ($user && strtolower(trim($user->vai_tro)) === 'admin') {
-                $data = DongGop::with(['nguoiDung.chiNhanh'])->get();
+                $data = DongGop::with(['nguoiDung.chiNhanh', 'nguoiDung.managedBranches'])->get();
             } else if ($user && $user->is_doi_tac == 1) {
                 $branchIds = \App\Models\ChiNhanh::getManagedBranchIds($user);
-                $data = DongGop::with('nguoiDung')
+                $data = DongGop::with(['nguoiDung.chiNhanh', 'nguoiDung.managedBranches'])
                     ->where('trang_thai', 'Đã duyệt')
-                    ->whereHas('nguoiDung', function ($q) use ($branchIds) {
-                        $q->whereIn('chi_nhanh_id', $branchIds);
+                    ->where(function ($query) use ($user, $branchIds) {
+                        $query->whereHas('nguoiDung', function ($q) use ($branchIds) {
+                            $q->whereIn('chi_nhanh_id', $branchIds);
+                        })->orWhere('nguoi_dung_id', $user->id);
                     })->get();
             } else if ($user && $user->chi_nhanh_id) {
-                $data = DongGop::with('nguoiDung')->whereHas('nguoiDung', function ($q) use ($user) {
-                    $q->where('chi_nhanh_id', $user->chi_nhanh_id);
-                })->get();
+                $data = DongGop::with(['nguoiDung.chiNhanh', 'nguoiDung.managedBranches'])
+                    ->where(function ($query) use ($user) {
+                        $query->whereHas('nguoiDung', function ($q) use ($user) {
+                            $q->where('chi_nhanh_id', $user->chi_nhanh_id);
+                        })->orWhere('nguoi_dung_id', $user->id);
+                    })->get();
+            } else if ($user) {
+                $data = DongGop::with(['nguoiDung.chiNhanh', 'nguoiDung.managedBranches'])->where('nguoi_dung_id', $user->id)->get();
             } else {
                 $data = [];
             }

@@ -111,9 +111,10 @@
                   </button>
                 </form>
                 
-                <p class="text-center text-white-50 small mt-3">
-                  <i class="bx bx-info-circle me-1"></i> Ban trị sự sẽ duyệt tự động và ghi nhận sau 1-3 phút.
-                </p>
+                <div class="auto-verify-note text-center mt-3 p-3 rounded-2xl border border-white/10">
+                  <i class="bx bx-bolt-circle text-success me-1 animate-pulse"></i>
+                  <span class="text-white-50 small">Hệ thống đang <strong class="text-success">tự động kiểm tra</strong> và ghi nhận bảng vàng sau khi giao dịch chuyển khoản thành công (mỗi 8 giây).</span>
+                </div>
               </div>
             </div>
           </div>
@@ -194,8 +195,12 @@ export default {
         this.isCustomAmount = true;
       }
     }
+
+    // Start auto-checking payment
+    this.startAutoCheck();
   },
   beforeUnmount() {
+    this.stopAutoCheck();
   },
   methods: {
     selectPreset(amount) {
@@ -242,6 +247,13 @@ export default {
       }, this.getHeaders())
       .then(res => {
         if (res.data.success) {
+          this.stopAutoCheck();
+          
+          // Clear payment code
+          if (userId) {
+            localStorage.removeItem(`payment_code_${userId}`);
+          }
+
           toastr.success('Cảm ơn đóng góp tâm đức của bạn! Hệ thống đã ghi danh Bảng Vàng.');
           this.$router.push('/profile');
         } else {
@@ -253,6 +265,45 @@ export default {
         console.error(err);
       })
       .finally(() => { this.isSubmitting = false; });
+    },
+    startAutoCheck() {
+      this.checkInterval = setInterval(() => {
+        if (this.cleanAmount > 0 && !this.isSubmitting) {
+          this.checkPaymentSilent();
+        }
+      }, 8000);
+    },
+    stopAutoCheck() {
+      if (this.checkInterval) {
+        clearInterval(this.checkInterval);
+        this.checkInterval = null;
+      }
+    },
+    checkPaymentSilent() {
+      const userStr = localStorage.getItem('user');
+      const user = userStr ? JSON.parse(userStr) : null;
+      const userId = user ? (user.user || user).id : null;
+      if (!userId) return;
+
+      axios.post('http://127.0.0.1:8000/api/thanh-toan/xac-nhan-thanh-toan', {
+        nguoi_dung_id: userId,
+        noi_dung: this.transferContent + ' | Đóng góp quỹ: ' + this.form.so_tien + ' VNĐ | QR Công Đức',
+        trang_thai: 'Chờ duyệt'
+      }, this.getHeaders())
+      .then(res => {
+        if (res.data.success) {
+          this.stopAutoCheck();
+
+          // Clear payment code
+          if (userId) {
+            localStorage.removeItem(`payment_code_${userId}`);
+          }
+
+          toastr.success('Cảm ơn đóng góp tâm đức của bạn! Hệ thống đã ghi danh Bảng Vàng.');
+          this.$router.push('/profile');
+        }
+      })
+      .catch(() => {});
     }
   }
 }
@@ -415,6 +466,11 @@ export default {
     color: #475569;
     cursor: not-allowed;
     box-shadow: none;
+}
+
+.auto-verify-note {
+    background: rgba(16, 185, 129, 0.04);
+    border: 1px solid rgba(16, 185, 129, 0.15);
 }
 
 .note-item {

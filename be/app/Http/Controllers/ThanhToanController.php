@@ -220,6 +220,20 @@ class ThanhToanController extends Controller
                 ]);
             }
 
+            // Kiểm tra trùng lặp giao dịch dựa trên NhatKyHoatDong
+            $txId = $matchedTx['id'] ?? null;
+            if ($txId) {
+                $isUsed = \App\Models\NhatKyHoatDong::where('chi_tiet', 'like', '%"transaction_id": "' . $txId . '"%')
+                    ->orWhere('chi_tiet', 'like', '%"transaction_id": ' . $txId . '%')
+                    ->exists();
+                if ($isUsed) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Giao dịch chuyển khoản này đã được hệ thống xử lý trước đó.',
+                    ]);
+                }
+            }
+
             // Giao dịch khớp — xử lý bên trong transaction DB
             return DB::transaction(function () use ($matchedTx, $nguoiDungId, $noiDung, $expectedContent, $request) {
                 $amountIn = $matchedTx['amount_in'];
