@@ -150,6 +150,14 @@
           </router-link>
         </li>
 
+        <li class="nav-item item-payment" v-if="isOwner()">
+          <router-link to="/doi-tac/sepay-config" class="nav-link" active-class="active" title="Cấu Hình SePay">
+            <span class="nav-icon"><i class="bx bx-cog"></i></span>
+            <span class="hide-on-collapse nav-label">Cấu Hình SePay</span>
+            <span class="nav-dot hide-on-collapse"></span>
+          </router-link>
+        </li>
+
         <li class="nav-item item-events" v-for="menu in comingSoonMenus" :key="'cs'+menu.id">
           <router-link :to="'/coming-soon?name=' + encodeURIComponent(menu.ten_chuc_nang)" class="nav-link" active-class="active" :title="menu.ten_chuc_nang">
             <span class="nav-icon"><i class="bx bx-crown text-warning"></i></span>

@@ -240,4 +240,57 @@ class DongGopController extends Controller
             ], 500);
         }
     }
+
+    public function getDongGopSepayConfig(Request $request): \Illuminate\Http\JsonResponse
+    {
+        $user = $request->user();
+        
+        // 1. Resolve branch ID
+        $branchId = $request->query('chi_nhanh_id');
+        
+        if (!$branchId) {
+            // If the user is a partner, resolve the branch they own
+            if ($user && $user->is_doi_tac == 1) {
+                $branch = \App\Models\ChiNhanh::where('id_nguoi_dung', $user->id)->first();
+                $branchId = $branch ? $branch->id : null;
+            } else if ($user) {
+                $branchId = $user->chi_nhanh_id;
+            }
+        }
+
+        // 2. Look up the branch and its owner's SePay configuration
+        if ($branchId) {
+            $branch = \App\Models\ChiNhanh::find($branchId);
+            if ($branch) {
+                $ownerId = $branch->id_nguoi_dung ?: (($user && $user->is_doi_tac == 1) ? $user->id : null);
+                
+                if ($ownerId) {
+                    $owner = \App\Models\NguoiDung::find($ownerId);
+                    if ($owner && $owner->is_doi_tac == 1) {
+                        if ($owner->sepay_api_token && $owner->sepay_bank_account && $owner->sepay_bank_name) {
+                            return response()->json([
+                                'status' => true,
+                                'is_custom' => true,
+                                'is_configured' => true,
+                                'data' => [
+                                    'sepay_bank_account' => $owner->sepay_bank_account,
+                                    'sepay_bank_name' => $owner->sepay_bank_name,
+                                    'sepay_bank_owner' => $owner->sepay_bank_owner ?: $owner->ho_ten,
+                                ]
+                            ]);
+                        }
+                    }
+                }
+            }
+        }
+
+        // 3. Do not fall back to global SePay details for lineage donations
+        return response()->json([
+            'status' => true,
+            'is_custom' => false,
+            'is_configured' => false,
+            'message' => 'Dòng họ này chưa thiết lập cấu hình cổng SePay để nhận đóng góp.',
+            'data' => null
+        ]);
+    }
 }

@@ -172,6 +172,21 @@ class ThanhToanController extends Controller
             $expectedContent = trim($parts[0]);
 
             $apiToken = env('SEPAY_API_TOKEN');
+            if ($isDongGop) {
+                $chiNhanhId = $request->input('chi_nhanh_id');
+                $user = NguoiDung::find($nguoiDungId);
+                $branchId = $chiNhanhId ?: ($user ? $user->chi_nhanh_id : null);
+
+                if ($branchId) {
+                    $branch = \App\Models\ChiNhanh::find($branchId);
+                    if ($branch && $branch->id_nguoi_dung) {
+                        $owner = \App\Models\NguoiDung::find($branch->id_nguoi_dung);
+                        if ($owner && $owner->sepay_api_token) {
+                            $apiToken = $owner->sepay_api_token;
+                        }
+                    }
+                }
+            }
 
             // Quét 20 giao dịch gần nhất từ SePay
             $response = Http::withHeaders([

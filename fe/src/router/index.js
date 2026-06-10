@@ -361,6 +361,11 @@ const routes = [
                 name: 'partner-dong-gop',
                 component: () => import('../components/DoiTac/QuanLyDongGop/index.vue'),
                 meta: { permission: 'Quản Lý Sự Kiện' }
+            },
+            {
+                path: 'sepay-config',
+                name: 'partner-sepay-config',
+                component: () => import('../components/DoiTac/SepayConfig/index.vue')
             }
         ]
     }

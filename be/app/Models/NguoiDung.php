@@ -13,7 +13,7 @@ class NguoiDung extends Authenticatable
     use HasApiTokens, HasFactory, SoftDeletes;
 
     protected $table = "nguoi_dungs";
-    protected $fillable = ["ho_ten", "email", "mat_khau", "so_dien_thoai", "avatar", "vai_tro", "id_chuc_vu", "trang_thai", "hash_reset", "is_doi_tac", "chi_nhanh_id"];
+    protected $fillable = ["ho_ten", "email", "mat_khau", "so_dien_thoai", "avatar", "vai_tro", "id_chuc_vu", "trang_thai", "hash_reset", "is_doi_tac", "chi_nhanh_id", "sepay_api_token", "sepay_bank_account", "sepay_bank_name", "sepay_bank_owner"];
     protected $hidden = ["mat_khau", "remember_token"];
     public function getAuthPassword() { return $this->mat_khau; }
     
