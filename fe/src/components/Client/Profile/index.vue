@@ -1,5 +1,5 @@
 <template>
-  <div class="profile-container container mt-5 pt-5 pb-5">
+  <div class="profile-container" :class="isClient ? 'container mt-5 pt-5 pb-5' : 'container-fluid py-4'">
     <div class="row justify-content-center">
       <div class="col-lg-10">
         <div class="card shadow-sm border-0 rounded-4">
@@ -38,7 +38,7 @@
                   <li class="nav-item" role="presentation">
                     <button class="nav-link" id="password-tab" data-bs-toggle="tab" data-bs-target="#password" type="button" role="tab">Đổi Mật Khẩu</button>
                   </li>
-                  <li class="nav-item" role="presentation">
+                  <li class="nav-item" role="presentation" v-if="!isAdmin">
                     <button class="nav-link" id="history-tab" data-bs-toggle="tab" data-bs-target="#history" type="button" role="tab">Lịch Sử Giao Dịch</button>
                   </li>
                 </ul>
@@ -98,7 +98,7 @@
                   </div>
 
                   <!-- Tab Lịch sử giao dịch -->
-                  <div class="tab-pane fade" id="history" role="tabpanel">
+                  <div class="tab-pane fade" id="history" role="tabpanel" v-if="!isAdmin">
                     <div v-if="isLoadingHistory" class="text-center py-4">
                       <i class="bx bx-loader-alt bx-spin fs-3 text-warning"></i>
                       <p class="mt-2 text-muted small">Đang tải lịch sử...</p>
@@ -172,6 +172,12 @@ export default {
   computed: {
     isDoiTac() {
       return this.profile.is_doi_tac == 1 || this.profile.is_doi_tac === true || this.profile.vai_tro === 'Đối tác';
+    },
+    isClient() {
+      return !this.$route.path.startsWith('/admin') && !this.$route.path.startsWith('/doi-tac');
+    },
+    isAdmin() {
+      return this.profile.vai_tro?.toLowerCase() === 'admin';
     }
   },
   mounted() {
@@ -197,7 +203,9 @@ export default {
       }
     }
     this.loadUserProfile();
-    this.loadTransactions();
+    if (!this.isAdmin) {
+      this.loadTransactions();
+    }
   },
   methods: {
     getRoleDisplay(user) {
@@ -225,6 +233,9 @@ export default {
           // Update local storage so that Topclient avatar also updates if refreshed
           localStorage.setItem('user', JSON.stringify(res.data.user));
           window.dispatchEvent(new Event('profile-updated'));
+          if (!this.isAdmin && this.transactions.length === 0) {
+            this.loadTransactions();
+          }
         })
         .catch(err => {
           if(err.response && err.response.status === 401) {

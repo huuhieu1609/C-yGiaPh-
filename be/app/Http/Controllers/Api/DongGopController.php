@@ -21,8 +21,25 @@ class DongGopController extends Controller
                 $data = DongGop::with(['nguoiDung.chiNhanh', 'nguoiDung.managedBranches'])
                     ->where('trang_thai', 'Đã duyệt')
                     ->where(function ($query) use ($user, $branchIds) {
-                        $query->whereHas('nguoiDung', function ($q) use ($branchIds) {
-                            $q->whereIn('chi_nhanh_id', $branchIds);
+                        $query->where(function ($q) use ($branchIds) {
+                            $q->whereHas('nguoiDung', function ($qUser) use ($branchIds) {
+                                $qUser->whereIn('chi_nhanh_id', $branchIds);
+                            })->where(function ($q2) use ($branchIds) {
+                                  // For QR code bank donations, only display if it belongs to one of the partner's branches
+                                  $q2->where('noi_dung', 'not like', '%QR Công Đức%')
+                                     ->orWhere(function ($q3) use ($branchIds) {
+                                         $q3->where('noi_dung', 'like', '%QR Công Đức%')
+                                            ->where(function ($q4) use ($branchIds) {
+                                                foreach ($branchIds as $index => $bId) {
+                                                    if ($index === 0) {
+                                                        $q4->where('noi_dung', 'like', '%| BranchID: ' . $bId . '%');
+                                                    } else {
+                                                        $q4->orWhere('noi_dung', 'like', '%| BranchID: ' . $bId . '%');
+                                                    }
+                                                }
+                                            });
+                                     });
+                              });
                         })->orWhere('nguoi_dung_id', $user->id);
                     })->get();
             } else if ($user && $user->chi_nhanh_id) {
@@ -255,6 +272,13 @@ class DongGopController extends Controller
                 $branchId = $branch ? $branch->id : null;
             } else if ($user) {
                 $branchId = $user->chi_nhanh_id;
+                
+                // Fallback: Resolve branch ID from matching member on the tree by email
+                if (!$branchId && $user->email) {
+                    $branchId = \App\Models\ThanhVien::where('email', $user->email)
+                        ->whereNotNull('email')
+                        ->value('chi_nhanh_id');
+                }
             }
         }
 

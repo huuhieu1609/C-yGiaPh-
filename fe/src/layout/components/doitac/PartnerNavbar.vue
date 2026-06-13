@@ -213,24 +213,8 @@ export default {
     document.documentElement.setAttribute('data-theme', savedTheme);
 
     // Đọc thông tin user
-    const userStr = localStorage.getItem('user');
-    if (userStr) {
-      try {
-        const user = JSON.parse(userStr);
-        if (user && user.ho_ten) {
-          this.userName = user.ho_ten;
-        } else if (user && user.username) {
-          this.userName = user.username;
-        }
-        if (user && user.avatar) {
-          this.userAvatar = user.avatar;
-        }
-        // Master Admin luôn có toàn quyền
-        this.isMasterAdmin = user?.vai_tro?.toLowerCase() === 'admin';
-      } catch (e) {
-        console.error("Lỗi parse thông tin user trong Sidebar:", e);
-      }
-    }
+    this.syncUser();
+    window.addEventListener('profile-updated', this.syncUser);
 
     // Đọc permissions từ localStorage (được lưu khi login)
     try {
@@ -242,6 +226,9 @@ export default {
 
     // Tải danh sách menu Coming Soon động
     this.loadComingSoonMenus();
+  },
+  beforeUnmount() {
+    window.removeEventListener('profile-updated', this.syncUser);
   },
   methods: {
     loadComingSoonMenus() {
@@ -292,7 +279,27 @@ export default {
       this.$router.push('/');
     },
     goToProfile() {
-      this.$router.push('/profile');
+      this.$router.push('/doi-tac/profile');
+    },
+    syncUser() {
+      const userStr = localStorage.getItem('user');
+      if (userStr) {
+        try {
+          const user = JSON.parse(userStr);
+          const userObj = user.user || user;
+          if (userObj && userObj.ho_ten) {
+            this.userName = userObj.ho_ten;
+          } else if (userObj && userObj.username) {
+            this.userName = userObj.username;
+          }
+          if (userObj) {
+            this.userAvatar = userObj.avatar || null;
+            this.isMasterAdmin = userObj.vai_tro?.toLowerCase() === 'admin';
+          }
+        } catch (e) {
+          console.error("Lỗi parse thông tin user trong Sidebar:", e);
+        }
+      }
     }
   }
 }
@@ -377,7 +384,7 @@ export default {
 .avatar { position: relative; width: 36px; height: 36px; }
 .avatar span {
   position: relative; z-index: 2; width: 36px; height: 36px; border-radius: 50%;
-  background: var(--app-bg); border: 1px solid var(--neo-border); color: var(--text-main);
+  background: var(--app-bg); border: 1px solid var(--neo-border); color: var(--text-main) !important;
   font-weight: 700; font-size: 14px; display: flex; align-items: center; justify-content: center;
 }
 .avatar-ring {
@@ -385,14 +392,15 @@ export default {
   background: linear-gradient(135deg, #f97316, #db2777) border-box;
   -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0); -webkit-mask-composite: destination-out; mask-composite: exclude;
 }
-.greeting-label { font-size: 11px; color: var(--text-sub); }
-.greeting-name { font-size: 13.5px; color: var(--text-main); }
+.greeting-label { font-size: 11px; color: var(--text-sub) !important; }
+.greeting-name { font-size: 13.5px; color: var(--text-main) !important; }
 
 /* NÚT THỂ HIỆN CHẾ ĐỘ CHUYỂN THEME */
 .btn-theme-toggle {
   background: var(--input-bg) !important; border: 1px solid var(--neo-border) !important;
   color: var(--text-sub) !important; border-radius: 14px; padding: 10px 14px; font-size: 13.5px; cursor: pointer; transition: all 0.25s ease;
 }
+.btn-theme-toggle span, .btn-theme-toggle i { color: inherit !important; }
 .btn-theme-toggle:hover { background: rgba(249, 115, 22, 0.08) !important; color: #f97316 !important; }
 .theme-status-dot { width: 8px; height: 8px; background: #cbd5e1; border-radius: 50%; transition: all 0.3s ease; }
 .theme-status-dot.dark-active { background: #f59e0b; box-shadow: 0 0 8px #f59e0b; }
@@ -403,17 +411,26 @@ export default {
 .sidebar-body { padding: 12px 16px; }
 .sidebar-body::-webkit-scrollbar { width: 3px; }
 .sidebar-body::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.04); border-radius: 99px; }
-.section-heading { font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--text-sub); opacity: 0.6; padding: 20px 12px 6px; }
+.section-heading { font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--text-sub) !important; opacity: 0.8; padding: 20px 12px 6px; }
 
 .nav-link {
   display: flex; align-items: center; gap: 14px; padding: 11px 14px; border-radius: 14px !important;
   color: var(--text-sub) !important; font-size: 14px; font-weight: 500; transition: all 0.25s ease; text-decoration: none;
 }
+.nav-link .nav-label,
+.nav-link .nav-icon i {
+  color: var(--text-sub) !important;
+  transition: color 0.25s ease;
+}
 .admin-sidebar.sidebar-collapsed-state .nav-link { justify-content: center; padding: 12px 0; }
-.nav-dot { width: 5px; height: 5px; border-radius: 50%; opacity: 0; transform: scale(0.5); transition: all 0.2s ease; margin-left: auto; }
+.nav-dot { width: 5px; height: 5px; border-radius: 50%; opacity: 0; transform: scale(0.5); transition: all 0.25s ease; margin-left: auto; }
 .nav-link:hover .nav-dot { opacity: 0.5; transform: scale(1); }
-.nav-icon { display: flex; align-items: center; justify-content: center; width: 20px; height: 20px; font-size: 18px; color: var(--text-sub); }
+.nav-icon { display: flex; align-items: center; justify-content: center; width: 20px; height: 20px; font-size: 18px; color: var(--text-sub) !important; }
 .nav-link:hover { color: var(--text-main) !important; background: var(--input-bg); transform: translateX(4px); }
+.nav-link:hover .nav-label,
+.nav-link:hover .nav-icon i {
+  color: var(--text-main) !important;
+}
 
 /* Màu Active tương ứng từng mục */
 .item-home .nav-dot, .item-home .nav-link.active { --c-active: var(--color-home); }
@@ -428,20 +445,24 @@ export default {
   border: 1px solid var(--neo-border) !important; font-weight: 600;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03), 0 1px 2px rgba(0, 0, 0, 0.01);
 }
+.nav-link.active .nav-label {
+  color: var(--text-main) !important;
+}
 .nav-link.active .nav-icon i { color: var(--c-active) !important; }
 .nav-link.active .nav-dot { opacity: 1 !important; transform: scale(1.2); background: var(--c-active); }
 
 /* FOOTER BUTTON */
 .sidebar-footer { padding: 16px; border-top: 1px solid var(--neo-border); margin-top: auto; }
 .btn-home {
-  width: 100%; background: transparent; border: 1px solid var(--neo-border); color: var(--text-sub);
+  width: 100%; background: transparent; border: 1px solid var(--neo-border); color: var(--text-sub) !important;
   border-radius: 14px !important; padding: 10px 14px; font-size: 13.5px; cursor: pointer; transition: all 0.2s ease;
 }
-.btn-home:hover { background: var(--input-bg); color: var(--text-main); }
+.btn-home span, .btn-home i { color: inherit !important; }
+.btn-home:hover { background: var(--input-bg); color: var(--text-main) !important; }
 
 .btn-logout {
   width: 100%; background: linear-gradient(135deg, #f43f5e 0%, #f97316 100%) !important;
-  border: none; color: #ffffff; border-radius: 30px !important; padding: 11px 18px; font-size: 14px; font-weight: 600; cursor: pointer;
+  border: none; color: #ffffff !important; border-radius: 30px !important; padding: 11px 18px; font-size: 14px; font-weight: 600; cursor: pointer;
   box-shadow: 0 4px 14px rgba(244, 63, 94, 0.25); transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
 }
 .btn-logout:hover { transform: translateY(-1.5px); box-shadow: 0 6px 18px rgba(244, 63, 94, 0.35); }
@@ -450,7 +471,7 @@ export default {
 
 .admin-sidebar.sidebar-collapsed-state .btn-home,
 .admin-sidebar.sidebar-collapsed-state .btn-logout { padding: 12px 0; justify-content: center; border-radius: 14px !important; }
-.admin-sidebar.sidebar-collapsed-state .btn-logout { background: var(--neo-bg) !important; border: 1px solid rgba(244, 63, 94, 0.2); color: #f43f5e; }
+.admin-sidebar.sidebar-collapsed-state .btn-logout { background: var(--neo-bg) !important; border: 1px solid rgba(244, 63, 94, 0.2); color: #f43f5e !important; }
 .text-gradient-gold-sidebar {
   background: linear-gradient(135deg, #b8860b 0%, #ffd700 50%, #e5a93b 100%) !important;
   -webkit-background-clip: text !important;

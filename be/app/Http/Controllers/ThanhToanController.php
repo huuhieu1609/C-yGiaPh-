@@ -172,10 +172,19 @@ class ThanhToanController extends Controller
             $expectedContent = trim($parts[0]);
 
             $apiToken = env('SEPAY_API_TOKEN');
+            $isCustomSepay = false;
+            $branchId = null;
             if ($isDongGop) {
                 $chiNhanhId = $request->input('chi_nhanh_id');
                 $user = NguoiDung::find($nguoiDungId);
                 $branchId = $chiNhanhId ?: ($user ? $user->chi_nhanh_id : null);
+                
+                // Fallback: Resolve branch ID from matching member on the tree by email
+                if (!$branchId && $user && $user->email) {
+                    $branchId = \App\Models\ThanhVien::where('email', $user->email)
+                        ->whereNotNull('email')
+                        ->value('chi_nhanh_id');
+                }
 
                 if ($branchId) {
                     $branch = \App\Models\ChiNhanh::find($branchId);
@@ -183,6 +192,7 @@ class ThanhToanController extends Controller
                         $owner = \App\Models\NguoiDung::find($branch->id_nguoi_dung);
                         if ($owner && $owner->sepay_api_token) {
                             $apiToken = $owner->sepay_api_token;
+                            $isCustomSepay = true;
                         }
                     }
                 }
@@ -250,7 +260,7 @@ class ThanhToanController extends Controller
             }
 
             // Giao dịch khớp — xử lý bên trong transaction DB
-            return DB::transaction(function () use ($matchedTx, $nguoiDungId, $noiDung, $expectedContent, $request) {
+            return DB::transaction(function () use ($matchedTx, $nguoiDungId, $noiDung, $expectedContent, $request, $isCustomSepay, $branchId) {
                 $amountIn = $matchedTx['amount_in'];
 
                 $user = NguoiDung::find($nguoiDungId);
@@ -269,6 +279,11 @@ class ThanhToanController extends Controller
                     $displayNoiDung = $noiDung;
                     if (stripos($displayNoiDung, 'Số tiền:') === false) {
                         $displayNoiDung .= " | Số tiền: " . number_format($amountIn, 0, ',', '.') . " VNĐ";
+                    }
+
+                    // Append BranchID if matched via partner's SePay
+                    if ($isCustomSepay && $branchId) {
+                        $displayNoiDung .= " | BranchID: " . $branchId;
                     }
 
                     // Tạo hoặc cập nhật trạng thái đóng góp thành Đã duyệt

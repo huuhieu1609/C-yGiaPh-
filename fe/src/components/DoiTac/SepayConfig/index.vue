@@ -89,6 +89,61 @@
             </form>
           </div>
         </div>
+
+        <!-- ACTIVE CONFIGURATION SUMMARY CARD -->
+        <div v-if="isConfigured" class="saved-config-card glass-card shadow-lg rounded-3xl overflow-hidden mb-4 fade-in">
+          <div class="card-header-gradient p-4 d-flex justify-content-between align-items-center">
+            <h5 class="fw-bold mb-0 text-success-gold"><i class="bx bx-check-shield me-2"></i>Cấu Hình Đang Hoạt Động</h5>
+            <span class="badge badge-active-pulse"><span class="pulse-dot"></span>Đang kết nối</span>
+          </div>
+          <div class="card-body p-4 p-md-5">
+            <div class="row g-4">
+              <div class="col-md-6">
+                <div class="saved-item-box">
+                  <span class="label text-white-50">NGÂN HÀNG THỤ HƯỞNG</span>
+                  <div class="value-wrapper mt-2">
+                    <i class="bx bx-building text-gold fs-4"></i>
+                    <span class="value ms-2">{{ getFriendlyBankName(form.sepay_bank_name) }}</span>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="saved-item-box">
+                  <span class="label text-white-50">SỐ TÀI KHOẢN</span>
+                  <div class="value-wrapper mt-2">
+                    <i class="bx bx-hash text-gold fs-4"></i>
+                    <span class="value ms-2 text-monospace">{{ form.sepay_bank_account }}</span>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="saved-item-box">
+                  <span class="label text-white-50">CHỦ TÀI KHOẢN</span>
+                  <div class="value-wrapper mt-2">
+                    <i class="bx bx-user text-gold fs-4"></i>
+                    <span class="value ms-2">{{ form.sepay_bank_owner }}</span>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="saved-item-box">
+                  <span class="label text-white-50">SEPAY API TOKEN</span>
+                  <div class="value-wrapper mt-2">
+                    <i class="bx bx-key text-gold fs-4"></i>
+                    <span class="value ms-2 text-monospace mask-token">••••••••••••••••••••••••••••••••</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="alert-success-custom p-3 rounded-2xl mt-4 border border-success/20 bg-success/5 d-flex align-items-center">
+              <i class="bx bx-check-circle text-success me-2 fs-5"></i>
+              <span class="text-white-50 small">
+                Cổng thanh toán SePay đang hoạt động ổn định. Thành viên có thể đóng góp quỹ dòng họ qua mã QR ngân hàng thụ hưởng ở trên.
+              </span>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- Instruction / Support Column -->
@@ -147,10 +202,31 @@ export default {
       ]
     };
   },
+  computed: {
+    isConfigured() {
+      return this.form.sepay_bank_account && this.form.sepay_bank_name && this.form.sepay_api_token;
+    }
+  },
   mounted() {
     this.loadConfig();
   },
   methods: {
+    getFriendlyBankName(code) {
+      const popularBanks = {
+        'MBBank': 'MB Bank (Quân Đội)',
+        'Vietcombank': 'Vietcombank',
+        'VietinBank': 'VietinBank',
+        'BIDV': 'BIDV',
+        'Agribank': 'Agribank',
+        'Techcombank': 'Techcombank',
+        'ACB': 'ACB',
+        'VPBank': 'VPBank',
+        'TPBank': 'TPBank',
+        'Sacombank': 'Sacombank',
+        'VIB': 'VIB'
+      };
+      return popularBanks[code] || code;
+    },
     getHeaders() {
       return { headers: { Authorization: 'Bearer ' + localStorage.getItem('access_token') } };
     },
@@ -206,7 +282,11 @@ export default {
 
 .sepay-config-wrapper {
   font-family: 'Inter', sans-serif;
-  color: #f8fafc;
+  color: var(--text-main);
+}
+
+.sepay-config-wrapper .text-white-50 {
+  color: var(--text-sub) !important;
 }
 
 /* ── Banner ───────────────────────────────────────────────────────────────── */
@@ -242,18 +322,17 @@ export default {
 
 /* ── Glass Card ───────────────────────────────────────────────────────────── */
 .glass-card {
-  background: rgba(15, 23, 42, 0.6);
-  backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
   border-radius: 20px;
 }
 
 .card-header-gradient {
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, transparent 100%);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid var(--border-color);
 }
 
-.text-gold { color: #ffd700; }
+.text-gold { color: #d4af37; }
 
 /* Input Customization */
 .input-group-custom {
@@ -269,9 +348,9 @@ export default {
   pointer-events: none;
 }
 .input-custom, .select-custom {
-  background: rgba(255, 255, 255, 0.05) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  color: #fff !important;
+  background: var(--input-bg) !important;
+  border: 1px solid var(--border-color) !important;
+  color: var(--text-main) !important;
   border-radius: 14px !important;
   padding: 14px 14px 14px 48px !important;
   transition: all 0.25s ease;
@@ -286,8 +365,8 @@ export default {
   background-size: 16px !important;
 }
 .select-custom option {
-  background-color: #0f172a;
-  color: #fff;
+  background-color: var(--card-bg);
+  color: var(--text-main);
 }
 .input-custom:focus, .select-custom:focus {
   border-color: #d4af37 !important;
@@ -314,7 +393,7 @@ export default {
 
 .small-tip {
   display: block;
-  color: #64748b !important;
+  color: var(--text-sub) !important;
 }
 
 /* Submit Button */
@@ -345,23 +424,110 @@ export default {
 
 /* Instructions Support Card */
 .instruction-card {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
   border-radius: 20px;
 }
 .instruction-list strong {
-  color: #f8fafc;
+  color: var(--text-main);
 }
 .instruction-list a:hover {
   color: #f39c12 !important;
 }
 
 .alert-info-custom {
-  background: rgba(14, 165, 233, 0.03);
+  background: rgba(14, 165, 233, 0.05);
+  border: 1px solid rgba(14, 165, 233, 0.15) !important;
   display: flex;
   align-items: flex-start;
 }
 .alert-info-custom i {
   margin-top: 2px;
+}
+
+/* Active Pulse Badge & Active Card Styles */
+.text-success-gold {
+  color: #10b981;
+}
+.badge-active-pulse {
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  color: #10b981;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.pulse-dot {
+  width: 8px;
+  height: 8px;
+  background-color: #10b981;
+  border-radius: 50%;
+  box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  animation: pulse 1.6s infinite;
+}
+@keyframes pulse {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+}
+
+.saved-item-box {
+  background: var(--input-bg);
+  border: 1px solid var(--border-color);
+  padding: 16px;
+  border-radius: 16px;
+  transition: all 0.25s ease;
+  height: 100%;
+}
+.saved-item-box:hover {
+  background: var(--input-bg);
+  border-color: rgba(212, 175, 55, 0.3);
+  transform: translateY(-2px);
+}
+.saved-item-box .label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  display: block;
+}
+.value-wrapper {
+  display: flex;
+  align-items: center;
+}
+.saved-item-box .value {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-main);
+}
+.text-monospace {
+  font-family: 'Courier New', Courier, monospace;
+}
+.mask-token {
+  color: #64748b !important;
+}
+
+.alert-success-custom {
+  background: rgba(16, 185, 129, 0.04);
+}
+
+.fade-in {
+  animation: fadeIn 0.4s ease-out;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 </style>
