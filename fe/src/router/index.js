@@ -268,6 +268,11 @@ const routes = [
                 name: 'admin-dong-gop',
                 component: () => import('../components/Admin/DongGop/index.vue'),
                 meta: { permission: 'Quản Lý Đóng Góp Hệ Thống' }
+            },
+            {
+                path: 'profile',
+                name: 'admin-profile',
+                component: () => import('../components/Client/Profile/index.vue')
             }
         ]
     },
@@ -361,6 +366,16 @@ const routes = [
                 name: 'partner-dong-gop',
                 component: () => import('../components/DoiTac/QuanLyDongGop/index.vue'),
                 meta: { permission: 'Quản Lý Sự Kiện' }
+            },
+            {
+                path: 'sepay-config',
+                name: 'partner-sepay-config',
+                component: () => import('../components/DoiTac/SepayConfig/index.vue')
+            },
+            {
+                path: 'profile',
+                name: 'partner-profile',
+                component: () => import('../components/Client/Profile/index.vue')
             }
         ]
     }

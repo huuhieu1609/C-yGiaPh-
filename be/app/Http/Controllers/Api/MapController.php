@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 namespace App\Http\Controllers\Api;
 
@@ -40,8 +40,7 @@ class MapController extends Controller
             'apikey' => $this->apiKey
         ]);
 
-        return response($response->body(), $request->status())
+        return response($response->body(), $response->status())
             ->header('Content-Type', 'application/json');
     }
 }
-

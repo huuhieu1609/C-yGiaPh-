@@ -498,6 +498,12 @@ export default {
       }
       window.dispatchEvent(new Event('storage'));
 
+      // Clear payment code so a new one is generated next time
+      const userData = user ? (user.user || user) : null;
+      if (userData) {
+        localStorage.removeItem(`payment_code_${userData.id}`);
+      }
+
       this.activatedPackage = data.ten_goi || this.ten_goi;
       this.activatedExpiry  = data.ngay_ket_thuc
         ? new Date(data.ngay_ket_thuc).toLocaleDateString('vi-VN')

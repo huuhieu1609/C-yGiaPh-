@@ -79,7 +79,7 @@
 
             <!-- Right Column: Donation QR -->
             <div class="col-lg-6">
-              <div class="payment-section">
+              <div class="payment-section" v-if="isConfigured">
                 <h4 class="text-gold mb-4 fw-bold"><i class="bx bx-qr-scan me-2"></i>Chuyển khoản tâm đức qua mã QR</h4>
                 
                 <div class="qr-payment-section text-center p-4 rounded-3xl mb-4">
@@ -91,9 +91,9 @@
                   </div>
                   
                   <div class="bank-details text-start glass-info p-4 rounded-2xl border border-white/10">
-                    <div class="info-row"><span>Ngân hàng thụ hưởng:</span><strong>MB Bank (Quân Đội)</strong></div>
-                    <div class="info-row"><span>Số tài khoản:</span><strong class="text-gold">0342211914</strong></div>
-                    <div class="info-row"><span>Chủ tài khoản:</span><strong>TRAN HUU HIEU</strong></div>
+                    <div class="info-row"><span>Ngân hàng thụ hưởng:</span><strong>{{ getFriendlyBankName(sepayBankName) }}</strong></div>
+                    <div class="info-row"><span>Số tài khoản:</span><strong class="text-gold">{{ sepayBankAccount }}</strong></div>
+                    <div class="info-row"><span>Chủ tài khoản:</span><strong>{{ sepayBankOwner }}</strong></div>
                     <div class="info-row border-0">
                       <span>Nội dung chuyển khoản:</span>
                       <strong class="text-warning">{{ transferContent }}</strong>
@@ -111,9 +111,15 @@
                   </button>
                 </form>
                 
-                <p class="text-center text-white-50 small mt-3">
-                  <i class="bx bx-info-circle me-1"></i> Ban trị sự sẽ duyệt tự động và ghi nhận sau 1-3 phút.
-                </p>
+                <div class="auto-verify-note text-center mt-3 p-3 rounded-2xl border border-white/10">
+                  <i class="bx bx-bolt-circle text-success me-1 animate-pulse"></i>
+                  <span class="text-white-50 small">Hệ thống đang <strong class="text-success">tự động kiểm tra</strong> và ghi nhận bảng vàng sau khi giao dịch chuyển khoản thành công (mỗi 8 giây).</span>
+                </div>
+              </div>
+              <div class="payment-section text-center p-5 rounded-3xl border border-dashed border-white/10 bg-black/20" v-else>
+                <i class="bx bx-shield-x text-warning fs-1 mb-3 animate-pulse"></i>
+                <h5 class="fw-bold text-gradient mb-2">Chưa cấu hình nhận đóng góp</h5>
+                <p class="text-white-50 small mb-0">{{ configuredMessage }}</p>
               </div>
             </div>
           </div>
@@ -149,7 +155,12 @@ export default {
       ten_goi: 'Quỹ phát triển Gia phả Dòng tộc',
       isSubmitting: false,
       checkInterval: null,
-      paymentCode: null
+      paymentCode: null,
+      sepayBankName: 'MBBank',
+      sepayBankAccount: '0342211914',
+      sepayBankOwner: 'TRAN HUU HIEU',
+      isConfigured: true,
+      configuredMessage: ''
     }
   },
   computed: {
@@ -169,7 +180,7 @@ export default {
       if (!this.cleanAmount) return '';
       const amount = this.cleanAmount;
       const desc = encodeURIComponent(this.transferContent);
-      return `https://qr.sepay.vn/img?bank=MBBank&acc=0342211914&template=compact&amount=${amount}&des=${desc}`;
+      return `https://qr.sepay.vn/img?bank=${this.sepayBankName}&acc=${this.sepayBankAccount}&template=compact&amount=${amount}&des=${desc}`;
     }
   },
 
@@ -194,10 +205,54 @@ export default {
         this.isCustomAmount = true;
       }
     }
+
+    // Fetch custom SePay configuration for this lineage
+    this.fetchSepayConfig();
+
+    // Start auto-checking payment
+    this.startAutoCheck();
   },
   beforeUnmount() {
+    this.stopAutoCheck();
   },
   methods: {
+    fetchSepayConfig() {
+      const chiNhanhId = this.$route.query.chi_nhanh_id || '';
+      axios.get(`http://127.0.0.1:8000/api/dong-gop/sepay-config?chi_nhanh_id=${chiNhanhId}`, this.getHeaders())
+        .then(res => {
+          if (res.data.status) {
+            if (res.data.is_configured === false) {
+              this.isConfigured = false;
+              this.configuredMessage = res.data.message || 'Quản trị viên dòng họ này chưa thiết lập cấu hình cổng SePay.';
+            } else if (res.data.data) {
+              const d = res.data.data;
+              this.sepayBankName = d.sepay_bank_name || 'MBBank';
+              this.sepayBankAccount = d.sepay_bank_account || '0342211914';
+              this.sepayBankOwner = d.sepay_bank_owner || 'TRAN HUU HIEU';
+              this.isConfigured = true;
+            }
+          }
+        })
+        .catch(err => {
+          console.error("Lỗi khi tải cấu hình SePay đóng góp:", err);
+        });
+    },
+    getFriendlyBankName(code) {
+      const popularBanks = {
+        'MBBank': 'MB Bank (Quân Đội)',
+        'Vietcombank': 'Vietcombank',
+        'VietinBank': 'VietinBank',
+        'BIDV': 'BIDV',
+        'Agribank': 'Agribank',
+        'Techcombank': 'Techcombank',
+        'ACB': 'ACB',
+        'VPBank': 'VPBank',
+        'TPBank': 'TPBank',
+        'Sacombank': 'Sacombank',
+        'VIB': 'VIB'
+      };
+      return popularBanks[code] || code;
+    },
     selectPreset(amount) {
       this.form.so_tien = amount;
       this.isCustomAmount = false;
@@ -237,11 +292,19 @@ export default {
 
       axios.post('http://127.0.0.1:8000/api/thanh-toan/xac-nhan-thanh-toan', {
         nguoi_dung_id: userId,
+        chi_nhanh_id: this.$route.query.chi_nhanh_id || null,
         noi_dung: this.transferContent + ' | Đóng góp quỹ: ' + this.form.so_tien + ' VNĐ | QR Công Đức',
         trang_thai: 'Chờ duyệt'
       }, this.getHeaders())
       .then(res => {
         if (res.data.success) {
+          this.stopAutoCheck();
+          
+          // Clear payment code
+          if (userId) {
+            localStorage.removeItem(`payment_code_${userId}`);
+          }
+
           toastr.success('Cảm ơn đóng góp tâm đức của bạn! Hệ thống đã ghi danh Bảng Vàng.');
           this.$router.push('/profile');
         } else {
@@ -253,6 +316,46 @@ export default {
         console.error(err);
       })
       .finally(() => { this.isSubmitting = false; });
+    },
+    startAutoCheck() {
+      this.checkInterval = setInterval(() => {
+        if (this.cleanAmount > 0 && !this.isSubmitting && this.isConfigured) {
+          this.checkPaymentSilent();
+        }
+      }, 8000);
+    },
+    stopAutoCheck() {
+      if (this.checkInterval) {
+        clearInterval(this.checkInterval);
+        this.checkInterval = null;
+      }
+    },
+    checkPaymentSilent() {
+      const userStr = localStorage.getItem('user');
+      const user = userStr ? JSON.parse(userStr) : null;
+      const userId = user ? (user.user || user).id : null;
+      if (!userId) return;
+
+      axios.post('http://127.0.0.1:8000/api/thanh-toan/xac-nhan-thanh-toan', {
+        nguoi_dung_id: userId,
+        chi_nhanh_id: this.$route.query.chi_nhanh_id || null,
+        noi_dung: this.transferContent + ' | Đóng góp quỹ: ' + this.form.so_tien + ' VNĐ | QR Công Đức',
+        trang_thai: 'Chờ duyệt'
+      }, this.getHeaders())
+      .then(res => {
+        if (res.data.success) {
+          this.stopAutoCheck();
+
+          // Clear payment code
+          if (userId) {
+            localStorage.removeItem(`payment_code_${userId}`);
+          }
+
+          toastr.success('Cảm ơn đóng góp tâm đức của bạn! Hệ thống đã ghi danh Bảng Vàng.');
+          this.$router.push('/profile');
+        }
+      })
+      .catch(() => {});
     }
   }
 }
@@ -415,6 +518,11 @@ export default {
     color: #475569;
     cursor: not-allowed;
     box-shadow: none;
+}
+
+.auto-verify-note {
+    background: rgba(16, 185, 129, 0.04);
+    border: 1px solid rgba(16, 185, 129, 0.15);
 }
 
 .note-item {

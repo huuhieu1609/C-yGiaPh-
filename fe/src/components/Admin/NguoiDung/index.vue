@@ -115,7 +115,7 @@
                                         </span>
                                     </td>
                                     <td class="text-center">
-                                        <span class="badge badge-chinhanh px-3 fw-bold">{{ getTenChiNhanh(item.chi_nhanh_id) }}</span>
+                                        <span class="badge badge-chinhanh px-3 fw-bold">{{ getTenChiNhanh(item) }}</span>
                                     </td>
                                     <td class="text-center">
                                         <button @click="changeStatus(item.id)" :class="item.trang_thai == 'Hoạt động' ? 'btn-status-active' : 'btn-status-locked'" class="btn-status-toggle w-100 fw-bold">
@@ -242,9 +242,15 @@ export default {
             }
             return 'badge-chucvu';
         },
-        getTenChiNhanh(id) {
-            const cn = this.listChiNhanh.find(c => c.id === id);
-            return cn ? cn.ten_chi : 'Không liên kết';
+        getTenChiNhanh(item) {
+            if (item.chi_nhanh_id) {
+                const cn = this.listChiNhanh.find(c => c.id === item.chi_nhanh_id);
+                return cn ? cn.ten_chi : 'Không liên kết';
+            }
+            if (item.managed_branches && item.managed_branches.length > 0) {
+                return item.managed_branches.map(b => b.ten_chi).join(', ');
+            }
+            return 'Không liên kết';
         },
         saveData() {
             const url = this.isEditing

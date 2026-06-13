@@ -37,6 +37,11 @@ class AuthController extends Controller
         }
 
         try {
+            // Find matching member on the tree by email to assign chi_nhanh_id
+            $matchingMember = \App\Models\ThanhVien::where('email', $request->email)
+                ->whereNotNull('email')
+                ->first();
+
             $user = NguoiDung::create([
                 'ho_ten' => $request->ho_ten,
                 'email' => $request->email,
@@ -44,6 +49,7 @@ class AuthController extends Controller
                 'so_dien_thoai' => $request->so_dien_thoai,
                 'trang_thai' => 'Hoạt động', // Giá trị Enum
                 'vai_tro' => 'Thành viên', // Giá trị Enum
+                'chi_nhanh_id' => $matchingMember ? $matchingMember->chi_nhanh_id : null,
             ]);
 
             return response()->json([
@@ -67,6 +73,17 @@ class AuthController extends Controller
                 'status' => false,
                 'message' => 'Email hoặc mật khẩu không chính xác!',
             ], 401);
+        }
+
+        // Auto-sync chi_nhanh_id if null but matching ThanhVien exists on the tree
+        if (!$user->chi_nhanh_id && $user->email) {
+            $matchingMember = \App\Models\ThanhVien::where('email', $user->email)
+                ->whereNotNull('email')
+                ->first();
+            if ($matchingMember && $matchingMember->chi_nhanh_id) {
+                $user->chi_nhanh_id = $matchingMember->chi_nhanh_id;
+                $user->save();
+            }
         }
 
         $token = $user->createToken('auth_token')->plainTextToken;

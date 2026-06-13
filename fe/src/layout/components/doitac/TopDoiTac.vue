@@ -41,7 +41,7 @@
                     </div>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end">
-                    <li><router-link class="dropdown-item" to="/profile"><i class="bx bx-user"></i><span>Hồ sơ cá nhân</span></router-link></li>
+                    <li><router-link class="dropdown-item" to="/doi-tac/profile"><i class="bx bx-user"></i><span>Hồ sơ cá nhân</span></router-link></li>
                     <li><div class="dropdown-divider mb-0"></div></li>
                     <li><a class="dropdown-item" href="javascript:;" @click="handleLogout"><i class='bx bx-log-out-circle'></i><span>Đăng xuất</span></a></li>
                 </ul>

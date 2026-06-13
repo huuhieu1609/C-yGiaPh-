@@ -15,18 +15,42 @@ class DongGopController extends Controller
             $user = auth('sanctum')->user();
 
             if ($user && strtolower(trim($user->vai_tro)) === 'admin') {
-                $data = DongGop::with(['nguoiDung.chiNhanh'])->get();
+                $data = DongGop::with(['nguoiDung.chiNhanh', 'nguoiDung.managedBranches'])->get();
             } else if ($user && $user->is_doi_tac == 1) {
                 $branchIds = \App\Models\ChiNhanh::getManagedBranchIds($user);
-                $data = DongGop::with('nguoiDung')
+                $data = DongGop::with(['nguoiDung.chiNhanh', 'nguoiDung.managedBranches'])
                     ->where('trang_thai', 'Đã duyệt')
-                    ->whereHas('nguoiDung', function ($q) use ($branchIds) {
-                        $q->whereIn('chi_nhanh_id', $branchIds);
+                    ->where(function ($query) use ($user, $branchIds) {
+                        $query->where(function ($q) use ($branchIds) {
+                            $q->whereHas('nguoiDung', function ($qUser) use ($branchIds) {
+                                $qUser->whereIn('chi_nhanh_id', $branchIds);
+                            })->where(function ($q2) use ($branchIds) {
+                                  // For QR code bank donations, only display if it belongs to one of the partner's branches
+                                  $q2->where('noi_dung', 'not like', '%QR Công Đức%')
+                                     ->orWhere(function ($q3) use ($branchIds) {
+                                         $q3->where('noi_dung', 'like', '%QR Công Đức%')
+                                            ->where(function ($q4) use ($branchIds) {
+                                                foreach ($branchIds as $index => $bId) {
+                                                    if ($index === 0) {
+                                                        $q4->where('noi_dung', 'like', '%| BranchID: ' . $bId . '%');
+                                                    } else {
+                                                        $q4->orWhere('noi_dung', 'like', '%| BranchID: ' . $bId . '%');
+                                                    }
+                                                }
+                                            });
+                                     });
+                              });
+                        })->orWhere('nguoi_dung_id', $user->id);
                     })->get();
             } else if ($user && $user->chi_nhanh_id) {
-                $data = DongGop::with('nguoiDung')->whereHas('nguoiDung', function ($q) use ($user) {
-                    $q->where('chi_nhanh_id', $user->chi_nhanh_id);
-                })->get();
+                $data = DongGop::with(['nguoiDung.chiNhanh', 'nguoiDung.managedBranches'])
+                    ->where(function ($query) use ($user) {
+                        $query->whereHas('nguoiDung', function ($q) use ($user) {
+                            $q->where('chi_nhanh_id', $user->chi_nhanh_id);
+                        })->orWhere('nguoi_dung_id', $user->id);
+                    })->get();
+            } else if ($user) {
+                $data = DongGop::with(['nguoiDung.chiNhanh', 'nguoiDung.managedBranches'])->where('nguoi_dung_id', $user->id)->get();
             } else {
                 $data = [];
             }
@@ -232,5 +256,65 @@ class DongGopController extends Controller
                 'message' => 'Lỗi khi tìm kiếm: '.$e->getMessage(),
             ], 500);
         }
+    }
+
+    public function getDongGopSepayConfig(Request $request): \Illuminate\Http\JsonResponse
+    {
+        $user = $request->user();
+        
+        // 1. Resolve branch ID
+        $branchId = $request->query('chi_nhanh_id');
+        
+        if (!$branchId) {
+            // If the user is a partner, resolve the branch they own
+            if ($user && $user->is_doi_tac == 1) {
+                $branch = \App\Models\ChiNhanh::where('id_nguoi_dung', $user->id)->first();
+                $branchId = $branch ? $branch->id : null;
+            } else if ($user) {
+                $branchId = $user->chi_nhanh_id;
+                
+                // Fallback: Resolve branch ID from matching member on the tree by email
+                if (!$branchId && $user->email) {
+                    $branchId = \App\Models\ThanhVien::where('email', $user->email)
+                        ->whereNotNull('email')
+                        ->value('chi_nhanh_id');
+                }
+            }
+        }
+
+        // 2. Look up the branch and its owner's SePay configuration
+        if ($branchId) {
+            $branch = \App\Models\ChiNhanh::find($branchId);
+            if ($branch) {
+                $ownerId = $branch->id_nguoi_dung ?: (($user && $user->is_doi_tac == 1) ? $user->id : null);
+                
+                if ($ownerId) {
+                    $owner = \App\Models\NguoiDung::find($ownerId);
+                    if ($owner && $owner->is_doi_tac == 1) {
+                        if ($owner->sepay_api_token && $owner->sepay_bank_account && $owner->sepay_bank_name) {
+                            return response()->json([
+                                'status' => true,
+                                'is_custom' => true,
+                                'is_configured' => true,
+                                'data' => [
+                                    'sepay_bank_account' => $owner->sepay_bank_account,
+                                    'sepay_bank_name' => $owner->sepay_bank_name,
+                                    'sepay_bank_owner' => $owner->sepay_bank_owner ?: $owner->ho_ten,
+                                ]
+                            ]);
+                        }
+                    }
+                }
+            }
+        }
+
+        // 3. Do not fall back to global SePay details for lineage donations
+        return response()->json([
+            'status' => true,
+            'is_custom' => false,
+            'is_configured' => false,
+            'message' => 'Dòng họ này chưa thiết lập cấu hình cổng SePay để nhận đóng góp.',
+            'data' => null
+        ]);
     }
 }

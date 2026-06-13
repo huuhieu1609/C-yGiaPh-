@@ -66,6 +66,8 @@ Route::middleware(['auth:sanctum', 'activity'])->group(function () {
         Route::get('/lay-chi-nhanh', [DoiTacController::class, 'layChiNhanhCuaDoiTac']);
         Route::get('/check-pending', [DoiTacController::class, 'checkPending']);
         Route::get('/my-packages', [DoiTacController::class, 'getMyPackages']);
+        Route::get('/sepay-config', [DoiTacController::class, 'getSepayConfig']);
+        Route::post('/sepay-config', [DoiTacController::class, 'updateSepayConfig']);
     });
 
     Route::get('/admin/doi-tac/get-data', [DoiTacController::class, 'adminGetData'])->middleware('phan_quyen:Quản Lý Đối Tác|Cây Gia Phả|Quản Lý Gia Phả Hệ');
@@ -249,6 +251,7 @@ Route::middleware(['auth:sanctum', 'activity'])->group(function () {
         Route::post('/unregister', [SuKienController::class, 'unregister']);
     });
 
+    Route::get('/dong-gop/sepay-config', [DongGopController::class, 'getDongGopSepayConfig']);
     Route::prefix('/dong-gop')->middleware('phan_quyen:Quản Lý Sự Kiện')->group(function () {
         Route::get('/get-data', [DongGopController::class, 'getData']);
         Route::post('/create', [DongGopController::class, 'create']);

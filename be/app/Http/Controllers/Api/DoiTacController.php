@@ -496,4 +496,36 @@ class DoiTacController extends Controller
             ], 500);
         }
     }
+
+    public function getSepayConfig(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        return response()->json([
+            'status' => true,
+            'data'   => [
+                'sepay_api_token'   => $user->sepay_api_token,
+                'sepay_bank_account' => $user->sepay_bank_account,
+                'sepay_bank_name'    => $user->sepay_bank_name,
+                'sepay_bank_owner'   => $user->sepay_bank_owner,
+            ],
+        ]);
+    }
+
+    public function updateSepayConfig(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'sepay_api_token'    => 'nullable|string|max:255',
+            'sepay_bank_account' => 'nullable|string|max:50',
+            'sepay_bank_name'    => 'nullable|string|max:50',
+            'sepay_bank_owner'   => 'nullable|string|max:100',
+        ]);
+
+        $request->user()->update($validated);
+
+        return response()->json([
+            'status'  => true,
+            'message' => 'Cập nhật cấu hình SePay thành công!',
+            'data'    => $validated,
+        ]);
+    }
 }
