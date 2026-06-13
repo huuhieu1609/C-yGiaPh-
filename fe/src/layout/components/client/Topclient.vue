@@ -11,6 +11,9 @@
           <li v-if="isLoggedIn"><router-link to="/su-kien">Sự Kiện</router-link></li>
           <li v-if="isLoggedIn"><router-link to="/ban-do">Bản Đồ Số</router-link></li>
           <li v-if="isLoggedIn"><router-link to="/tuong-niem">Dòng Lịch Sử</router-link></li>
+          <li v-if="isLoggedIn"><router-link to="/thong-bao">Thông Báo</router-link></li>
+          <li v-if="isLoggedIn"><router-link to="/tai-lieu">Tài Liệu</router-link></li>
+          <li v-if="isLoggedIn"><router-link to="/nha-tho-ho">Nhà Thờ Họ</router-link></li>
           <li><router-link to="/tra-cuu">Tra Cứu</router-link></li>
           <li><router-link to="/dich-vu-goi">Dịch Vụ Gói</router-link></li>
           <li v-for="menu in comingSoonMenus" :key="'cs'+menu.id">
@@ -102,6 +105,15 @@
                 <router-link to="/tuong-niem" @click="isDropdownOpen = false">
                   <i class="bx bx-history"></i> Dòng Lịch Sử Gia Tộc
                 </router-link>
+                <router-link to="/thong-bao" @click="isDropdownOpen = false">
+                  <i class="bx bx-bell"></i> Thông báo dòng họ
+                </router-link>
+                <router-link to="/tai-lieu" @click="isDropdownOpen = false">
+                  <i class="bx bx-file"></i> Tài liệu gia tộc
+                </router-link>
+                <router-link to="/nha-tho-ho" @click="isDropdownOpen = false">
+                  <i class="bx bx-building-house"></i> Nhà thờ họ
+                </router-link>
                 <router-link to="/tra-cuu" @click="isDropdownOpen = false">
                   <i class="bx bx-search-alt"></i> Tra cứu xưng hô
                 </router-link>
@@ -135,6 +147,9 @@
           <li><router-link to="/su-kien" @click="isMobileMenuOpen = false">Sự kiện dòng họ</router-link></li>
           <li><router-link to="/ban-do" @click="isMobileMenuOpen = false">Bản đồ số</router-link></li>
           <li><router-link to="/tuong-niem" @click="isMobileMenuOpen = false">Dòng Lịch Sử</router-link></li>
+          <li><router-link to="/thong-bao" @click="isMobileMenuOpen = false">Thông báo</router-link></li>
+          <li><router-link to="/tai-lieu" @click="isMobileMenuOpen = false">Tài liệu</router-link></li>
+          <li><router-link to="/nha-tho-ho" @click="isMobileMenuOpen = false">Nhà thờ họ</router-link></li>
           <li><router-link to="/tra-cuu" @click="isMobileMenuOpen = false">Tra cứu xưng hô</router-link></li>
           <li><a href="javascript:;" @click="handleLogout">Đăng xuất</a></li>
         </template>

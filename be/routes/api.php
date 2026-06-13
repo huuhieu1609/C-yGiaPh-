@@ -339,7 +339,7 @@ Route::middleware(['auth:sanctum', 'activity'])->group(function () {
 
 Route::prefix('/thanh-toan')->group(function () {
     Route::get('/get-data', [ThanhToanController::class, 'index']);
-    Route::post('/xac-nhan-thanh-toan', [ThanhToanController::class, 'paymentVerify']);
+    Route::post('/xac-nhan-thanh-toan', [ThanhToanController::class, 'paymentVerify'])->middleware('throttle:10,1');
 });
 
 Route::get('/thanh-vien/public-detail/{id}', [ThanhVienController::class, 'getPublicDetail']);

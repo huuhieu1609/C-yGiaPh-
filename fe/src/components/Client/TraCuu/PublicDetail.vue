@@ -170,6 +170,16 @@
                                                     <i class="bx bx-git-repo-forked me-1"></i> Mắt Xích Gia Đình
                                                 </button>
                                             </li>
+                                            <li v-if="member.trang_thai === 'Đã mất'" class="nav-item" role="presentation">
+                                                <button class="nav-link" id="memorial-tab" data-bs-toggle="tab" data-bs-target="#memorial-pane" type="button" role="tab" @click="loadTributes">
+                                                    <i class="bx bxs-flame me-1"></i> Tưởng Niệm & Tri Ân
+                                                </button>
+                                            </li>
+                                            <li class="nav-item" role="presentation">
+                                                <button class="nav-link" id="gallery-tab" data-bs-toggle="tab" data-bs-target="#gallery-pane" type="button" role="tab" @click="loadGallery">
+                                                    <i class="bx bx-images me-1"></i> Hình Ảnh Kỷ Niệm
+                                                </button>
+                                            </li>
                                         </ul>
                                     </div>
 
@@ -372,6 +382,49 @@
             </div>
         </div>
     </div>
+
+    <!-- Upload Image Modal -->
+    <div class="modal fade" id="uploadImageModal" tabindex="-1" aria-hidden="true" ref="uploadModalEl">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 radius-24 shadow-lg overflow-hidden bg-white">
+          <div class="modal-header py-4 px-4 border-0 d-flex align-items-center justify-content-between text-white bg-dark-gradient">
+            <h5 class="modal-title fw-bold"><i class="bx bx-image-add text-warning me-1"></i>Thêm Ảnh Kỷ Niệm</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" @click="closeUploadModal"></button>
+          </div>
+          <form @submit.prevent="submitImage">
+            <div class="modal-body p-4">
+              <div class="mb-3">
+                <label class="form-label fw-bold text-dark font-xs">ĐƯỜNG DẪN HÌNH ẢNH (URL) <span class="text-danger">*</span></label>
+                <input type="url" class="form-control radius-12 border-2 py-2 px-3 shadow-none-focus" v-model="newImageUrl" placeholder="https://example.com/image.jpg" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label fw-bold text-dark font-xs">MÔ TẢ ẢNH</label>
+                <input type="text" class="form-control radius-12 border-2 py-2 px-3 shadow-none-focus" v-model="newImageDesc" placeholder="Nhập mô tả ảnh kỷ niệm (ví dụ: Chụp ngày giỗ tổ 2025...)">
+              </div>
+            </div>
+            <div class="modal-footer py-3 px-4 border-0 bg-light">
+              <button type="button" class="btn btn-secondary radius-12 px-4" data-bs-dismiss="modal" @click="closeUploadModal">Đóng</button>
+              <button type="submit" :disabled="isSubmittingImage" class="btn btn-warning radius-12 px-4 fw-bold">Tải Lên</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- View Full Image Modal -->
+    <div class="modal fade" id="viewImageModal" tabindex="-1" aria-hidden="true" ref="viewModalEl">
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 radius-24 shadow-lg overflow-hidden bg-black-90">
+          <div class="modal-header py-2 px-4 border-0 d-flex align-items-center justify-content-between text-white bg-transparent">
+            <span class="font-sm text-white">{{ selectedImage?.mo_ta || 'Hình ảnh kỷ niệm' }}</span>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" @click="closeViewModal"></button>
+          </div>
+          <div class="modal-body p-0 text-center bg-dark">
+            <img :src="selectedImage?.duong_dan" class="img-fluid max-h-80vh" style="object-fit: contain;">
+          </div>
+        </div>
+      </div>
+    </div>
 </template>
 
 <script>
@@ -394,7 +447,27 @@ export default {
             dynamicRelError: null,
             isLoadingRelationship: false,
             isLoggedIn: !!localStorage.getItem('access_token'),
-            myMemberId: null
+            myMemberId: null,
+
+            // Memorial & Tributes
+            tributes: [],
+            tributeStats: { Nhang: 0, Hoa: 0, Nen: 0, TraiCay: 0 },
+            activeOffering: 'Nhang',
+            tributeNotes: '',
+            isSubmittingTribute: false,
+
+            // Gallery
+            galleryImages: [],
+            isLoadingGallery: false,
+            canManageGallery: false,
+            newImageUrl: '',
+            newImageDesc: '',
+            isSubmittingImage: false,
+            selectedImage: null,
+            uploadBsModal: null,
+            viewBsModal: null,
+            isAdmin: false,
+            isDoiTac: false
         }
     },
     watch: {
@@ -405,6 +478,8 @@ export default {
                 this.dynamicRelationship = null;
                 this.dynamicRelError = null;
                 this.isLoadingRelationship = false;
+                this.tributes = [];
+                this.galleryImages = [];
                 if (this.isLoggedIn) {
                     this.$nextTick(() => this.autoDetectMyRelationship());
                 }
@@ -412,6 +487,26 @@ export default {
         }
     },
     mounted() {
+        // Load User roles
+        const userData = JSON.parse(localStorage.getItem('user'));
+        if (userData) {
+            const user = userData.user || userData;
+            const roleName = user.vai_tro?.toLowerCase() || '';
+            const chucVuName = user.chuc_vu?.ten_chuc_vu?.toLowerCase() || '';
+            const isSubAdmin = chucVuName.includes('quản trị') || roleName.includes('admin');
+            this.isAdmin = roleName === 'admin' || isSubAdmin;
+            this.isDoiTac = user.is_doi_tac == 1 || user.vai_tro === 'Đối tác';
+            this.canManageGallery = this.isAdmin || this.isDoiTac;
+        }
+
+        // Initialize Modals
+        if (window.bootstrap) {
+            const uploadEl = this.$refs.uploadModalEl;
+            const viewEl = this.$refs.viewModalEl;
+            if (uploadEl) this.uploadBsModal = new window.bootstrap.Modal(uploadEl);
+            if (viewEl) this.viewBsModal = new window.bootstrap.Modal(viewEl);
+        }
+
         if (this.isLoggedIn) {
             this.autoDetectMyRelationship();
         }
@@ -529,6 +624,139 @@ export default {
                 str += `, năm ${m.ngay_mat_al_nam}`;
             }
             return str;
+        },
+        // Tributes & Memorial
+        loadTributes() {
+            const memberId = this.$route.params.id;
+            axios.get(`http://127.0.0.1:8000/api/tuong-niem/thanh-vien/${memberId}`, this.getHeaders())
+                .then(res => {
+                    if (res.data.status) {
+                        this.tributes = res.data.tributes || [];
+                        this.tributeStats = res.data.stats || { Nhang: 0, Hoa: 0, Nen: 0, TraiCay: 0 };
+                    }
+                })
+                .catch(err => {
+                    console.error('Lỗi tải dữ liệu tưởng niệm:', err);
+                });
+        },
+        submitTribute() {
+            if (!this.activeOffering) {
+                toastr.warning('Vui lòng chọn loại lễ vật!');
+                return;
+            }
+            this.isSubmittingTribute = true;
+            const payload = {
+                thanh_vien_id: parseInt(this.$route.params.id),
+                loai_le_vat: this.activeOffering,
+                loi_nhan: this.tributeNotes.trim()
+            };
+
+            axios.post('http://127.0.0.1:8000/api/tuong-niem/create', payload, this.getHeaders())
+                .then(res => {
+                    if (res.data.status) {
+                        toastr.success(res.data.message || 'Đã dâng lễ vật tôn kính tổ tiên!');
+                        this.tributeNotes = '';
+                        this.loadTributes();
+                    } else {
+                        toastr.error(res.data.message);
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    toastr.error(err.response?.data?.message || 'Lỗi khi dâng hương hoa.');
+                })
+                .finally(() => {
+                    this.isSubmittingTribute = false;
+                });
+        },
+        getOfferingEmoji(type) {
+            const emojis = { Nhang: '🕯️', Hoa: '💐', Nen: '🏮', TraiCay: '🍎' };
+            return emojis[type] || '🕯️';
+        },
+        getOfferingLabel(type) {
+            const labels = { Nhang: 'Nhang hương', Hoa: 'Hoa cúng', Nen: 'Nến sáng', TraiCay: 'Quả ngọt' };
+            return labels[type] || type;
+        },
+
+        // Gallery Methods
+        loadGallery() {
+            this.isLoadingGallery = true;
+            axios.get('http://127.0.0.1:8000/api/hinh-anh/get-data', this.getHeaders())
+                .then(res => {
+                    if (res.data.status) {
+                        const targetId = parseInt(this.$route.params.id);
+                        this.galleryImages = (res.data.data || []).filter(img => img.thanh_vien_id === targetId);
+                    }
+                })
+                .catch(err => {
+                    console.error('Lỗi tải album ảnh kỷ niệm:', err);
+                })
+                .finally(() => {
+                    this.isLoadingGallery = false;
+                });
+        },
+        openUploadModal() {
+            this.newImageUrl = '';
+            this.newImageDesc = '';
+            if (this.uploadBsModal) this.uploadBsModal.show();
+        },
+        closeUploadModal() {
+            if (this.uploadBsModal) this.uploadBsModal.hide();
+        },
+        submitImage() {
+            if (!this.newImageUrl.trim()) {
+                toastr.warning('Vui lòng nhập URL hình ảnh!');
+                return;
+            }
+            this.isSubmittingImage = true;
+            const payload = {
+                thanh_vien_id: parseInt(this.$route.params.id),
+                duong_dan: this.newImageUrl.trim(),
+                mo_ta: this.newImageDesc.trim()
+            };
+
+            axios.post('http://127.0.0.1:8000/api/hinh-anh/create', payload, this.getHeaders())
+                .then(res => {
+                    if (res.data.status) {
+                        toastr.success('Thêm hình ảnh kỷ niệm thành công!');
+                        this.closeUploadModal();
+                        this.loadGallery();
+                    } else {
+                        toastr.error(res.data.message);
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    toastr.error(err.response?.data?.message || 'Có lỗi xảy ra khi tải ảnh lên.');
+                })
+                .finally(() => {
+                    this.isSubmittingImage = false;
+                });
+        },
+        deleteImage(imageId) {
+            if (confirm('Bạn có chắc chắn muốn xóa hình ảnh kỷ niệm này?')) {
+                axios.post('http://127.0.0.1:8000/api/hinh-anh/delete', { id: imageId }, this.getHeaders())
+                    .then(res => {
+                        if (res.data.status) {
+                            toastr.success('Đã xóa hình ảnh kỷ niệm.');
+                            this.loadGallery();
+                        } else {
+                            toastr.error(res.data.message);
+                        }
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        toastr.error('Lỗi khi xóa hình ảnh.');
+                    });
+            }
+        },
+        viewFullImage(image) {
+            this.selectedImage = image;
+            if (this.viewBsModal) this.viewBsModal.show();
+        },
+        closeViewModal() {
+            if (this.viewBsModal) this.viewBsModal.hide();
+            this.selectedImage = null;
         }
     }
 }
@@ -905,5 +1133,55 @@ export default {
     .content-card-premium {
         padding: 25px;
     }
+}
+
+/* Memorial styling */
+.text-rose { color: #be123c !important; }
+.badge-rose-subtle { background-color: rgba(225, 29, 72, 0.1) !important; color: #e11d48 !important; }
+.btn-rose { background: linear-gradient(135deg, #e11d48 0%, #be123c 100%); color: #ffffff; border: none; }
+.btn-rose:hover { background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%); color: #ffffff; }
+.btn-outline-rose { border-color: #e11d48; color: #e11d48; background-color: transparent; transition: all 0.2s; }
+.btn-outline-rose:hover, .btn-outline-rose.active { background-color: #e11d48; color: white; border-color: #e11d48; }
+
+.offering-stat-card {
+  background: #fff5f5;
+  border-color: #ffe3e3 !important;
+  transition: all 0.3s;
+}
+.offering-stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(225, 29, 72, 0.05);
+}
+
+/* Gallery styling */
+.gallery-thumbnail-img {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+  cursor: pointer;
+  transition: transform 0.4s ease;
+}
+.gallery-thumbnail-img:hover {
+  transform: scale(1.05);
+}
+.gallery-img-hover-overlay {
+  background: rgba(0, 0, 0, 0.6);
+  pointer-events: none;
+  font-weight: 500;
+}
+.btn-delete-img {
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  z-index: 5;
+}
+.gallery-img-wrapper:hover .btn-delete-img {
+  opacity: 1;
+}
+
+.bg-black-90 {
+  background-color: rgba(0, 0, 0, 0.9) !important;
+}
+.max-h-80vh {
+  max-height: 80vh;
 }
 </style>

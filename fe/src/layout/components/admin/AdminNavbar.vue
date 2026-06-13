@@ -70,6 +70,14 @@
           </router-link>
         </li>
 
+        <li class="nav-item item-user" v-if="hasPermission('Kiểm Duyệt Đề Xuất')">
+          <router-link to="/admin/de-xuat" class="nav-link" active-class="active" title="Kiểm Duyệt Đề Xuất">
+            <span class="nav-icon"><i class="bx bx-git-pull-request"></i></span>
+            <span class="hide-on-collapse nav-label">Kiểm Duyệt Đề Xuất</span>
+            <span class="nav-dot hide-on-collapse"></span>
+          </router-link>
+        </li>
+
         <li class="nav-item item-members" v-if="hasPermission('Quản Lý Đối Tác')">
           <router-link to="/admin/yeu-cau-mua-goi" class="nav-link" active-class="active" title="Yêu Cầu Mua Gói">
             <span class="nav-icon"><i class="bx bx-receipt"></i></span>

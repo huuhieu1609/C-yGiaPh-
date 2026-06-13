@@ -12,7 +12,7 @@ class HinhAnhController extends Controller
     public function getData()
     {
         try {
-            $data = HinhAnh::all();
+            $data = HinhAnh::with('thanhVien')->get();
 
             return response()->json([
                 'status' => true,

@@ -101,6 +101,24 @@ const routes = [
         meta: { layout: 'client', requiresAuth: true }
     },
     {
+        path: '/thong-bao',
+        name: 'client-thong-bao',
+        component: () => import('../components/Client/ThongBao/index.vue'),
+        meta: { layout: 'client', requiresAuth: true }
+    },
+    {
+        path: '/tai-lieu',
+        name: 'client-tai-lieu',
+        component: () => import('../components/Client/TaiLieu/index.vue'),
+        meta: { layout: 'client', requiresAuth: true }
+    },
+    {
+        path: '/nha-tho-ho',
+        name: 'client-nha-tho-ho',
+        component: () => import('../components/Client/NhaThoHo/index.vue'),
+        meta: { layout: 'client', requiresAuth: true }
+    },
+    {
         path: '/nguoi-dung',
         redirect: '/gia-pha'
     },
@@ -256,6 +274,12 @@ const routes = [
                 name: 'admin-nha-tho-ho',
                 component: () => import('../components/Admin/NhaThoHo/index.vue'),
                 meta: { permission: 'Quản Lý Nhà Thờ Họ' }
+            },
+            {
+                path: 'de-xuat',
+                name: 'admin-de-xuat',
+                component: () => import('../components/Admin/DeXuat/index.vue'),
+                meta: { permission: 'Kiểm Duyệt Đề Xuất' }
             },
             {
                 path: 'su-kien',
