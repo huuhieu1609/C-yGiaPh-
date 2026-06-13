@@ -191,7 +191,7 @@
                     {{ formatMoney(getAmountFromContent(item.noi_dung)) }} VNĐ
                   </span>
                 </td>
-                <td class="max-w-xs text-truncate-custom font-sm text-muted-custom">{{ cleanContent(item.noi_dung) }}</td>
+                <td class="max-w-xs text-truncate-custom font-sm text-muted-custom">{{ cleanContent(item.noi_dung) || 'Ủng hộ quỹ dòng họ' }}</td>
                 <td class="text-center">
                   <span v-if="getPaymentType(item.noi_dung) === 'Tiền mặt'" 
                         class="badge badge-teal-subtle radius-8 font-xs py-1.5 px-2.5 fw-bold d-inline-flex align-items-center gap-1 shadow-sm-hover animate-all">
